@@ -9,7 +9,8 @@ import { compression } from 'vite-plugin-compression2'
 // connect-src 额外放行本地 B3 Mock（http://localhost:8787 / ws://localhost:8787）
 const csp = [
   "default-src 'self'",
-  "img-src 'self' data: blob:",
+  // img-src 放行 https:（OSM 瓦片外域，开发占位；生产替换天地图离线瓦片后收紧）
+  "img-src 'self' data: blob: https: http:",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline'",
   "connect-src 'self' wss: ws: https: http: ws://localhost:* http://localhost:*",
