@@ -1,13 +1,22 @@
 <script setup lang="ts">
-// T1 占位视图；T5 将覆盖为火灾报警实现
+// 火灾报警模块（占位）；后续接入 realtime-channel 实时订阅火灾告警数据
 </script>
 
 <template>
-  <div class="glass-panel">火灾报警（占位）</div>
+  <section class="glass-panel page-panel">
+    <h2 class="panel-title">火灾报警</h2>
+    <p class="panel-empty">模块开发中：接入 realtime-channel 实时订阅火灾告警数据。</p>
+  </section>
 </template>
 
 <style scoped>
-.glass-panel {
-  padding: 16px;
+.page-panel {
+  min-height: 100%;
+  padding: var(--space-lg);
+}
+
+.panel-empty {
+  margin-top: var(--space-md);
+  color: var(--color-text-muted);
 }
 </style>

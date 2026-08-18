@@ -1,20 +1,40 @@
 :root {
-  --color-primary: #0F1E36;
+  /* ---- 基底色（spec 红线：安全工业蓝 #0F1E36） ---- */
+  --color-bg: #050a15;
+  --color-primary: #0f1e36;
   --color-primary-soft: #16304f;
-  --color-accent: #1E90FF;
-  --color-danger: #F5414B;
-  --color-warning: #FAAD14;
-  --color-success: #52C41A;
-  --glass-bg: rgba(22, 48, 79, 0.55);
-  --glass-border: rgba(120, 160, 210, 0.18);
+
+  /* ---- 强调发光（大屏科技青） ---- */
+  --color-accent: #00d4ff;
+  --color-accent-soft: rgb(0 212 255 / 12%);
+  --color-accent-glow: rgb(0 212 255 / 35%);
+
+  /* ---- 语义色 ---- */
+  --color-danger: #f5414b;
+  --color-warning: #faad14;
+  --color-success: #52c41a;
+
+  /* ---- 文本（高对比） ---- */
+  --color-text: #eaf2fb;
+  --color-text-muted: #7e9bb8;
+
+  /* ---- 面板（玻璃拟态） ---- */
+  --glass-bg: rgb(15 30 54 / 62%);
+  --glass-border: rgb(0 212 255 / 28%);
   --glass-blur: 12px;
-  --color-text: #E6EEF8;
-  --color-text-muted: #8FA6C2;
-  --color-bg: #0A1422;
+  --row-alt-bg: rgb(0 212 255 / 5%);
+
+  /* ---- 排版（石化智云：标题 16 / 正文 14） ---- */
+  --font-title: 16px;
+  --font-body: 14px;
+
+  /* ---- 间距（石化智云：外边距 16 / 内边距 24） ---- */
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
   --space-lg: 24px;
+
+  /* ---- 圆角 ---- */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;

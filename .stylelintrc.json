@@ -1,8 +1,15 @@
 {
   "extends": ["stylelint-config-standard"],
+  "overrides": [
+    {
+      "files": ["*.vue", "**/*.vue"],
+      "customSyntax": "postcss-html"
+    }
+  ],
   "rules": {
     "selector-class-pattern": null,
     "no-descending-specificity": null,
-    "custom-property-pattern": null
+    "custom-property-pattern": null,
+    "selector-pseudo-class-no-unknown": [true, { "ignorePseudoClasses": ["deep"] }]
   }
 }

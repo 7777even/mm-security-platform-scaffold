@@ -17,4 +17,16 @@ const routes: RouteRecordRaw[] = [
 ]
 
 const router = createRouter({ history: createWebHistory(), routes })
+
+// 全局权限守卫：未授权路由直接访问亦被拦截（rbac-permission spec §动态路由与菜单权限）
+router.beforeEach(async (to) => {
+  const perm = to.meta.perm as string | undefined
+  if (perm) {
+    const { useAuthStore } = await import('@/stores/auth')
+    const auth = useAuthStore()
+    if (!auth.hasPerm(perm)) return { name: 'not-found' }
+  }
+  return true
+})
+
 export default router
