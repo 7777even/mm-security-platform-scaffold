@@ -76,6 +76,22 @@
 - 渲染层新增负担：ol 初始化 + 点位图层在 dashboard 场景；`?perf=1` 已含 `map:ready` 埋点，G1 真机复测时回填。
 - 底图开发占位为 OSM 公网瓦片；生产替换天地图（S3）时瓦片体积与缓存策略另行评估。
 
+## 4.2 3D 场景引入后体积（2026-08-18 Three.js 接入）
+
+> dashboard 增加 2D/3D 切换，3D 用 Three.js 厂区场景（`FactoryScene.vue`，懒加载）。
+
+| 指标 | 地图底座后 | +3D（懒加载） | 变化 |
+|---|---|---|---|
+| 产物原始合计 | 1200.95 KB | **1686.03 KB** | +485 KB（three） |
+| 产物 gzip 合计 | 395.06 KB | **518.30 KB** | +123 KB |
+| 首屏关键资源 gzip | 98.30 KB | **98.87 KB** | ≈0（three 不进首屏） |
+| 超限 chunk（>500KB） | 无 | **无**（FactoryScene 481KB / echarts 471KB，均懒加载） | — |
+| 独立 chunk | ol 168.85KB | FactoryScene **481.07KB**（gzip 121.7）+ echarts 471.38KB | three 为最大懒加载 chunk |
+
+- **three 懒加载验证**：首屏 gzip 仅 +0.57KB，`defineAsyncComponent` 成功隔离 three 体积——只在用户点击「3D」时加载 481KB chunk。
+- 网络层：首屏 98.87KB 内网估算 ~80~120ms，**SLO 余量仍充足**。
+- 渲染层：3D 场景渲染成本（WebGL）待 G1 真机实测；`?perf=1` 埋点覆盖 `map:ready`，3D 切换时刻可用 Performance 面板采样。
+
 ## 5. 结论
 
 - **网络层/数据层**：当前脚手架首屏资源 48.34KB（gzip），进入平台预算内余量充足，不构成瓶颈。
