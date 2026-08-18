@@ -1,0 +1,21 @@
+schema: spec-driven
+
+context: |
+  项目：安全管控指挥系统前端脚手架（frontend-scaffold），为对齐 S1 规范与选型定案的约束验证样本。
+  技术栈：Vue 3.0 + Vite 5 + TypeScript(strict, 禁用 any) + Element Plus + ECharts + Pinia + Vue Router(懒加载) + Axios + Vitest。
+  约束来源：S1《前端工程代码规范 V0.1》、技术协议、详细设计、选型决策评审稿 V1.0。
+  关键约束：
+    - 信创：鲲鹏/飞腾(ARM)+银河麒麟/统信UOS+石化窗；Chromium 86 为兼容下限
+    - 等保二级+协议点名双因素；CSP default-src 'self' 禁用 unsafe-inline(生产用 nonce)
+    - 零下行控制红线：前端只监不控，services 不得定义硬控写接口
+    - 20 位中石化 MDM 设备编码，禁止自创物理主键
+    - 目录按功能模块为第一级，services/adapter 分离
+  测试：Vitest，TDD 先红后绿，覆盖 device-code / rbac-permission / realtime-channel 关键路径。
+
+rules:
+  proposal:
+    - 必须含 Why / What Changes / Capabilities / Impact 四节
+    - 控制在 500 字内，聚焦单一变更
+  tasks:
+    - 任务拆为可勾选清单，单条不超过 2 小时工作量
+    - 标注 [TDD] 的任务须先写失败测试再实现
