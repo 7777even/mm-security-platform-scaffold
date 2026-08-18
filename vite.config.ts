@@ -4,12 +4,13 @@ import { fileURLToPath, URL } from 'node:url'
 import { compression } from 'vite-plugin-compression2'
 
 // CSP 开发态基线（S1 §10.2）；生产须改 nonce 注入、移除 unsafe-inline
+// connect-src 额外放行本地 B3 Mock（http://localhost:8787 / ws://localhost:8787）
 const csp = [
   "default-src 'self'",
   "img-src 'self' data: blob:",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline'",
-  "connect-src 'self' wss: https:",
+  "connect-src 'self' wss: ws: https: http: ws://localhost:* http://localhost:*",
   "font-src 'self' data:",
 ].join('; ')
 

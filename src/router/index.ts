@@ -11,6 +11,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'fire-alarm', name: 'fire-alarm', component: () => import('@/views/fire-alarm/index.vue'), meta: { title: '火灾报警', perm: 'fire-alarm:view' } },
       { path: 'industrial-video', name: 'industrial-video', component: () => import('@/views/industrial-video/index.vue'), meta: { title: '工业视频', perm: 'video:view' } },
       { path: 'system/users', name: 'system-users', component: () => import('@/views/system/users.vue'), meta: { title: '用户与权限', perm: 'system:user:view' } },
+      { path: 'system/device-code', name: 'system-device-code', component: () => import('@/views/system/deviceCode.vue'), meta: { title: '设备编码', perm: 'system:device-code:view' } },
     ],
   },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/error/NotFound.vue') },

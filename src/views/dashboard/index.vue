@@ -5,6 +5,15 @@ import { LineChart, type LineSeriesOption } from 'echarts/charts'
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import type { ComposeOption } from 'echarts/core'
+import { RealtimeClient, type RealtimeMessage } from '@/services/ws'
+import {
+  fetchDashboardOverview,
+  fetchAlarmTrend,
+  fetchAlarmPage,
+  type AlarmItem,
+  type AlarmLevel,
+  type AlarmType,
+} from '@/services/alarm'
 
 // 按需注册 ECharts 模块，控制产物体积
 echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
@@ -16,23 +25,72 @@ const CHART_ACCENT = '#00d4ff'
 const CHART_SUCCESS = '#52c41a'
 const CHART_TEXT = '#7e9bb8'
 
+const LEVEL_META: Record<AlarmLevel, { label: string; tone: string }> = {
+  1: { label: '重大', tone: 'danger' },
+  2: { label: '预警', tone: 'warning' },
+  3: { label: '提示', tone: 'info' },
+  4: { label: '提示', tone: 'info' },
+}
+
+const TYPE_LABEL: Record<AlarmType, string> = {
+  FIRE: '火灾',
+  GAS: '气体',
+  TEMP: '温度',
+  CCTV: '视频',
+  SOS: '一键报警',
+}
+
+interface Stat {
+  label: string
+  value: string
+  unit: string
+  icon: string
+  tone: string
+}
+
+interface AlarmRow {
+  id: string
+  level: string
+  tone: string
+  device: string
+  time: string
+}
+
 const chartRef = ref<HTMLDivElement | null>(null)
 let chart: echarts.ECharts | null = null
+let wsClient: RealtimeClient | null = null
 
-const stats = [
-  { label: '安全运行天数', value: '128', unit: '天', icon: 'Odometer', tone: 'accent' },
-  { label: '在线点位', value: '864', unit: '个', icon: 'Monitor', tone: 'accent' },
-  { label: '今日告警', value: '12', unit: '条', icon: 'Bell', tone: 'danger' },
-  { label: '设备完好率', value: '98.6%', unit: '', icon: 'CircleCheck', tone: 'success' },
-]
+// 静态兜底值：Mock 不可达时保留展示
+const stats = ref<Stat[]>([
+  { label: '在线点位', value: '—', unit: '个', icon: 'Monitor', tone: 'accent' },
+  { label: '今日告警', value: '—', unit: '条', icon: 'Bell', tone: 'danger' },
+  { label: '风险指数', value: '—', unit: '', icon: 'Odometer', tone: 'warning' },
+  { label: '在线工作站', value: '—', unit: '台', icon: 'Monitor', tone: 'success' },
+])
+const alarms = ref<AlarmRow[]>([])
+const mockReady = ref(false)
+const mockError = ref('')
 
-const alarms = [
-  { id: 1, level: '重大', tone: 'danger', device: '一号储罐区 · 液位超高', time: '14:32:05' },
-  { id: 2, level: '预警', tone: 'warning', device: '反应釜 B 区 · 压力波动', time: '14:28:41' },
-  { id: 3, level: '提示', tone: 'info', device: '工业视频 · 摄像头离线', time: '14:15:09' },
-  { id: 4, level: '提示', tone: 'info', device: '环境监测 · 雨水排口 COD 偏高', time: '13:52:20' },
-  { id: 5, level: '重大', tone: 'danger', device: '甲醇仓库 · 温度超限', time: '13:31:44' },
-]
+const FALLBACK_TREND = [0, 1, 0, 2, 1, 3, 2, 1, 0, 2, 4, 3, 2, 1, 3, 5, 4, 6, 3, 2, 4, 3, 2, 1]
+const trendData = ref<number[]>(FALLBACK_TREND)
+
+function toAlarmRow(a: AlarmItem): AlarmRow {
+  const meta = LEVEL_META[a.level]
+  return {
+    id: a.alarmId,
+    level: meta.label,
+    tone: meta.tone,
+    device: a.location || `${TYPE_LABEL[a.type] ?? a.type} ${a.deviceCode.slice(-4)}`,
+    time: formatTime(a.ts),
+  }
+}
+
+function formatTime(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  const pad = (n: number): string => String(n).padStart(2, '0')
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
 
 function hours(): string[] {
   const list: string[] = []
@@ -75,7 +133,7 @@ function renderChart(): void {
         type: 'line',
         smooth: true,
         showSymbol: false,
-        data: [0, 1, 0, 2, 1, 3, 2, 1, 0, 2, 4, 3, 2, 1, 3, 5, 4, 6, 3, 2, 4, 3, 2, 1],
+        data: trendData.value,
         lineStyle: { color: CHART_ACCENT, width: 2, shadowColor: 'rgba(0, 212, 255, 0.6)', shadowBlur: 10 },
         itemStyle: { color: CHART_ACCENT },
         areaStyle: {
@@ -90,7 +148,7 @@ function renderChart(): void {
         type: 'line',
         smooth: true,
         showSymbol: false,
-        data: [0, 0, 1, 1, 0, 2, 2, 1, 0, 1, 3, 2, 2, 1, 2, 4, 3, 5, 3, 2, 3, 3, 1, 1],
+        data: trendData.value.map((c) => Math.ceil(c / 2)),
         lineStyle: { color: CHART_SUCCESS, width: 2 },
         itemStyle: { color: CHART_SUCCESS },
       },
@@ -103,13 +161,62 @@ function onResize(): void {
   chart?.resize()
 }
 
-onMounted(() => {
+function handleWsMessage(msg: RealtimeMessage): void {
+  if (msg.topic !== 'rt/alarm/push') return
+  const p = msg.payload as Partial<AlarmItem> | null
+  if (!p || typeof p !== 'object' || !p.alarmId) return
+  const row = toAlarmRow({
+    alarmId: p.alarmId,
+    level: (p.level ?? 3) as AlarmLevel,
+    type: (p.type ?? 'FIRE') as AlarmType,
+    status: 'ACTIVE',
+    deviceCode: p.deviceCode ?? '',
+    location: p.location ?? '',
+    ts: p.ts ?? new Date().toISOString(),
+    description: p.description ?? '',
+  })
+  alarms.value = [row, ...alarms.value.filter((a) => a.id !== row.id)].slice(0, 10)
+}
+
+async function loadData(): Promise<void> {
+  try {
+    const [overview, trend, page] = await Promise.all([
+      fetchDashboardOverview(),
+      fetchAlarmTrend(),
+      fetchAlarmPage(1, 5),
+    ])
+    mockReady.value = true
+    stats.value = [
+      { label: '在线点位', value: String(overview.deviceOnline), unit: '个', icon: 'Monitor', tone: 'accent' },
+      { label: '今日告警', value: String(overview.activeAlarm), unit: '条', icon: 'Bell', tone: 'danger' },
+      { label: '风险指数', value: overview.riskIndex.toFixed(1), unit: '', icon: 'Odometer', tone: 'warning' },
+      { label: '在线工作站', value: String(overview.onlineWorkstation), unit: '台', icon: 'Monitor', tone: 'success' },
+    ]
+    trendData.value = Array.from({ length: 24 }, (_, i) => trend[i]?.count ?? 0)
+    alarms.value = page.list.map(toAlarmRow)
+    renderChart()
+  } catch (err) {
+    mockError.value = err instanceof Error ? err.message : 'Mock 数据源未连接'
+  }
+}
+
+onMounted(async () => {
   renderChart()
   window.addEventListener('resize', onResize)
+  await loadData()
+
+  // 实时通道：订阅 rt/alarm/push（仅配置了 WS 地址时启用）
+  const wsUrl = import.meta.env.VITE_WS_BASE as string | undefined
+  if (wsUrl) {
+    wsClient = new RealtimeClient({ url: wsUrl, onMessage: handleWsMessage })
+    wsClient.connect()
+  }
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', onResize)
+  wsClient?.close()
+  wsClient = null
   chart?.dispose()
   chart = null
 })
@@ -138,8 +245,12 @@ onUnmounted(() => {
       </div>
 
       <div class="glass-panel alarm-panel">
-        <h2 class="panel-title">实时告警</h2>
-        <ul class="alarm-list">
+        <div class="alarm-head">
+          <h2 class="panel-title">实时告警</h2>
+          <span v-if="mockReady" class="live-tag"><i class="live-dot" />LIVE</span>
+        </div>
+        <p v-if="mockError" class="mock-tip">{{ mockError }}</p>
+        <ul v-else class="alarm-list">
           <li
             v-for="(a, index) in alarms"
             :key="a.id"
@@ -151,6 +262,7 @@ onUnmounted(() => {
             <span class="alarm-device">{{ a.device }}</span>
             <span class="alarm-time">{{ a.time }}</span>
           </li>
+          <li v-if="alarms.length === 0" class="alarm-empty">暂无告警数据</li>
         </ul>
       </div>
     </div>
@@ -252,6 +364,47 @@ onUnmounted(() => {
   overflow: auto;
 }
 
+.alarm-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.live-tag {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 12px;
+  color: var(--color-success);
+  letter-spacing: 1px;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 6px var(--color-success);
+  animation: live-blink 1.6s ease-in-out infinite;
+}
+
+@keyframes live-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.mock-tip {
+  margin-top: var(--space-md);
+  color: var(--color-warning);
+  font-size: 13px;
+}
+
 .alarm-list {
   list-style: none;
   margin: var(--space-md) 0 0;
@@ -306,5 +459,12 @@ onUnmounted(() => {
   color: var(--color-text-muted);
   font-family: Consolas, 'Courier New', monospace;
   flex-shrink: 0;
+}
+
+.alarm-empty {
+  padding: var(--space-md) 0;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 13px;
 }
 </style>

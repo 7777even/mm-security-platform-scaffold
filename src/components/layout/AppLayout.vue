@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router'
 import { usePermission } from '@/composables/usePermission'
-import { useAuthStore, ROLE_PERMS, type RoleId } from '@/stores/auth'
+import { useAuthStore, ROLE_PERMS, ROLE_NAMES, type RoleId } from '@/stores/auth'
 
 const route = useRoute()
 const router = useRouter()
@@ -18,7 +18,9 @@ const menuRoutes = computed(() => {
   return root ? filterRoutesByPerm(root.children ?? []) : []
 })
 
-const roleOptions = computed(() => Object.keys(ROLE_PERMS) as RoleId[])
+const roleOptions = computed(() =>
+  (Object.keys(ROLE_PERMS) as RoleId[]).map((id) => ({ id, label: ROLE_NAMES[id] })),
+)
 
 function onRoleChange(id: RoleId): void {
   auth.setRole(id)
@@ -73,7 +75,7 @@ onUnmounted(() => {
       <div class="header-right">
         <span class="clock">{{ now }}</span>
         <el-select :model-value="auth.roleId" class="role-select" size="small" @change="onRoleChange">
-          <el-option v-for="role in roleOptions" :key="role" :label="role" :value="role" />
+          <el-option v-for="role in roleOptions" :key="role.id" :label="role.label" :value="role.id" />
         </el-select>
       </div>
     </header>
