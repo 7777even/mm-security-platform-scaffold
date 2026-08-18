@@ -1,10 +1,23 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, nextTick } from 'vue'
 import * as echarts from 'echarts/core'
 import { LineChart, type LineSeriesOption } from 'echarts/charts'
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import type { ComposeOption } from 'echarts/core'
+import Map from 'ol/Map'
+import View from 'ol/View'
+import Overlay from 'ol/Overlay'
+import TileLayer from 'ol/layer/Tile'
+import VectorLayer from 'ol/layer/Vector'
+import VectorSource from 'ol/source/Vector'
+import { OSM } from 'ol/source'
+import { fromLonLat } from 'ol/proj'
+import Feature from 'ol/Feature'
+import Point from 'ol/geom/Point'
+import Polygon from 'ol/geom/Polygon'
+import { Circle as CircleStyle, Fill, Stroke, Style, Text } from 'ol/style'
+import type { Coordinate } from 'ol/coordinate'
 import { RealtimeClient, type RealtimeMessage } from '@/services/ws'
 import { markOnce } from '@/utils/perf'
 import {
@@ -15,6 +28,16 @@ import {
   type AlarmLevel,
   type AlarmType,
 } from '@/services/alarm'
+import {
+  fetchAlarmPoints,
+  fetchDevicePoints,
+  fetchRiskZones,
+  FALLBACK_ALARM_POINTS,
+  FALLBACK_DEVICE_POINTS,
+  FALLBACK_RISK_ZONES,
+  type MapPoint,
+  type RiskZone,
+} from '@/services/map'
 
 // 按需注册 ECharts 模块，控制产物体积
 echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
@@ -41,6 +64,11 @@ const TYPE_LABEL: Record<AlarmType, string> = {
   SOS: '一键报警',
 }
 
+// 地图点位样式色（OpenLayers 不消费 CSS 变量，集中定义避免魔法字符串）
+const LEVEL_COLORS: Record<number, string> = { 1: '#ff4d4f', 2: '#faad14', 3: '#40a9ff', 4: '#8c9cb0' }
+const STATUS_COLORS: Record<string, string> = { ONLINE: '#52c41a', OFFLINE: '#8c9cb0', FAULT: '#ff4d4f' }
+const MAP_CENTER: Coordinate = fromLonLat([110.952, 21.672])
+
 interface Stat {
   label: string
   value: string
@@ -58,7 +86,12 @@ interface AlarmRow {
 }
 
 const chartRef = ref<HTMLDivElement | null>(null)
+const mapRef = ref<HTMLDivElement | null>(null)
+const overlayRef = ref<HTMLDivElement | null>(null)
 let chart: echarts.ECharts | null = null
+let map: Map | null = null
+let overlay: Overlay | null = null
+let alarmSource: VectorSource | null = null
 let wsClient: RealtimeClient | null = null
 
 // 静态兜底值：Mock 不可达时保留展示
@@ -104,6 +137,13 @@ function hours(): string[] {
   return list
 }
 
+function zoneColor(score: number): string {
+  if (score >= 4) return 'rgba(255,77,79,0.22)'
+  if (score >= 3) return 'rgba(250,173,20,0.2)'
+  if (score >= 2) return 'rgba(64,169,255,0.18)'
+  return 'rgba(140,156,176,0.14)'
+}
+
 function renderChart(): void {
   if (!chartRef.value) return
   chart = echarts.init(chartRef.value)
@@ -115,19 +155,19 @@ function renderChart(): void {
       textStyle: { color: '#eaf2fb' },
     },
     legend: { data: ['告警', '处置'], textStyle: { color: CHART_TEXT } },
-    grid: { left: 48, right: 24, top: 40, bottom: 32 },
+    grid: { left: 40, right: 16, top: 28, bottom: 24 },
     xAxis: {
       type: 'category',
       boundaryGap: false,
       data: hours(),
       axisLine: { lineStyle: { color: 'rgba(0, 212, 255, 0.3)' } },
-      axisLabel: { color: CHART_TEXT },
+      axisLabel: { color: CHART_TEXT, fontSize: 10 },
     },
     yAxis: {
       type: 'value',
       minInterval: 1,
       splitLine: { lineStyle: { color: 'rgba(0, 212, 255, 0.12)' } },
-      axisLabel: { color: CHART_TEXT },
+      axisLabel: { color: CHART_TEXT, fontSize: 10 },
     },
     series: [
       {
@@ -157,12 +197,118 @@ function renderChart(): void {
     ],
   }
   chart.setOption(option)
-  // 渲染层：图表首次渲染完成（真机复测 dashboard 场景）
   markOnce('dashboard:chart-ready')
 }
 
 function onResize(): void {
   chart?.resize()
+  map?.updateSize()
+}
+
+/** 初始化地图：OSM 底图（开发占位，生产替换天地图）+ 区域/设备/报警图层 */
+function initMap(): void {
+  if (!mapRef.value) return
+  map = new Map({
+    target: mapRef.value,
+    layers: [new TileLayer({ source: new OSM() })],
+    view: new View({ center: MAP_CENTER, zoom: 14 }),
+  })
+  if (overlayRef.value) {
+    overlay = new Overlay({ element: overlayRef.value, positioning: 'bottom-center', offset: [0, -10] })
+    map.addOverlay(overlay)
+  }
+}
+
+/** 厂区区域轮廓（risk-heatmap 评分 → 半透明色面 + 名称标注） */
+function renderZones(zones: RiskZone[]): void {
+  if (!map) return
+  const features = zones.map((z) => {
+    const coords = z.polygon.map(([lng, lat]) => fromLonLat([lng, lat]))
+    const feature = new Feature({ geometry: new Polygon([coords]) })
+    feature.setStyle(
+      new Style({
+        fill: new Fill({ color: zoneColor(z.score) }),
+        stroke: new Stroke({ color: 'rgba(0,212,255,0.5)', width: 1 }),
+        text: new Text({
+          text: `${z.name}  ${z.score.toFixed(1)}`,
+          fill: new Fill({ color: '#b8d4f0' }),
+          font: '12px "Microsoft YaHei"',
+        }),
+      }),
+    )
+    return feature
+  })
+  map.addLayer(new VectorLayer({ source: new VectorSource({ features }) }))
+}
+
+/** 设备点位（状态色小圆点） */
+function renderDevices(points: MapPoint[]): void {
+  if (!map) return
+  const features = points.map((p) => {
+    const feature = new Feature({ geometry: new Point(fromLonLat([p.lng, p.lat])) })
+    const color = STATUS_COLORS[p.status ?? 'OFFLINE'] ?? '#8c9cb0'
+    feature.setStyle(
+      new Style({
+        image: new CircleStyle({
+          radius: 4,
+          fill: new Fill({ color }),
+          stroke: new Stroke({ color: 'rgba(0,0,0,0.3)', width: 1 }),
+        }),
+      }),
+    )
+    return feature
+  })
+  map.addLayer(new VectorLayer({ source: new VectorSource({ features }) }))
+}
+
+/** 报警点位（等级色圆点 + 数字标记 + 点击浮窗） */
+function renderAlarms(points: MapPoint[]): void {
+  if (!map) return
+  alarmSource = new VectorSource()
+  map.addLayer(
+    new VectorLayer({
+      source: alarmSource,
+      style: (feature) => {
+        const level = (feature.get('level') as number) ?? 3
+        return new Style({
+          image: new CircleStyle({
+            radius: 8,
+            fill: new Fill({ color: LEVEL_COLORS[level] ?? '#40a9ff' }),
+            stroke: new Stroke({ color: '#fff', width: 1.5 }),
+          }),
+          text: new Text({
+            text: String(level),
+            fill: new Fill({ color: '#fff' }),
+            font: '10px sans-serif',
+          }),
+        })
+      },
+    }),
+  )
+  alarmSource.addFeatures(
+    points.map((p) => {
+      const feature = new Feature({ geometry: new Point(fromLonLat([p.lng, p.lat])) })
+      feature.set('id', p.id)
+      feature.set('level', p.level)
+      feature.set('name', p.name)
+      return feature
+    }),
+  )
+
+  // 点击报警点 → 浮窗显示详情
+  map.on('singleclick', (evt) => {
+    if (!alarmSource || !overlay || !overlayRef.value) return
+    const hit = map?.forEachFeatureAtPixel(evt.pixel, (f) => f) as Feature | undefined
+    if (hit) {
+      overlay.setPosition(evt.coordinate)
+      const el = overlayRef.value
+      el.querySelector('.map-pop-title')!.textContent = `报警 ${String(hit.get('id'))}`
+      el.querySelector('.map-pop-desc')!.textContent = `${hit.get('name')} ｜ 等级 ${String(hit.get('level'))}`
+      el.style.display = 'block'
+    } else {
+      overlayRef.value.style.display = 'none'
+    }
+  })
 }
 
 function handleWsMessage(msg: RealtimeMessage): void {
@@ -184,10 +330,13 @@ function handleWsMessage(msg: RealtimeMessage): void {
 
 async function loadData(): Promise<void> {
   try {
-    const [overview, trend, page] = await Promise.all([
+    const [overview, trend, page, alarmPoints, devicePoints, zones] = await Promise.all([
       fetchDashboardOverview(),
       fetchAlarmTrend(),
       fetchAlarmPage(1, 5),
+      fetchAlarmPoints(),
+      fetchDevicePoints(),
+      fetchRiskZones(),
     ])
     mockReady.value = true
     stats.value = [
@@ -198,17 +347,27 @@ async function loadData(): Promise<void> {
     ]
     trendData.value = Array.from({ length: 24 }, (_, i) => trend[i]?.count ?? 0)
     alarms.value = page.list.map(toAlarmRow)
-    renderChart()
+    renderZones(zones)
+    renderDevices(devicePoints)
+    renderAlarms(alarmPoints)
     markOnce('dashboard:data-ready')
+    markOnce('map:ready')
   } catch (err) {
     mockError.value = err instanceof Error ? err.message : 'Mock 数据源未连接'
+    // 降级：静态兜底点位 + 兜底图表
+    renderZones(FALLBACK_RISK_ZONES)
+    renderDevices(FALLBACK_DEVICE_POINTS)
+    renderAlarms(FALLBACK_ALARM_POINTS)
   } finally {
     loading.value = false
+    // 图表容器位于 v-if="!loading" 面板内，须待 DOM 更新后再初始化
+    await nextTick()
+    renderChart()
   }
 }
 
 onMounted(async () => {
-  renderChart()
+  initMap()
   window.addEventListener('resize', onResize)
   await loadData()
 
@@ -226,155 +385,138 @@ onUnmounted(() => {
   wsClient = null
   chart?.dispose()
   chart = null
+  map?.setTarget(undefined)
+  map = null
 })
 </script>
 
 <template>
-  <div class="dashboard">
-    <!-- 骨架屏（SLO §3 渲染层降级：数据加载期占位，避免白屏跳变） -->
-    <div v-if="loading" class="dashboard" data-test="dashboard-skeleton">
-      <div class="stat-grid">
-        <div v-for="i in 4" :key="i" class="glass-panel stat-card">
-          <span class="skeleton skeleton-icon" />
-          <span class="skeleton skeleton-line" style="width: 120px" />
-        </div>
-      </div>
-      <div class="middle-grid">
-        <div class="glass-panel chart-panel">
-          <span class="skeleton skeleton-line" style="width: 180px" />
-          <span class="skeleton skeleton-chart" />
-        </div>
-        <div class="glass-panel alarm-panel">
-          <span class="skeleton skeleton-line" style="width: 120px" />
-          <span v-for="i in 5" :key="i" class="skeleton skeleton-list-item" />
-        </div>
+  <div class="dashboard dashboard-map">
+    <!-- 地图容器（全屏底） -->
+    <div ref="mapRef" class="map-canvas" data-test="map-canvas" />
+
+    <!-- 报警点浮窗 -->
+    <div ref="overlayRef" class="map-pop">
+      <p class="map-pop-title" />
+      <p class="map-pop-desc" />
+    </div>
+
+    <!-- 顶部指标卡横条 -->
+    <div v-if="!loading" class="stat-bar glass-panel">
+      <div v-for="s in stats" :key="s.label" class="stat-item">
+        <span class="stat-value" :class="'tone-' + s.tone">{{ s.value }}<i v-if="s.unit">{{ s.unit }}</i></span>
+        <span class="stat-label">{{ s.label }}</span>
       </div>
     </div>
 
-    <template v-else>
-    <div class="stat-grid">
-      <div v-for="s in stats" :key="s.label" class="glass-panel stat-card">
-        <el-icon class="stat-icon" :class="'tone-' + s.tone" :size="22">
-          <component :is="s.icon" />
-        </el-icon>
-        <div class="stat-meta">
-          <span class="stat-label">{{ s.label }}</span>
-          <span class="stat-value" :class="'tone-' + s.tone">
-            {{ s.value }}<i v-if="s.unit">{{ s.unit }}</i>
-          </span>
-        </div>
+    <!-- 右侧告警列表 -->
+    <aside v-if="!loading" class="alarm-panel glass-panel">
+      <div class="alarm-head">
+        <h2 class="panel-title">实时告警</h2>
+        <span v-if="mockReady" class="live-tag"><i class="live-dot" />LIVE</span>
       </div>
+      <p v-if="mockError" class="mock-tip">{{ mockError }}</p>
+      <ul v-else class="alarm-list">
+        <li
+          v-for="(a, index) in alarms"
+          :key="a.id"
+          class="alarm-row"
+          :class="{ 'row-odd': index % 2 === 1 }"
+        >
+          <span class="alarm-dot" :class="'tone-' + a.tone" />
+          <span class="alarm-level" :class="'tone-' + a.tone">{{ a.level }}</span>
+          <span class="alarm-device">{{ a.device }}</span>
+          <span class="alarm-time">{{ a.time }}</span>
+        </li>
+        <li v-if="alarms.length === 0" class="alarm-empty">暂无告警数据</li>
+      </ul>
+    </aside>
+
+    <!-- 左下迷你趋势图 -->
+    <div v-if="!loading" class="mini-trend glass-panel">
+      <h2 class="panel-title">近 24h 告警/处置</h2>
+      <div ref="chartRef" class="chart" />
     </div>
 
-    <div class="middle-grid">
-      <div class="glass-panel chart-panel">
-        <h2 class="panel-title">近 24 小时告警 / 处置趋势</h2>
-        <div ref="chartRef" class="chart" />
-      </div>
-
-      <div class="glass-panel alarm-panel">
-        <div class="alarm-head">
-          <h2 class="panel-title">实时告警</h2>
-          <span v-if="mockReady" class="live-tag"><i class="live-dot" />LIVE</span>
-        </div>
-        <p v-if="mockError" class="mock-tip">{{ mockError }}</p>
-        <ul v-else class="alarm-list">
-          <li
-            v-for="(a, index) in alarms"
-            :key="a.id"
-            class="alarm-row"
-            :class="{ 'row-odd': index % 2 === 1 }"
-          >
-            <span class="alarm-dot" :class="'tone-' + a.tone" />
-            <span class="alarm-level" :class="'tone-' + a.tone">{{ a.level }}</span>
-            <span class="alarm-device">{{ a.device }}</span>
-            <span class="alarm-time">{{ a.time }}</span>
-          </li>
-          <li v-if="alarms.length === 0" class="alarm-empty">暂无告警数据</li>
-        </ul>
-      </div>
+    <!-- 骨架屏（加载期覆盖，SLO §3 渲染层降级） -->
+    <div v-if="loading" class="dashboard-skeleton" data-test="dashboard-skeleton">
+      <span class="skeleton skeleton-line" style="width: 200px" />
+      <span class="skeleton skeleton-line" style="width: 160px" />
+      <span class="skeleton skeleton-line" style="width: 180px" />
     </div>
-    </template>
   </div>
 </template>
 
 <style scoped>
-.dashboard {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
+.dashboard-map {
+  position: relative;
   height: 100%;
+  overflow: hidden;
 }
 
-/* 骨架屏（SLO §3 渲染层降级占位） */
-.skeleton {
-  display: block;
-  background: linear-gradient(90deg, rgb(120 160 210 / 8%), rgb(120 160 210 / 18%), rgb(120 160 210 / 8%));
-  background-size: 200% 100%;
-  animation: skeleton-sweep 1.4s ease-in-out infinite;
+.map-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/* OSM 暗色滤镜（指挥大屏深色视觉；生产替换天地图后此滤镜调整） */
+.map-canvas :deep(.ol-viewport) {
+  filter: invert(1) hue-rotate(180deg) saturate(0.65) brightness(0.92);
+}
+
+.map-canvas :deep(.ol-control button) {
+  background: rgb(0 0 0 / 55%);
+  color: #00d4ff;
+}
+
+/* 报警点浮窗 */
+.map-pop {
+  display: none;
+  position: absolute;
+  min-width: 180px;
+  padding: 8px 12px;
   border-radius: var(--radius-sm);
+  background: rgb(15 30 54 / 92%);
+  border: 1px solid rgb(0 212 255 / 40%);
+  box-shadow: 0 0 16px rgb(0 212 255 / 20%);
+  pointer-events: none;
 }
 
-.skeleton-icon {
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-}
-
-.skeleton-line {
-  height: 14px;
-}
-
-.skeleton-chart {
-  height: 280px;
-  margin-top: var(--space-sm);
-}
-
-.skeleton-list-item {
-  height: 32px;
-  margin-top: var(--space-sm);
-}
-
-@keyframes skeleton-sweep {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-md);
-}
-
-.stat-card {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-lg);
-}
-
-.stat-icon {
-  color: var(--color-accent);
-}
-
-.stat-meta {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-}
-
-.stat-label {
-  color: var(--color-text-muted);
+.map-pop-title {
+  margin: 0 0 4px;
   font-size: 13px;
+  font-weight: 600;
+  color: #00d4ff;
+}
+
+.map-pop-desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* 顶部指标卡横条 */
+.stat-bar {
+  position: absolute;
+  top: var(--space-md);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  z-index: 5;
+  border-radius: var(--radius-md);
+}
+
+.stat-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  white-space: nowrap;
 }
 
 .stat-value {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--color-text);
@@ -382,52 +524,25 @@ onUnmounted(() => {
 }
 
 .stat-value i {
-  margin-left: var(--space-xs);
-  font-size: 14px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 400;
   color: var(--color-text-muted);
 }
 
-.tone-accent {
-  color: var(--color-accent);
-}
-
-.tone-danger {
-  color: var(--color-danger);
-}
-
-.tone-warning {
-  color: var(--color-warning);
-}
-
-.tone-success {
-  color: var(--color-success);
-}
-
-.tone-info {
+.stat-label {
   color: var(--color-text-muted);
+  font-size: 12px;
 }
 
-.middle-grid {
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: var(--space-md);
-  flex: 1;
-  min-height: 360px;
-}
-
-.chart-panel {
-  padding: var(--space-lg);
-}
-
-.chart {
-  height: 320px;
-  width: 100%;
-  margin-top: var(--space-sm);
-}
-
+/* 右侧告警面板 */
 .alarm-panel {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  bottom: var(--space-md);
+  width: 300px;
+  z-index: 5;
   padding: var(--space-lg);
   overflow: auto;
 }
@@ -534,5 +649,76 @@ onUnmounted(() => {
   text-align: center;
   color: var(--color-text-muted);
   font-size: 13px;
+}
+
+/* 左下迷你趋势图 */
+.mini-trend {
+  position: absolute;
+  left: var(--space-md);
+  bottom: var(--space-md);
+  width: 380px;
+  height: 210px;
+  z-index: 5;
+  padding: var(--space-md);
+}
+
+.chart {
+  height: 160px;
+  width: 100%;
+}
+
+/* 骨架屏 */
+.dashboard-skeleton {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--color-bg);
+}
+
+.skeleton {
+  display: block;
+  background: linear-gradient(90deg, rgb(120 160 210 / 8%), rgb(120 160 210 / 18%), rgb(120 160 210 / 8%));
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-line {
+  height: 16px;
+}
+
+@keyframes skeleton-sweep {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* 语义色 */
+.tone-accent {
+  color: var(--color-accent);
+}
+
+.tone-danger {
+  color: var(--color-danger);
+}
+
+.tone-warning {
+  color: var(--color-warning);
+}
+
+.tone-success {
+  color: var(--color-success);
+}
+
+.tone-info {
+  color: var(--color-text-muted);
 }
 </style>
