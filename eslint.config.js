@@ -23,4 +23,8 @@ export default tseslint.config(
       'vue/no-v-html': 'error',
     },
   },
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: globals.node },
+  },
 )

@@ -1,5 +1,7 @@
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import { fileURLToPath, URL } from 'node:url'
 import { compression } from 'vite-plugin-compression2'
 
@@ -15,14 +17,19 @@ const csp = [
 ].join('; ')
 
 export default defineConfig({
-  plugins: [vue(), compression({ algorithm: 'gzip', threshold: 10240 })],
+  plugins: [
+    vue(),
+    // Element Plus 按需自动引入（B4 性能优化：组件+样式均按需，从 es/components 子路径导入实现 tree-shake）
+    Components({ resolvers: [ElementPlusResolver()], dts: 'components.d.ts' }),
+    compression({ algorithm: 'gzip', threshold: 10240 }),
+  ],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   server: { headers: { 'Content-Security-Policy': csp } },
   build: {
     target: 'es2018',
     sourcemap: false,
     rollupOptions: {
-      output: { manualChunks: { echarts: ['echarts'], 'element-plus': ['element-plus'] } },
+      output: { manualChunks: { echarts: ['echarts'] } },
     },
   },
   test: { environment: 'node', include: ['src/**/*.spec.ts'] },
