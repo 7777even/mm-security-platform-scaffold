@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router'
 import { usePermission } from '@/composables/usePermission'
 import { useAuthStore, ROLE_PERMS, ROLE_NAMES, type RoleId } from '@/stores/auth'
+import { getInstalledMenuRoutes } from '@/router/menu'
 import { markOnce } from '@/utils/perf'
 
 const route = useRoute()
@@ -13,11 +14,13 @@ const { filterRoutesByPerm } = usePermission()
 const now = ref('')
 let timer: ReturnType<typeof setInterval> | null = null
 
-// 大屏模块导航：按当前角色 meta.perm 动态过滤（未授权菜单不渲染）
-const menuRoutes = computed(() => {
-  const root = router.options.routes.find((r) => r.path === '/')
-  return root ? filterRoutesByPerm(root.children ?? []) : []
-})
+// 大屏模块导航：取动态装配的菜单路由（main.ts 按 /auth/menus 装配），
+// 按角色 meta.perm 过滤；无组件分组壳（如 system）展开为叶子项，导航仅渲染可点击页面
+const menuRoutes = computed(() =>
+  filterRoutesByPerm(getInstalledMenuRoutes()).flatMap((r) =>
+    r.children && r.children.length > 0 ? r.children : [r],
+  ),
+)
 
 const roleOptions = computed(() =>
   (Object.keys(ROLE_PERMS) as RoleId[]).map((id) => ({ id, label: ROLE_NAMES[id] })),
@@ -67,9 +70,9 @@ onUnmounted(() => {
         <RouterLink
           v-for="item in menuRoutes"
           :key="item.path"
-          :to="'/' + item.path"
+          :to="item.path"
           class="nav-item"
-          :class="{ active: route.path.startsWith('/' + item.path) }"
+          :class="{ active: route.path.startsWith(item.path) }"
         >
           {{ item.meta?.title }}
         </RouterLink>

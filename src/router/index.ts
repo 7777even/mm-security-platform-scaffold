@@ -1,18 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
+// 静态仅保留布局壳与 404；页面路由由 /auth/menus 动态装配（B3 AUTH-05）
+// mock 菜单不可达时降级装配 DEFAULT_MENUS（menu.ts），保证不白屏
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
+    name: 'layout',
     component: () => import('@/components/layout/AppLayout.vue'),
     redirect: '/dashboard',
-    children: [
-      { path: 'dashboard', name: 'dashboard', component: () => import('@/views/dashboard/index.vue'), meta: { title: '综合态势', perm: 'dashboard:view' } },
-      { path: 'fire-alarm', name: 'fire-alarm', component: () => import('@/views/fire-alarm/index.vue'), meta: { title: '火灾报警', perm: 'fire-alarm:view' } },
-      { path: 'industrial-video', name: 'industrial-video', component: () => import('@/views/industrial-video/index.vue'), meta: { title: '工业视频', perm: 'video:view' } },
-      { path: 'system/users', name: 'system-users', component: () => import('@/views/system/users.vue'), meta: { title: '用户与权限', perm: 'system:user:view' } },
-      { path: 'system/device-code', name: 'system-device-code', component: () => import('@/views/system/deviceCode.vue'), meta: { title: '设备编码', perm: 'system:device-code:view' } },
-    ],
+    children: [],
   },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/error/NotFound.vue') },
 ]

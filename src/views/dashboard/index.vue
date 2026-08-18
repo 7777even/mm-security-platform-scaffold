@@ -69,6 +69,7 @@ const stats = ref<Stat[]>([
   { label: '在线工作站', value: '—', unit: '台', icon: 'Monitor', tone: 'success' },
 ])
 const alarms = ref<AlarmRow[]>([])
+const loading = ref(true)
 const mockReady = ref(false)
 const mockError = ref('')
 
@@ -201,6 +202,8 @@ async function loadData(): Promise<void> {
     markOnce('dashboard:data-ready')
   } catch (err) {
     mockError.value = err instanceof Error ? err.message : 'Mock 数据源未连接'
+  } finally {
+    loading.value = false
   }
 }
 
@@ -228,6 +231,27 @@ onUnmounted(() => {
 
 <template>
   <div class="dashboard">
+    <!-- 骨架屏（SLO §3 渲染层降级：数据加载期占位，避免白屏跳变） -->
+    <div v-if="loading" class="dashboard" data-test="dashboard-skeleton">
+      <div class="stat-grid">
+        <div v-for="i in 4" :key="i" class="glass-panel stat-card">
+          <span class="skeleton skeleton-icon" />
+          <span class="skeleton skeleton-line" style="width: 120px" />
+        </div>
+      </div>
+      <div class="middle-grid">
+        <div class="glass-panel chart-panel">
+          <span class="skeleton skeleton-line" style="width: 180px" />
+          <span class="skeleton skeleton-chart" />
+        </div>
+        <div class="glass-panel alarm-panel">
+          <span class="skeleton skeleton-line" style="width: 120px" />
+          <span v-for="i in 5" :key="i" class="skeleton skeleton-list-item" />
+        </div>
+      </div>
+    </div>
+
+    <template v-else>
     <div class="stat-grid">
       <div v-for="s in stats" :key="s.label" class="glass-panel stat-card">
         <el-icon class="stat-icon" :class="'tone-' + s.tone" :size="22">
@@ -270,6 +294,7 @@ onUnmounted(() => {
         </ul>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
@@ -279,6 +304,45 @@ onUnmounted(() => {
   flex-direction: column;
   gap: var(--space-md);
   height: 100%;
+}
+
+/* 骨架屏（SLO §3 渲染层降级占位） */
+.skeleton {
+  display: block;
+  background: linear-gradient(90deg, rgb(120 160 210 / 8%), rgb(120 160 210 / 18%), rgb(120 160 210 / 8%));
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.skeleton-line {
+  height: 14px;
+}
+
+.skeleton-chart {
+  height: 280px;
+  margin-top: var(--space-sm);
+}
+
+.skeleton-list-item {
+  height: 32px;
+  margin-top: var(--space-sm);
+}
+
+@keyframes skeleton-sweep {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .stat-grid {

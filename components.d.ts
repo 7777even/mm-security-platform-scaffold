@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AppErrorBoundary: typeof import('./src/components/AppErrorBoundary.vue')['default']
     AppLayout: typeof import('./src/components/layout/AppLayout.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElIcon: typeof import('element-plus/es')['ElIcon']
