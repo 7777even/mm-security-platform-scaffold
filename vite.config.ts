@@ -25,7 +25,11 @@ export default defineConfig({
     compression({ algorithm: 'gzip', threshold: 10240 }),
   ],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
-  server: { headers: { 'Content-Security-Policy': csp } },
+  server: {
+    // host: true 监听 0.0.0.0（IPv4/IPv6），避免 Windows 下 localhost 解析到 ::1 而拒连
+    host: true,
+    headers: { 'Content-Security-Policy': csp },
+  },
   build: {
     target: 'es2018',
     sourcemap: false,

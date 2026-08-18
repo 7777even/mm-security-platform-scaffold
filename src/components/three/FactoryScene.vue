@@ -79,19 +79,24 @@ function init(): void {
     emit('error')
     return
   }
+  try {
+    buildScene(containerRef.value)
+  } catch (err) {
+    // S1 §9.3：3D 渲染失败须降级而非整页崩溃
+    console.error('[3d] Three.js 场景初始化失败，降级二维', err)
+    emit('error')
+  }
+}
+
+function buildScene(container: HTMLDivElement): void {
   scene = new THREE.Scene()
   scene.background = new THREE.Color(0x050a15)
-  camera = new THREE.PerspectiveCamera(
-    50,
-    containerRef.value.clientWidth / containerRef.value.clientHeight,
-    0.1,
-    100,
-  )
+  camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 100)
   camera.position.set(6, 5, 7)
   renderer = new THREE.WebGLRenderer({ antialias: true })
-  renderer.setSize(containerRef.value.clientWidth, containerRef.value.clientHeight)
+  renderer.setSize(container.clientWidth, container.clientHeight)
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-  containerRef.value.appendChild(renderer.domElement)
+  container.appendChild(renderer.domElement)
 
   // 灯光
   scene.add(new THREE.AmbientLight(0xffffff, 0.5))
