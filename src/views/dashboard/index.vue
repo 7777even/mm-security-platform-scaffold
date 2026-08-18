@@ -6,6 +6,7 @@ import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/compon
 import { CanvasRenderer } from 'echarts/renderers'
 import type { ComposeOption } from 'echarts/core'
 import { RealtimeClient, type RealtimeMessage } from '@/services/ws'
+import { markOnce } from '@/utils/perf'
 import {
   fetchDashboardOverview,
   fetchAlarmTrend,
@@ -155,6 +156,8 @@ function renderChart(): void {
     ],
   }
   chart.setOption(option)
+  // 渲染层：图表首次渲染完成（真机复测 dashboard 场景）
+  markOnce('dashboard:chart-ready')
 }
 
 function onResize(): void {
@@ -195,6 +198,7 @@ async function loadData(): Promise<void> {
     trendData.value = Array.from({ length: 24 }, (_, i) => trend[i]?.count ?? 0)
     alarms.value = page.list.map(toAlarmRow)
     renderChart()
+    markOnce('dashboard:data-ready')
   } catch (err) {
     mockError.value = err instanceof Error ? err.message : 'Mock 数据源未连接'
   }

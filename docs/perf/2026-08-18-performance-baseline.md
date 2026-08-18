@@ -64,3 +64,28 @@
 - **网络层/数据层**：当前脚手架首屏资源 48.34KB（gzip），进入平台预算内余量充足，不构成瓶颈。
 - **渲染层**：按需引入落地后，最大解析负担由 element-plus 全量包（1133KB）转为 echarts（482KB，仅 dashboard 时加载），首屏 CSS 下降 97%，风险显著收敛；最终结论待 G1 真机复测。
 - 本报告作为 B4「性能达标结论」输入：记录「脚手架单体 SPA 首屏体积基线 + EP 按需优化已落地 + 真机复测项」。
+
+## 6. 渲染层真机复测 SOP（G1）
+
+### 6.1 内置埋点（脚手架已实现，`src/utils/perf.ts`）
+
+- 启用：开发态默认开启；任意环境 URL 携带 `?perf=1` 显式开启，`?perf=0` 强制关闭。
+- 打点点位：
+  | 标记 | 位置 | 含义 |
+  |---|---|---|
+  | `app:start` | `main.ts` 模块顶层 | 入口 JS 开始执行（渲染层起点） |
+  | `app:ready` | `main.ts` mount 之后 | 首屏挂载完成（渲染层终点） |
+  | `render`（measure） | 同上 | `app:start → app:ready` 耗时 |
+  | `layout:ready` | `AppLayout.vue` onMounted | 大屏布局可用 |
+  | `dashboard:chart-ready` | dashboard 图表首次渲染 | dashboard 场景图表可用 |
+  | `dashboard:data-ready` | dashboard 数据加载完成 | dashboard 场景数据闭环 |
+- 输出格式：`[perf] render=123.4ms (app:start → app:ready)`，同时打印各标记相对时刻，可与 DevTools Performance 面板 FCP 交叉验证。
+
+### 6.2 真机操作步骤（进入平台场景）
+
+1. **部署**：`npm run build` 产物部署内网静态服务（或 `vite preview`），真机浏览器访问 `http://<host>/?perf=1`。
+2. **冷启动**：无痕窗口 + DevTools Network 勾选 Disable cache（SLO 按首次进入计，不测缓存态）。
+3. **测量**：从控制台读取 `[perf] render=` 与 `[perf] app:ready @`（FCP 用 Performance 面板 `Largest Contentful Paint` / `First Contentful Paint` 标记核对）；同法连测 **3~5 次取中位数**，记录机器负载状态。
+4. **对照 SLO**：渲染层 `render ≤ 1000ms` 即达标；同时记录数据层（接口耗时）与网络层，三层合计 < 5000ms。
+5. **越界处理**：>1000ms 先按 SLO §3 渲染层降级（骨架屏 / 路由级代码分割，脚手架已具备）收敛，仍不达标回 M0 选型评审。
+6. **dashboard 场景**：同法读 `dashboard:chart-ready` 与 `dashboard:data-ready`，衡量 ECharts 懒加载包在真机上的解析执行负担。

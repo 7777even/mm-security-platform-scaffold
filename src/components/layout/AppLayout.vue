@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router'
 import { usePermission } from '@/composables/usePermission'
 import { useAuthStore, ROLE_PERMS, ROLE_NAMES, type RoleId } from '@/stores/auth'
+import { markOnce } from '@/utils/perf'
 
 const route = useRoute()
 const router = useRouter()
@@ -39,6 +40,8 @@ function goHome(): void {
 onMounted(() => {
   tick()
   timer = setInterval(tick, 1000)
+  // 渲染层：大屏布局挂载完成（对比 app:ready 与 FCP）
+  markOnce('layout:ready')
 })
 
 onUnmounted(() => {
