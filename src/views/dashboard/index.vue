@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, nextTick } from 'vue'
+import { onMounted, onUnmounted, ref, nextTick, defineAsyncComponent } from 'vue'
+import { detectWebGL } from '@/utils/webgl'
+
+// 3D 厂区场景（协议「二三维 GIS」三维增强层）：懒加载，仅点 3D 时才加载 three
+const FactoryScene = defineAsyncComponent(() => import('@/components/three/FactoryScene.vue'))
 import * as echarts from 'echarts/core'
 import { LineChart, type LineSeriesOption } from 'echarts/charts'
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
@@ -105,6 +109,24 @@ const alarms = ref<AlarmRow[]>([])
 const loading = ref(true)
 const mockReady = ref(false)
 const mockError = ref('')
+
+// 2D/3D 视图切换（3D 为 Three.js 厂区场景，协议「二三维 GIS」三维增强层）
+const viewMode = ref<'2d' | '3d'>('2d')
+const threeNotice = ref('')
+
+function switchMode(mode: '2d' | '3d'): void {
+  if (mode === '3d' && !detectWebGL()) {
+    threeNotice.value = '三维视图不可用：当前环境不支持 WebGL，已保持二维视图'
+    viewMode.value = '2d'
+    return
+  }
+  viewMode.value = mode
+}
+
+function onThreeError(): void {
+  threeNotice.value = '三维视图初始化失败，已切换二维视图'
+  viewMode.value = '2d'
+}
 
 const FALLBACK_TREND = [0, 1, 0, 2, 1, 3, 2, 1, 0, 2, 4, 3, 2, 1, 3, 5, 4, 6, 3, 2, 4, 3, 2, 1]
 const trendData = ref<number[]>(FALLBACK_TREND)
@@ -392,20 +414,30 @@ onUnmounted(() => {
 
 <template>
   <div class="dashboard dashboard-map">
-    <!-- 地图容器（全屏底） -->
-    <div ref="mapRef" class="map-canvas" data-test="map-canvas" />
+    <!-- 2D 地图容器（常驻 v-show，避免 OL 重挂载） -->
+    <div v-show="viewMode === '2d'" ref="mapRef" class="map-canvas" data-test="map-canvas" />
 
-    <!-- 报警点浮窗 -->
-    <div ref="overlayRef" class="map-pop">
+    <!-- 3D 厂区场景（懒加载，仅点 3D 时实例化；初始化失败自动回退 2D） -->
+    <FactoryScene v-if="viewMode === '3d'" class="factory" @error="onThreeError" />
+
+    <!-- 报警点浮窗（2D 地图专用） -->
+    <div v-show="viewMode === '2d'" ref="overlayRef" class="map-pop">
       <p class="map-pop-title" />
       <p class="map-pop-desc" />
     </div>
 
-    <!-- 顶部指标卡横条 -->
+    <!-- 三维不可用提示 -->
+    <p v-if="threeNotice" class="three-notice">{{ threeNotice }}</p>
+
+    <!-- 顶部指标卡横条 + 2D/3D 切换 -->
     <div v-if="!loading" class="stat-bar glass-panel">
       <div v-for="s in stats" :key="s.label" class="stat-item">
         <span class="stat-value" :class="'tone-' + s.tone">{{ s.value }}<i v-if="s.unit">{{ s.unit }}</i></span>
         <span class="stat-label">{{ s.label }}</span>
+      </div>
+      <div class="mode-switch">
+        <button type="button" class="mode-btn" :class="{ active: viewMode === '2d' }" @click="switchMode('2d')">2D</button>
+        <button type="button" class="mode-btn" :class="{ active: viewMode === '3d' }" @click="switchMode('3d')">3D</button>
       </div>
     </div>
 
@@ -502,10 +534,56 @@ onUnmounted(() => {
   left: 50%;
   transform: translateX(-50%);
   display: flex;
+  align-items: center;
   gap: var(--space-lg);
   padding: var(--space-md) var(--space-lg);
   z-index: 5;
   border-radius: var(--radius-md);
+}
+
+/* 2D/3D 切换 */
+.mode-switch {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  background: rgb(0 212 255 / 10%);
+}
+
+.mode-btn {
+  padding: 4px 14px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.mode-btn.active {
+  color: var(--color-accent);
+  background: rgb(0 212 255 / 18%);
+}
+
+/* 3D 场景容器 */
+.factory {
+  position: absolute;
+  inset: 0;
+}
+
+/* 三维不可用提示 */
+.three-notice {
+  position: absolute;
+  top: var(--space-md);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  padding: 6px 16px;
+  border-radius: var(--radius-sm);
+  background: rgb(250 173 20 / 15%);
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning);
+  font-size: 12px;
 }
 
 .stat-item {
