@@ -15,7 +15,7 @@ import Overlay from 'ol/Overlay'
 import TileLayer from 'ol/layer/Tile'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
-import { OSM } from 'ol/source'
+import { XYZ } from 'ol/source'
 import { fromLonLat } from 'ol/proj'
 import Feature from 'ol/Feature'
 import Point from 'ol/geom/Point'
@@ -227,12 +227,19 @@ function onResize(): void {
   map?.updateSize()
 }
 
-/** 初始化地图：OSM 底图（开发占位，生产替换天地图）+ 区域/设备/报警图层 */
+/**
+ * 初始化地图：Carto 暗色瓦片底图（国内可达公网瓦片，开发占位；生产替换天地图 WMTS + 离线化，S3 定案）
+ * 天地图替换：url 改 `https://t{0-7}.tianditu.gov.cn/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=<key>`（XYZ 源）
+ */
 function initMap(): void {
   if (!mapRef.value) return
   map = new Map({
     target: mapRef.value,
-    layers: [new TileLayer({ source: new OSM() })],
+    layers: [
+      new TileLayer({
+        source: new XYZ({ url: 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png' }),
+      }),
+    ],
     view: new View({ center: MAP_CENTER, zoom: 14 }),
   })
   if (overlayRef.value) {
@@ -310,6 +317,7 @@ function renderAlarms(points: MapPoint[]): void {
   alarmSource.addFeatures(
     points.map((p) => {
       const feature = new Feature({ geometry: new Point(fromLonLat([p.lng, p.lat])) })
+      feature.set('kind', 'alarm')
       feature.set('id', p.id)
       feature.set('level', p.level)
       feature.set('name', p.name)
@@ -318,9 +326,12 @@ function renderAlarms(points: MapPoint[]): void {
   )
 
   // 点击报警点 → 浮窗显示详情
+  // 仅响应 kind='alarm' 的点位：设备点/区域面未设置 id/name，误触发会显示 undefined
   map.on('singleclick', (evt) => {
     if (!alarmSource || !overlay || !overlayRef.value) return
-    const hit = map?.forEachFeatureAtPixel(evt.pixel, (f) => f) as Feature | undefined
+    const hit = map?.forEachFeatureAtPixel(evt.pixel, (f) =>
+      (f.get('kind') === 'alarm' ? (f as Feature) : undefined),
+    )
     if (hit) {
       overlay.setPosition(evt.coordinate)
       const el = overlayRef.value
@@ -491,10 +502,7 @@ onUnmounted(() => {
   inset: 0;
 }
 
-/* OSM 暗色滤镜（指挥大屏深色视觉；生产替换天地图后此滤镜调整） */
-.map-canvas :deep(.ol-viewport) {
-  filter: invert(1) hue-rotate(180deg) saturate(0.65) brightness(0.92);
-}
+/* 底图容器：暗色瓦片（Carto dark_all）天然深色，无需滤镜；天地图替换后如为亮色可在此加暗化 */
 
 .map-canvas :deep(.ol-control button) {
   background: rgb(0 0 0 / 55%);

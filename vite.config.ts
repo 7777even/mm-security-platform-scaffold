@@ -37,5 +37,8 @@ export default defineConfig({
       output: { manualChunks: { echarts: ['echarts'] } },
     },
   },
-  test: { environment: 'node', include: ['src/**/*.spec.ts'] },
+  test: {
+    environment: 'node',
+    include: ['src/**/*.spec.ts'],
+  },
 })

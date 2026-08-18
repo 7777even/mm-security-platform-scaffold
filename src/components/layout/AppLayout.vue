@@ -15,11 +15,15 @@ const now = ref('')
 let timer: ReturnType<typeof setInterval> | null = null
 
 // 大屏模块导航：取动态装配的菜单路由（main.ts 按 /auth/menus 装配），
-// 按角色 meta.perm 过滤；无组件分组壳（如 system）展开为叶子项，导航仅渲染可点击页面
+// 按角色 meta.perm 过滤；无组件分组壳（如 system）展开为叶子项，
+// 但子项全被过滤的空壳不渲染（避免"系统管理"点进去无页面的幽灵菜单）。
+// 叶子路由 children 为 undefined（保留）；分组壳 children 过滤后为空数组（丢弃）。
 const menuRoutes = computed(() =>
-  filterRoutesByPerm(getInstalledMenuRoutes()).flatMap((r) =>
-    r.children && r.children.length > 0 ? r.children : [r],
-  ),
+  filterRoutesByPerm(getInstalledMenuRoutes()).flatMap((r) => {
+    if (r.children && r.children.length > 0) return r.children
+    if (r.children === undefined) return [r]
+    return []
+  }),
 )
 
 const roleOptions = computed(() =>
