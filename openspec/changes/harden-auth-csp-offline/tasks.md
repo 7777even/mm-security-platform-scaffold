@@ -1,3 +1,5 @@
+> 状态：已归档（2026-08-19）。全部任务闭环，需求已并入 `openspec/specs/scaffold-foundation/spec.md`（§5.3 令牌内存态、§9.4 离线地图源、§10.2 生产 CSP nonce）。
+
 ## 1. P0-1 §5.3 令牌内存态（TDD 先行）
 
 - [x] 1.1 [TDD] 编写 `token.spec.ts`：set/get/clear + 不落 localStorage。
