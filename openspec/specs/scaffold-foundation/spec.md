@@ -97,3 +97,27 @@ dashboard 地图底图瓦片源须为可配置常量，默认同源内网瓦片�
 
 - **WHEN** 设置环境变量 `VITE_MAP_TILE_URL`
 - **THEN** 底图源改用该地址（如内网天地图），仍不引入非预期公网外链。
+
+### Requirement: 监测预警实时接入（feat-monitor-warning）
+
+系统须提供监测预警模块：实时报警经 `alarm.push` topic 订阅入流去重，支持分页/等级/状态筛选与软件协同确认（ack 状态机），且不引入任何硬控下行写端点。
+
+#### Scenario: 实时报警入流
+
+- **WHEN** 实时通道收到 `alarm.push` 消息且负载为合法报警对象
+- **THEN** 经 `services/realtime.ts` 分发进入 `stores/alarm`，同 `alarmId` 去重以最新为准；非法负载仅告警不抛异常。
+
+#### Scenario: 报警列表与筛选
+
+- **WHEN** 在火灾报警页进行分页、按等级（1–4）或状态（ACTIVE/ACKED/DISPATCHED/CLOSED）筛选
+- **THEN** 列表按过滤条件返回切片与总数，空态展示"暂无报警"。
+
+#### Scenario: 软件协同确认（零下行）
+
+- **WHEN** 操作者点击「确认」且具备 `fire-alarm:ack` 权限
+- **THEN** 报警状态沿 ACKED→DISPATCHED→CLOSED 逐级流转，仅更新本地状态并上报审计（`alarm-ack`），不下行任何硬控指令；无权限或非法跃迁被忽略。
+
+#### Scenario: 开发期自包含 mock
+
+- **WHEN** 开发环境设置 `VITE_USE_DEV_MOCK=true` 且后端未启动
+- **THEN** 前端以内置 fixture 拦截 HTTP 请求（对齐 B3 包络），并定时推送 synthetic 报警模拟实时流，页面可离线演示；生产构建不引入该能力。
