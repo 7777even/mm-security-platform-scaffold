@@ -1,0 +1,6 @@
+# 自动生成文件：unplugin 生成的全局组件声明带分号，与 prettier 无分号风格冲突，禁止 prettier 格式化以免反复改动
+components.d.ts
+# 构建产物与依赖
+dist
+node_modules
+coverage
