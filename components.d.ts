@@ -13,6 +13,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppErrorBoundary: typeof import('./src/components/AppErrorBoundary.vue')['default']
     AppLayout: typeof import('./src/components/layout/AppLayout.vue')['default']
+    BaseMap: typeof import('./src/components/cesium/BaseMap.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
@@ -29,7 +30,6 @@ declare module 'vue' {
     ElTable: typeof import('element-plus/es')['ElTable']
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTag: typeof import('element-plus/es')['ElTag']
-    FactoryScene: typeof import('./src/components/three/FactoryScene.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

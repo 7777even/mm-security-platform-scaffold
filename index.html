@@ -3,6 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- dev CSP meta 兜底（与 vite.config.ts server.headers 同源；HTTP 头与 meta 取最严格交集，
+         当 webview/反代剥离 HTTP CSP 时仍由 meta 兜住）。
+         'unsafe-eval' + 'wasm-unsafe-eval'：Cesium 1.x 内部用 new Function() 编译 GLSL 着色器，
+         Worker 解码 Draco/QuantizedMesh 用 WebAssembly.instantiate，硬性需要。
+         生产由 deploy/csp.conf nonce 注入取代此 meta。 -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'; connect-src 'self' wss: ws: https: http: ws://localhost:* http://localhost:*; font-src 'self' data:;"
+    />
     <title>安全管控指挥系统</title>
   </head>
   <body>

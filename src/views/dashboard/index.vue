@@ -1,31 +1,15 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, nextTick, defineAsyncComponent } from 'vue';
-import { detectWebGL } from '@/utils/webgl';
-
-// 3D 厂区场景（协议「二三维 GIS」三维增强层）：懒加载，仅点 3D 时才加载 three
-const FactoryScene = defineAsyncComponent(() => import('@/components/three/FactoryScene.vue'));
+import { onMounted, onUnmounted, ref, nextTick } from 'vue';
 import * as echarts from 'echarts/core';
 import { LineChart, type LineSeriesOption } from 'echarts/charts';
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import type { ComposeOption } from 'echarts/core';
-import Map from 'ol/Map';
-import View from 'ol/View';
-import Overlay from 'ol/Overlay';
-import TileLayer from 'ol/layer/Tile';
 import { MAP_TILE_URL } from '@/constants/map';
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
-import { XYZ } from 'ol/source';
-import { fromLonLat } from 'ol/proj';
-import Feature from 'ol/Feature';
-import Point from 'ol/geom/Point';
-import Polygon from 'ol/geom/Polygon';
-import { Circle as CircleStyle, Fill, Stroke, Style, Text } from 'ol/style';
-import type { Coordinate } from 'ol/coordinate';
 import { RealtimeClient, type RealtimeMessage } from '@/services/ws';
 import { markOnce } from '@/utils/perf';
 import { recordPerfAsync } from '@/utils/perf-budget';
+import BaseMap from '@/components/cesium/BaseMap.vue';
 import {
   fetchDashboardOverview,
   fetchAlarmTrend,
@@ -70,20 +54,6 @@ const TYPE_LABEL: Record<AlarmType, string> = {
   SOS: '一键报警',
 };
 
-// 地图点位样式色（OpenLayers 不消费 CSS 变量，集中定义避免魔法字符串）
-const LEVEL_COLORS: Record<number, string> = {
-  1: '#ff4d4f',
-  2: '#faad14',
-  3: '#40a9ff',
-  4: '#8c9cb0',
-};
-const STATUS_COLORS: Record<string, string> = {
-  ONLINE: '#52c41a',
-  OFFLINE: '#8c9cb0',
-  FAULT: '#ff4d4f',
-};
-const MAP_CENTER: Coordinate = fromLonLat([110.952, 21.672]);
-
 interface Stat {
   label: string;
   value: string;
@@ -101,12 +71,7 @@ interface AlarmRow {
 }
 
 const chartRef = ref<HTMLDivElement | null>(null);
-const mapRef = ref<HTMLDivElement | null>(null);
-const overlayRef = ref<HTMLDivElement | null>(null);
 let chart: echarts.ECharts | null = null;
-let map: Map | null = null;
-let overlay: Overlay | null = null;
-let alarmSource: VectorSource | null = null;
 let wsClient: RealtimeClient | null = null;
 
 // 静态兜底值：Mock 不可达时保留展示
@@ -120,23 +85,24 @@ const alarms = ref<AlarmRow[]>([]);
 const loading = ref(true);
 const mockReady = ref(false);
 const mockError = ref('');
+const mapNotice = ref('');
 
-// 2D/3D 视图切换（3D 为 Three.js 厂区场景，协议「二三维 GIS」三维增强层）
-const viewMode = ref<'2d' | '3d'>('2d');
-const threeNotice = ref('');
+// 地图点位/区域数据（交由 Cesium BaseMap 渲染；二三维一体化单一 viewer）
+const alarmPoints = ref<MapPoint[]>([]);
+const devicePoints = ref<MapPoint[]>([]);
+const riskZones = ref<RiskZone[]>([]);
 
-function switchMode(mode: '2d' | '3d'): void {
-  if (mode === '3d' && !detectWebGL()) {
-    threeNotice.value = '三维视图不可用：当前环境不支持 WebGL，已保持二维视图';
-    viewMode.value = '2d';
-    return;
-  }
-  viewMode.value = mode;
+// Cesium 二三维一体化：sceneMode 切换（详细设计 4.2.2.2）
+const sceneMode = ref<'2d' | '3d'>('3d');
+
+/** 与 main.ts 同策略：VITE_USE_DEV_MOCK=true 时前端自包含 mock，不连真实 ws */
+function isDevMock(): boolean {
+  return import.meta.env.DEV && import.meta.env.VITE_USE_DEV_MOCK === 'true';
 }
 
-function onThreeError(): void {
-  threeNotice.value = '三维视图初始化失败，已切换二维视图';
-  viewMode.value = '2d';
+function onMapError(): void {
+  mapNotice.value = '地图初始化失败：当前环境不支持 WebGL，已降级';
+  sceneMode.value = '2d';
 }
 
 const FALLBACK_TREND = [0, 1, 0, 2, 1, 3, 2, 1, 0, 2, 4, 3, 2, 1, 3, 5, 4, 6, 3, 2, 4, 3, 2, 1];
@@ -168,13 +134,6 @@ function hours(): string[] {
     list.push(`${String(d.getHours()).padStart(2, '0')}:00`);
   }
   return list;
-}
-
-function zoneColor(score: number): string {
-  if (score >= 4) return 'rgba(255,77,79,0.22)';
-  if (score >= 3) return 'rgba(250,173,20,0.2)';
-  if (score >= 2) return 'rgba(64,169,255,0.18)';
-  return 'rgba(140,156,176,0.14)';
 }
 
 function renderChart(): void {
@@ -240,129 +199,6 @@ function renderChart(): void {
 
 function onResize(): void {
   chart?.resize();
-  map?.updateSize();
-}
-
-/**
- * 初始化地图：Carto 暗色瓦片底图（国内可达公网瓦片，开发占位；生产替换天地图 WMTS + 离线化，S3 定案）
- * 天地图替换：url 改 `https://t{0-7}.tianditu.gov.cn/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=<key>`（XYZ 源）
- */
-function initMap(): void {
-  if (!mapRef.value) return;
-  map = new Map({
-    target: mapRef.value,
-    layers: [
-      new TileLayer({
-        source: new XYZ({ url: MAP_TILE_URL }),
-      }),
-    ],
-    view: new View({ center: MAP_CENTER, zoom: 14 }),
-  });
-  if (overlayRef.value) {
-    overlay = new Overlay({
-      element: overlayRef.value,
-      positioning: 'bottom-center',
-      offset: [0, -10],
-    });
-    map.addOverlay(overlay);
-  }
-}
-
-/** 厂区区域轮廓（risk-heatmap 评分 → 半透明色面 + 名称标注） */
-function renderZones(zones: RiskZone[]): void {
-  if (!map) return;
-  const features = zones.map((z) => {
-    const coords = z.polygon.map(([lng, lat]) => fromLonLat([lng, lat]));
-    const feature = new Feature({ geometry: new Polygon([coords]) });
-    feature.setStyle(
-      new Style({
-        fill: new Fill({ color: zoneColor(z.score) }),
-        stroke: new Stroke({ color: 'rgba(0,212,255,0.5)', width: 1 }),
-        text: new Text({
-          text: `${z.name}  ${z.score.toFixed(1)}`,
-          fill: new Fill({ color: '#b8d4f0' }),
-          font: '12px "Microsoft YaHei"',
-        }),
-      }),
-    );
-    return feature;
-  });
-  map.addLayer(new VectorLayer({ source: new VectorSource({ features }) }));
-}
-
-/** 设备点位（状态色小圆点） */
-function renderDevices(points: MapPoint[]): void {
-  if (!map) return;
-  const features = points.map((p) => {
-    const feature = new Feature({ geometry: new Point(fromLonLat([p.lng, p.lat])) });
-    const color = STATUS_COLORS[p.status ?? 'OFFLINE'] ?? '#8c9cb0';
-    feature.setStyle(
-      new Style({
-        image: new CircleStyle({
-          radius: 4,
-          fill: new Fill({ color }),
-          stroke: new Stroke({ color: 'rgba(0,0,0,0.3)', width: 1 }),
-        }),
-      }),
-    );
-    return feature;
-  });
-  map.addLayer(new VectorLayer({ source: new VectorSource({ features }) }));
-}
-
-/** 报警点位（等级色圆点 + 数字标记 + 点击浮窗） */
-function renderAlarms(points: MapPoint[]): void {
-  if (!map) return;
-  alarmSource = new VectorSource();
-  map.addLayer(
-    new VectorLayer({
-      source: alarmSource,
-      style: (feature) => {
-        const level = (feature.get('level') as number) ?? 3;
-        return new Style({
-          image: new CircleStyle({
-            radius: 8,
-            fill: new Fill({ color: LEVEL_COLORS[level] ?? '#40a9ff' }),
-            stroke: new Stroke({ color: '#fff', width: 1.5 }),
-          }),
-          text: new Text({
-            text: String(level),
-            fill: new Fill({ color: '#fff' }),
-            font: '10px sans-serif',
-          }),
-        });
-      },
-    }),
-  );
-  alarmSource.addFeatures(
-    points.map((p) => {
-      const feature = new Feature({ geometry: new Point(fromLonLat([p.lng, p.lat])) });
-      feature.set('kind', 'alarm');
-      feature.set('id', p.id);
-      feature.set('level', p.level);
-      feature.set('name', p.name);
-      return feature;
-    }),
-  );
-
-  // 点击报警点 → 浮窗显示详情
-  // 仅响应 kind='alarm' 的点位：设备点/区域面未设置 id/name，误触发会显示 undefined
-  map.on('singleclick', (evt) => {
-    if (!alarmSource || !overlay || !overlayRef.value) return;
-    const hit = map?.forEachFeatureAtPixel(evt.pixel, (f) =>
-      f.get('kind') === 'alarm' ? (f as Feature) : undefined,
-    );
-    if (hit) {
-      overlay.setPosition(evt.coordinate);
-      const el = overlayRef.value;
-      el.querySelector('.map-pop-title')!.textContent = `报警 ${String(hit.get('id'))}`;
-      el.querySelector('.map-pop-desc')!.textContent =
-        `${hit.get('name')} ｜ 等级 ${String(hit.get('level'))}`;
-      el.style.display = 'block';
-    } else {
-      overlayRef.value.style.display = 'none';
-    }
-  });
 }
 
 function handleWsMessage(msg: RealtimeMessage): void {
@@ -384,7 +220,7 @@ function handleWsMessage(msg: RealtimeMessage): void {
 
 async function loadData(): Promise<void> {
   try {
-    const [overview, trend, page, alarmPoints, devicePoints, zones] = await Promise.all([
+    const [overview, trend, page, ap, dp, zones] = await Promise.all([
       fetchDashboardOverview(),
       fetchAlarmTrend(),
       recordPerfAsync('componentQueryMs', () => fetchAlarmPage(1, 5)), // P10 查询组件 ≤2s
@@ -425,20 +261,17 @@ async function loadData(): Promise<void> {
     ];
     trendData.value = Array.from({ length: 24 }, (_, i) => trend[i]?.count ?? 0);
     alarms.value = page.list.map(toAlarmRow);
-    // P9 地图加载 ≤2s：区域/设备/报警点位渲染计时
-    await recordPerfAsync('baseMapMs', async () => {
-      renderZones(zones);
-      renderDevices(devicePoints);
-      renderAlarms(alarmPoints);
-    });
+    // 点位/区域数据交由 Cesium BaseMap 渲染（P9 地图加载打点在 BaseMap 内部 recordPerfAsync）
+    alarmPoints.value = ap;
+    devicePoints.value = dp;
+    riskZones.value = zones;
     markOnce('dashboard:data-ready');
-    markOnce('map:ready');
   } catch (err) {
     mockError.value = err instanceof Error ? err.message : 'Mock 数据源未连接';
     // 降级：静态兜底点位 + 兜底图表
-    renderZones(FALLBACK_RISK_ZONES);
-    renderDevices(FALLBACK_DEVICE_POINTS);
-    renderAlarms(FALLBACK_ALARM_POINTS);
+    alarmPoints.value = FALLBACK_ALARM_POINTS;
+    devicePoints.value = FALLBACK_DEVICE_POINTS;
+    riskZones.value = FALLBACK_RISK_ZONES;
   } finally {
     loading.value = false;
     // 图表容器位于 v-if="!loading" 面板内，须待 DOM 更新后再初始化
@@ -448,16 +281,17 @@ async function loadData(): Promise<void> {
 }
 
 onMounted(async () => {
-  initMap();
   window.addEventListener('resize', onResize);
   await loadData();
 
-  // 实时通道：订阅 rt/alarm/push（仅配置了 WS 地址时启用）
+  // 实时通道：仅在未启用 dev mock 时启动，避免 ws://localhost:8787/ws 失败刷屏。
+  // mock 模式下右侧告警由 devMock.setInterval 推入 alarm store；真实模式下 dashboard 自己订阅 VITE_WS_BASE，
+  // 与主入口 startRealtime()（订阅 alarm.push）并行存在，两路并存直到 B3 真实 ws 对接。
+  if (isDevMock()) return;
   const wsUrl = import.meta.env.VITE_WS_BASE as string | undefined;
-  if (wsUrl) {
-    wsClient = new RealtimeClient({ url: wsUrl, onMessage: handleWsMessage });
-    wsClient.connect();
-  }
+  if (!wsUrl) return;
+  wsClient = new RealtimeClient({ url: wsUrl, onMessage: handleWsMessage });
+  wsClient.connect();
 });
 
 onUnmounted(() => {
@@ -466,27 +300,24 @@ onUnmounted(() => {
   wsClient = null;
   chart?.dispose();
   chart = null;
-  map?.setTarget(undefined);
-  map = null;
 });
 </script>
 
 <template>
   <div class="dashboard dashboard-map">
-    <!-- 2D 地图容器（常驻 v-show，避免 OL 重挂载） -->
-    <div v-show="viewMode === '2d'" ref="mapRef" class="map-canvas" data-test="map-canvas" />
+    <!-- Cesium 二三维一体化地图（详细设计 4.2.2.2；引擎懒加载，失败自动降级） -->
+    <BaseMap
+      :tile-url="MAP_TILE_URL"
+      :alarms="alarmPoints"
+      :devices="devicePoints"
+      :zones="riskZones"
+      :scene-mode="sceneMode"
+      @error="onMapError"
+      @mode-change="(m) => (sceneMode = m)"
+    />
 
-    <!-- 3D 厂区场景（懒加载，仅点 3D 时实例化；初始化失败自动回退 2D） -->
-    <FactoryScene v-if="viewMode === '3d'" class="factory" @error="onThreeError" />
-
-    <!-- 报警点浮窗（2D 地图专用） -->
-    <div v-show="viewMode === '2d'" ref="overlayRef" class="map-pop">
-      <p class="map-pop-title" />
-      <p class="map-pop-desc" />
-    </div>
-
-    <!-- 三维不可用提示 -->
-    <p v-if="threeNotice" class="three-notice">{{ threeNotice }}</p>
+    <!-- 地图降级提示 -->
+    <p v-if="mapNotice" class="map-notice">{{ mapNotice }}</p>
 
     <!-- 顶部指标卡横条 + 2D/3D 切换 -->
     <div v-if="!loading" class="stat-bar glass-panel">
@@ -500,16 +331,16 @@ onUnmounted(() => {
         <button
           type="button"
           class="mode-btn"
-          :class="{ active: viewMode === '2d' }"
-          @click="switchMode('2d')"
+          :class="{ active: sceneMode === '2d' }"
+          @click="sceneMode = '2d'"
         >
           2D
         </button>
         <button
           type="button"
           class="mode-btn"
-          :class="{ active: viewMode === '3d' }"
-          @click="switchMode('3d')"
+          :class="{ active: sceneMode === '3d' }"
+          @click="sceneMode = '3d'"
         >
           3D
         </button>
@@ -561,42 +392,21 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-.map-canvas {
+/* Cesium 容器内嵌于 dashboard-map，控件样式弱化在 BaseMap 内部处理 */
+
+/* 地图降级提示 */
+.map-notice {
   position: absolute;
-  inset: 0;
-}
-
-/* 底图容器：暗色瓦片（Carto dark_all）天然深色，无需滤镜；天地图替换后如为亮色可在此加暗化 */
-
-.map-canvas :deep(.ol-control button) {
-  background: rgb(0 0 0 / 55%);
-  color: #00d4ff;
-}
-
-/* 报警点浮窗 */
-.map-pop {
-  display: none;
-  position: absolute;
-  min-width: 180px;
-  padding: 8px 12px;
+  top: var(--space-md);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  padding: 6px 16px;
   border-radius: var(--radius-sm);
-  background: rgb(15 30 54 / 92%);
-  border: 1px solid rgb(0 212 255 / 40%);
-  box-shadow: 0 0 16px rgb(0 212 255 / 20%);
-  pointer-events: none;
-}
-
-.map-pop-title {
-  margin: 0 0 4px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #00d4ff;
-}
-
-.map-pop-desc {
-  margin: 0;
+  background: rgb(250 173 20 / 15%);
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning);
   font-size: 12px;
-  color: var(--color-text-muted);
 }
 
 /* 顶部指标卡横条 */
@@ -635,27 +445,6 @@ onUnmounted(() => {
 .mode-btn.active {
   color: var(--color-accent);
   background: rgb(0 212 255 / 18%);
-}
-
-/* 3D 场景容器 */
-.factory {
-  position: absolute;
-  inset: 0;
-}
-
-/* 三维不可用提示 */
-.three-notice {
-  position: absolute;
-  top: var(--space-md);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
-  padding: 6px 16px;
-  border-radius: var(--radius-sm);
-  background: rgb(250 173 20 / 15%);
-  border: 1px solid var(--color-warning);
-  color: var(--color-warning);
-  font-size: 12px;
 }
 
 .stat-item {
