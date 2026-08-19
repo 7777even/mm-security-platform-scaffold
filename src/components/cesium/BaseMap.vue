@@ -34,13 +34,15 @@ const props = withDefaults(
 
 /** Cesium viewer 最小接口（避免 any；完整类型由真实 Cesium 在运行时提供） */
 interface CesiumViewerLike {
-  scene?: {
-    mode?: number;
-    requestRender?: () => void;
-    /** Cesium.Scene.renderError（Event）：单帧 render 失败兜底自愈 */
-    renderError?: { addEventListener?: (cb: (scene: unknown, err: unknown) => void) => void };
+  scene?: CesiumSceneLike;
+  camera?: {
+    setView?: (opts: unknown) => void;
+    flyTo?: (opts: unknown) => void;
+    positionCartographic?: { longitude: number; latitude: number; height: number };
+    heading?: number;
+    pitch?: number;
+    roll?: number;
   };
-  camera?: { setView?: (opts: unknown) => void; flyTo?: (opts: unknown) => void };
   entities?: { removeAll: () => void; add: (e: unknown) => unknown };
   imageryLayers?: {
     addImageryProvider?: (provider: unknown) => unknown;
@@ -67,8 +69,24 @@ interface CesiumLike {
     fromDegrees: (lng: number, lat: number, h?: number) => unknown;
     fromDegreesArray: (arr: number[]) => unknown[];
   };
+  Rectangle?: {
+    fromDegrees: (west: number, south: number, east: number, north: number) => unknown;
+  };
+  Color?: {
+    fromCssColorString?: (css: string) => unknown;
+    fromBytes?: (r: number, g: number, b: number, a: number) => unknown;
+  };
   Math?: { toRadians: (deg: number) => number };
   SceneMode?: { SCENE2D: number; SCENE3D: number };
+}
+
+/** Cesium.Scene 最小接口 */
+interface CesiumSceneLike {
+  mode?: number;
+  requestRender?: () => void;
+  renderError?: { addEventListener?: (cb: (scene: unknown, err: unknown) => void) => void };
+  backgroundColor?: unknown;
+  globe?: { baseColor?: unknown; show?: boolean };
 }
 
 const containerRef = ref<HTMLDivElement | null>(null);
@@ -137,11 +155,26 @@ async function createViewer(): Promise<void> {
       showRenderLoopErrors: false,
       // 注意：不设 useDefaultRenderLoop:false！Cesium 默认 RAF 循环负责自动瓦片加载与 resize，
       // 关闭后 imagery loading 不主动调度，画面黑屏。前几轮已确认该 trade-off 不可取。
+      // WebGL context 配置：
+      // - alpha: false 强制 canvas 不透明，避免与下层 HTML 背景合成产生"白屏"假象
+      // - preserveDrawingBuffer: true 让 framebuffer 在 frame 提交后保留，便于截图/截图监控；
+      //   默认 false 时 Chromium headless 截图可能拿到丢弃的 buffer，真实浏览器不影响
+      contextOptions: { webgl: { alpha: false, preserveDrawingBuffer: true } },
     });
     // 构造后手动添加底图（瓦片 URL 可配置；同源离线/公网预览均支持）
     viewer.imageryLayers?.addImageryProvider?.(
       new C.UrlTemplateImageryProvider!({ url: opts.tileUrl }),
     );
+    // 兜底色：与 .base-map CSS 背景 #050a15 融合，避免 globe 渲染异常或 sceneBackgroundColor 失效时出现"白屏"。
+    // Cesium 1.119 在 2D 模式或某些情况下 sceneBackgroundColor 不生效，
+    // 强制 globe.baseColor = dashboard 同色，globe 未渲染或失败时整个画面与背景融合，看不出白屏。
+    const baseBg = C.Color?.fromCssColorString
+      ? C.Color.fromCssColorString('#050a15')
+      : C.Color?.fromBytes?.(5, 10, 21, 255);
+    if (baseBg && viewer.scene) {
+      viewer.scene.backgroundColor = baseBg;
+      if (viewer.scene.globe) viewer.scene.globe.baseColor = baseBg;
+    }
     // 显式初始相机（避免默认 home view 在归一化计算时除零产生 NaN）
     viewer.camera?.setView?.({
       destination: C.Cartesian3!.fromDegrees(
@@ -181,10 +214,43 @@ async function createViewer(): Promise<void> {
 }
 
 function applySceneMode(mode: '2d' | '3d'): void {
-  if (!viewer?.scene) return;
+  if (!viewer?.scene || !viewer?.camera) return;
   const C = cesium;
-  if (!C) return;
-  viewer.scene.mode = mode === '2d' ? C.SceneMode!.SCENE2D : C.SceneMode!.SCENE3D;
+  if (!C?.SceneMode || !C.Rectangle || !C.Math || !C.Cartesian3) return;
+  const scene = viewer.scene;
+  const camera = viewer.camera;
+  // 1) 先保存当前视图（无论当前是哪种模式）
+  const cart = camera.positionCartographic;
+  if (!cart) return;
+  const lng = (cart.longitude * 180) / Math.PI;
+  const lat = (cart.latitude * 180) / Math.PI;
+  const height = cart.height;
+  const heading = camera.heading ?? 0;
+  // 2) 切换 scene.mode（直接赋值，由 Cesium setter 触发 modeChanged）
+  scene.mode = mode === '2d' ? C.SceneMode.SCENE2D : C.SceneMode.SCENE3D;
+  // 3) 根据新模式重新 setView：
+  //    3D 用 Cartesian3 + orientation 恢复透视斜视；
+  //    2D 用 Rectangle（基于当前经纬度+视野范围）保持同一区域俯视。
+  // 不使用 morphTo2D/3D：morphTo2D 默认把相机移到太空 (height ≈ 31890km) 看整个地球，
+  // morphTo3D 不能保证恢复到原区域；直接 mode= + setView 更可控。
+  if (mode === '2d') {
+    // span 根据当前 height 估算视野半径（高度越高视野越大）
+    const span = Math.max(0.005, (height / 1000) * 0.005);
+    camera.setView?.({
+      destination: C.Rectangle.fromDegrees(lng - span, lat - span, lng + span, lat + span),
+    });
+  } else {
+    camera.setView?.({
+      destination: C.Cartesian3.fromDegrees(lng, lat, height),
+      orientation: {
+        heading,
+        pitch: -C.Math.toRadians(45),
+        roll: 0,
+      },
+    });
+  }
+  // 4) 强制 requestRender 触发重绘（mode 切换后 Cesium 可能未自动重绘下一帧）
+  scene.requestRender?.();
 }
 
 function renderData(): void {
