@@ -262,10 +262,17 @@ function applySceneMode(mode: '2d' | '3d'): void {
   // 不使用 morphTo2D/3D：morphTo2D 默认把相机移到太空 (height ≈ 31890km) 看整个地球，
   // morphTo3D 不能保证恢复到原区域；直接 mode= + setView 更可控。
   if (mode === '2d') {
-    // span 根据当前 height 估算视野半径（高度越高视野越大）
-    const span = Math.max(0.005, (height / 1000) * 0.005);
+    // 2D 模式不能用 Rectangle（Rectangle 在 2D 模式下由 MapProjection 渲染，
+    // 实际显示区域与 dashboard-map 容器不匹配，出现"灰色矩形悬浮"问题）。
+    // 改用 Cartesian3 + 高俯视 camera：pitch=-90° 正俯视、heading=0 让 2D 平面图与 3D
+    // 看到同一区域，符合"二三维一体化"语义（详细设计 4.2.2.2）。
     camera.setView?.({
-      destination: C.Rectangle.fromDegrees(lng - span, lat - span, lng + span, lat + span),
+      destination: C.Cartesian3.fromDegrees(lng, lat, height),
+      orientation: {
+        heading: 0,
+        pitch: -C.Math.toRadians(90),
+        roll: 0,
+      },
     });
   } else {
     camera.setView?.({
