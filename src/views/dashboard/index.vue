@@ -1,29 +1,30 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, nextTick, defineAsyncComponent } from 'vue'
-import { detectWebGL } from '@/utils/webgl'
+import { onMounted, onUnmounted, ref, nextTick, defineAsyncComponent } from 'vue';
+import { detectWebGL } from '@/utils/webgl';
 
 // 3D 厂区场景（协议「二三维 GIS」三维增强层）：懒加载，仅点 3D 时才加载 three
-const FactoryScene = defineAsyncComponent(() => import('@/components/three/FactoryScene.vue'))
-import * as echarts from 'echarts/core'
-import { LineChart, type LineSeriesOption } from 'echarts/charts'
-import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import type { ComposeOption } from 'echarts/core'
-import Map from 'ol/Map'
-import View from 'ol/View'
-import Overlay from 'ol/Overlay'
-import TileLayer from 'ol/layer/Tile'
-import VectorLayer from 'ol/layer/Vector'
-import VectorSource from 'ol/source/Vector'
-import { XYZ } from 'ol/source'
-import { fromLonLat } from 'ol/proj'
-import Feature from 'ol/Feature'
-import Point from 'ol/geom/Point'
-import Polygon from 'ol/geom/Polygon'
-import { Circle as CircleStyle, Fill, Stroke, Style, Text } from 'ol/style'
-import type { Coordinate } from 'ol/coordinate'
-import { RealtimeClient, type RealtimeMessage } from '@/services/ws'
-import { markOnce } from '@/utils/perf'
+const FactoryScene = defineAsyncComponent(() => import('@/components/three/FactoryScene.vue'));
+import * as echarts from 'echarts/core';
+import { LineChart, type LineSeriesOption } from 'echarts/charts';
+import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+import type { ComposeOption } from 'echarts/core';
+import Map from 'ol/Map';
+import View from 'ol/View';
+import Overlay from 'ol/Overlay';
+import TileLayer from 'ol/layer/Tile';
+import { MAP_TILE_URL } from '@/constants/map';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
+import { XYZ } from 'ol/source';
+import { fromLonLat } from 'ol/proj';
+import Feature from 'ol/Feature';
+import Point from 'ol/geom/Point';
+import Polygon from 'ol/geom/Polygon';
+import { Circle as CircleStyle, Fill, Stroke, Style, Text } from 'ol/style';
+import type { Coordinate } from 'ol/coordinate';
+import { RealtimeClient, type RealtimeMessage } from '@/services/ws';
+import { markOnce } from '@/utils/perf';
 import {
   fetchDashboardOverview,
   fetchAlarmTrend,
@@ -31,7 +32,7 @@ import {
   type AlarmItem,
   type AlarmLevel,
   type AlarmType,
-} from '@/services/alarm'
+} from '@/services/alarm';
 import {
   fetchAlarmPoints,
   fetchDevicePoints,
@@ -41,24 +42,24 @@ import {
   FALLBACK_RISK_ZONES,
   type MapPoint,
   type RiskZone,
-} from '@/services/map'
+} from '@/services/map';
 
 // 按需注册 ECharts 模块，控制产物体积
-echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer])
+echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
 
-type ECOption = ComposeOption<LineSeriesOption>
+type ECOption = ComposeOption<LineSeriesOption>;
 
 // 图表配置色值（ECharts 不消费 CSS 变量，此处集中定义避免魔法字符串）
-const CHART_ACCENT = '#00d4ff'
-const CHART_SUCCESS = '#52c41a'
-const CHART_TEXT = '#7e9bb8'
+const CHART_ACCENT = '#00d4ff';
+const CHART_SUCCESS = '#52c41a';
+const CHART_TEXT = '#7e9bb8';
 
 const LEVEL_META: Record<AlarmLevel, { label: string; tone: string }> = {
   1: { label: '重大', tone: 'danger' },
   2: { label: '预警', tone: 'warning' },
   3: { label: '提示', tone: 'info' },
   4: { label: '提示', tone: 'info' },
-}
+};
 
 const TYPE_LABEL: Record<AlarmType, string> = {
   FIRE: '火灾',
@@ -66,37 +67,46 @@ const TYPE_LABEL: Record<AlarmType, string> = {
   TEMP: '温度',
   CCTV: '视频',
   SOS: '一键报警',
-}
+};
 
 // 地图点位样式色（OpenLayers 不消费 CSS 变量，集中定义避免魔法字符串）
-const LEVEL_COLORS: Record<number, string> = { 1: '#ff4d4f', 2: '#faad14', 3: '#40a9ff', 4: '#8c9cb0' }
-const STATUS_COLORS: Record<string, string> = { ONLINE: '#52c41a', OFFLINE: '#8c9cb0', FAULT: '#ff4d4f' }
-const MAP_CENTER: Coordinate = fromLonLat([110.952, 21.672])
+const LEVEL_COLORS: Record<number, string> = {
+  1: '#ff4d4f',
+  2: '#faad14',
+  3: '#40a9ff',
+  4: '#8c9cb0',
+};
+const STATUS_COLORS: Record<string, string> = {
+  ONLINE: '#52c41a',
+  OFFLINE: '#8c9cb0',
+  FAULT: '#ff4d4f',
+};
+const MAP_CENTER: Coordinate = fromLonLat([110.952, 21.672]);
 
 interface Stat {
-  label: string
-  value: string
-  unit: string
-  icon: string
-  tone: string
+  label: string;
+  value: string;
+  unit: string;
+  icon: string;
+  tone: string;
 }
 
 interface AlarmRow {
-  id: string
-  level: string
-  tone: string
-  device: string
-  time: string
+  id: string;
+  level: string;
+  tone: string;
+  device: string;
+  time: string;
 }
 
-const chartRef = ref<HTMLDivElement | null>(null)
-const mapRef = ref<HTMLDivElement | null>(null)
-const overlayRef = ref<HTMLDivElement | null>(null)
-let chart: echarts.ECharts | null = null
-let map: Map | null = null
-let overlay: Overlay | null = null
-let alarmSource: VectorSource | null = null
-let wsClient: RealtimeClient | null = null
+const chartRef = ref<HTMLDivElement | null>(null);
+const mapRef = ref<HTMLDivElement | null>(null);
+const overlayRef = ref<HTMLDivElement | null>(null);
+let chart: echarts.ECharts | null = null;
+let map: Map | null = null;
+let overlay: Overlay | null = null;
+let alarmSource: VectorSource | null = null;
+let wsClient: RealtimeClient | null = null;
 
 // 静态兜底值：Mock 不可达时保留展示
 const stats = ref<Stat[]>([
@@ -104,71 +114,71 @@ const stats = ref<Stat[]>([
   { label: '今日告警', value: '—', unit: '条', icon: 'Bell', tone: 'danger' },
   { label: '风险指数', value: '—', unit: '', icon: 'Odometer', tone: 'warning' },
   { label: '在线工作站', value: '—', unit: '台', icon: 'Monitor', tone: 'success' },
-])
-const alarms = ref<AlarmRow[]>([])
-const loading = ref(true)
-const mockReady = ref(false)
-const mockError = ref('')
+]);
+const alarms = ref<AlarmRow[]>([]);
+const loading = ref(true);
+const mockReady = ref(false);
+const mockError = ref('');
 
 // 2D/3D 视图切换（3D 为 Three.js 厂区场景，协议「二三维 GIS」三维增强层）
-const viewMode = ref<'2d' | '3d'>('2d')
-const threeNotice = ref('')
+const viewMode = ref<'2d' | '3d'>('2d');
+const threeNotice = ref('');
 
 function switchMode(mode: '2d' | '3d'): void {
   if (mode === '3d' && !detectWebGL()) {
-    threeNotice.value = '三维视图不可用：当前环境不支持 WebGL，已保持二维视图'
-    viewMode.value = '2d'
-    return
+    threeNotice.value = '三维视图不可用：当前环境不支持 WebGL，已保持二维视图';
+    viewMode.value = '2d';
+    return;
   }
-  viewMode.value = mode
+  viewMode.value = mode;
 }
 
 function onThreeError(): void {
-  threeNotice.value = '三维视图初始化失败，已切换二维视图'
-  viewMode.value = '2d'
+  threeNotice.value = '三维视图初始化失败，已切换二维视图';
+  viewMode.value = '2d';
 }
 
-const FALLBACK_TREND = [0, 1, 0, 2, 1, 3, 2, 1, 0, 2, 4, 3, 2, 1, 3, 5, 4, 6, 3, 2, 4, 3, 2, 1]
-const trendData = ref<number[]>(FALLBACK_TREND)
+const FALLBACK_TREND = [0, 1, 0, 2, 1, 3, 2, 1, 0, 2, 4, 3, 2, 1, 3, 5, 4, 6, 3, 2, 4, 3, 2, 1];
+const trendData = ref<number[]>(FALLBACK_TREND);
 
 function toAlarmRow(a: AlarmItem): AlarmRow {
-  const meta = LEVEL_META[a.level]
+  const meta = LEVEL_META[a.level];
   return {
     id: a.alarmId,
     level: meta.label,
     tone: meta.tone,
     device: a.location || `${TYPE_LABEL[a.type] ?? a.type} ${a.deviceCode.slice(-4)}`,
     time: formatTime(a.ts),
-  }
+  };
 }
 
 function formatTime(iso: string): string {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  const pad = (n: number): string => String(n).padStart(2, '0')
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const pad = (n: number): string => String(n).padStart(2, '0');
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
 function hours(): string[] {
-  const list: string[] = []
-  const nowTime = new Date()
+  const list: string[] = [];
+  const nowTime = new Date();
   for (let i = 23; i >= 0; i--) {
-    const d = new Date(nowTime.getTime() - i * 3600 * 1000)
-    list.push(`${String(d.getHours()).padStart(2, '0')}:00`)
+    const d = new Date(nowTime.getTime() - i * 3600 * 1000);
+    list.push(`${String(d.getHours()).padStart(2, '0')}:00`);
   }
-  return list
+  return list;
 }
 
 function zoneColor(score: number): string {
-  if (score >= 4) return 'rgba(255,77,79,0.22)'
-  if (score >= 3) return 'rgba(250,173,20,0.2)'
-  if (score >= 2) return 'rgba(64,169,255,0.18)'
-  return 'rgba(140,156,176,0.14)'
+  if (score >= 4) return 'rgba(255,77,79,0.22)';
+  if (score >= 3) return 'rgba(250,173,20,0.2)';
+  if (score >= 2) return 'rgba(64,169,255,0.18)';
+  return 'rgba(140,156,176,0.14)';
 }
 
 function renderChart(): void {
-  if (!chartRef.value) return
-  chart = echarts.init(chartRef.value)
+  if (!chartRef.value) return;
+  chart = echarts.init(chartRef.value);
   const option: ECOption = {
     tooltip: {
       trigger: 'axis',
@@ -198,7 +208,12 @@ function renderChart(): void {
         smooth: true,
         showSymbol: false,
         data: trendData.value,
-        lineStyle: { color: CHART_ACCENT, width: 2, shadowColor: 'rgba(0, 212, 255, 0.6)', shadowBlur: 10 },
+        lineStyle: {
+          color: CHART_ACCENT,
+          width: 2,
+          shadowColor: 'rgba(0, 212, 255, 0.6)',
+          shadowBlur: 10,
+        },
         itemStyle: { color: CHART_ACCENT },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -217,14 +232,14 @@ function renderChart(): void {
         itemStyle: { color: CHART_SUCCESS },
       },
     ],
-  }
-  chart.setOption(option)
-  markOnce('dashboard:chart-ready')
+  };
+  chart.setOption(option);
+  markOnce('dashboard:chart-ready');
 }
 
 function onResize(): void {
-  chart?.resize()
-  map?.updateSize()
+  chart?.resize();
+  map?.updateSize();
 }
 
 /**
@@ -232,28 +247,32 @@ function onResize(): void {
  * 天地图替换：url 改 `https://t{0-7}.tianditu.gov.cn/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=<key>`（XYZ 源）
  */
 function initMap(): void {
-  if (!mapRef.value) return
+  if (!mapRef.value) return;
   map = new Map({
     target: mapRef.value,
     layers: [
       new TileLayer({
-        source: new XYZ({ url: 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png' }),
+        source: new XYZ({ url: MAP_TILE_URL }),
       }),
     ],
     view: new View({ center: MAP_CENTER, zoom: 14 }),
-  })
+  });
   if (overlayRef.value) {
-    overlay = new Overlay({ element: overlayRef.value, positioning: 'bottom-center', offset: [0, -10] })
-    map.addOverlay(overlay)
+    overlay = new Overlay({
+      element: overlayRef.value,
+      positioning: 'bottom-center',
+      offset: [0, -10],
+    });
+    map.addOverlay(overlay);
   }
 }
 
 /** 厂区区域轮廓（risk-heatmap 评分 → 半透明色面 + 名称标注） */
 function renderZones(zones: RiskZone[]): void {
-  if (!map) return
+  if (!map) return;
   const features = zones.map((z) => {
-    const coords = z.polygon.map(([lng, lat]) => fromLonLat([lng, lat]))
-    const feature = new Feature({ geometry: new Polygon([coords]) })
+    const coords = z.polygon.map(([lng, lat]) => fromLonLat([lng, lat]));
+    const feature = new Feature({ geometry: new Polygon([coords]) });
     feature.setStyle(
       new Style({
         fill: new Fill({ color: zoneColor(z.score) }),
@@ -264,18 +283,18 @@ function renderZones(zones: RiskZone[]): void {
           font: '12px "Microsoft YaHei"',
         }),
       }),
-    )
-    return feature
-  })
-  map.addLayer(new VectorLayer({ source: new VectorSource({ features }) }))
+    );
+    return feature;
+  });
+  map.addLayer(new VectorLayer({ source: new VectorSource({ features }) }));
 }
 
 /** 设备点位（状态色小圆点） */
 function renderDevices(points: MapPoint[]): void {
-  if (!map) return
+  if (!map) return;
   const features = points.map((p) => {
-    const feature = new Feature({ geometry: new Point(fromLonLat([p.lng, p.lat])) })
-    const color = STATUS_COLORS[p.status ?? 'OFFLINE'] ?? '#8c9cb0'
+    const feature = new Feature({ geometry: new Point(fromLonLat([p.lng, p.lat])) });
+    const color = STATUS_COLORS[p.status ?? 'OFFLINE'] ?? '#8c9cb0';
     feature.setStyle(
       new Style({
         image: new CircleStyle({
@@ -284,21 +303,21 @@ function renderDevices(points: MapPoint[]): void {
           stroke: new Stroke({ color: 'rgba(0,0,0,0.3)', width: 1 }),
         }),
       }),
-    )
-    return feature
-  })
-  map.addLayer(new VectorLayer({ source: new VectorSource({ features }) }))
+    );
+    return feature;
+  });
+  map.addLayer(new VectorLayer({ source: new VectorSource({ features }) }));
 }
 
 /** 报警点位（等级色圆点 + 数字标记 + 点击浮窗） */
 function renderAlarms(points: MapPoint[]): void {
-  if (!map) return
-  alarmSource = new VectorSource()
+  if (!map) return;
+  alarmSource = new VectorSource();
   map.addLayer(
     new VectorLayer({
       source: alarmSource,
       style: (feature) => {
-        const level = (feature.get('level') as number) ?? 3
+        const level = (feature.get('level') as number) ?? 3;
         return new Style({
           image: new CircleStyle({
             radius: 8,
@@ -310,44 +329,45 @@ function renderAlarms(points: MapPoint[]): void {
             fill: new Fill({ color: '#fff' }),
             font: '10px sans-serif',
           }),
-        })
+        });
       },
     }),
-  )
+  );
   alarmSource.addFeatures(
     points.map((p) => {
-      const feature = new Feature({ geometry: new Point(fromLonLat([p.lng, p.lat])) })
-      feature.set('kind', 'alarm')
-      feature.set('id', p.id)
-      feature.set('level', p.level)
-      feature.set('name', p.name)
-      return feature
+      const feature = new Feature({ geometry: new Point(fromLonLat([p.lng, p.lat])) });
+      feature.set('kind', 'alarm');
+      feature.set('id', p.id);
+      feature.set('level', p.level);
+      feature.set('name', p.name);
+      return feature;
     }),
-  )
+  );
 
   // 点击报警点 → 浮窗显示详情
   // 仅响应 kind='alarm' 的点位：设备点/区域面未设置 id/name，误触发会显示 undefined
   map.on('singleclick', (evt) => {
-    if (!alarmSource || !overlay || !overlayRef.value) return
+    if (!alarmSource || !overlay || !overlayRef.value) return;
     const hit = map?.forEachFeatureAtPixel(evt.pixel, (f) =>
-      (f.get('kind') === 'alarm' ? (f as Feature) : undefined),
-    )
+      f.get('kind') === 'alarm' ? (f as Feature) : undefined,
+    );
     if (hit) {
-      overlay.setPosition(evt.coordinate)
-      const el = overlayRef.value
-      el.querySelector('.map-pop-title')!.textContent = `报警 ${String(hit.get('id'))}`
-      el.querySelector('.map-pop-desc')!.textContent = `${hit.get('name')} ｜ 等级 ${String(hit.get('level'))}`
-      el.style.display = 'block'
+      overlay.setPosition(evt.coordinate);
+      const el = overlayRef.value;
+      el.querySelector('.map-pop-title')!.textContent = `报警 ${String(hit.get('id'))}`;
+      el.querySelector('.map-pop-desc')!.textContent =
+        `${hit.get('name')} ｜ 等级 ${String(hit.get('level'))}`;
+      el.style.display = 'block';
     } else {
-      overlayRef.value.style.display = 'none'
+      overlayRef.value.style.display = 'none';
     }
-  })
+  });
 }
 
 function handleWsMessage(msg: RealtimeMessage): void {
-  if (msg.topic !== 'rt/alarm/push') return
-  const p = msg.payload as Partial<AlarmItem> | null
-  if (!p || typeof p !== 'object' || !p.alarmId) return
+  if (msg.topic !== 'rt/alarm/push') return;
+  const p = msg.payload as Partial<AlarmItem> | null;
+  if (!p || typeof p !== 'object' || !p.alarmId) return;
   const row = toAlarmRow({
     alarmId: p.alarmId,
     level: (p.level ?? 3) as AlarmLevel,
@@ -357,8 +377,8 @@ function handleWsMessage(msg: RealtimeMessage): void {
     location: p.location ?? '',
     ts: p.ts ?? new Date().toISOString(),
     description: p.description ?? '',
-  })
-  alarms.value = [row, ...alarms.value.filter((a) => a.id !== row.id)].slice(0, 10)
+  });
+  alarms.value = [row, ...alarms.value.filter((a) => a.id !== row.id)].slice(0, 10);
 }
 
 async function loadData(): Promise<void> {
@@ -370,57 +390,81 @@ async function loadData(): Promise<void> {
       fetchAlarmPoints(),
       fetchDevicePoints(),
       fetchRiskZones(),
-    ])
-    mockReady.value = true
+    ]);
+    mockReady.value = true;
     stats.value = [
-      { label: '在线点位', value: String(overview.deviceOnline), unit: '个', icon: 'Monitor', tone: 'accent' },
-      { label: '今日告警', value: String(overview.activeAlarm), unit: '条', icon: 'Bell', tone: 'danger' },
-      { label: '风险指数', value: overview.riskIndex.toFixed(1), unit: '', icon: 'Odometer', tone: 'warning' },
-      { label: '在线工作站', value: String(overview.onlineWorkstation), unit: '台', icon: 'Monitor', tone: 'success' },
-    ]
-    trendData.value = Array.from({ length: 24 }, (_, i) => trend[i]?.count ?? 0)
-    alarms.value = page.list.map(toAlarmRow)
-    renderZones(zones)
-    renderDevices(devicePoints)
-    renderAlarms(alarmPoints)
-    markOnce('dashboard:data-ready')
-    markOnce('map:ready')
+      {
+        label: '在线点位',
+        value: String(overview.deviceOnline),
+        unit: '个',
+        icon: 'Monitor',
+        tone: 'accent',
+      },
+      {
+        label: '今日告警',
+        value: String(overview.activeAlarm),
+        unit: '条',
+        icon: 'Bell',
+        tone: 'danger',
+      },
+      {
+        label: '风险指数',
+        value: overview.riskIndex.toFixed(1),
+        unit: '',
+        icon: 'Odometer',
+        tone: 'warning',
+      },
+      {
+        label: '在线工作站',
+        value: String(overview.onlineWorkstation),
+        unit: '台',
+        icon: 'Monitor',
+        tone: 'success',
+      },
+    ];
+    trendData.value = Array.from({ length: 24 }, (_, i) => trend[i]?.count ?? 0);
+    alarms.value = page.list.map(toAlarmRow);
+    renderZones(zones);
+    renderDevices(devicePoints);
+    renderAlarms(alarmPoints);
+    markOnce('dashboard:data-ready');
+    markOnce('map:ready');
   } catch (err) {
-    mockError.value = err instanceof Error ? err.message : 'Mock 数据源未连接'
+    mockError.value = err instanceof Error ? err.message : 'Mock 数据源未连接';
     // 降级：静态兜底点位 + 兜底图表
-    renderZones(FALLBACK_RISK_ZONES)
-    renderDevices(FALLBACK_DEVICE_POINTS)
-    renderAlarms(FALLBACK_ALARM_POINTS)
+    renderZones(FALLBACK_RISK_ZONES);
+    renderDevices(FALLBACK_DEVICE_POINTS);
+    renderAlarms(FALLBACK_ALARM_POINTS);
   } finally {
-    loading.value = false
+    loading.value = false;
     // 图表容器位于 v-if="!loading" 面板内，须待 DOM 更新后再初始化
-    await nextTick()
-    renderChart()
+    await nextTick();
+    renderChart();
   }
 }
 
 onMounted(async () => {
-  initMap()
-  window.addEventListener('resize', onResize)
-  await loadData()
+  initMap();
+  window.addEventListener('resize', onResize);
+  await loadData();
 
   // 实时通道：订阅 rt/alarm/push（仅配置了 WS 地址时启用）
-  const wsUrl = import.meta.env.VITE_WS_BASE as string | undefined
+  const wsUrl = import.meta.env.VITE_WS_BASE as string | undefined;
   if (wsUrl) {
-    wsClient = new RealtimeClient({ url: wsUrl, onMessage: handleWsMessage })
-    wsClient.connect()
+    wsClient = new RealtimeClient({ url: wsUrl, onMessage: handleWsMessage });
+    wsClient.connect();
   }
-})
+});
 
 onUnmounted(() => {
-  window.removeEventListener('resize', onResize)
-  wsClient?.close()
-  wsClient = null
-  chart?.dispose()
-  chart = null
-  map?.setTarget(undefined)
-  map = null
-})
+  window.removeEventListener('resize', onResize);
+  wsClient?.close();
+  wsClient = null;
+  chart?.dispose();
+  chart = null;
+  map?.setTarget(undefined);
+  map = null;
+});
 </script>
 
 <template>
@@ -443,12 +487,28 @@ onUnmounted(() => {
     <!-- 顶部指标卡横条 + 2D/3D 切换 -->
     <div v-if="!loading" class="stat-bar glass-panel">
       <div v-for="s in stats" :key="s.label" class="stat-item">
-        <span class="stat-value" :class="'tone-' + s.tone">{{ s.value }}<i v-if="s.unit">{{ s.unit }}</i></span>
+        <span class="stat-value" :class="'tone-' + s.tone"
+          >{{ s.value }}<i v-if="s.unit">{{ s.unit }}</i></span
+        >
         <span class="stat-label">{{ s.label }}</span>
       </div>
       <div class="mode-switch">
-        <button type="button" class="mode-btn" :class="{ active: viewMode === '2d' }" @click="switchMode('2d')">2D</button>
-        <button type="button" class="mode-btn" :class="{ active: viewMode === '3d' }" @click="switchMode('3d')">3D</button>
+        <button
+          type="button"
+          class="mode-btn"
+          :class="{ active: viewMode === '2d' }"
+          @click="switchMode('2d')"
+        >
+          2D
+        </button>
+        <button
+          type="button"
+          class="mode-btn"
+          :class="{ active: viewMode === '3d' }"
+          @click="switchMode('3d')"
+        >
+          3D
+        </button>
       </div>
     </div>
 
@@ -767,7 +827,12 @@ onUnmounted(() => {
 
 .skeleton {
   display: block;
-  background: linear-gradient(90deg, rgb(120 160 210 / 8%), rgb(120 160 210 / 18%), rgb(120 160 210 / 8%));
+  background: linear-gradient(
+    90deg,
+    rgb(120 160 210 / 8%),
+    rgb(120 160 210 / 18%),
+    rgb(120 160 210 / 8%)
+  );
   background-size: 200% 100%;
   animation: skeleton-sweep 1.4s ease-in-out infinite;
   border-radius: var(--radius-sm);

@@ -1,21 +1,21 @@
-import { defineConfig } from 'vitest/config'
-import vue from '@vitejs/plugin-vue'
-import Components from 'unplugin-vue-components/vite'
-import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
-import { fileURLToPath, URL } from 'node:url'
-import { compression } from 'vite-plugin-compression2'
+import { defineConfig } from 'vitest/config';
+import vue from '@vitejs/plugin-vue';
+import Components from 'unplugin-vue-components/vite';
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
+import { fileURLToPath, URL } from 'node:url';
+import { compression } from 'vite-plugin-compression2';
 
 // CSP 开发态基线（S1 §10.2）；生产须改 nonce 注入、移除 unsafe-inline
 // connect-src 额外放行本地 B3 Mock（http://localhost:8787 / ws://localhost:8787）
 const csp = [
   "default-src 'self'",
-  // img-src 放行 https:（OSM 瓦片外域，开发占位；生产替换天地图离线瓦片后收紧）
-  "img-src 'self' data: blob: https: http:",
+  // img-src 收紧至同源（S1 §9.4 离线：默认不请求公网瓦片）；开发需公网 OSM 预览时临时加 https:
+  "img-src 'self' data: blob:",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline'",
   "connect-src 'self' wss: ws: https: http: ws://localhost:* http://localhost:*",
   "font-src 'self' data:",
-].join('; ')
+].join('; ');
 
 export default defineConfig({
   plugins: [
@@ -41,4 +41,4 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.spec.ts'],
   },
-})
+});

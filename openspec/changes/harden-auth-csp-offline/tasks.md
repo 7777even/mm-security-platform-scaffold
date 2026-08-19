@@ -8,8 +8,8 @@
 
 ## 2. P0-2 §9.1/§9.4 离线地图源
 
-- [ ] 2.1 dashboard 地图源抽为可配置常量（内网/天地图占位），默认不强制公网。
-- [ ] 2.2 收紧 `vite.config.ts` dev CSP `img-src` 至 `'self'` + 指定内网域。
+- [x] 2.1 dashboard 地图源抽为可配置常量（同源离线瓦片，env 可覆盖 OSM），默认不强制公网。
+- [x] 2.2 收紧 `vite.config.ts` dev CSP `img-src` 至 `'self' data: blob:`，移除公网放行。
 
 ## 3. P0-3 §10.2 CSP 生产 nonce
 
