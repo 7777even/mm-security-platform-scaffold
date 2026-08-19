@@ -13,15 +13,15 @@
 
 ## 3. P0-3 §10.2 CSP 生产 nonce
 
-- [ ] 3.1 新增 `deploy/csp.conf`（Nginx 生产 CSP，含 nonce 指引，移除 `unsafe-inline`）。
-- [ ] 3.2 文档说明 Vite 构建产物 nonce 适配方式。
+- [x] 3.1 新增 `deploy/csp.conf`（Nginx/OpenResty 生产 CSP，含 nonce 注入指引，移除 `unsafe-inline`）。
+- [x] 3.2 文档说明生产 nonce 由网关注入、前端构建产物 nonce 适配方式（见 deploy/csp.conf）。
 
 ## 4. P1 规范完善
 
-- [ ] 4.1 新增 `deploy/csp.conf` 作为离线部署产物。
-- [ ] 4.2 回写 `rebuild-scaffold-foundation/tasks.md`，将 §5.3/§9.4/§10.2 标注为待本 change 闭环。
+- [x] 4.1 新增 `deploy/csp.conf` 作为离线部署产物。
+- [x] 4.2 回写 `rebuild-scaffold-foundation/tasks.md`，将 §5.3/§9.4/§10.2 标注为待本 change 闭环。
 
 ## 5. 验证
 
-- [ ] 5.1 `npm run test` 全绿（含 token 单测）。
-- [ ] 5.2 `npm run build` + `npm run lint` 全绿。
+- [x] 5.1 `npm run test` 全绿（含 token 单测）。
+- [x] 5.2 `npm run build` + `npm run lint` 全绿。
