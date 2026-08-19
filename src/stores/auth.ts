@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { setAccessToken, clearAccessToken } from '@/services/token';
+import { reportAudit } from '@/services/audit';
 
 // 五类角色：总指挥 / 值班调度 / 属地班长 / 内操 / 外操（rbac-permission spec §角色-终端-防区映射）
 export type RoleId =
@@ -53,6 +54,7 @@ export const useAuthStore = defineStore('auth', () => {
     const t = token ?? `mock-${roleId.value}-${Date.now()}`;
     setAccessToken(t);
     accessToken.value = t;
+    reportAudit({ action: 'login', module: roleId.value });
   }
 
   function logout(): void {

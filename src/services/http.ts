@@ -3,6 +3,7 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { logger } from '@/utils/logger';
 import type { ApiResponse } from '@/types';
 import { getAccessToken } from '@/services/token';
+import { guardHardControl } from '@/services/hardControlGuard';
 
 // 统一 HTTP 客户端（S1 §2.1/§3.3）；网关强制 OAuth2.0 签名拦截（详细设计 §3.3）。
 // 令牌走 HttpOnly Cookie / 内存态，禁止 localStorage 明文（S1 §5.3）。getAccessToken 由 token.ts 内存态提供。
@@ -12,6 +13,8 @@ const http: AxiosInstance = axios.create({
 });
 
 http.interceptors.request.use((config) => {
+  // 零下行控制红线（D1 C-3 只监不控）：任何出站请求命中硬控路径一律拦截
+  guardHardControl(config.url ?? '');
   const token = getAccessToken();
   if (token) config.headers.set('Authorization', `Bearer ${token}`);
   return config;

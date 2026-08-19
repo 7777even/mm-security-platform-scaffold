@@ -10,6 +10,7 @@ import { fetchMenus } from './services/menu';
 import { vPermission } from './directives/permission';
 import { useAuthStore } from './stores/auth';
 import { mark, measure } from './utils/perf';
+import { recordPerf } from './utils/perf-budget';
 import './styles/tokens.css';
 import './styles/global.css';
 
@@ -47,8 +48,9 @@ async function bootstrap(): Promise<void> {
 
   app.mount('#app');
   mark('app:ready');
-  // 渲染层耗时 = 入口 JS 执行 → 首屏挂载完成（真机复测对比 SLO ≤1000ms）
-  measure('render', 'app:start', 'app:ready');
+  // 渲染层耗时 = 入口 JS 执行 → 首屏挂载完成（D1 P7 进入平台 ≤5s 基线）
+  const renderMs = measure('render', 'app:start', 'app:ready');
+  if (renderMs != null) recordPerf('enterPlatformMs', renderMs);
 }
 
 void bootstrap();

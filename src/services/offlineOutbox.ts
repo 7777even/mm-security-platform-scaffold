@@ -78,7 +78,7 @@ export class OfflineOutbox {
   private readonly storageKey: string;
   private readonly maxRetries: number;
   private readonly listeners = new Set<Listener>();
-  private flushing = false;
+  private inflight: Promise<{ synced: number; failed: number }> | null = null;
   private readonly boundOnOnline = (): void => {
     void this.flush();
   };
@@ -118,12 +118,11 @@ export class OfflineOutbox {
    * @returns 本次补传结果（成功/失败计数，已 done 的不计入）。
    */
   async flush(): Promise<{ synced: number; failed: number }> {
-    if (this.flushing) return { synced: 0, failed: 0 };
+    if (this.inflight) return this.inflight;
     if (!this.onlineCheck()) return { synced: 0, failed: 0 };
-    this.flushing = true;
-    let synced = 0;
-    let failed = 0;
-    try {
+    const p = (async () => {
+      let synced = 0;
+      let failed = 0;
       const items = await this.read();
       for (const item of items) {
         if (item.status === 'done') continue;
@@ -154,10 +153,14 @@ export class OfflineOutbox {
         await this.write(items);
         this.emit(items);
       }
+      return { synced, failed };
+    })();
+    this.inflight = p;
+    try {
+      return await p;
     } finally {
-      this.flushing = false;
+      this.inflight = null;
     }
-    return { synced, failed };
   }
 
   /** 单项重试：重置状态与重试计数后（若在线）立即补传。用于人工/后端介入恢复失败项。 */
