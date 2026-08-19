@@ -6,6 +6,29 @@ import type { MapPoint, RiskZone } from '@/services/map';
 import { recordPerfAsync } from '@/utils/perf-budget';
 
 /**
+ * 解析 rgba()/rgb() 字符串为 Cesium polygon 所需的填充色与描边色。
+ * 输入示例：'rgba(250,173,20,0.2)' → { fillRgba: 'rgba(250,173,20,0.32)'（略提透明度）,
+ *                                  outlineHex: '#faad14' }
+ * 业务用途：风险区评分色半透明叠加在深色底图上几乎不可见，加描边色提升边界辨识度。
+ */
+function parseRgbaToHex(cssColor: string): { fillRgba: string; outlineHex: string } {
+  const rgbaMatch = cssColor.match(
+    /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)/,
+  );
+  if (rgbaMatch) {
+    const r = Number(rgbaMatch[1]);
+    const g = Number(rgbaMatch[2]);
+    const b = Number(rgbaMatch[3]);
+    const aRaw = rgbaMatch[4] !== undefined ? Number(rgbaMatch[4]) : 1;
+    const a = Math.min(0.4, aRaw + 0.12); // 略提透明度让填充可见
+    const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    return { fillRgba: `rgba(${r},${g},${b},${a.toFixed(2)})`, outlineHex: hex };
+  }
+  // fallback：原样回填
+  return { fillRgba: cssColor, outlineHex: '#00d4ff' };
+}
+
+/**
  * Cesium 二三维一体化地图容器（详细设计 4.2.2.2「地图集成服务 map」前端消费侧）。
  *
  * - 懒加载引擎：默认动态 `import('cesium')`，不污染首屏；viewerFactory 可注入测试替身。
@@ -208,6 +231,11 @@ async function createViewer(): Promise<void> {
       const ro = new ResizeObserver(() => viewer?.resize?.());
       ro.observe(containerRef.value);
     }
+    // 兜底修复：Cesium 1.119 在 onMounted 后立即 resize() 仍可能错过 layout 终态，
+    // 导致 canvas drawingBuffer 与 viewport 只覆盖下半屏、上半 framebuffer 残留未初始化值（呈现亮灰/白屏）。
+    // 延迟 200/500ms 再次 resize 强制 viewport 重新计算覆盖整个 canvas。
+    setTimeout(() => viewer?.resize?.(), 200);
+    setTimeout(() => viewer?.resize?.(), 500);
   }
   applySceneMode(props.sceneMode);
   emit('ready');
@@ -260,17 +288,29 @@ function renderData(): void {
   viewer.entities.removeAll();
   for (const z of props.zones) {
     const e = toZoneEntity(z);
-    // 关键修复：polygon.hierarchy 必须用 Cartesian3[]（经度/纬度展平后 fromDegreesArray），
+    // 关键修复 1：polygon.hierarchy 必须用 Cartesian3[]（经度/纬度展平后 fromDegreesArray），
     // 直接传 [lng, lat] 数组会被 Cesium 当成 Cartesian3(x=lng,y=lat,z=undefined)，
     // z=NaN → Stereographic 归一化抛 "normalized result is not a number" → 每帧 render 崩溃 → RAF 关闭 → 画面全黑
     const hierarchy = C.Cartesian3.fromDegreesArray(e.coordinates.flat());
+    // 把 e.color（如 rgba(255,77,79,0.22)）拆出 base RGB，单独生成"半透明填充色 + 高对比描边色"
+    // 让 polygon 在深色底图上既不刺眼也能定位（用户反馈 polygon 看不见 = 半透明色在深底图上几乎不可见）
+    const base = parseRgbaToHex(e.color);
     viewer.entities.add({
       name: e.name,
       polygon: {
         hierarchy,
-        material: e.color,
+        // 关键修复 2：必须显式 height: 0。
+        // 不设 height 时 Cesium 走 CLAMP_TO_GROUND ground 渲染路径
+        // （StaticGroundGeometryPerMaterialBatch），半透明材质 + EllipsoidTerrain 组合
+        // 在 WebGL 下渲染异常 → 风险区变成"白色未渲染块"。
+        // height: 0 强制 polygon 画在椭球面 height=0 平面（普通 3D geometry 路径），
+        // 半透明材质正常叠加，且 2D/3D 模式都能正确显示。
+        height: 0,
+        material: base.fillRgba,
+        // outline 改为高对比描边色（与填充同色更深），让 polygon 在深色底图上有明确边界
         outline: true,
-        outlineColor: 'rgba(0,212,255,0.5)',
+        outlineColor: base.outlineHex,
+        outlineWidth: 2,
       },
     });
   }
