@@ -9,6 +9,7 @@ import { installDynamicRoutes, DEFAULT_MENUS } from './router/menu';
 import { fetchMenus } from './services/menu';
 import { vPermission } from './directives/permission';
 import { useAuthStore } from './stores/auth';
+import { startRealtime } from './services/realtime';
 import { mark, measure } from './utils/perf';
 import { recordPerf } from './utils/perf-budget';
 import './styles/tokens.css';
@@ -37,6 +38,9 @@ async function bootstrap(): Promise<void> {
   app.use(createPinia());
   // Mock 登录：将访问令牌写入内存态，使请求拦截注入 Authorization（§5.3；正式环境由 IDP SSO 替换）
   useAuthStore().login();
+
+  // 启动监测预警实时中枢（仅只读监视流订阅，零下行控制）
+  startRealtime();
 
   // 关键：先装配动态路由，再挂载 router。
   // app.use(router) 会立即触发初始导航；若此时页面路由未装配，/dashboard 等路径

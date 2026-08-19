@@ -37,3 +37,16 @@ export function recordPerf(key: PerfKey, durationMs: number): PerfEvaluation {
   }
   return ev;
 }
+
+/**
+ * 计时并执行异步任务，结束后回写对应 D1 性能预算（P9 地图/P10 查询等）。
+ * 任务抛错仍记录耗时并向上抛出，便于排查慢路径而不丢失异常。
+ */
+export async function recordPerfAsync<R>(key: PerfKey, fn: () => Promise<R> | R): Promise<R> {
+  const t0 = performance.now();
+  try {
+    return await fn();
+  } finally {
+    recordPerf(key, performance.now() - t0);
+  }
+}

@@ -25,6 +25,7 @@ import { Circle as CircleStyle, Fill, Stroke, Style, Text } from 'ol/style';
 import type { Coordinate } from 'ol/coordinate';
 import { RealtimeClient, type RealtimeMessage } from '@/services/ws';
 import { markOnce } from '@/utils/perf';
+import { recordPerfAsync } from '@/utils/perf-budget';
 import {
   fetchDashboardOverview,
   fetchAlarmTrend,
@@ -386,7 +387,7 @@ async function loadData(): Promise<void> {
     const [overview, trend, page, alarmPoints, devicePoints, zones] = await Promise.all([
       fetchDashboardOverview(),
       fetchAlarmTrend(),
-      fetchAlarmPage(1, 5),
+      recordPerfAsync('componentQueryMs', () => fetchAlarmPage(1, 5)), // P10 查询组件 ≤2s
       fetchAlarmPoints(),
       fetchDevicePoints(),
       fetchRiskZones(),
@@ -424,9 +425,12 @@ async function loadData(): Promise<void> {
     ];
     trendData.value = Array.from({ length: 24 }, (_, i) => trend[i]?.count ?? 0);
     alarms.value = page.list.map(toAlarmRow);
-    renderZones(zones);
-    renderDevices(devicePoints);
-    renderAlarms(alarmPoints);
+    // P9 地图加载 ≤2s：区域/设备/报警点位渲染计时
+    await recordPerfAsync('baseMapMs', async () => {
+      renderZones(zones);
+      renderDevices(devicePoints);
+      renderAlarms(alarmPoints);
+    });
     markOnce('dashboard:data-ready');
     markOnce('map:ready');
   } catch (err) {
