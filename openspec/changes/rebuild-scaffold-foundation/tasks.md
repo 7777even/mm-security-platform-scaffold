@@ -40,6 +40,6 @@
 
 ## 8. 合规差距回写（由 harden-auth-csp-offline 跟踪）
 
-- [ ] 8.1 §5.3 令牌机制此前为占位（null），非已闭环，待 harden change 实现。
-- [ ] 8.2 §9.4 离线部署地图源此前仍为公网 CartoDB，待切内网瓦片。
-- [ ] 8.3 §10.2 CSP 生产 nonce 方案此前缺失，待补 Nginx 模板。
+- [x] 8.1 §5.3 令牌机制已由 `harden-auth-csp-offline` 闭环（内存态令牌 + 拦截注入 Bearer，禁 localStorage 明文）。
+- [x] 8.2 §9.4 离线部署地图源已由 `harden-auth-csp-offline` 闭环（抽为可配置常量 `MAP_TILE_URL`，默认内网同源，移除公网 CartoDB）。
+- [x] 8.3 §10.2 CSP 生产 nonce 方案已由 `harden-auth-csp-offline` 闭环（`deploy/csp.conf` 含 nonce 注入指引，移除 unsafe-inline）。
