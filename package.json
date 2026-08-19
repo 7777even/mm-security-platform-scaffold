@@ -14,7 +14,14 @@
     "format": "prettier --write \"src/**/*.{ts,vue,js,css,json,md}\"",
     "stylelint": "stylelint \"src/**/*.{css,vue}\"",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",

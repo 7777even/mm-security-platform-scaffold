@@ -1,20 +1,20 @@
-import type { Router, RouteRecordRaw, RouteComponent } from 'vue-router'
-import { logger } from '@/utils/logger'
+import type { Router, RouteRecordRaw, RouteComponent } from 'vue-router';
+import { logger } from '@/utils/logger';
 
 // B3 AUTH-05 菜单契约（GET /auth/menus）返回的菜单项；id 与前端路由 name/权限码对齐
 export interface MenuItem {
-  id: string
-  name: string
-  path: string
-  children?: MenuItem[]
+  id: string;
+  name: string;
+  path: string;
+  children?: MenuItem[];
 }
 
 // 菜单 id → 前端装配信息（组件懒加载 + 标题 + 权限码）
 // T7 后端契约到位后若菜单自带 component/perm 字段，仅需改此映射或 adapter
 interface MenuRouteSpec {
-  title: string
-  perm: string
-  component: () => Promise<RouteComponent>
+  title: string;
+  perm: string;
+  component: () => Promise<RouteComponent>;
 }
 
 const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
@@ -43,7 +43,12 @@ const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
     perm: 'system:device-code:view',
     component: () => import('@/views/system/deviceCode.vue').then((m) => m.default),
   },
-}
+  'mobile-field-report': {
+    title: '防爆移动端',
+    perm: 'mobile:field-report:view',
+    component: () => import('@/views/mobile/fieldReport.vue').then((m) => m.default),
+  },
+};
 
 // 降级默认菜单：mock/后端菜单不可达时装配，保证不白屏（对齐当前页面集）
 export const DEFAULT_MENUS: MenuItem[] = [
@@ -59,13 +64,14 @@ export const DEFAULT_MENUS: MenuItem[] = [
       { id: 'system-device-code', name: '设备编码', path: '/system/device-code' },
     ],
   },
-]
+  { id: 'mobile-field-report', name: '防爆移动端', path: '/mobile/field-report' },
+];
 
 // 菜单 → 路由记录（递归；未注册 id 跳过并告警，避免装配无组件路由）
 export function buildDynamicRoutes(menus: MenuItem[]): RouteRecordRaw[] {
-  const result: RouteRecordRaw[] = []
+  const result: RouteRecordRaw[] = [];
   for (const menu of menus) {
-    const spec = MENU_ROUTE_SPECS[menu.id]
+    const spec = MENU_ROUTE_SPECS[menu.id];
     if (spec) {
       result.push({
         path: menu.path,
@@ -73,30 +79,30 @@ export function buildDynamicRoutes(menus: MenuItem[]): RouteRecordRaw[] {
         component: spec.component,
         meta: { title: spec.title, perm: spec.perm },
         children: menu.children ? buildDynamicRoutes(menu.children) : undefined,
-      })
+      });
     } else if (menu.children && menu.children.length > 0) {
       // 无组件但有子菜单：生成分组壳路由（如 system 分组）
-      const children = buildDynamicRoutes(menu.children)
+      const children = buildDynamicRoutes(menu.children);
       if (children.length > 0) {
-        result.push({ path: menu.path, name: menu.id, meta: { title: menu.name }, children })
+        result.push({ path: menu.path, name: menu.id, meta: { title: menu.name }, children });
       }
     } else {
-      logger.warn(`[menu] 未注册菜单 id 已跳过: ${menu.id}`)
+      logger.warn(`[menu] 未注册菜单 id 已跳过: ${menu.id}`);
     }
   }
-  return result
+  return result;
 }
 
 // 已装配菜单路由快照（供 AppLayout 菜单渲染复用，避免读 router.options 静态路由）
-let installedRoutes: RouteRecordRaw[] = []
+let installedRoutes: RouteRecordRaw[] = [];
 
 export function getInstalledMenuRoutes(): RouteRecordRaw[] {
-  return installedRoutes
+  return installedRoutes;
 }
 
 /** 清空装配快照（HMR/测试场景） */
 export function resetInstalledRoutes(): void {
-  installedRoutes = []
+  installedRoutes = [];
 }
 
 /**
@@ -104,15 +110,19 @@ export function resetInstalledRoutes(): void {
  * 幂等：按路由 name 去重，已存在的路径不重复安装。
  * @returns 本次新增装配数
  */
-export function installDynamicRoutes(router: Router, menus: MenuItem[], parentName = 'layout'): number {
-  const routes = buildDynamicRoutes(menus)
-  const existing = new Set(router.getRoutes().map((r) => r.name))
-  let count = 0
+export function installDynamicRoutes(
+  router: Router,
+  menus: MenuItem[],
+  parentName = 'layout',
+): number {
+  const routes = buildDynamicRoutes(menus);
+  const existing = new Set(router.getRoutes().map((r) => r.name));
+  let count = 0;
   for (const route of routes) {
-    if (route.name && existing.has(route.name)) continue
-    router.addRoute(parentName, route)
-    count += 1
+    if (route.name && existing.has(route.name)) continue;
+    router.addRoute(parentName, route);
+    count += 1;
   }
-  installedRoutes = routes
-  return count
+  installedRoutes = routes;
+  return count;
 }
