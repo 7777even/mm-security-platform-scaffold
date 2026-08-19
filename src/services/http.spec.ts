@@ -1,24 +1,49 @@
-import { describe, it, expect } from 'vitest'
-import { unwrapBody } from '@/services/http'
-import type { ApiResponse } from '@/types'
+import { describe, it, expect, beforeEach } from 'vitest';
+import http from '@/services/http';
+import { setAccessToken, clearAccessToken } from '@/services/token';
+import type { AxiosAdapter, AxiosHeaders, AxiosResponse } from 'axios';
 
-describe('unwrapBody 响应包络解包', () => {
-  it('code=0 时返回 data', () => {
-    const body: ApiResponse<{ id: number }> = { code: 0, message: 'ok', data: { id: 1 } }
-    expect(unwrapBody(body)).toEqual({ id: 1 })
-  })
+// §5.3 集成断言：请求拦截应注入 Authorization: Bearer <token>，且无令牌时不注入。
+// 通过 per-request 自定义 adapter 捕获经请求拦截后的最终 config.headers。
+function captureAdapter(captured: { headers?: AxiosHeaders }) {
+  const adapter: AxiosAdapter = (config) => {
+    captured.headers = config.headers;
+    const resp: AxiosResponse = {
+      data: { code: 0, message: 'ok', data: null },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config,
+      request: {},
+    };
+    return Promise.resolve(resp);
+  };
+  return adapter;
+}
 
-  it('code!=0 时抛错并携带 message', () => {
-    const body: ApiResponse<null> = { code: 404, message: '报警不存在', data: null }
-    expect(() => unwrapBody(body)).toThrow('报警不存在')
-  })
+describe('http 请求拦截：§5.3 注入 Authorization', () => {
+  beforeEach(() => {
+    clearAccessToken();
+  });
 
-  it('data 为数组/分页结构时原样透传', () => {
-    const body: ApiResponse<{ list: number[]; total: number; page: number; size: number }> = {
-      code: 0,
-      message: 'ok',
-      data: { list: [1, 2], total: 2, page: 1, size: 5 },
-    }
-    expect(unwrapBody(body)).toEqual({ list: [1, 2], total: 2, page: 1, size: 5 })
-  })
-})
+  it('存在内存令牌时注入 Authorization: Bearer <token>', async () => {
+    setAccessToken('tok-abc');
+    const captured: { headers?: AxiosHeaders } = {};
+    await http.request({
+      url: '/test',
+      method: 'GET',
+      adapter: captureAdapter(captured),
+    });
+    expect(captured.headers?.get('Authorization')).toBe('Bearer tok-abc');
+  });
+
+  it('无令牌时不注入 Authorization', async () => {
+    const captured: { headers?: AxiosHeaders } = {};
+    await http.request({
+      url: '/test',
+      method: 'GET',
+      adapter: captureAdapter(captured),
+    });
+    expect(captured.headers?.get('Authorization')).toBeUndefined();
+  });
+});

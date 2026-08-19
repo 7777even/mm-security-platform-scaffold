@@ -4,7 +4,7 @@
 - [x] 1.2 实现 `services/token.ts` 内存令牌读写。
 - [x] 1.3 `http.ts` 的 `getAccessToken` 接线 `token.ts`（替换 null 占位）。
 - [x] 1.4 `auth.ts` 登录流程写入内存令牌（当前 Mock）。
-- [ ] 1.5 单测断言请求拦截注入 `Authorization`（逻辑已接线，集成断言待补）。
+- [x] 1.5 单测断言请求拦截注入 `Authorization`（`http.spec.ts` 集成测试：有令牌注入 `Bearer`、无令牌不注入）。
 
 ## 2. P0-2 §9.1/§9.4 离线地图源
 
