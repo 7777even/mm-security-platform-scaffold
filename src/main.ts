@@ -10,6 +10,8 @@ import { fetchMenus } from './services/menu';
 import { vPermission } from './directives/permission';
 import { useAuthStore } from './stores/auth';
 import { startRealtime } from './services/realtime';
+import http from './services/http';
+import { installDevMock } from './mocks/devMock';
 import { mark, measure } from './utils/perf';
 import { recordPerf } from './utils/perf-budget';
 import './styles/tokens.css';
@@ -35,12 +37,18 @@ async function bootstrap(): Promise<void> {
     app.component(icon.name!, icon);
   }
   app.directive('permission', vPermission);
-  app.use(createPinia());
+  const pinia = createPinia();
+  app.use(pinia);
   // Mock 登录：将访问令牌写入内存态，使请求拦截注入 Authorization（§5.3；正式环境由 IDP SSO 替换）
   useAuthStore().login();
 
-  // 启动监测预警实时中枢（仅只读监视流订阅，零下行控制）
-  startRealtime();
+  // 启动监测预警实时中枢（仅只读监视流订阅，零下行控制）。
+  // 开发期：显式 VITE_USE_DEV_MOCK=true 时启用自包含 mock（无需外部后端）；否则走真实 ws。
+  if (import.meta.env.DEV && import.meta.env.VITE_USE_DEV_MOCK === 'true') {
+    installDevMock(http, pinia);
+  } else {
+    startRealtime();
+  }
 
   // 关键：先装配动态路由，再挂载 router。
   // app.use(router) 会立即触发初始导航；若此时页面路由未装配，/dashboard 等路径

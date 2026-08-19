@@ -92,11 +92,13 @@ onMounted(() => {
           <el-button
             size="small"
             :disabled="!canAck() || row.status !== 'ACTIVE'"
-            @click="onAck(row)"
+            @click="onAck(row as AlarmItem)"
           >
             确认
           </el-button>
-          <el-button size="small" link type="primary" @click="openDetail(row)">详情</el-button>
+          <el-button size="small" link type="primary" @click="openDetail(row as AlarmItem)"
+            >详情</el-button
+          >
         </template>
       </el-table-column>
     </el-table>

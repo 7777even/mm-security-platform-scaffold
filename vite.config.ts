@@ -10,7 +10,8 @@ import { compression } from 'vite-plugin-compression2';
 const csp = [
   "default-src 'self'",
   // img-src 收紧至同源（S1 §9.4 离线：默认不请求公网瓦片）；开发需公网 OSM 预览时临时加 https:
-  "img-src 'self' data: blob:",
+  // 注意：此 header 仅作用于 dev server，生产由 deploy/csp.conf nonce 注入，仍保持 'self' 同源
+  "img-src 'self' data: blob: https:",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline'",
   "connect-src 'self' wss: ws: https: http: ws://localhost:* http://localhost:*",
