@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import { setAccessToken, clearAccessToken } from '@/services/token';
 
 // 五类角色：总指挥 / 值班调度 / 属地班长 / 内操 / 外操（rbac-permission spec §角色-终端-防区映射）
 export type RoleId =
@@ -40,9 +41,23 @@ export const ROLE_PERMS: Record<RoleId, string[]> = {
 export const useAuthStore = defineStore('auth', () => {
   const roleId = ref<RoleId>('commander');
   const perms = computed(() => ROLE_PERMS[roleId.value]);
+  const accessToken = ref<string | null>(null);
 
   function setRole(id: RoleId): void {
     roleId.value = id;
+  }
+
+  // Mock 登录（S1 §5.3）：正式环境由 IDP SSO 下发 access token 并写入内存态；
+  // 刷新令牌由后端种入 HttpOnly Cookie，浏览器自动随请求发送，前端 JS 不可读。
+  function login(token?: string): void {
+    const t = token ?? `mock-${roleId.value}-${Date.now()}`;
+    setAccessToken(t);
+    accessToken.value = t;
+  }
+
+  function logout(): void {
+    clearAccessToken();
+    accessToken.value = null;
   }
 
   function hasPerm(perm: string): boolean {
@@ -53,5 +68,5 @@ export const useAuthStore = defineStore('auth', () => {
     return permsList.some((p) => hasPerm(p));
   }
 
-  return { roleId, perms, setRole, hasPerm, hasAny };
+  return { roleId, perms, accessToken, setRole, login, logout, hasPerm, hasAny };
 });
