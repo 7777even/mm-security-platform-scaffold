@@ -3,6 +3,7 @@ dist
 dist-ssr
 .verify-tmp
 .verify-out
+docs/_extract_media.py
 *.local
 .DS_Store
 logs
