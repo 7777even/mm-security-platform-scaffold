@@ -145,6 +145,18 @@
   --alarm-card-gap: var(--space-sm);
   --alarm-card-bg: var(--glass-bg);
 
+  /* §12.1 报警列表卡片 AlarmListItem（设计稿图 5-10 右上消防告警列表） */
+  --alarm-list-radius: 8px;
+  --alarm-list-gap: var(--space-md);
+  --alarm-list-padding: var(--space-md);
+  --alarm-list-thumb-w: 96px;
+  --alarm-list-thumb-h: 72px;
+  --alarm-list-divider: rgb(255 255 255 / 8%);
+  --alarm-list-status-active: var(--color-alarm-1);
+  --alarm-list-status-acked: var(--color-warning);
+  --alarm-list-status-dispatched: var(--color-accent-2);
+  --alarm-list-status-closed: var(--color-success);
+
   /* §9.3 按钮组件 */
   --btn-radius: var(--radius-sm);
   --btn-h-sm: 28px;

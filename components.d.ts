@@ -12,6 +12,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AlarmCard: typeof import('./src/components/common/AlarmCard.vue')['default']
+    AlarmListItem: typeof import('./src/components/common/AlarmListItem.vue')['default']
     AppButton: typeof import('./src/components/common/AppButton.vue')['default']
     AppErrorBoundary: typeof import('./src/components/AppErrorBoundary.vue')['default']
     AppLayout: typeof import('./src/components/layout/AppLayout.vue')['default']
@@ -35,6 +36,7 @@ declare module 'vue' {
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTag: typeof import('element-plus/es')['ElTag']
     MapPin: typeof import('./src/components/common/MapPin.vue')['default']
+    ModuleLayout: typeof import('./src/components/layout/ModuleLayout.vue')['default']
     PanelCard: typeof import('./src/components/common/PanelCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

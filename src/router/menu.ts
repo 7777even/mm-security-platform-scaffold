@@ -1,6 +1,6 @@
 import type { Router, RouteRecordRaw, RouteComponent } from 'vue-router';
 import type { Component } from 'vue';
-import { DataBoard, Warning, VideoCamera, User, Cpu, Cellphone } from '@element-plus/icons-vue';
+import { DataBoard, Warning, VideoCamera, Cloudy, Lock, Cpu } from '@element-plus/icons-vue';
 import { logger } from '@/utils/logger';
 
 // B3 AUTH-05 菜单契约（GET /auth/menus）返回的菜单项；id 与前端路由 name/权限码对齐
@@ -22,58 +22,51 @@ interface MenuRouteSpec {
 
 const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
   dashboard: {
-    title: '综合态势',
+    title: '应急指挥及演练',
     perm: 'dashboard:view',
     icon: DataBoard,
     component: () => import('@/views/dashboard/index.vue').then((m) => m.default),
   },
+  'extreme-weather': {
+    title: '极端天气风险应急',
+    perm: 'weather:view',
+    icon: Cloudy,
+    component: () => import('@/views/extreme-weather/index.vue').then((m) => m.default),
+  },
   'fire-alarm': {
-    title: '火灾报警',
+    title: '消防报警',
     perm: 'fire-alarm:view',
     icon: Warning,
     component: () => import('@/views/fire-alarm/index.vue').then((m) => m.default),
   },
+  'security-anti-terror': {
+    title: '治安防恐',
+    perm: 'security:view',
+    icon: Lock,
+    component: () => import('@/views/security-anti-terror/index.vue').then((m) => m.default),
+  },
   'industrial-video': {
-    title: '工业视频',
+    title: '工业电视视频墙',
     perm: 'video:view',
     icon: VideoCamera,
     component: () => import('@/views/industrial-video/index.vue').then((m) => m.default),
   },
-  'system-users': {
-    title: '用户与权限',
-    perm: 'system:user:view',
-    icon: User,
-    component: () => import('@/views/system/users.vue').then((m) => m.default),
-  },
-  'system-device-code': {
-    title: '设备编码',
-    perm: 'system:device-code:view',
+  'ops-monitor': {
+    title: '运维监测',
+    perm: 'ops:view',
     icon: Cpu,
-    component: () => import('@/views/system/deviceCode.vue').then((m) => m.default),
-  },
-  'mobile-field-report': {
-    title: '防爆移动端',
-    perm: 'mobile:field-report:view',
-    icon: Cellphone,
-    component: () => import('@/views/mobile/fieldReport.vue').then((m) => m.default),
+    component: () => import('@/views/ops-monitor/index.vue').then((m) => m.default),
   },
 };
 
-// 降级默认菜单：mock/后端菜单不可达时装配，保证不白屏（对齐当前页面集）
+// 降级默认菜单：mock/后端菜单不可达时装配，保证不白屏（对齐六大业务模块原型）
 export const DEFAULT_MENUS: MenuItem[] = [
-  { id: 'dashboard', name: '综合态势', path: '/dashboard' },
-  { id: 'fire-alarm', name: '火灾报警', path: '/fire-alarm' },
-  { id: 'industrial-video', name: '工业视频', path: '/industrial-video' },
-  {
-    id: 'system',
-    name: '系统管理',
-    path: '/system',
-    children: [
-      { id: 'system-users', name: '用户与权限', path: '/system/users' },
-      { id: 'system-device-code', name: '设备编码', path: '/system/device-code' },
-    ],
-  },
-  { id: 'mobile-field-report', name: '防爆移动端', path: '/mobile/field-report' },
+  { id: 'dashboard', name: '应急指挥及演练', path: '/dashboard' },
+  { id: 'extreme-weather', name: '极端天气风险应急', path: '/extreme-weather' },
+  { id: 'fire-alarm', name: '消防报警', path: '/fire-alarm' },
+  { id: 'security-anti-terror', name: '治安防恐', path: '/security-anti-terror' },
+  { id: 'industrial-video', name: '工业电视视频墙', path: '/industrial-video' },
+  { id: 'ops-monitor', name: '运维监测', path: '/ops-monitor' },
 ];
 
 // 菜单 → 路由记录（递归；未注册 id 跳过并告警，避免装配无组件路由）
