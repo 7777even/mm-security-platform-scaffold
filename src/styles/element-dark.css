@@ -1,0 +1,197 @@
+/* =========================================================================
+ * Element Plus 深色科技风主题覆盖（对齐 §4/§8 玻璃面板 + §5-1 色彩规范）
+ * 说明：
+ * - 项目基于 unplugin-vue-components 按需自动引入 EP 组件（B4），仅引入 base.css。
+ * - 此处对实际用到的 EP 组件（select/pagination/drawer/descriptions/message/popper
+ *   等）做全局深色覆盖，保证所有模块样式一致。
+ * - 依赖的 CSS 变量见 styles/tokens.css。
+ * ========================================================================= */
+
+/* ---- 下拉选择 Select ---- */
+.el-select__wrapper {
+  background-color: rgb(15 23 42 / 60%) !important;
+  border: 1px solid rgb(148 163 184 / 30%) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s !important;
+}
+
+.el-select__wrapper.is-focused {
+  background-color: rgb(15 23 42 / 75%) !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 2px rgb(0 216 255 / 12%) !important;
+}
+
+.el-select__placeholder {
+  color: rgb(148 163 184 / 65%) !important;
+}
+
+.el-select__selected-item {
+  color: var(--color-text, #e2e8f0) !important;
+}
+
+.el-select__caret {
+  color: var(--color-text-muted, #94a3b8) !important;
+}
+
+/* 下拉面板（teleport 到 body，全局生效） */
+.el-popper.is-light {
+  background-color: rgb(15 23 42 / 96%) !important;
+  border: 1px solid rgb(148 163 184 / 30%) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 55%) !important;
+}
+
+.el-popper.is-light .el-select-dropdown__item {
+  color: var(--color-text-secondary, #cbd5e1) !important;
+}
+
+.el-popper.is-light .el-select-dropdown__item.is-hovering {
+  background-color: rgb(0 216 255 / 10%) !important;
+}
+
+.el-popper.is-light .el-select-dropdown__item.is-selected {
+  color: var(--color-accent) !important;
+  background-color: rgb(0 216 255 / 8%) !important;
+}
+
+.el-popper.is-light .el-select-dropdown__empty {
+  color: var(--color-text-muted, #94a3b8) !important;
+}
+
+/* ---- 分页 Pagination ---- */
+.el-pagination {
+  --el-pagination-bg-color: transparent;
+  --el-pagination-text-color: var(--color-text-secondary, #cbd5e1);
+  --el-pagination-button-color: var(--color-text-secondary, #cbd5e1);
+  --el-pagination-button-bg-color: rgb(15 23 42 / 55%);
+  --el-pagination-button-disabled-bg-color: rgb(15 23 42 / 35%);
+  --el-pagination-hover-color: var(--color-accent);
+  --el-pagination-button-active-color: #04111c;
+  --el-pagination-button-active-bg-color: var(--color-accent);
+}
+
+.el-pagination .el-pager li {
+  border: 1px solid rgb(148 163 184 / 25%);
+  border-radius: 6px;
+  margin-right: 4px;
+  background-color: rgb(15 23 42 / 55%) !important;
+  color: var(--color-text-secondary, #cbd5e1) !important;
+  transition: all 0.15s;
+}
+
+.el-pagination .el-pager li:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent) !important;
+}
+
+.el-pagination .el-pager li.is-active {
+  background-color: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
+  color: #04111c !important;
+  font-weight: 700;
+}
+
+.el-pagination .btn-prev,
+.el-pagination .btn-next {
+  border: 1px solid rgb(148 163 184 / 25%);
+  border-radius: 6px;
+  background-color: rgb(15 23 42 / 55%) !important;
+  color: var(--color-text-secondary, #cbd5e1) !important;
+}
+
+.el-pagination .btn-prev:hover,
+.el-pagination .btn-next:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent) !important;
+}
+
+.el-pagination .el-pagination__total {
+  color: var(--color-text-muted, #94a3b8) !important;
+  font-family: var(--font-family-num);
+}
+
+/* ---- 抽屉 Drawer ---- */
+.el-drawer {
+  background: linear-gradient(180deg, rgb(15 23 42 / 98%), rgb(11 17 32 / 98%)) !important;
+  border-left: 1px solid rgb(0 216 255 / 25%) !important;
+}
+
+.el-drawer__header {
+  color: var(--color-text, #e2e8f0) !important;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 0 !important;
+  border-bottom: 1px solid rgb(148 163 184 / 15%);
+  padding-bottom: 14px !important;
+}
+
+.el-drawer__body {
+  color: var(--color-text-secondary, #cbd5e1) !important;
+}
+
+.el-overlay {
+  background-color: rgb(2 8 20 / 60%) !important;
+  backdrop-filter: blur(2px);
+}
+
+/* ---- 描述列表 Descriptions ---- */
+.el-descriptions__label {
+  color: var(--color-text-muted, #94a3b8) !important;
+}
+
+.el-descriptions__content {
+  color: var(--color-text, #e2e8f0) !important;
+  font-family: var(--font-family-num);
+  font-variant-numeric: tabular-nums;
+}
+
+.el-descriptions__table {
+  border-color: rgb(148 163 184 / 20%) !important;
+  background-color: transparent !important;
+}
+
+.el-descriptions__body .el-descriptions__table td {
+  background-color: rgb(15 23 42 / 45%) !important;
+}
+
+.el-descriptions__body .el-descriptions__table td.el-descriptions__cell {
+  background-color: transparent !important;
+}
+
+/* ---- 消息提示 Message ---- */
+.el-message {
+  background-color: rgb(15 23 42 / 92%) !important;
+  border: 1px solid rgb(148 163 184 / 30%) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 50%) !important;
+  color: var(--color-text, #e2e8f0) !important;
+}
+
+.el-message--success .el-message__content {
+  color: var(--color-success, #2ee6a8) !important;
+}
+
+.el-message--warning .el-message__content {
+  color: var(--color-warning, #fbbf24) !important;
+}
+
+.el-message--error .el-message__content {
+  color: var(--color-danger, #ef4444) !important;
+}
+
+/* ---- 关闭按钮 / 图标统一 ---- */
+.el-drawer__close-btn {
+  color: var(--color-text-muted, #94a3b8) !important;
+}
+
+.el-drawer__close-btn:hover {
+  color: var(--color-accent) !important;
+}
+
+/* ---- 表格内描述：去除描边宽度冗余 ---- */
+.el-descriptions__body .el-descriptions__table .el-descriptions__cell {
+  border-color: rgb(148 163 184 / 20%) !important;
+}

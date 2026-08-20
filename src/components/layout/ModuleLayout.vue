@@ -72,26 +72,6 @@ function onModeChange(mode: '2d' | '3d'): void {
 
     <p v-if="mapNotice" class="module-map__notice">{{ mapNotice }}</p>
 
-    <!-- 2D/3D 切换浮层（地图右上角，避开右侧面板） -->
-    <div class="module-map__mode">
-      <button
-        type="button"
-        class="mode-btn"
-        :class="{ active: sceneMode === '2d' }"
-        @click="sceneMode = '2d'"
-      >
-        2D
-      </button>
-      <button
-        type="button"
-        class="mode-btn"
-        :class="{ active: sceneMode === '3d' }"
-        @click="sceneMode = '3d'"
-      >
-        3D
-      </button>
-    </div>
-
     <!-- 左侧数据列（设计稿 419px） -->
     <div v-if="$slots.left" class="module-map__left">
       <slot name="left" />
@@ -115,7 +95,7 @@ function onModeChange(mode: '2d' | '3d'): void {
 .module-map {
   position: relative;
   height: 100%;
-  overflow: hidden;
+  /* 不裁切子元素溢出：左右数据列内部 overflow-y:auto 仍可滚 */
 }
 
 /* 地图降级提示 */
@@ -133,35 +113,7 @@ function onModeChange(mode: '2d' | '3d'): void {
   font-size: 12px;
 }
 
-/* 2D/3D 切换浮层（地图右上角，避开右侧面板） */
-.module-map__mode {
-  position: absolute;
-  top: var(--space-md);
-  right: calc(419px + var(--space-md) * 2);
-  z-index: 6;
-  display: flex;
-  gap: 2px;
-  padding: 2px;
-  border-radius: var(--radius-sm);
-  background: rgb(0 212 255 / 10%);
-}
-
-.mode-btn {
-  padding: 4px 14px;
-  font-size: 12px;
-  color: var(--color-text-muted);
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.mode-btn.active {
-  color: var(--color-accent);
-  background: rgb(0 212 255 / 18%);
-}
-
-/* 左侧数据列（设计稿 419px） */
+/* 左侧数据列（设计稿 419px）：超出可滚动但隐藏滚动条（与 dashboard 一致） */
 .module-map__left {
   position: absolute;
   top: var(--space-md);
@@ -172,18 +124,12 @@ function onModeChange(mode: '2d' | '3d'): void {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.module-map__left > .panel-card:last-child {
-  flex: 1;
-  min-height: 0;
-}
-
-.module-map__left > .panel-card:last-child :deep(.panel-card__body) {
-  overflow: auto;
-}
-
-/* 右侧数据列（设计稿 419px） */
+/* 右侧数据列（设计稿 419px）：超出可滚动但隐藏滚动条（与 dashboard 一致） */
 .module-map__right {
   position: absolute;
   top: var(--space-md);
@@ -191,14 +137,19 @@ function onModeChange(mode: '2d' | '3d'): void {
   bottom: var(--space-md);
   width: 419px;
   z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.module-map__right > .panel-card {
-  height: 100%;
-}
-
-.module-map__right > .panel-card :deep(.panel-card__body) {
-  overflow: auto;
+.module-map__left::-webkit-scrollbar,
+.module-map__right::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
 }
 
 /* 骨架屏 */

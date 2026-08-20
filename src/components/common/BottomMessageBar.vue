@@ -44,6 +44,8 @@ onMounted(async () => {
         </template>
       </div>
     </div>
+
+    <button type="button" class="msg-bar__more" title="查看全部消息">查看全部</button>
   </footer>
 </template>
 
@@ -166,5 +168,23 @@ onMounted(async () => {
 
 .msg-item__time {
   color: var(--color-text-muted);
+}
+
+.msg-bar__more {
+  flex-shrink: 0;
+  padding: 4px 14px;
+  font-size: 12px;
+  color: var(--color-accent);
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.msg-bar__more:hover {
+  background: rgba(0, 212, 255, 0.18);
+  border-color: rgba(0, 212, 255, 0.7);
 }
 </style>

@@ -244,7 +244,7 @@ onUnmounted(() => {
   <div class="base-map" data-test="base-map">
     <div ref="containerRef" class="base-map__canvas" />
 
-    <!-- 完整地图工具栏 -->
+    <!-- 完整地图工具栏（右侧竖排，对齐右侧值班值守面板 419px 宽） -->
     <div class="map-toolbar" data-test="map-toolbar">
       <button
         class="map-toolbar__btn"
@@ -257,17 +257,21 @@ onUnmounted(() => {
       <button class="map-toolbar__btn" title="缩小" @click="zoomOut">−</button>
       <button class="map-toolbar__btn" title="复位视角" @click="onReset">⟳</button>
       <span class="map-toolbar__sep" />
-      <label class="map-toolbar__toggle">
-        <input type="checkbox" :checked="layers.base" @change="toggleLayer('base')" /> 底图
+      <label class="map-toolbar__toggle" title="底图显隐">
+        <input type="checkbox" :checked="layers.base" @change="toggleLayer('base')" />
+        <span>底图</span>
       </label>
-      <label class="map-toolbar__toggle">
-        <input type="checkbox" :checked="layers.markers" @change="toggleLayer('markers')" /> 点位
+      <label class="map-toolbar__toggle" title="点位显隐">
+        <input type="checkbox" :checked="layers.markers" @change="toggleLayer('markers')" />
+        <span>点位</span>
       </label>
-      <label class="map-toolbar__toggle">
-        <input type="checkbox" :checked="layers.zones" @change="toggleLayer('zones')" /> 区域
+      <label class="map-toolbar__toggle" title="区域显隐">
+        <input type="checkbox" :checked="layers.zones" @change="toggleLayer('zones')" />
+        <span>区域</span>
       </label>
-      <label class="map-toolbar__toggle">
-        <input type="checkbox" :checked="layers.labels" @change="toggleLayer('labels')" /> 标注
+      <label class="map-toolbar__toggle" title="标注显隐">
+        <input type="checkbox" :checked="layers.labels" @change="toggleLayer('labels')" />
+        <span>标注</span>
       </label>
     </div>
 
@@ -322,24 +326,27 @@ onUnmounted(() => {
 .map-toolbar {
   position: absolute;
   top: 12px;
-  left: 12px;
+  /* 与 dashboard 右侧面板对齐：面板宽 419px + 左侧 space-md 间距 */
+  right: calc(419px + var(--space-md, 12px) * 2);
   z-index: 10;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 6px;
-  padding: 6px 8px;
+  padding: 8px 6px;
   background: rgb(15 23 42 / 82%);
   border: 1px solid rgb(148 163 184 / 25%);
   border-radius: 8px;
   backdrop-filter: blur(4px);
   font-size: 12px;
   color: #e2e8f0;
+  min-width: 60px;
 }
 
 .map-toolbar__btn {
-  min-width: 28px;
-  height: 28px;
-  padding: 0 8px;
+  min-width: 44px;
+  height: 32px;
+  padding: 0;
   border: 1px solid rgb(148 163 184 / 30%);
   border-radius: 6px;
   background: rgb(30 41 59 / 90%);
@@ -355,22 +362,25 @@ onUnmounted(() => {
 }
 
 .map-toolbar__sep {
-  width: 1px;
-  height: 18px;
+  height: 1px;
   background: rgb(148 163 184 / 30%);
-  margin: 0 2px;
+  margin: 2px 4px;
 }
 
 .map-toolbar__toggle {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 3px;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 0 4px;
   cursor: pointer;
   user-select: none;
+  height: 26px;
 }
 
 .map-toolbar__toggle input {
   cursor: pointer;
+  margin: 0;
 }
 
 .map-popup {

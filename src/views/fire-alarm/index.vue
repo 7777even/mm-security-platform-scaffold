@@ -168,14 +168,36 @@ onMounted(() => {
   margin-bottom: var(--space-md);
 }
 
-/* §11.1 列表行间距 12px */
+/* 报警列表：卡片网格，超出可滚动但隐藏滚动条（与 dashboard 应急事件一致） */
 .alarm-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 12px;
+  max-height: calc(100vh - 420px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.alarm-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+.alarm-list :deep(.alarm-list-item) {
+  border: 1px solid rgb(148 163 184 / 0.16);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgb(15 23 42 / 0.6), rgb(11 17 32 / 0.6));
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.alarm-list :deep(.alarm-list-item:hover) {
+  border-color: rgb(0 212 255 / 0.4);
+  background: linear-gradient(180deg, rgb(15 23 42 / 0.7), rgb(11 17 32 / 0.7));
 }
 
 .alarm-empty {

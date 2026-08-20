@@ -16,6 +16,7 @@ import { mark, measure } from './utils/perf';
 import { recordPerf } from './utils/perf-budget';
 import './styles/tokens.css';
 import './styles/global.css';
+import './styles/element-dark.css';
 
 // 渲染层埋点起点：入口 JS 开始执行（SLO 渲染层口径）
 mark('app:start');

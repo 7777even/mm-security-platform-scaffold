@@ -8,3 +8,6 @@ dist-ssr
 logs
 *.log
 .cache
+
+# 设计文档提取产物（docx 解析临时文件，不入版本库）
+docs/_extracted_media/

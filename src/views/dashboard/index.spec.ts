@@ -58,19 +58,26 @@ describe('dashboard 大屏首页', () => {
     expect(wrapper.findComponent({ name: 'BaseMap' }).exists()).toBe(true);
   });
 
-  it('统计卡位于左侧面板', async () => {
+  it('左侧面板不含「应急态势」卡组（已下线）', async () => {
     const wrapper = mountDash();
     await flushPromises();
     await wrapper.vm.$nextTick();
     const left = wrapper.find('.dash-left');
-    expect(left.find('.stat-grid').exists()).toBe(true);
+    expect(left.find('.stat-grid').exists()).toBe(false);
   });
 
-  it('右侧面板为实时告警列表', async () => {
+  it('左侧应急事件 CRUD + 右侧值班/力量/知识面板', async () => {
     const wrapper = mountDash();
     await flushPromises();
     await wrapper.vm.$nextTick();
+    const left = wrapper.find('.dash-left');
+    // 应急事件 CRUD 工具栏 + 表格存在
+    expect(left.find('[data-test="crud-toolbar"]').exists()).toBe(true);
+    expect(left.find('[data-test="crud-table"]').exists()).toBe(true);
     const right = wrapper.find('.dash-right');
-    expect(right.find('.alarm-list').exists()).toBe(true);
+    // 右侧挂载 3 个 panel: 值班值守 + 应急力量数据 + 应急生产安全知识
+    expect(right.find('[data-test="duty-toolbar"]').exists()).toBe(true);
+    expect(right.find('[data-test="emergency-strength-grid"]').exists()).toBe(true);
+    expect(right.find('[data-test="emergency-knowledge-grid"]').exists()).toBe(true);
   });
 });

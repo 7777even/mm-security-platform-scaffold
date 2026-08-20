@@ -96,9 +96,19 @@ const alerts = ref<{ level: AlarmLevel; title: string; desc: string; time: strin
 }
 
 .alarm-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  max-height: calc(100vh - 420px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.alarm-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
 }
 
 .sat-box {

@@ -98,24 +98,42 @@ const perimeterAlarms = ref<{ level: AlarmLevel; title: string; desc: string; ti
 }
 
 .alarm-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  max-height: calc(100vh - 420px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.alarm-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
 }
 
 .event-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
 }
 
 .event-row {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-xs) 0;
-  border-bottom: 1px solid var(--color-border);
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgb(15 23 42 / 0.55), rgb(11 17 32 / 0.55));
+  border: 1px solid rgb(148 163 184 / 0.16);
+  border-radius: 8px;
   font-size: 13px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.event-row:hover {
+  border-color: rgb(0 212 255 / 0.4);
+  background: linear-gradient(180deg, rgb(15 23 42 / 0.65), rgb(11 17 32 / 0.65));
 }
 
 .event-row__time {

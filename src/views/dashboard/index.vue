@@ -6,21 +6,15 @@ import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/compon
 import { CanvasRenderer } from 'echarts/renderers';
 import type { ComposeOption } from 'echarts/core';
 import { MAP_TILE_URL } from '@/constants/map';
-import { RealtimeClient, type RealtimeMessage } from '@/services/ws';
 import { markOnce } from '@/utils/perf';
-import { recordPerfAsync } from '@/utils/perf-budget';
 import BaseMap from '@/components/cesium/BaseMap.vue';
 import PanelCard from '@/components/common/PanelCard.vue';
-import StatCard from '@/components/common/StatCard.vue';
-import AppButton from '@/components/common/AppButton.vue';
-import {
-  fetchDashboardOverview,
-  fetchAlarmTrend,
-  fetchAlarmPage,
-  type AlarmItem,
-  type AlarmLevel,
-  type AlarmType,
-} from '@/services/alarm';
+import DutyPanel from '@/components/dashboard/DutyPanel.vue';
+import EmergencyStrengthPanel from '@/components/dashboard/EmergencyStrengthPanel.vue';
+import EmergencyKnowledgePanel from '@/components/dashboard/EmergencyKnowledgePanel.vue';
+import ClosedCasePanel from '@/components/dashboard/ClosedCasePanel.vue';
+import EmergencyEventCrudPanel from '@/components/dashboard/EmergencyEventCrudPanel.vue';
+import { fetchAlarmTrend } from '@/services/alarm';
 import {
   fetchAlarmPoints,
   fetchDevicePoints,
@@ -37,75 +31,26 @@ echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, Canvas
 
 type ECOption = ComposeOption<LineSeriesOption>;
 
-// 图表配置色值（与 styles/tokens.css 对齐：设计稿 §5-1 色彩规范 + 图 5-1）
+// 图表配置色值
 const CHART_ACCENT = '#00d8ff';
 const CHART_SUCCESS = '#2ee6a8';
 const CHART_TEXT = '#8fa6c8';
 const CHART_PANEL_BG = 'rgba(19, 35, 60, 0.92)';
 const CHART_PANEL_BORDER = 'rgba(0, 216, 255, 0.4)';
 
-// 报警等级 → 标签 & 色调（设计稿图 5-1 预警色分级 + 规则 3 绿/橙/红语义）。
-// tone 取自 styles/global.css .tone-alarm-* 系列，与 --color-alarm-1..4 对齐。
-const LEVEL_META: Record<AlarmLevel, { label: string; tone: string }> = {
-  1: { label: '一级', tone: 'alarm-1' },
-  2: { label: '二级', tone: 'alarm-2' },
-  3: { label: '三级', tone: 'alarm-3' },
-  4: { label: '四级', tone: 'alarm-4' },
-};
-
-const TYPE_LABEL: Record<AlarmType, string> = {
-  FIRE: '火灾',
-  GAS: '气体',
-  TEMP: '温度',
-  CCTV: '视频',
-  SOS: '一键报警',
-};
-
-interface Stat {
-  label: string;
-  value: string;
-  unit: string;
-  icon: string;
-  tone: string;
-}
-
-interface AlarmRow {
-  id: string;
-  level: string;
-  tone: string;
-  device: string;
-  time: string;
-}
-
 const chartRef = ref<HTMLDivElement | null>(null);
 let chart: echarts.ECharts | null = null;
-let wsClient: RealtimeClient | null = null;
 
-// 静态兜底值：Mock 不可达时保留展示
-const stats = ref<Stat[]>([
-  { label: '在线点位', value: '—', unit: '个', icon: 'Monitor', tone: 'accent' },
-  { label: '今日告警', value: '—', unit: '条', icon: 'Bell', tone: 'danger' },
-  { label: '风险指数', value: '—', unit: '', icon: 'Odometer', tone: 'warning' },
-  { label: '在线工作站', value: '—', unit: '台', icon: 'Monitor', tone: 'success' },
-]);
-const alarms = ref<AlarmRow[]>([]);
 const loading = ref(true);
-const mockReady = ref(false);
-const mockError = ref('');
 const mapNotice = ref('');
 
-// 地图点位/区域数据（交由 Cesium BaseMap 渲染；二三维一体化单一 viewer）
+// 地图点位/区域数据
 const alarmPoints = ref<MapPoint[]>([]);
 const devicePoints = ref<MapPoint[]>([]);
 const riskZones = ref<RiskZone[]>([]);
 
-// Cesium 二三维一体化：sceneMode 切换（详细设计 4.2.2.2）
+// Cesium 二三维一体化：sceneMode 切换
 const sceneMode = ref<'2d' | '3d'>('3d');
-
-/** 与 main.ts 同策略：VITE_USE_DEV_MOCK=true 时前端自包含 mock，不连真实 ws */
-function isDevMock(): boolean {
-  return import.meta.env.DEV && import.meta.env.VITE_USE_DEV_MOCK === 'true';
-}
 
 function onMapError(): void {
   mapNotice.value = '地图初始化失败：当前环境不支持 WebGL，已降级';
@@ -114,24 +59,6 @@ function onMapError(): void {
 
 const FALLBACK_TREND = [0, 1, 0, 2, 1, 3, 2, 1, 0, 2, 4, 3, 2, 1, 3, 5, 4, 6, 3, 2, 4, 3, 2, 1];
 const trendData = ref<number[]>(FALLBACK_TREND);
-
-function toAlarmRow(a: AlarmItem): AlarmRow {
-  const meta = LEVEL_META[a.level];
-  return {
-    id: a.alarmId,
-    level: meta.label,
-    tone: meta.tone,
-    device: a.location || `${TYPE_LABEL[a.type] ?? a.type} ${a.deviceCode.slice(-4)}`,
-    time: formatTime(a.ts),
-  };
-}
-
-function formatTime(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const pad = (n: number): string => String(n).padStart(2, '0');
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}
 
 function hours(): string[] {
   const list: string[] = [];
@@ -153,7 +80,7 @@ function renderChart(): void {
       borderColor: CHART_PANEL_BORDER,
       textStyle: { color: '#eaf4ff' },
     },
-    legend: { data: ['告警', '处置'], textStyle: { color: CHART_TEXT } },
+    legend: { data: ['应急事件', '处置完成'], textStyle: { color: CHART_TEXT } },
     grid: { left: 40, right: 16, top: 28, bottom: 24 },
     xAxis: {
       type: 'category',
@@ -170,7 +97,7 @@ function renderChart(): void {
     },
     series: [
       {
-        name: '告警',
+        name: '应急事件',
         type: 'line',
         smooth: true,
         showSymbol: false,
@@ -190,7 +117,7 @@ function renderChart(): void {
         },
       },
       {
-        name: '处置',
+        name: '处置完成',
         type: 'line',
         smooth: true,
         showSymbol: false,
@@ -208,80 +135,25 @@ function onResize(): void {
   chart?.resize();
 }
 
-function handleWsMessage(msg: RealtimeMessage): void {
-  if (msg.topic !== 'rt/alarm/push') return;
-  const p = msg.payload as Partial<AlarmItem> | null;
-  if (!p || typeof p !== 'object' || !p.alarmId) return;
-  const row = toAlarmRow({
-    alarmId: p.alarmId,
-    level: (p.level ?? 3) as AlarmLevel,
-    type: (p.type ?? 'FIRE') as AlarmType,
-    status: 'ACTIVE',
-    deviceCode: p.deviceCode ?? '',
-    location: p.location ?? '',
-    ts: p.ts ?? new Date().toISOString(),
-    description: p.description ?? '',
-  });
-  alarms.value = [row, ...alarms.value.filter((a) => a.id !== row.id)].slice(0, 10);
-}
-
 async function loadData(): Promise<void> {
   try {
-    const [overview, trend, page, ap, dp, zones] = await Promise.all([
-      fetchDashboardOverview(),
+    const [trend, ap, dp, zones] = await Promise.all([
       fetchAlarmTrend(),
-      recordPerfAsync('componentQueryMs', () => fetchAlarmPage(1, 5)), // P10 查询组件 ≤2s
       fetchAlarmPoints(),
       fetchDevicePoints(),
       fetchRiskZones(),
     ]);
-    mockReady.value = true;
-    stats.value = [
-      {
-        label: '在线点位',
-        value: String(overview.deviceOnline),
-        unit: '个',
-        icon: 'Monitor',
-        tone: 'accent',
-      },
-      {
-        label: '今日告警',
-        value: String(overview.activeAlarm),
-        unit: '条',
-        icon: 'Bell',
-        tone: 'danger',
-      },
-      {
-        label: '风险指数',
-        value: overview.riskIndex.toFixed(1),
-        unit: '',
-        icon: 'Odometer',
-        tone: 'warning',
-      },
-      {
-        label: '在线工作站',
-        value: String(overview.onlineWorkstation),
-        unit: '台',
-        icon: 'Monitor',
-        tone: 'success',
-      },
-    ];
     trendData.value = Array.from({ length: 24 }, (_, i) => trend[i]?.count ?? 0);
-    alarms.value = page.list.map(toAlarmRow);
-    // 点位/区域数据交由 Cesium BaseMap 渲染（P9 地图加载打点在 BaseMap 内部 recordPerfAsync）
     alarmPoints.value = ap;
     devicePoints.value = dp;
     riskZones.value = zones;
     markOnce('dashboard:data-ready');
-  } catch (err) {
-    mockError.value = err instanceof Error ? err.message : 'Mock 数据源未连接';
-    // 降级：静态兜底点位 + 兜底图表
+  } catch {
     alarmPoints.value = FALLBACK_ALARM_POINTS;
     devicePoints.value = FALLBACK_DEVICE_POINTS;
     riskZones.value = FALLBACK_RISK_ZONES;
   } finally {
     loading.value = false;
-    // 图表容器位于 v-if="!loading" 面板内，须待 DOM 更新后再初始化
     await nextTick();
     renderChart();
   }
@@ -290,34 +162,13 @@ async function loadData(): Promise<void> {
 onMounted(async () => {
   window.addEventListener('resize', onResize);
   await loadData();
-
-  // 实时通道：仅在未启用 dev mock 时启动，避免 ws://localhost:8787/ws 失败刷屏。
-  // mock 模式下右侧告警由 devMock.setInterval 推入 alarm store；真实模式下 dashboard 自己订阅 VITE_WS_BASE，
-  // 与主入口 startRealtime()（订阅 alarm.push）并行存在，两路并存直到 B3 真实 ws 对接。
-  if (isDevMock()) return;
-  const wsUrl = import.meta.env.VITE_WS_BASE as string | undefined;
-  if (!wsUrl) return;
-  wsClient = new RealtimeClient({ url: wsUrl, onMessage: handleWsMessage });
-  wsClient.connect();
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', onResize);
-  wsClient?.close();
-  wsClient = null;
   chart?.dispose();
   chart = null;
 });
-
-// 右侧「实时告警」面板「更多」：后续 change 接入告警二级列表页（本轮仅占位，不跳转）
-function onMoreAlarms(): void {
-  // TODO 后续 change：跳转到告警二级列表页
-}
-
-function refresh() {
-  // 复用 loadData 做轻量重拉；若失败则保留当前数据
-  void loadData();
-}
 </script>
 
 <template>
@@ -336,48 +187,22 @@ function refresh() {
     <!-- 地图降级提示 -->
     <p v-if="mapNotice" class="map-notice">{{ mapNotice }}</p>
 
-    <!-- 左侧面板区（设计稿 419px）：统计卡组 + 趋势图 -->
+    <!-- 左侧面板区（419px）：应急事件 CRUD + 趋势图 + 结案滚动 -->
     <div v-if="!loading" class="dash-left">
-      <PanelCard title="态势概览" icon="DataBoard">
-        <div class="stat-grid">
-          <StatCard
-            v-for="s in stats"
-            :key="s.label"
-            :title="`${s.label}${s.unit ? ' / ' + s.unit : ''}`"
-            :value="s.value"
-            :icon="s.icon"
-          />
-        </div>
-      </PanelCard>
+      <EmergencyEventCrudPanel />
 
-      <PanelCard title="近 24h 告警/处置" icon="TrendCharts">
+      <PanelCard title="近 24h 应急事件 / 处置率" icon="TrendCharts">
         <div ref="chartRef" class="chart" />
       </PanelCard>
+
+      <ClosedCasePanel />
     </div>
 
-    <!-- 右侧面板区（设计稿 419px）：实时告警列表 -->
+    <!-- 右侧面板区（419px）：值班值守 + 应急力量数据 + 应急生产安全知识 -->
     <aside v-if="!loading" class="dash-right">
-      <PanelCard title="实时告警" icon="Bell" more="更多" @more="onMoreAlarms">
-        <p v-if="mockError" class="mock-tip">{{ mockError }}</p>
-        <ul v-else class="alarm-list">
-          <li
-            v-for="(a, index) in alarms"
-            :key="a.id"
-            class="alarm-row"
-            :class="{ 'row-odd': index % 2 === 1 }"
-          >
-            <span class="alarm-dot" :class="'tone-' + a.tone" />
-            <span class="alarm-level" :class="'tone-' + a.tone">{{ a.level }}</span>
-            <span class="alarm-device">{{ a.device }}</span>
-            <span class="alarm-time font-number">{{ a.time }}</span>
-          </li>
-          <li v-if="alarms.length === 0" class="alarm-empty">暂无告警数据</li>
-        </ul>
-        <div v-if="mockReady && !mockError" class="live-tag"><i class="live-dot" />LIVE</div>
-        <div v-if="!loading" class="dash-actions">
-          <AppButton variant="ghost" size="sm" @click="refresh">查看全部</AppButton>
-        </div>
-      </PanelCard>
+      <DutyPanel />
+      <EmergencyStrengthPanel />
+      <EmergencyKnowledgePanel />
     </aside>
 
     <!-- 加载骨架屏 -->
@@ -393,7 +218,7 @@ function refresh() {
 .dashboard-map {
   position: relative;
   height: 100%;
-  overflow: hidden;
+  /* 不裁切子元素的溢出滚动：dash-left / dash-right 内部 overflow-y:auto 仍可滚 */
 }
 
 /* 地图降级提示 */
@@ -411,7 +236,7 @@ function refresh() {
   font-size: 12px;
 }
 
-/* 左侧面板区（设计稿 419px） */
+/* 左侧面板区：3 个面板自然撑开，超出可滚动但隐藏滚动条 */
 .dash-left {
   position: absolute;
   top: var(--space-md);
@@ -422,14 +247,13 @@ function refresh() {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  /* 保留滚动能力 + 隐藏滚动条（鼠标滚轮 / 触控板仍可上下滚） */
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legacy */
 }
 
-.dash-left > .panel-card:last-child {
-  flex: 1;
-  min-height: 0;
-}
-
-/* 右侧面板区（设计稿 419px） */
+/* 右侧面板区：3 个面板自然撑开，超出可滚动但隐藏滚动条 */
 .dash-right {
   position: absolute;
   top: var(--space-md);
@@ -437,158 +261,26 @@ function refresh() {
   bottom: var(--space-md);
   width: 419px;
   z-index: 5;
-}
-
-.dash-right :deep(.panel-card) {
-  height: 100%;
-}
-
-.dash-right :deep(.panel-card__body) {
-  overflow: auto;
-}
-
-/* §9.1 统计卡网格（设计稿图 5-7 左上）：2 列 8px 间距 */
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: var(--space-md);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-/* 趋势图高度自适应面板的剩余空间 */
+/* Chromium / Safari：::-webkit-scrollbar 设宽 0 隐藏条形 */
+.dash-left::-webkit-scrollbar,
+.dash-right::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+/* 趋势图高度自适应面板 */
 .chart {
-  height: 100%;
-  min-height: 160px;
+  height: 180px;
   width: 100%;
-}
-
-/* 实时告警列表 */
-.live-tag {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  margin-top: var(--space-sm);
-  font-size: 12px;
-  color: var(--color-success);
-  letter-spacing: 1px;
-}
-
-.live-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-success);
-  box-shadow: 0 0 6px var(--color-success);
-  animation: live-blink 1.6s ease-in-out infinite;
-}
-
-@keyframes live-blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.35;
-  }
-}
-
-.mock-tip {
-  margin-top: var(--space-md);
-  color: var(--color-warning);
-  font-size: 13px;
-}
-
-.alarm-list {
-  list-style: none;
-  margin: var(--space-md) 0 0;
-  padding: 0;
-}
-
-.alarm-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: 10px var(--space-sm);
-  font-size: 13px;
-  border-radius: var(--radius-sm);
-}
-
-.alarm-row:hover {
-  background: var(--row-alt-bg);
-}
-
-.alarm-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.alarm-dot.tone-danger {
-  background: var(--color-danger);
-  box-shadow: 0 0 6px var(--color-danger);
-}
-
-.alarm-dot.tone-warning {
-  background: var(--color-warning);
-  box-shadow: 0 0 6px var(--color-warning);
-}
-
-.alarm-dot.tone-info {
-  background: var(--color-text-muted);
-}
-
-.alarm-dot.tone-alarm-1 {
-  background: var(--color-alarm-1);
-  box-shadow: 0 0 6px var(--color-alarm-1);
-}
-
-.alarm-dot.tone-alarm-2 {
-  background: var(--color-alarm-2);
-  box-shadow: 0 0 6px var(--color-alarm-2);
-}
-
-.alarm-dot.tone-alarm-3 {
-  background: var(--color-alarm-3);
-  box-shadow: 0 0 6px var(--color-alarm-3);
-}
-
-.alarm-dot.tone-alarm-4 {
-  background: var(--color-alarm-4);
-  box-shadow: 0 0 6px var(--color-alarm-4);
-}
-
-.alarm-level {
-  font-size: 12px;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.alarm-device {
-  color: var(--color-text);
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.alarm-time {
-  color: var(--color-text-muted);
-  flex-shrink: 0;
-}
-
-.alarm-empty {
-  padding: var(--space-md) 0;
-  text-align: center;
-  color: var(--color-text-muted);
-  font-size: 13px;
-}
-
-/* §9.3 底部操作区：与设计稿右侧「查看全部」一致 */
-.dash-actions {
-  display: flex;
-  justify-content: center;
-  margin-top: var(--space-md);
 }
 
 /* 骨架屏 */
@@ -624,46 +316,8 @@ function refresh() {
   0% {
     background-position: 200% 0;
   }
-
   100% {
     background-position: -200% 0;
   }
-}
-
-/* 语义色（与 styles/global.css 对齐） */
-.tone-accent {
-  color: var(--color-accent);
-}
-
-.tone-danger {
-  color: var(--color-danger);
-}
-
-.tone-warning {
-  color: var(--color-warning);
-}
-
-.tone-success {
-  color: var(--color-success);
-}
-
-.tone-info {
-  color: var(--color-text-muted);
-}
-
-.tone-alarm-1 {
-  color: var(--color-alarm-1);
-}
-
-.tone-alarm-2 {
-  color: var(--color-alarm-2);
-}
-
-.tone-alarm-3 {
-  color: var(--color-alarm-3);
-}
-
-.tone-alarm-4 {
-  color: var(--color-alarm-4);
 }
 </style>
