@@ -11,3 +11,10 @@ logs
 
 # 设计文档提取产物（docx 解析临时文件，不入版本库）
 docs/_extracted_media/
+docs/_extract_media.py
+
+# 设计说明原始素材（docx/xlsx 二进制大文件，不入版本库）
+docs/*.docx
+docs/*.doc
+docs/*.xlsx
+docs/*.xls
