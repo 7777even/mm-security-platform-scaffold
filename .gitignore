@@ -2,6 +2,7 @@ node_modules
 dist
 dist-ssr
 .verify-tmp
+.verify-out
 *.local
 .DS_Store
 logs

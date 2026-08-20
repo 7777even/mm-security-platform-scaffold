@@ -6,6 +6,7 @@ import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router';
 import { usePermission } from '@/composables/usePermission';
 import { useAuthStore, ROLE_PERMS, ROLE_NAMES, type RoleId } from '@/stores/auth';
 import { getInstalledMenuRoutes } from '@/router/menu';
+import BottomMessageBar from '@/components/common/BottomMessageBar.vue';
 import { markOnce } from '@/utils/perf';
 
 const route = useRoute();
@@ -120,6 +121,8 @@ onUnmounted(() => {
     <main class="content">
       <RouterView />
     </main>
+
+    <BottomMessageBar />
   </div>
 </template>
 
