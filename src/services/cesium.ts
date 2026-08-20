@@ -1,112 +1,361 @@
-import type { MapPoint, RiskZone } from './map';
+// C1 地图引擎：Cesium.js 二三维一体化底座。
+// 提供 viewer 初始化、瓦片底图、点位（复合标注）、风险区域、点击拾取、图层显隐控制。
+// 数据来源沿用 services/map.ts（fetchAlarmPoints / fetchDevicePoints / fetchRiskZones）。
 
-/**
- * Cesium.js 二三维一体化地图服务层（详细设计 4.2.2.2「地图集成服务 map」前端消费侧）。
- *
- * 本层保持纯函数设计：viewer 实例化（DOM/WebGL 依赖）由组件层 `BaseMap.vue` 负责，
- * 此处只做「业务数据 → Cesium 实体描述」的映射，可在 node 环境单测，无 DOM 依赖。
- * 底层引擎以 Cesium 替换原 OL(2D)+Three(3D) 双引擎，实现单一 viewer 二三维一体化。
- */
+import * as Cesium from 'cesium';
+import type { MapPoint, RiskZone } from '@/services/map';
+import { fetchAlarmPoints, fetchDevicePoints, fetchRiskZones } from '@/services/map';
+import { MAP_TILE_URL } from '@/constants/map';
+import { recordPerfAsync } from '@/utils/perf-budget';
 
-/** 地图实体类型 */
-export type PointKind = 'alarm' | 'device';
+// 厂区初始中心（湛江中科炼化坐标附近）+ 初始相机高度
+export const FACTORY_CENTER: [number, number] = [110.95, 21.6];
+export const FACTORY_HEIGHT = 12000;
 
-/** viewer 初始化配置 */
-export interface CesiumViewerOptions {
-  tileUrl: string;
-  sceneMode: '2d' | '3d';
-  defaultView: { lng: number; lat: number; height: number };
-}
+// 报警等级 1-4 → 颜色（CSS 十六进制）
+const LEVEL_COLORS: Record<number, string> = {
+  1: '#22c55e',
+  2: '#eab308',
+  3: '#f97316',
+  4: '#ef4444',
+};
+// 设备状态 → 颜色（mock 返回 online/offline/normal/active 等）
+const STATUS_COLORS: Record<string, string> = {
+  online: '#22c55e',
+  normal: '#22c55e',
+  active: '#ef4444',
+  offline: '#6b7280',
+  fault: '#f97316',
+};
 
-/** 点位实体描述（待组件层转换为 Cesium Entity） */
-export interface PointEntity {
+const DEFAULT_MARKER_COLOR = Cesium.Color.fromCssColorString('#9ca3af');
+const DEFAULT_ZONE_COLOR = Cesium.Color.fromCssColorString('#38bdf8');
+
+export interface PickResult {
   id: string;
   name: string;
-  lng: number;
-  lat: number;
-  kind: PointKind;
+  kind: 'alarm' | 'device';
   level?: number;
   status?: string;
-  color: string;
+  raw: Record<string, unknown>;
 }
 
-/** 风险区实体描述 */
-export interface ZoneEntity {
-  name: string;
-  score: number;
-  coordinates: [number, number][];
-  color: string;
-}
-
-// 茂名厂区示意中心（WGS84），与 services/map.ts ZONE_COORDS 同坐标系
-export const MAP_CENTER = { lng: 110.952, lat: 21.672 };
-
-// 报警/设备点位色（对齐设计稿图 5-1 预警色分级 + 语义色）：
-//  - AlarmLevel=1 (一级/最高) → --color-alarm-1 #F46767
-//  - AlarmLevel=2 (二级)      → --color-alarm-2 #F68A2E
-//  - AlarmLevel=3 (三级)      → --color-alarm-3 #F6BA2E
-//  - AlarmLevel=4 (四级/兜底) → --color-alarm-4 #2E7CF6
-// 这里 hardcode 与 styles/tokens.css 保持一致；Cesium 引擎无法消费 CSS 变量。
-const LEVEL_COLORS: Record<number, string> = {
-  1: '#f46767',
-  2: '#f68a2e',
-  3: '#f6ba2e',
-  4: '#2e7cf6',
-};
-
-// 设备状态色（设计规则 3：成功/警示/危险 + 设计稿语义色）
-const STATUS_COLORS: Record<string, string> = {
-  ONLINE: '#2ee6a8', // 成功/正常（绿）
-  OFFLINE: '#8fa6c8', // 辅助文字（灰蓝）
-  FAULT: '#ff5a5a', // 危险/报警（红）
-};
-
-/** 风险区评分 → 半透明填充色（与 dashboard zoneColor + 设计稿语义色一致） */
-export function zoneColor(score: number): string {
-  if (score >= 4) return 'rgba(255, 90, 90, 0.22)';
-  if (score >= 3) return 'rgba(246, 186, 46, 0.2)';
-  if (score >= 2) return 'rgba(46, 124, 246, 0.18)';
-  return 'rgba(143, 166, 200, 0.14)';
-}
-
-/** 构建 viewer 初始化配置（瓦片 URL 可配置；默认 3D 二三维一体化模式） */
-export function buildViewerOptions(opts: {
-  tileUrl: string;
-  sceneMode?: '2d' | '3d';
-}): CesiumViewerOptions {
-  return {
-    tileUrl: opts.tileUrl,
-    sceneMode: opts.sceneMode ?? '3d',
-    defaultView: { ...MAP_CENTER, height: 600 },
-  };
-}
-
-/** MapPoint → Cesium 点位实体（报警等级色 / 设备状态色） */
-export function toPointEntity(p: MapPoint, kind: PointKind): PointEntity {
-  let color: string;
-  if (kind === 'alarm') {
-    color = LEVEL_COLORS[p.level ?? 3] ?? LEVEL_COLORS[3]!;
-  } else {
-    color = STATUS_COLORS[p.status ?? 'OFFLINE'] ?? STATUS_COLORS.OFFLINE!;
+function cssColor(hex: string | undefined, fallback: Cesium.Color): Cesium.Color {
+  if (!hex) return fallback;
+  try {
+    return Cesium.Color.fromCssColorString(hex);
+  } catch {
+    return fallback;
   }
-  return {
-    id: p.id,
-    name: p.name,
-    lng: p.lng,
-    lat: p.lat,
-    kind,
-    level: kind === 'alarm' ? p.level : undefined,
-    status: kind === 'device' ? p.status : undefined,
-    color,
-  };
 }
 
-/** RiskZone → Cesium 面实体（评分色 + 名称） */
-export function toZoneEntity(z: RiskZone): ZoneEntity {
-  return {
-    name: z.name,
-    score: z.score,
-    coordinates: z.polygon,
-    color: zoneColor(z.score),
+function levelColor(level?: number): Cesium.Color {
+  if (level === undefined) return DEFAULT_MARKER_COLOR;
+  return cssColor(LEVEL_COLORS[level] ?? LEVEL_COLORS[Math.min(4, Math.max(1, level))], DEFAULT_MARKER_COLOR);
+}
+
+function statusColor(status?: string): Cesium.Color {
+  return cssColor(status ? STATUS_COLORS[status.toLowerCase()] : undefined, DEFAULT_MARKER_COLOR);
+}
+
+/** 区域填充色（含透明度），按评分分级：≥3.5 红、≥2.5 黄、其余绿。纯函数，便于 TDD。 */
+export function zoneFillColor(score: number): Cesium.Color {
+  return cssColor(
+    score >= 3.5 ? '#f87171' : score >= 2.5 ? '#fbbf24' : '#34d399',
+    DEFAULT_ZONE_COLOR,
+  ).withAlpha(0.25);
+}
+
+/** 点位着色纯函数：报警按 level、设备按 status。便于 TDD 验证等级/状态色映射。 */
+export function markerColor(kind: 'alarm' | 'device', p: MapPoint): Cesium.Color {
+  return kind === 'alarm' ? levelColor(p.level) : statusColor(p.status);
+}
+
+const DARK_BG = '#050a15';
+
+/**
+ * 创建单一 Cesium viewer，移除默认干扰 UI，仅保留画布。
+ * 同时阻断全部异步资源路径（Ion / Bing / World Terrain / Sky），统一深色底座，杜绝白屏/白雾。
+ */
+export function createCesiumViewer(container: HTMLElement): Cesium.Viewer {
+  const viewer = new Cesium.Viewer(container, {
+    baseLayerPicker: false,
+    geocoder: false,
+    homeButton: false,
+    sceneModePicker: false,
+    navigationHelpButton: false,
+    animation: false,
+    timeline: false,
+    fullscreenButton: false,
+    selectionIndicator: false,
+    infoBox: false,
+    shouldAnimate: false,
+    // 显式置空底图，避免 Cesium 默认去公网拉取 ion 底图（零下行红线）
+    baseLayer: false as unknown as Cesium.ImageryLayer,
+    // 显式 EllipsoidTerrainProvider，阻止默认 Ion World Terrain 异步请求
+    terrainProvider: new Cesium.EllipsoidTerrainProvider(),
+    // 关闭会拉 Ion 异步资源的天空盒/大气
+    skyBox: false as unknown as Cesium.SkyBox,
+    skyAtmosphere: false,
+    // 关闭内建 HTML 错误面板，避免遮挡
+    showRenderLoopErrors: false,
+    // canvas 不透明 + 保留 framebuffer，杜绝白屏假象与截图丢帧
+    contextOptions: { webgl: { alpha: false, preserveDrawingBuffer: true } },
+    requestRenderMode: true,
+  });
+
+  // 深色底座：background + globe.baseColor 与 dashboard 同色，globe 失败也看不出白屏
+  const bg = Cesium.Color.fromCssColorString(DARK_BG);
+  viewer.scene.backgroundColor = bg;
+  if (viewer.scene.globe) {
+    viewer.scene.globe.baseColor = bg;
+    viewer.scene.globe.showGroundAtmosphere = false;
+    if ('atmosphereLightIntensity' in viewer.scene.globe) {
+      (viewer.scene.globe as unknown as { atmosphereLightIntensity: number }).atmosphereLightIntensity = 0;
+    }
+    if (viewer.scene.globe.translucency) viewer.scene.globe.translucency.enabled = false;
+  }
+  // 关闭远景白色雾化与天体光晕
+  if (viewer.scene.fog) viewer.scene.fog.enabled = false;
+  if (viewer.scene.sun) viewer.scene.sun.show = false;
+  if (viewer.scene.moon) viewer.scene.moon.show = false;
+
+  viewer.scene.renderError.addEventListener((_scene: unknown, error: unknown) => {
+    const err = error as { message?: string; stack?: string };
+    console.error('[cesium render error]', err?.message, err?.stack);
+  });
+
+  // 初始相机（避免默认 home view 归一化除零产生 NaN）
+  viewer.camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(FACTORY_CENTER[0], FACTORY_CENTER[1], FACTORY_HEIGHT),
+    orientation: { heading: 0, pitch: Cesium.Math.toRadians(-45), roll: 0 },
+  });
+  return viewer;
+}
+
+/** 加载瓦片底图（可配置 URL，生产同源离线 / 开发公网预览）。 */
+export async function loadBaseMap(viewer: Cesium.Viewer): Promise<void> {
+  await recordPerfAsync('baseMapMs', async () => {
+    // 当前 Cesium 构建未导出 UrlTemplateImageryProvider.fromUrl 静态方法，
+    // 必须使用构造器；构造器接受 options 对象（同 fromUrl 的第二个参数）。
+    const provider = new Cesium.UrlTemplateImageryProvider({
+      url: MAP_TILE_URL,
+      urlSchemeZeroPadding: true,
+      maximumLevel: 18,
+    });
+    viewer.imageryLayers.addImageryProvider(provider);
+    // requestRenderMode 下需要手动触发重绘，否则瓦片加载完成也不绘制
+    viewer.scene.requestRender();
+  });
+}
+
+/** 将点位渲染为「图形 + 文字」复合标注（point 圆点 + label 名称）。 */
+function addCompositeMarker(
+  viewer: Cesium.Viewer,
+  p: MapPoint,
+  kind: 'alarm' | 'device',
+  color: Cesium.Color,
+): void {
+  viewer.entities.add({
+    id: `${kind}:${p.id}`,
+    position: Cesium.Cartesian3.fromDegrees(p.lng, p.lat),
+    point: {
+      pixelSize: 12,
+      color,
+      outlineColor: Cesium.Color.WHITE,
+      outlineWidth: 2,
+      heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+    },
+    label: {
+      text: p.name,
+      font: '12px sans-serif',
+      fillColor: Cesium.Color.WHITE,
+      showBackground: true,
+      backgroundColor: Cesium.Color.fromCssColorString('#0f172a').withAlpha(0.7),
+      backgroundPadding: new Cesium.Cartesian2(6, 4),
+      pixelOffset: new Cesium.Cartesian2(0, -18),
+      verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+      heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+      disableDepthTestDistance: Number.POSITIVE_INFINITY,
+    },
+    properties: {
+      kind,
+      raw: p,
+    },
+  });
+}
+
+/** 加载报警点位（按 level 着色 + 复合标注）。 */
+export async function loadAlarmMarkers(viewer: Cesium.Viewer): Promise<void> {
+  const points = await fetchAlarmPoints();
+  for (const p of points) {
+    addCompositeMarker(viewer, p, 'alarm', levelColor(p.level));
+  }
+}
+
+/** 加载设备点位（按 status 着色 + 复合标注）。 */
+export async function loadDeviceMarkers(viewer: Cesium.Viewer): Promise<void> {
+  const points = await fetchDevicePoints();
+  for (const p of points) {
+    addCompositeMarker(viewer, p, 'device', statusColor(p.status));
+  }
+}
+
+/** 加载风险区域：半透明多边形面 + 描边（label 独立实体，避免撑白块）。 */
+export async function loadRiskZones(viewer: Cesium.Viewer): Promise<void> {
+  const zones: RiskZone[] = await fetchRiskZones();
+  for (const z of zones) {
+    if (!z.polygon || z.polygon.length < 3) continue;
+    const hierarchy = new Cesium.PolygonHierarchy(
+      z.polygon.map(([lng, lat]) => Cesium.Cartesian3.fromDegrees(lng, lat)),
+    );
+    const fill = cssColor(
+      z.score >= 3.5 ? '#f87171' : z.score >= 2.5 ? '#fbbf24' : '#34d399',
+      DEFAULT_ZONE_COLOR,
+    ).withAlpha(0.25);
+
+    viewer.entities.add({
+      id: `zone:${z.name}`,
+      polygon: {
+        hierarchy,
+        material: fill,
+        outline: true,
+        outlineColor: Cesium.Color.fromCssColorString('#f8fafc'),
+        outlineWidth: 2,
+        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+      },
+    });
+
+    // 独立 label 实体置于质心，避免与 polygon 同实体导致的渲染异常（白块）
+    const center = z.polygon.reduce(
+      (acc, c) => [acc[0] + c[0] / z.polygon.length, acc[1] + c[1] / z.polygon.length],
+      [0, 0],
+    ) as [number, number];
+    viewer.entities.add({
+      id: `zone-label:${z.name}`,
+      position: Cesium.Cartesian3.fromDegrees(center[0], center[1]),
+      label: {
+        text: `${z.name} 风险 ${z.score.toFixed(1)}`,
+        font: '13px sans-serif',
+        fillColor: Cesium.Color.WHITE,
+        showBackground: true,
+        backgroundColor: Cesium.Color.fromCssColorString('#0f172a').withAlpha(0.75),
+        backgroundPadding: new Cesium.Cartesian2(6, 4),
+        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        scaleByDistance: new Cesium.NearFarScalar(1.0e3, 1.2, 5.0e5, 0.7),
+      },
+    });
+  }
+}
+
+/** 复位相机到厂区初始视角。 */
+export function resetView(viewer: Cesium.Viewer): void {
+  viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(FACTORY_CENTER[0], FACTORY_CENTER[1], FACTORY_HEIGHT),
+    duration: 1.2,
+  });
+}
+
+/** 切换到 2D 投影。 */
+export function setSceneMode2D(viewer: Cesium.Viewer): void {
+  if (viewer.scene.mode !== Cesium.SceneMode.SCENE2D) {
+    viewer.scene.morphTo2D(1.0);
+  }
+}
+
+/** 切换到 3D 场景。 */
+export function setSceneMode3D(viewer: Cesium.Viewer): void {
+  if (viewer.scene.mode !== Cesium.SceneMode.SCENE3D) {
+    viewer.scene.morphTo3D(1.0);
+  }
+}
+
+export type LayerKind = 'base' | 'markers' | 'zones' | 'labels';
+
+/**
+ * 图层显隐控制。
+ * - base: imageryLayers[0]
+ * - markers / zones / labels: 按实体 id 前缀切换 show
+ *
+ * 防御性：viewer / entity 在 setLayerVisible 调用瞬间可能正处于销毁中（HMR / 路由切换 / props 重渲染），
+ * 直接访问已销毁对象会抛 DeveloperError。任何抛错一律吞掉，避免污染控制台与 UI。
+ */
+export function setLayerVisible(viewer: Cesium.Viewer, kind: LayerKind, visible: boolean): void {
+  try {
+    if ((viewer as unknown as { isDestroyed?: () => boolean }).isDestroyed?.()) return;
+    if (kind === 'base') {
+      const layer = viewer.imageryLayers.get(0);
+      if (layer) layer.show = visible;
+      viewer.scene.requestRender();
+      return;
+    }
+    const values = viewer.entities.values as Iterable<Cesium.Entity>;
+    for (const e of values) {
+      const id = e.id as string;
+      if (kind === 'markers' && (id.startsWith('alarm:') || id.startsWith('device:'))) {
+        e.show = visible;
+      } else if (kind === 'zones' && (id.startsWith('zone:') || id.startsWith('zone-label:'))) {
+        e.show = visible;
+      } else if (kind === 'labels' && (id.startsWith('alarm:') || id.startsWith('device:'))) {
+        // 直接赋 boolean，Cesium 内部会自动包装为 ConstantProperty；
+        // 避免显式 new ConstantProperty() 在 destroyed entity 上构造时抛错
+        if (e.label) (e.label as { show: boolean }).show = visible;
+      }
+    }
+    // requestRenderMode 下，entity show 变更不会自动触发重绘，必须显式 requestRender
+    viewer.scene.requestRender();
+  } catch (err) {
+    // viewer/entity 已销毁，忽略本次显隐请求
+    if (!(err instanceof Cesium.DeveloperError)) {
+      console.warn('[cesium] setLayerVisible suppressed error', err);
+    }
+  }
+}
+
+/**
+ * 注册点击拾取：命中报警/设备点位时回调 PickResult，命中空白回调 null。
+ * 返回取消注册函数。
+ *
+ * 防御性：handler 内部对已销毁 viewer 的访问（如组件被卸载但用户后续在 canvas 残影上点击）
+ * 会抛 DeveloperError，全部吞掉；这是 HMR / props 重渲染过程中的可预期竞态。
+ */
+export function enablePick(
+  viewer: Cesium.Viewer,
+  cb: (result: PickResult | null) => void,
+): () => void {
+  const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+  let disposed = false;
+  handler.setInputAction((movement: Cesium.ScreenSpaceEventHandler.PositionedEvent) => {
+    if (disposed) return;
+    try {
+      const v = viewer as unknown as { isDestroyed?: () => boolean };
+      if (v.isDestroyed?.()) return;
+      const picked = viewer.scene.pick(movement.position);
+      if (picked && picked.id && picked.id.properties) {
+        const kind = picked.id.properties.kind?.getValue(viewer.clock.currentTime);
+        const raw = (picked.id.properties.raw?.getValue(viewer.clock.currentTime) ?? {}) as Record<string, unknown>;
+        if (kind === 'alarm' || kind === 'device') {
+          cb({
+            id: String(raw.id ?? ''),
+            name: String(raw.name ?? ''),
+            kind,
+            level: raw.level as number | undefined,
+            status: raw.status as string | undefined,
+            raw,
+          });
+          return;
+        }
+      }
+      cb(null);
+    } catch (err) {
+      if (!(err instanceof Cesium.DeveloperError)) {
+        console.warn('[cesium] pick suppressed error', err);
+      }
+    }
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+  return () => {
+    disposed = true;
+    handler.destroy();
   };
 }

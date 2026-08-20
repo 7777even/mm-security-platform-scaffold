@@ -57,6 +57,8 @@ describe('BaseMap：Cesium 二三维一体化地图容器', () => {
     const wrapper = mount(BaseMap, { props: { ...props, viewerFactory: h.factory } });
     await nextTick();
     await nextTick();
+    // 再 flush 一轮微任务，确保 onMounted 内 async init()（await createViewer()）完成、viewer 已赋值
+    await new Promise((r) => setTimeout(r, 0));
     wrapper.unmount();
     expect(h.viewer.destroy).toHaveBeenCalled();
   });

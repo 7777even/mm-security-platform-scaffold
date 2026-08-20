@@ -336,26 +336,6 @@ function refresh() {
     <!-- 地图降级提示 -->
     <p v-if="mapNotice" class="map-notice">{{ mapNotice }}</p>
 
-    <!-- 2D/3D 切换浮层（地图右上角） -->
-    <div v-if="!loading" class="map-mode-switch">
-      <button
-        type="button"
-        class="mode-btn"
-        :class="{ active: sceneMode === '2d' }"
-        @click="sceneMode = '2d'"
-      >
-        2D
-      </button>
-      <button
-        type="button"
-        class="mode-btn"
-        :class="{ active: sceneMode === '3d' }"
-        @click="sceneMode = '3d'"
-      >
-        3D
-      </button>
-    </div>
-
     <!-- 左侧面板区（设计稿 419px）：统计卡组 + 趋势图 -->
     <div v-if="!loading" class="dash-left">
       <PanelCard title="态势概览" icon="DataBoard">
@@ -429,34 +409,6 @@ function refresh() {
   border: 1px solid var(--color-warning);
   color: var(--color-warning);
   font-size: 12px;
-}
-
-/* 2D/3D 切换浮层（地图右上角，避开右侧面板） */
-.map-mode-switch {
-  position: absolute;
-  top: var(--space-md);
-  right: calc(419px + var(--space-md) * 2);
-  z-index: 6;
-  display: flex;
-  gap: 2px;
-  padding: 2px;
-  border-radius: var(--radius-sm);
-  background: rgb(0 212 255 / 10%);
-}
-
-.mode-btn {
-  padding: 4px 14px;
-  font-size: 12px;
-  color: var(--color-text-muted);
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.mode-btn.active {
-  color: var(--color-accent);
-  background: rgb(0 212 255 / 18%);
 }
 
 /* 左侧面板区（设计稿 419px） */

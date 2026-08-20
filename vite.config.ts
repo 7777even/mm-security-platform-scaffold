@@ -119,5 +119,20 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.spec.ts'],
+    // vitest 不读 vite resolve.alias，必须显式同步：Cesium 1.x 依赖 @zip.js/zip.js 的
+    // zip-no-worker.js 子路径（KmlDataSource.js 静态导入），新版本已移除该 subpath，
+    // 重定向到 zip-core.js（无 Worker 版压缩解压）。node 环境运行也会触发。
+    alias: [
+      {
+        find: '@zip.js/zip.js/lib/zip-no-worker.js',
+        replacement: fileURLToPath(new URL('./node_modules/@zip.js/zip.js/lib/zip-core.js', import.meta.url)),
+      },
+    ],
+    // 让 vitest 也走 vite 转换 cesium 内部依赖（Cesium 内部 import 用 vite alias 重定向）
+    server: {
+      deps: {
+        inline: ['cesium', '@cesium/engine', '@cesium/widgets'],
+      },
+    },
   },
 });

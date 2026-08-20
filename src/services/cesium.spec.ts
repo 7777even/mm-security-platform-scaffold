@@ -1,75 +1,38 @@
 import { describe, it, expect } from 'vitest';
-import { buildViewerOptions, toPointEntity, toZoneEntity, zoneColor } from './cesium';
-import type { MapPoint, RiskZone } from './map';
+import { markerColor, zoneFillColor, FACTORY_CENTER } from './cesium';
+import type { MapPoint } from './map';
 
-describe('cesium 服务层：数据→Cesium 实体映射', () => {
-  it('buildViewerOptions 生成基础 viewer 配置（含瓦片 URL 与默认模式）', () => {
-    const opts = buildViewerOptions({ tileUrl: 'https://tiles.example/{z}/{x}/{y}.png' });
-    expect(opts.tileUrl).toBe('https://tiles.example/{z}/{x}/{y}.png');
-    expect(opts.sceneMode).toBe('3d');
-    expect(opts.defaultView.lng).toBeGreaterThan(110);
-    expect(opts.defaultView.lat).toBeGreaterThan(21);
+// Cesium.Color.red/green/blue 通道值范围 0..1。转为 0..255 整数便于断言。
+const rgb = (c: { red: number; green: number; blue: number }): string =>
+  `${Math.round(c.red * 255)},${Math.round(c.green * 255)},${Math.round(c.blue * 255)}`;
+
+describe('cesium 服务层：数据→颜色映射（纯函数 TDD）', () => {
+  it('FACTORY_CENTER 落在厂区经纬度范围', () => {
+    expect(FACTORY_CENTER[0]).toBeGreaterThan(110);
+    expect(FACTORY_CENTER[1]).toBeGreaterThan(21);
   });
 
-  it('buildViewerOptions 支持显式 2D/3D 模式', () => {
-    expect(
-      buildViewerOptions({ tileUrl: '/tiles/{z}/{x}/{y}.png', sceneMode: '2d' }).sceneMode,
-    ).toBe('2d');
-    expect(
-      buildViewerOptions({ tileUrl: '/tiles/{z}/{x}/{y}.png', sceneMode: '3d' }).sceneMode,
-    ).toBe('3d');
+  it('报警点按 level 着色：1 绿 → 4 红', () => {
+    const mk = (level: number): MapPoint => ({ id: 'A', name: 'a', lng: 110.95, lat: 21.67, level });
+    expect(rgb(markerColor('alarm', mk(1)))).toBe('34,197,94'); // #22c55e 绿
+    expect(rgb(markerColor('alarm', mk(4)))).toBe('239,68,68'); // #ef4444 红
   });
 
-  it('toPointEntity 将报警点映射为带等级色圆的实体', () => {
-    const p: MapPoint = { id: 'A-1', name: '罐区烟感', lng: 110.95, lat: 21.67, level: 1 };
-    const e = toPointEntity(p, 'alarm');
-    expect(e.id).toBe('A-1');
-    expect(e.name).toBe('罐区烟感');
-    expect(e.lng).toBe(110.95);
-    expect(e.lat).toBe(21.67);
-    expect(e.color).toBeDefined();
-    expect(e.kind).toBe('alarm');
-    expect(e.level).toBe(1);
+  it('报警点缺失 level 回退默认灰', () => {
+    expect(rgb(markerColor('alarm', { id: 'A', name: 'a', lng: 1, lat: 1 }))).toBe('156,163,175'); // #9ca3af
   });
 
-  it('toPointEntity 设备点状态色映射为在线绿/离线灰', () => {
-    const online = toPointEntity(
-      { id: 'D-1', name: '设备', lng: 110, lat: 21, status: 'ONLINE' },
-      'device',
-    );
-    const offline = toPointEntity(
-      { id: 'D-2', name: '设备', lng: 110, lat: 21, status: 'OFFLINE' },
-      'device',
-    );
-    expect(online.color).toMatch(/green|#/i);
-    expect(offline.color).toMatch(/gray|#/i);
-    expect(online.kind).toBe('device');
+  it('设备点状态着色：online 绿 / offline 灰（大小写不敏感）', () => {
+    const online = markerColor('device', { id: 'D', name: 'd', lng: 1, lat: 1, status: 'ONLINE' });
+    const offline = markerColor('device', { id: 'D', name: 'd', lng: 1, lat: 1, status: 'OFFLINE' });
+    expect(rgb(online)).toBe('34,197,94'); // #22c55e
+    expect(rgb(offline)).toBe('107,114,128'); // #6b7280
   });
 
-  it('toZoneEntity 将风险区映射为带评分色的面实体', () => {
-    const z: RiskZone = {
-      name: '罐区',
-      score: 3.1,
-      polygon: [
-        [110.945, 21.678],
-        [110.955, 21.678],
-        [110.955, 21.67],
-        [110.945, 21.67],
-      ],
-    };
-    const e = toZoneEntity(z);
-    expect(e.name).toBe('罐区');
-    expect(e.score).toBe(3.1);
-    expect(e.coordinates).toHaveLength(4);
-    expect(e.color).toContain('rgba');
-  });
-
-  it('zoneColor 评分分级映射红/黄/蓝/灰（对齐设计稿图 5-1 语义色）', () => {
-    // CSS 颜色允许 "rgb(r g b)" 或 "rgb(r,g,b)" 两种空格/逗号写法，断言归一为无空白串
-    const norm = (s: string) => s.replace(/\s+/g, '');
-    expect(norm(zoneColor(4.5))).toContain('255,90,90'); // 危险 #FF5A5A
-    expect(norm(zoneColor(3.1))).toContain('246,186,46'); // 三级黄 #F6BA2E
-    expect(norm(zoneColor(2.2))).toContain('46,124,246'); // 四级蓝 #2E7CF6
-    expect(norm(zoneColor(1.1))).toContain('143,166,200'); // 灰蓝 #8FA6C8
+  it('zoneFillColor 按评分分级：≥3.5 红、≥2.5 黄、其余绿，含半透明', () => {
+    expect(rgb(zoneFillColor(4.5))).toBe('248,113,113'); // #f87171
+    expect(rgb(zoneFillColor(3.1))).toBe('251,191,36'); // #fbbf24
+    expect(rgb(zoneFillColor(2.2))).toBe('52,211,153'); // #34d399
+    expect(zoneFillColor(3).alpha).toBeCloseTo(0.25);
   });
 });
