@@ -1,32 +1,9 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { detectWebGL } from '@/utils/webgl';
-import { buildViewerOptions, toPointEntity, toZoneEntity, type PointKind } from '@/services/cesium';
+import { buildViewerOptions, toPointEntity, type PointKind } from '@/services/cesium';
 import type { MapPoint, RiskZone } from '@/services/map';
 import { recordPerfAsync } from '@/utils/perf-budget';
-
-/**
- * 解析 rgba()/rgb() 字符串为 Cesium polygon 所需的填充色与描边色。
- * 输入示例：'rgba(250,173,20,0.2)' → { fillRgba: 'rgba(250,173,20,0.32)'（略提透明度）,
- *                                  outlineHex: '#faad14' }
- * 业务用途：风险区评分色半透明叠加在深色底图上几乎不可见，加描边色提升边界辨识度。
- */
-function parseRgbaToHex(cssColor: string): { fillRgba: string; outlineHex: string } {
-  const rgbaMatch = cssColor.match(
-    /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)/,
-  );
-  if (rgbaMatch) {
-    const r = Number(rgbaMatch[1]);
-    const g = Number(rgbaMatch[2]);
-    const b = Number(rgbaMatch[3]);
-    const aRaw = rgbaMatch[4] !== undefined ? Number(rgbaMatch[4]) : 1;
-    const a = Math.min(0.4, aRaw + 0.12); // 略提透明度让填充可见
-    const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-    return { fillRgba: `rgba(${r},${g},${b},${a.toFixed(2)})`, outlineHex: hex };
-  }
-  // fallback：原样回填
-  return { fillRgba: cssColor, outlineHex: '#00d4ff' };
-}
 
 /**
  * Cesium 二三维一体化地图容器（详细设计 4.2.2.2「地图集成服务 map」前端消费侧）。
@@ -109,7 +86,16 @@ interface CesiumSceneLike {
   requestRender?: () => void;
   renderError?: { addEventListener?: (cb: (scene: unknown, err: unknown) => void) => void };
   backgroundColor?: unknown;
-  globe?: { baseColor?: unknown; show?: boolean };
+  globe?: {
+    baseColor?: unknown;
+    show?: boolean;
+    showGroundAtmosphere?: boolean;
+    atmosphereLightIntensity?: number;
+    translucency?: { enabled?: boolean };
+  };
+  fog?: { enabled?: boolean };
+  sun?: { show?: boolean };
+  moon?: { show?: boolean };
 }
 
 const containerRef = ref<HTMLDivElement | null>(null);
@@ -188,7 +174,7 @@ async function createViewer(): Promise<void> {
     viewer.imageryLayers?.addImageryProvider?.(
       new C.UrlTemplateImageryProvider!({ url: opts.tileUrl }),
     );
-    // 兜底色：与 .base-map CSS 背景 #050a15 融合，避免 globe 渲染异常或 sceneBackgroundColor 失效时出现"白屏"。
+    // 兜底色：与 .base-map CSS 背景 #050a15 融合，globe 表面即深色底座。
     // Cesium 1.119 在 2D 模式或某些情况下 sceneBackgroundColor 不生效，
     // 强制 globe.baseColor = dashboard 同色，globe 未渲染或失败时整个画面与背景融合，看不出白屏。
     const baseBg = C.Color?.fromCssColorString
@@ -196,7 +182,20 @@ async function createViewer(): Promise<void> {
       : C.Color?.fromBytes?.(5, 10, 21, 255);
     if (baseBg && viewer.scene) {
       viewer.scene.backgroundColor = baseBg;
-      if (viewer.scene.globe) viewer.scene.globe.baseColor = baseBg;
+      const globe = viewer.scene.globe;
+      if (globe) {
+        globe.baseColor = baseBg;
+        // 关闭 atmospheric 相关 shader，避免 globe 表面出现"白雾"（atmospheric scattering pass
+        // 渲染蓝白过渡，与 Carto dark_all 深色底图冲突，导致视野中部/远处呈现白色雾感）
+        globe.showGroundAtmosphere = false;
+        globe.atmosphereLightIntensity = 0;
+        if (globe.translucency) globe.translucency.enabled = false;
+      }
+      // 关闭 scene 全局 fog（与 atmosphere 同源问题），避免远景白色雾化
+      if (viewer.scene.fog) viewer.scene.fog.enabled = false;
+      // 关闭 sun 渲染（moon 与 sun 是 globe 边缘外白色光晕来源）
+      if (viewer.scene.sun) viewer.scene.sun.show = false;
+      if (viewer.scene.moon) viewer.scene.moon.show = false;
     }
     // 显式初始相机（避免默认 home view 在归一化计算时除零产生 NaN）
     viewer.camera?.setView?.({
@@ -293,34 +292,8 @@ function renderData(): void {
   const C = cesium;
   if (!C?.Cartesian3) return;
   viewer.entities.removeAll();
-  for (const z of props.zones) {
-    const e = toZoneEntity(z);
-    // 关键修复 1：polygon.hierarchy 必须用 Cartesian3[]（经度/纬度展平后 fromDegreesArray），
-    // 直接传 [lng, lat] 数组会被 Cesium 当成 Cartesian3(x=lng,y=lat,z=undefined)，
-    // z=NaN → Stereographic 归一化抛 "normalized result is not a number" → 每帧 render 崩溃 → RAF 关闭 → 画面全黑
-    const hierarchy = C.Cartesian3.fromDegreesArray(e.coordinates.flat());
-    // 把 e.color（如 rgba(255,77,79,0.22)）拆出 base RGB，单独生成"半透明填充色 + 高对比描边色"
-    // 让 polygon 在深色底图上既不刺眼也能定位（用户反馈 polygon 看不见 = 半透明色在深底图上几乎不可见）
-    const base = parseRgbaToHex(e.color);
-    viewer.entities.add({
-      name: e.name,
-      polygon: {
-        hierarchy,
-        // 关键修复 2：必须显式 height: 0。
-        // 不设 height 时 Cesium 走 CLAMP_TO_GROUND ground 渲染路径
-        // （StaticGroundGeometryPerMaterialBatch），半透明材质 + EllipsoidTerrain 组合
-        // 在 WebGL 下渲染异常 → 风险区变成"白色未渲染块"。
-        // height: 0 强制 polygon 画在椭球面 height=0 平面（普通 3D geometry 路径），
-        // 半透明材质正常叠加，且 2D/3D 模式都能正确显示。
-        height: 0,
-        material: base.fillRgba,
-        // outline 改为高对比描边色（与填充同色更深），让 polygon 在深色底图上有明确边界
-        outline: true,
-        outlineColor: base.outlineHex,
-        outlineWidth: 2,
-      },
-    });
-  }
+  // 风险区（zones）暂时不展示：polygon 在 Cesium 1.119 渲染为白/灰块问题未解决，
+  // 待后续排查渲染管线后再恢复。保留点位/设备展示。
   const kind: PointKind = 'alarm';
   for (const p of props.alarms) {
     const e = toPointEntity(p, kind);
@@ -402,11 +375,23 @@ onUnmounted(() => {
 
 .base-map :deep(.cesium-viewer),
 .base-map :deep(.cesium-viewer-cesiumWidgetContainer),
-.base-map :deep(.cesium-widget),
+.base-map :deep(.cesium-widget) {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* canvas 强制 background 兜底：
+   即使 WebGL framebuffer 全部未渲染（globe 关闭 atmosphere 后下半不绘制等场景），
+   canvas 元素自身 CSS background 也是深色，杜绝"白屏"露出 webview 默认白色。
+   WebGL contextOptions 已设 alpha:false，framebuffer 也用 backgroundColor=#050a15 清屏，
+   双重保证 canvas 任何状态下都是深色（不会出现 webview 默认白底）。 */
 .base-map :deep(canvas) {
   width: 100% !important;
   height: 100% !important;
   display: block;
+  background: #050a15 !important;
+  background-color: #050a15 !important;
 }
 
 /* Cesium 自带控件按深色主题弱化 */
