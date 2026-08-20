@@ -1,10 +1,10 @@
 <script setup lang="ts">
 // 用户与权限模块（占位）；演示 RBAC 按钮级权限（v-permission 指令）
+import PanelCard from '@/components/common/PanelCard.vue';
 </script>
 
 <template>
-  <section class="glass-panel page-panel">
-    <h2 class="panel-title">用户与权限</h2>
+  <PanelCard title="用户与权限">
     <p class="panel-empty">模块开发中：用户管理、角色与按钮级权限配置。</p>
 
     <div class="perm-demo">
@@ -14,17 +14,14 @@
       <el-button v-permission="'fire-alarm:ack'" type="danger" size="small">
         确认派单（v-permission）
       </el-button>
-      <p class="tip">切换右上角角色，按钮显隐实时刷新（commander 两者可见；值班调度仅派单可见；外操均不可见）。</p>
+      <p class="tip">
+        切换右上角角色，按钮显隐实时刷新（commander 两者可见；值班调度仅派单可见；外操均不可见）。
+      </p>
     </div>
-  </section>
+  </PanelCard>
 </template>
 
 <style scoped>
-.page-panel {
-  min-height: 100%;
-  padding: var(--space-lg);
-}
-
 .panel-empty {
   margin-top: var(--space-md);
   color: var(--color-text-muted);

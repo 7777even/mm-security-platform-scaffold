@@ -5,7 +5,18 @@ import pluginVue from 'eslint-plugin-vue';
 import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', '*.config.ts', '*.config.js'] },
+  {
+    ignores: [
+      'dist',
+      'node_modules',
+      '.verify-out/**',
+      '**/.verify-out/**',
+      '.verify-tmp/**',
+      '**/.verify-tmp/**',
+      '*.config.ts',
+      '*.config.js',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/recommended'],

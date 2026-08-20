@@ -64,10 +64,12 @@ describe('cesium 服务层：数据→Cesium 实体映射', () => {
     expect(e.color).toContain('rgba');
   });
 
-  it('zoneColor 评分分级映射红/橙/蓝/灰', () => {
-    expect(zoneColor(4.5)).toContain('255,77,79');
-    expect(zoneColor(3.1)).toContain('250,173,20');
-    expect(zoneColor(2.2)).toContain('64,169,255');
-    expect(zoneColor(1.1)).toContain('140,156,176');
+  it('zoneColor 评分分级映射红/黄/蓝/灰（对齐设计稿图 5-1 语义色）', () => {
+    // CSS 颜色允许 "rgb(r g b)" 或 "rgb(r,g,b)" 两种空格/逗号写法，断言归一为无空白串
+    const norm = (s: string) => s.replace(/\s+/g, '');
+    expect(norm(zoneColor(4.5))).toContain('255,90,90'); // 危险 #FF5A5A
+    expect(norm(zoneColor(3.1))).toContain('246,186,46'); // 三级黄 #F6BA2E
+    expect(norm(zoneColor(2.2))).toContain('46,124,246'); // 四级蓝 #2E7CF6
+    expect(norm(zoneColor(1.1))).toContain('143,166,200'); // 灰蓝 #8FA6C8
   });
 });

@@ -10,13 +10,12 @@ body,
 }
 
 body {
-  font-family: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
-  font-size: var(--font-body);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
   color: var(--color-text);
   background-color: var(--color-bg);
   background-image:
-    radial-gradient(circle at 50% -12%, rgb(0 212 255 / 10%), transparent 62%),
-    linear-gradient(180deg, #0b1526 0%, #08111f 100%);
+    radial-gradient(circle at 50% -12%, rgb(0 216 255 / 10%), transparent 62%), var(--gradient-bg);
   background-attachment: fixed;
 }
 
@@ -39,16 +38,18 @@ body {
   background: var(--color-accent);
 }
 
-/* 玻璃面板：渐变描边 + 顶部亮线 + 内发光 + hover 微光 */
+/* =========================================================================
+ * §4 / §8 玻璃面板公共样式 — 设计稿图 5-6 信息面板容器
+ * ========================================================================= */
 .glass-panel {
   position: relative;
   background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--panel-radius);
   backdrop-filter: blur(var(--glass-blur));
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 6%),
-    inset 0 0 24px rgb(0 212 255 / 4%);
+    inset 0 0 24px rgb(0 216 255 / 4%);
 }
 
 .glass-panel::before {
@@ -58,27 +59,27 @@ body {
   left: 16px;
   right: 16px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgb(0 212 255 / 60%), transparent);
+  background: linear-gradient(90deg, transparent, rgb(0 216 255 / 60%), transparent);
   pointer-events: none;
 }
 
 .glass-panel:hover {
-  border-color: rgb(0 212 255 / 45%);
+  border-color: rgb(0 216 255 / 45%);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 8%),
-    0 0 16px rgb(0 212 255 / 12%);
+    0 0 16px rgb(0 216 255 / 12%);
 }
 
-/* 面板标题：青色竖条 + 发光 */
+/* §8.2 面板标题：青色竖条 + 发光 */
 .panel-title {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
   margin: 0;
-  font-size: var(--font-title);
-  font-weight: 600;
+  font-size: var(--font-size-h2);
+  font-weight: 700;
   letter-spacing: 1px;
-  color: var(--color-text);
+  color: var(--panel-title-color);
 }
 
 .panel-title::before {
@@ -87,7 +88,7 @@ body {
   height: 16px;
   border-radius: 2px;
   background: var(--color-accent);
-  box-shadow: 0 0 8px var(--color-accent-glow);
+  box-shadow: var(--panel-title-glow);
 }
 
 /* 列表隔行变色 */
@@ -95,8 +96,299 @@ body {
   background: var(--row-alt-bg);
 }
 
-/* 数字字体（设计稿：数据指标用 Poppins/DIN） */
+/* 数字字体（图 5-3：Poppins / DIN） */
 .font-number {
-  font-family: var(--font-number);
+  font-family: var(--font-family-num);
   font-variant-numeric: tabular-nums;
+}
+
+/* 语义色快捷类（与 dashboard tone-* 对齐） */
+.tone-accent {
+  color: var(--color-accent);
+}
+.tone-success {
+  color: var(--color-success);
+}
+.tone-warning {
+  color: var(--color-warning);
+}
+.tone-danger {
+  color: var(--color-danger);
+}
+.tone-info {
+  color: var(--color-text-muted);
+}
+
+/* 预警等级快捷类（设计稿图 5-1 底部 / §13.1） */
+.tone-alarm-1 {
+  color: var(--color-alarm-1);
+}
+.tone-alarm-2 {
+  color: var(--color-alarm-2);
+}
+.tone-alarm-3 {
+  color: var(--color-alarm-3);
+}
+.tone-alarm-4 {
+  color: var(--color-alarm-4);
+}
+
+/* 设备状态点（§13.3） */
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot--online {
+  background: var(--color-success);
+  box-shadow: 0 0 6px var(--color-success);
+}
+
+.status-dot--offline {
+  background: var(--color-text-muted);
+}
+
+.status-dot--fault {
+  background: var(--color-danger);
+  box-shadow: 0 0 6px var(--color-danger);
+}
+
+/* §9.1 统计卡片 StatCard */
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: var(--stat-card-gap);
+  height: var(--stat-card-h);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--stat-card-radius);
+  background: var(--glass-bg);
+  border: 1px solid var(--color-border);
+  transition: border-color 0.2s ease;
+}
+
+.stat-card:hover {
+  border-color: rgb(0 216 255 / 45%);
+}
+
+.stat-card__icon {
+  width: var(--stat-card-icon-size);
+  height: var(--stat-card-icon-size);
+  border-radius: var(--stat-card-radius);
+  background: var(--stat-card-icon-bg);
+  color: var(--color-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.stat-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stat-card__title {
+  font-size: var(--stat-card-text-size);
+  color: var(--stat-card-text-color);
+  letter-spacing: 1px;
+}
+
+.stat-card__value {
+  font-family: var(--font-family-num);
+  font-size: var(--stat-card-value-size);
+  font-weight: var(--stat-value-weight);
+  color: var(--stat-value-color);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+/* §9.2 告警卡片 AlarmCard */
+.alarm-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--alarm-card-gap);
+  padding: var(--space-md);
+  border-radius: var(--alarm-card-radius);
+  background: var(--alarm-card-bg);
+  border: 1px solid var(--color-border);
+  border-left-width: 3px;
+  overflow: hidden;
+}
+
+.alarm-card--l1 {
+  border-left-color: var(--alarm-card-border-l1);
+}
+.alarm-card--l2 {
+  border-left-color: var(--alarm-card-border-l2);
+}
+.alarm-card--l3 {
+  border-left-color: var(--alarm-card-border-l3);
+}
+.alarm-card--l4 {
+  border-left-color: var(--alarm-card-border-l4);
+}
+
+.alarm-card__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-alarm);
+  color: var(--color-text);
+}
+
+.alarm-card__meta {
+  font-size: var(--font-size-helper);
+  color: var(--color-text-muted);
+  font-family: var(--font-family-num);
+  font-variant-numeric: tabular-nums;
+}
+
+/* §9.3 按钮组件 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 var(--btn-pad-x);
+  border-radius: var(--btn-radius);
+  border: 1px solid var(--btn-border);
+  background: var(--glass-bg);
+  color: var(--btn-color-default);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.btn--primary {
+  background: var(--btn-bg-primary);
+  border-color: transparent;
+  color: var(--btn-color-primary);
+  font-weight: 600;
+}
+
+.btn--primary:hover {
+  filter: brightness(1.1);
+  color: var(--btn-color-primary);
+}
+
+.btn--danger {
+  background: var(--btn-bg-danger);
+  border-color: transparent;
+  color: var(--btn-color-primary);
+  font-weight: 600;
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.btn--sm {
+  height: var(--btn-h-sm);
+  font-size: 12px;
+}
+
+.btn--md {
+  height: var(--btn-h-md);
+}
+
+.btn--lg {
+  height: var(--btn-h-lg);
+  font-size: var(--font-size-h2);
+}
+
+/* §10 地图复合标注（发光图钉） */
+.map-pin {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--color-text-strong);
+  background: var(--color-accent-2);
+  box-shadow: 0 0 12px var(--color-accent-2);
+}
+
+.map-pin--l1 {
+  background: var(--color-danger);
+  box-shadow: 0 0 14px var(--color-danger);
+}
+
+.map-pin--l2 {
+  background: var(--color-warning);
+  box-shadow: 0 0 14px var(--color-warning);
+}
+
+.map-pin--l3 {
+  background: var(--color-accent-2);
+  box-shadow: 0 0 14px var(--color-accent-2);
+}
+
+.map-pin--l4 {
+  background: var(--color-accent-4, var(--color-alarm-4));
+  box-shadow: 0 0 12px var(--color-alarm-4);
+}
+
+/* §11.1 抽屉列表面板 */
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  height: var(--list-row-h);
+  padding: 0 var(--list-row-pad-x);
+  border-bottom: 1px solid var(--list-divider);
+  color: var(--color-text);
+}
+
+.list-row:hover {
+  background: var(--row-alt-bg);
+}
+
+/* §6.3 图标尺寸快捷类 */
+.icon-xs {
+  width: var(--icon-xs);
+  height: var(--icon-xs);
+}
+
+.icon-sm {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+}
+
+.icon-md {
+  width: var(--icon-md);
+  height: var(--icon-md);
+}
+
+.icon-lg {
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+}
+
+.icon-xl {
+  width: var(--icon-xl);
+  height: var(--icon-xl);
+}
+
+.icon-xxl {
+  width: var(--icon-xxl);
+  height: var(--icon-xxl);
 }

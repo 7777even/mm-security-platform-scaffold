@@ -11,6 +11,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AlarmCard: typeof import('./src/components/common/AlarmCard.vue')['default']
+    AppButton: typeof import('./src/components/common/AppButton.vue')['default']
     AppErrorBoundary: typeof import('./src/components/AppErrorBoundary.vue')['default']
     AppLayout: typeof import('./src/components/layout/AppLayout.vue')['default']
     BaseMap: typeof import('./src/components/cesium/BaseMap.vue')['default']
@@ -32,8 +34,10 @@ declare module 'vue' {
     ElTable: typeof import('element-plus/es')['ElTable']
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTag: typeof import('element-plus/es')['ElTag']
+    MapPin: typeof import('./src/components/common/MapPin.vue')['default']
     PanelCard: typeof import('./src/components/common/PanelCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    StatCard: typeof import('./src/components/common/StatCard.vue')['default']
   }
 }

@@ -1,3 +1,11 @@
+<!--
+  AppLayout — §5 / §7 顶部导航栏 + 内容区 + 底部消息栏（设计稿图 5-5）
+  全屏骨架：
+    - 顶部：64px（var(--layout-header-h)）
+    - 中部：flex:1 主路由出口（var(--layout-page-pad)）
+    - 底部：消息栏（BottomMessageBar，56px）
+  五层 z-index（§5.1）严格遵循。
+-->
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import type { Component } from 'vue';
@@ -17,10 +25,7 @@ const { filterRoutesByPerm } = usePermission();
 const now = ref('');
 let timer: ReturnType<typeof setInterval> | null = null;
 
-// 大屏模块导航：取动态装配的菜单路由（main.ts 按 /auth/menus 装配），
-// 按角色 meta.perm 过滤；无组件分组壳（如 system）展开为叶子项，
-// 但子项全被过滤的空壳不渲染（避免"系统管理"点进去无页面的幽灵菜单）。
-// 叶子路由 children 为 undefined（保留）；分组壳 children 过滤后为空数组（丢弃）。
+// 大屏模块导航：取动态装配的菜单路由，按角色 meta.perm 过滤
 const menuRoutes = computed(() =>
   filterRoutesByPerm(getInstalledMenuRoutes()).flatMap((r) => {
     if (r.children && r.children.length > 0) return r.children;
@@ -47,7 +52,7 @@ function goHome(): void {
   router.push('/');
 }
 
-// 读取导航项图标（菜单 meta.icon 由 menu.ts 装配写入；RouteMeta 未声明该字段，安全取值）
+// 读取导航项图标（菜单 meta.icon 由 menu.ts 装配写入）
 function navIcon(item: RouteRecordRaw): Component | undefined {
   return (item.meta as { icon?: Component }).icon;
 }
@@ -55,7 +60,6 @@ function navIcon(item: RouteRecordRaw): Component | undefined {
 onMounted(() => {
   tick();
   timer = setInterval(tick, 1000);
-  // 渲染层：大屏布局挂载完成（对比 app:ready 与 FCP）
   markOnce('layout:ready');
 });
 
@@ -66,9 +70,9 @@ onUnmounted(() => {
 
 <template>
   <div class="screen">
+    <!-- §7 顶部导航栏 -->
     <header class="header">
       <div class="brand" title="返回首页" @click="goHome">
-        <!-- 盾牌 Logo：风格化占位，正式接入时替换为中石化品牌资产 -->
         <svg
           class="logo"
           viewBox="0 0 24 24"
@@ -118,10 +122,12 @@ onUnmounted(() => {
       </div>
     </header>
 
+    <!-- 主路由出口 -->
     <main class="content">
       <RouterView />
     </main>
 
+    <!-- §11.2 底部消息栏 -->
     <BottomMessageBar />
   </div>
 </template>
@@ -134,22 +140,23 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
+/* §7 顶部导航栏：高度 64px（--layout-header-h），深色半透明底 + 底部青色光带 */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-lg);
-  height: 64px;
+  height: var(--layout-header-h);
   padding: 0 var(--space-lg);
   position: relative;
-  z-index: 10;
+  z-index: var(--z-chrome);
   flex-shrink: 0;
-  background: linear-gradient(180deg, rgb(15 30 54 / 92%), rgb(15 30 54 / 65%));
-  border-bottom: 1px solid var(--glass-border);
+  background: var(--layout-header-bg);
+  border-bottom: 1px solid var(--color-border);
   backdrop-filter: blur(var(--glass-blur));
 }
 
-/* 底部青色亮线 */
+/* §7 底部 1px 青色光带 */
 .header::after {
   content: '';
   position: absolute;
@@ -157,7 +164,7 @@ onUnmounted(() => {
   right: 0;
   bottom: -1px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgb(0 212 255 / 55%), transparent);
+  background: linear-gradient(90deg, transparent, var(--layout-header-line), transparent);
   pointer-events: none;
 }
 
@@ -178,7 +185,7 @@ onUnmounted(() => {
 }
 
 .brand-title {
-  font-size: 18px;
+  font-size: var(--font-size-time);
   font-weight: 600;
   letter-spacing: 2px;
   color: var(--color-text);
@@ -211,11 +218,10 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-/* 导航图标：Element Plus 图标 svg 无 width/height，需显式定尺寸；
-   fill=currentColor 使其颜色随 nav-item 选中态（accent）自动变化 */
+/* §7 导航图标（--icon-md = 18px） */
 .nav-item__icon {
-  width: 18px;
-  height: 18px;
+  width: var(--icon-md);
+  height: var(--icon-md);
   flex-shrink: 0;
 }
 
@@ -232,7 +238,7 @@ onUnmounted(() => {
   color: var(--color-accent);
   background: var(--color-accent-soft);
   border-color: var(--glass-border);
-  box-shadow: 0 0 12px rgb(0 212 255 / 15%);
+  box-shadow: 0 0 12px rgb(0 216 255 / 15%);
 }
 
 .header-right {
@@ -242,13 +248,16 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
+/* §7 右侧顶部时间：Poppins Bold 18px（--font-size-time） */
 .clock {
-  font-family: Consolas, 'Courier New', monospace;
-  font-size: 13px;
+  font-family: var(--font-family-num);
+  font-size: var(--font-size-stat-label);
+  font-weight: 600;
   letter-spacing: 1px;
   color: var(--color-text);
-  text-shadow: 0 0 8px rgb(0 212 255 / 30%);
+  text-shadow: 0 0 8px var(--color-accent-glow);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .role-select {
@@ -265,9 +274,10 @@ onUnmounted(() => {
   color: var(--color-text);
 }
 
+/* §5.4 主路由区：内边距 = --layout-page-pad；内容可滚动 */
 .content {
   flex: 1;
-  padding: var(--space-md);
+  padding: var(--layout-page-pad);
   overflow: auto;
 }
 </style>

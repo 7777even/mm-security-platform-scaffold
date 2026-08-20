@@ -1,3 +1,7 @@
+<!--
+  BottomMessageBar — §11.2 底部消息栏（设计稿图 5-9 右）
+  56px 高；滚动消息列表；消息级 / 系统级 / 处置级三种色调
+-->
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { Bell } from '@element-plus/icons-vue';
@@ -48,13 +52,27 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  height: 56px;
+  height: var(--message-bar-h);
   flex-shrink: 0;
   padding: 0 var(--space-lg);
-  background: rgb(11 21 38 / 85%);
+  background: var(--message-bar-bg);
   backdrop-filter: blur(6px);
-  border-top: 1px solid var(--glass-border);
+  border-top: 1px solid var(--color-border);
   color: var(--color-text-muted);
+  position: relative;
+  z-index: var(--z-chrome);
+}
+
+/* §11.2 顶部 1px 青色光带（与 header 底部对称） */
+.msg-bar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--layout-header-line), transparent);
+  pointer-events: none;
 }
 
 .msg-bar__brand {
@@ -68,10 +86,9 @@ onMounted(async () => {
   white-space: nowrap;
 }
 
-/* 图标 svg 无 width/height，需显式定尺寸；fill=currentColor 随品牌色 */
 .msg-bar__brand-icon {
-  width: 18px;
-  height: 18px;
+  width: var(--icon-md);
+  height: var(--icon-md);
   flex-shrink: 0;
 }
 
@@ -130,6 +147,7 @@ onMounted(async () => {
   border: 1px solid currentcolor;
 }
 
+/* §13.2 报警/系统/处置三类消息色调（与 dashboard tone-* 对齐） */
 .msg-item--alarm {
   color: var(--color-danger);
 }

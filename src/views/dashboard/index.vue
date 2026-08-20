@@ -11,6 +11,8 @@ import { markOnce } from '@/utils/perf';
 import { recordPerfAsync } from '@/utils/perf-budget';
 import BaseMap from '@/components/cesium/BaseMap.vue';
 import PanelCard from '@/components/common/PanelCard.vue';
+import StatCard from '@/components/common/StatCard.vue';
+import AppButton from '@/components/common/AppButton.vue';
 import {
   fetchDashboardOverview,
   fetchAlarmTrend,
@@ -35,16 +37,20 @@ echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, Canvas
 
 type ECOption = ComposeOption<LineSeriesOption>;
 
-// 图表配置色值（ECharts 不消费 CSS 变量，此处集中定义避免魔法字符串）
-const CHART_ACCENT = '#00d4ff';
-const CHART_SUCCESS = '#52c41a';
-const CHART_TEXT = '#7e9bb8';
+// 图表配置色值（与 styles/tokens.css 对齐：设计稿 §5-1 色彩规范 + 图 5-1）
+const CHART_ACCENT = '#00d8ff';
+const CHART_SUCCESS = '#2ee6a8';
+const CHART_TEXT = '#8fa6c8';
+const CHART_PANEL_BG = 'rgba(19, 35, 60, 0.92)';
+const CHART_PANEL_BORDER = 'rgba(0, 216, 255, 0.4)';
 
+// 报警等级 → 标签 & 色调（设计稿图 5-1 预警色分级 + 规则 3 绿/橙/红语义）。
+// tone 取自 styles/global.css .tone-alarm-* 系列，与 --color-alarm-1..4 对齐。
 const LEVEL_META: Record<AlarmLevel, { label: string; tone: string }> = {
-  1: { label: '重大', tone: 'danger' },
-  2: { label: '预警', tone: 'warning' },
-  3: { label: '提示', tone: 'info' },
-  4: { label: '提示', tone: 'info' },
+  1: { label: '一级', tone: 'alarm-1' },
+  2: { label: '二级', tone: 'alarm-2' },
+  3: { label: '三级', tone: 'alarm-3' },
+  4: { label: '四级', tone: 'alarm-4' },
 };
 
 const TYPE_LABEL: Record<AlarmType, string> = {
@@ -143,9 +149,9 @@ function renderChart(): void {
   const option: ECOption = {
     tooltip: {
       trigger: 'axis',
-      backgroundColor: 'rgba(15, 30, 54, 0.92)',
-      borderColor: 'rgba(0, 212, 255, 0.4)',
-      textStyle: { color: '#eaf2fb' },
+      backgroundColor: CHART_PANEL_BG,
+      borderColor: CHART_PANEL_BORDER,
+      textStyle: { color: '#eaf4ff' },
     },
     legend: { data: ['告警', '处置'], textStyle: { color: CHART_TEXT } },
     grid: { left: 40, right: 16, top: 28, bottom: 24 },
@@ -153,13 +159,13 @@ function renderChart(): void {
       type: 'category',
       boundaryGap: false,
       data: hours(),
-      axisLine: { lineStyle: { color: 'rgba(0, 212, 255, 0.3)' } },
+      axisLine: { lineStyle: { color: 'rgba(0, 216, 255, 0.3)' } },
       axisLabel: { color: CHART_TEXT, fontSize: 10 },
     },
     yAxis: {
       type: 'value',
       minInterval: 1,
-      splitLine: { lineStyle: { color: 'rgba(0, 212, 255, 0.12)' } },
+      splitLine: { lineStyle: { color: 'rgba(0, 216, 255, 0.12)' } },
       axisLabel: { color: CHART_TEXT, fontSize: 10 },
     },
     series: [
@@ -172,14 +178,14 @@ function renderChart(): void {
         lineStyle: {
           color: CHART_ACCENT,
           width: 2,
-          shadowColor: 'rgba(0, 212, 255, 0.6)',
+          shadowColor: 'rgba(0, 216, 255, 0.6)',
           shadowBlur: 10,
         },
         itemStyle: { color: CHART_ACCENT },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(0, 212, 255, 0.28)' },
-            { offset: 1, color: 'rgba(0, 212, 255, 0)' },
+            { offset: 0, color: 'rgba(0, 216, 255, 0.28)' },
+            { offset: 1, color: 'rgba(0, 216, 255, 0)' },
           ]),
         },
       },
@@ -307,6 +313,11 @@ onUnmounted(() => {
 function onMoreAlarms(): void {
   // TODO 后续 change：跳转到告警二级列表页
 }
+
+function refresh() {
+  // 复用 loadData 做轻量重拉；若失败则保留当前数据
+  void loadData();
+}
 </script>
 
 <template>
@@ -349,12 +360,13 @@ function onMoreAlarms(): void {
     <div v-if="!loading" class="dash-left">
       <PanelCard title="态势概览" icon="DataBoard">
         <div class="stat-grid">
-          <div v-for="s in stats" :key="s.label" class="stat-cell">
-            <span class="stat-value font-number" :class="'tone-' + s.tone">
-              {{ s.value }}<i v-if="s.unit">{{ s.unit }}</i>
-            </span>
-            <span class="stat-label">{{ s.label }}</span>
-          </div>
+          <StatCard
+            v-for="s in stats"
+            :key="s.label"
+            :title="`${s.label}${s.unit ? ' / ' + s.unit : ''}`"
+            :value="s.value"
+            :icon="s.icon"
+          />
         </div>
       </PanelCard>
 
@@ -382,6 +394,9 @@ function onMoreAlarms(): void {
           <li v-if="alarms.length === 0" class="alarm-empty">暂无告警数据</li>
         </ul>
         <div v-if="mockReady && !mockError" class="live-tag"><i class="live-dot" />LIVE</div>
+        <div v-if="!loading" class="dash-actions">
+          <AppButton variant="ghost" size="sm" @click="refresh">查看全部</AppButton>
+        </div>
       </PanelCard>
     </aside>
 
@@ -480,41 +495,11 @@ function onMoreAlarms(): void {
   overflow: auto;
 }
 
-/* 统计卡网格：2 列 */
+/* §9.1 统计卡网格（设计稿图 5-7 左上）：2 列 8px 间距 */
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-md);
-}
-
-.stat-cell {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-sm);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-}
-
-.stat-value {
-  font-size: var(--font-display);
-  font-weight: 600;
-  line-height: 1.1;
-  color: var(--color-text);
-  text-shadow: 0 0 12px rgb(0 212 255 / 25%);
-}
-
-.stat-value i {
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 400;
-  color: var(--color-text-muted);
-}
-
-.stat-label {
-  color: var(--color-text-muted);
-  font-size: 12px;
 }
 
 /* 趋势图高度自适应面板的剩余空间 */
@@ -601,6 +586,26 @@ function onMoreAlarms(): void {
   background: var(--color-text-muted);
 }
 
+.alarm-dot.tone-alarm-1 {
+  background: var(--color-alarm-1);
+  box-shadow: 0 0 6px var(--color-alarm-1);
+}
+
+.alarm-dot.tone-alarm-2 {
+  background: var(--color-alarm-2);
+  box-shadow: 0 0 6px var(--color-alarm-2);
+}
+
+.alarm-dot.tone-alarm-3 {
+  background: var(--color-alarm-3);
+  box-shadow: 0 0 6px var(--color-alarm-3);
+}
+
+.alarm-dot.tone-alarm-4 {
+  background: var(--color-alarm-4);
+  box-shadow: 0 0 6px var(--color-alarm-4);
+}
+
 .alarm-level {
   font-size: 12px;
   font-weight: 600;
@@ -625,6 +630,13 @@ function onMoreAlarms(): void {
   text-align: center;
   color: var(--color-text-muted);
   font-size: 13px;
+}
+
+/* §9.3 底部操作区：与设计稿右侧「查看全部」一致 */
+.dash-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-md);
 }
 
 /* 骨架屏 */
@@ -666,7 +678,7 @@ function onMoreAlarms(): void {
   }
 }
 
-/* 语义色 */
+/* 语义色（与 styles/global.css 对齐） */
 .tone-accent {
   color: var(--color-accent);
 }
@@ -685,5 +697,21 @@ function onMoreAlarms(): void {
 
 .tone-info {
   color: var(--color-text-muted);
+}
+
+.tone-alarm-1 {
+  color: var(--color-alarm-1);
+}
+
+.tone-alarm-2 {
+  color: var(--color-alarm-2);
+}
+
+.tone-alarm-3 {
+  color: var(--color-alarm-3);
+}
+
+.tone-alarm-4 {
+  color: var(--color-alarm-4);
 }
 </style>

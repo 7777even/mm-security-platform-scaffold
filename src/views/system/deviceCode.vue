@@ -1,22 +1,24 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { parseDeviceCode } from '@/constants/deviceCode'
+import { computed, ref } from 'vue';
+import { parseDeviceCode } from '@/constants/deviceCode';
+import PanelCard from '@/components/common/PanelCard.vue';
 
 // 设备编码解析演示（device-code 能力串通）
-const raw = ref('')
-const result = computed(() => parseDeviceCode(raw.value))
+const raw = ref('');
+const result = computed(() => parseDeviceCode(raw.value));
 
-const samples = ['12345678901234567890', '44090000000000000001', '12345', 'ABCDEFGHIJKLMNOPQRST']
+const samples = ['12345678901234567890', '44090000000000000001', '12345', 'ABCDEFGHIJKLMNOPQRST'];
 
 function onInput(value: string): void {
-  raw.value = value.replace(/\D/g, '')
+  raw.value = value.replace(/\D/g, '');
 }
 </script>
 
 <template>
-  <section class="glass-panel page-panel">
-    <h2 class="panel-title">设备编码解析</h2>
-    <p class="desc">输入中石化统一集采 20 位 MDM 主数据设备编码，实时解析分段（类别 / 区域 / 序列）。</p>
+  <PanelCard title="设备编码解析">
+    <p class="desc">
+      输入中石化统一集采 20 位 MDM 主数据设备编码，实时解析分段（类别 / 区域 / 序列）。
+    </p>
 
     <el-input
       :model-value="raw"
@@ -48,18 +50,15 @@ function onInput(value: string): void {
           <span class="part-label">序列</span>
           <span class="part-value">{{ result.sequence }}</span>
         </div>
-        <div class="join">三段拼接 = {{ result.category }}{{ result.region }}{{ result.sequence }}</div>
+        <div class="join">
+          三段拼接 = {{ result.category }}{{ result.region }}{{ result.sequence }}
+        </div>
       </div>
     </template>
-  </section>
+  </PanelCard>
 </template>
 
 <style scoped>
-.page-panel {
-  min-height: 100%;
-  padding: var(--space-lg);
-}
-
 .desc {
   margin-top: var(--space-md);
   color: var(--color-text-muted);

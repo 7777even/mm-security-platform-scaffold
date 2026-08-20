@@ -1,35 +1,75 @@
+/* =========================================================================
+ * 设计 token（对齐《安全管控平台设计说明》§5.3 全套图 5-1 ~ 5-22）
+ * 唯一权威源：docs/UI 设计规范.md
+ * 禁止在组件中硬编码颜色/字号/字体/尺寸，全部从此处取用。
+ * ========================================================================= */
 :root {
-  /* ---- 基底色（设计稿 §5-1 色彩规范） ---- */
-  --color-bg: #0b1526;
-  --color-primary: #13293c;
-  --color-primary-soft: #1a3f4e;
+  /* ---- 基底色（设计稿 §5-1 色彩规范 核心色板） ---- */
+  --color-bg: #0b1526; /* 主背景：界面最深、底图底黑 */
+  --color-panel: #13233c; /* 面板背景：信息容器、半透深蓝 */
+  --color-panel-soft: #1a2f4e; /* 面板浅色：卡片内层、衬页底色 */
+  --color-border: #2a4a78; /* 边框线：克制用色（设计规则 4） */
 
-  /* ---- 强调发光（大屏科技青 #00D0FF） ---- */
-  --color-accent: #00d4ff;
-  --color-accent-2: #2e7cf6;
-  --color-accent-soft: rgb(0 212 255 / 12%);
-  --color-accent-glow: rgb(0 212 255 / 35%);
+  /* ---- 强调色（设计稿：青蓝强调，设计规则 2） ---- */
+  --color-accent: #00d8ff; /* 主强调：科技青，选中态/链接/点光 */
+  --color-accent-2: #2e7cf6; /* 次强调：按键主、致能主色 */
+  --color-accent-soft: rgb(0 216 255 / 12%);
+  --color-accent-glow: rgb(0 216 255 / 35%);
+  --color-accent-faint: rgb(0 216 255 / 8%);
 
-  /* ---- 语义色（设计稿：成功/警示/危险） ---- */
-  --color-danger: #ff4a5a;
-  --color-warning: #ffb020;
-  --color-success: #2eec68;
+  /* ---- 语义色（设计稿 §5-1 + 设计规则 3） ---- */
+  --color-success: #2ee6a8; /* 成功/正常：在线 */
+  --color-warning: #ffb020; /* 警示/预警：待处置 */
+  --color-danger: #ff5a5a; /* 危险/报警：火灾告警 */
 
-  /* ---- 文本（设计稿：正文白 / 辅助灰蓝） ---- */
-  --color-text: #eaf2fb;
-  --color-text-muted: #8faec3;
+  /* ---- 预警色分级（设计稿图 5-1 底部） ---- */
+  --color-alarm-1: #f46767; /* 一级（最高） */
+  --color-alarm-2: #f68a2e; /* 二级 */
+  --color-alarm-3: #f6ba2e; /* 三级 */
+  --color-alarm-4: #2e7cf6; /* 四级（最低/兜底蓝） */
 
-  /* ---- 面板（玻璃拟态，边框线取 #2AA7B8） ---- */
-  --glass-bg: rgb(19 41 60 / 62%);
-  --glass-border: rgb(42 167 184 / 42%);
+  /* ---- 文本（设计稿：正文白 / 辅助灰蓝 + 设计规则 6） ---- */
+  --color-text-strong: #fff; /* 正文主色：纯白，强对比 */
+  --color-text: #eaf4ff; /* 辅助标题：默认正文/标题 */
+  --color-text-muted: #8fa6c8; /* 辅助文字：次级说明 */
+
+  /* ---- 渐变（设计稿图 5-1 中部 / body 兜底） ---- */
+  --gradient-tech-blue: linear-gradient(90deg, #00d8ff 0%, #2e7cf6 100%); /* 科技深蓝 */
+  --gradient-risk: linear-gradient(90deg, #ff5a5a 0%, #f68a2e 100%); /* 风险警示 */
+  --gradient-bg: linear-gradient(180deg, #0b1526 0%, #08111f 100%); /* 背景兜底 */
+
+  /* ---- 玻璃面板（克制用色 + 科技玻璃质感） ---- */
+  --glass-bg: rgb(19 35 60 / 62%);
+  --glass-border: rgb(42 74 120 / 60%);
   --glass-blur: 12px;
-  --row-alt-bg: rgb(0 212 255 / 5%);
+  --row-alt-bg: rgb(0 216 255 / 5%);
 
-  /* ---- 排版（设计稿 §5-3：面板标题 16 / 正文 14 / 辅助 12） ---- */
-  --font-title: 16px;
-  --font-body: 14px;
+  /* ---- 字体栈（图 5-3：中文字体 / 数字字体） ---- */
+  --font-family-zh:
+    'Noto Sans SC', 'Source Han Sans CN', 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
+  --font-family-num: 'Poppins', 'DIN', 'Consolas', 'Courier New', monospace;
+  --font-family-base: var(--font-family-zh);
+
+  /* ---- 字号（图 5-3 字体层级） ---- */
+  --font-size-display: 38px; /* 系统大标题 */
+  --font-size-keynum: 28px; /* 顶部时间/关键大屏数字 */
+  --font-size-highlight: 24px; /* 用户/高亮数据 */
+  --font-size-h1: 22px; /* 页面主标题 */
+  --font-size-h2: 16px; /* 面板标题 */
+  --font-size-alarm: 14px; /* 告警标题 */
+  --font-size-body: 14px; /* 正文内容 */
+  --font-size-helper: 12px; /* 辅助说明 */
+  --font-size-biz: 12px; /* 业务正文 */
+  --font-size-metric: 24px; /* 数据指标数字 */
+  --font-size-stat-label: 13px; /* 统计标签 */
+  --font-size-time: 18px; /* 时间显示 */
+  --font-size-date: 11px; /* 日期显示 */
+
+  /* ---- 兼容别名（既有 dashboard/stats 引用） ---- */
+  --font-title: var(--font-size-h2);
+  --font-body: var(--font-size-body);
   --font-display: 26px;
-  --font-number: 'Poppins', 'DIN', 'Consolas', monospace;
+  --font-number: var(--font-family-num);
 
   /* ---- 间距（外边距 16 / 内边距 24） ---- */
   --space-xs: 4px;
@@ -41,4 +81,92 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
+
+  /* =========================================================================
+   * 组件级 token（§5.4 全套：骨架 / 面板 / 统计卡 / 告警卡 / 按钮 / 地图工具 / 列表）
+   * 命名规则：`<分类>-<角色>-<属性>`，所有 token 一律 `--` 前缀。
+   * ========================================================================= */
+
+  /* §5.2 界面布局令牌 */
+  --layout-header-h: 64px; /* 顶部导航栏 */
+  --layout-aside-w: 419px; /* 左/右侧栏 PanelCard × N */
+  --layout-bottom-h: 56px; /* 底部消息栏 */
+  --layout-page-pad: var(--space-md); /* 主体内容外边距 */
+  --layout-header-bg: rgb(11 21 38 / 88%); /* 顶栏背景 */
+  --layout-header-line: rgb(0 216 255 / 55%); /* 顶栏底部光带 */
+
+  /* §5.1 Z-index 五层 */
+  --z-base: 0; /* L0 地图底图 */
+  --z-marker: 5; /* L1 地图标注 */
+  --z-chrome: 10; /* L2 顶/侧/消息栏 */
+  --z-overlay: 30; /* L3 Drawer / Dialog */
+  --z-toast: 40; /* L4 Toast / 紧急浮层 */
+
+  /* §6.3 图标尺寸 */
+  --icon-xs: 12px;
+  --icon-sm: 16px;
+  --icon-md: 18px;
+  --icon-lg: 24px;
+  --icon-xl: 32px;
+  --icon-xxl: 48px;
+
+  /* §6.2 资源类图标（icon + 大数字 + 中文标签） */
+  --stat-value-size: 28px;
+  --stat-value-weight: 700;
+  --stat-value-color: var(--color-accent);
+  --stat-label-size: 12px;
+  --stat-label-color: var(--color-text-muted);
+
+  /* §8.3 面板容器（设计稿图 5-6） */
+  --panel-radius: var(--radius-md);
+  --panel-head-h: 43px;
+  --panel-title-color: var(--color-text);
+  --panel-title-glow: 0 0 8px var(--color-accent-glow);
+  --panel-more-color: var(--color-text-muted);
+  --panel-body-pad-y: var(--space-md);
+  --panel-body-pad-x: var(--space-lg);
+
+  /* §9.1 统计卡片 StatCard */
+  --stat-card-radius: 8px;
+  --stat-card-icon-bg: var(--color-accent-faint);
+  --stat-card-gap: var(--space-sm);
+  --stat-card-h: 96px;
+  --stat-card-icon-size: 48px;
+  --stat-card-text-size: 16px;
+  --stat-card-value-size: 28px;
+  --stat-card-text-color: var(--color-text);
+
+  /* §9.2 告警卡片 AlarmCard */
+  --alarm-card-border-l1: var(--color-alarm-1);
+  --alarm-card-border-l2: var(--color-alarm-2);
+  --alarm-card-border-l3: var(--color-alarm-3);
+  --alarm-card-border-l4: var(--color-alarm-4);
+  --alarm-card-radius: var(--radius-md);
+  --alarm-card-gap: var(--space-sm);
+  --alarm-card-bg: var(--glass-bg);
+
+  /* §9.3 按钮组件 */
+  --btn-radius: var(--radius-sm);
+  --btn-h-sm: 28px;
+  --btn-h-md: 34px;
+  --btn-h-lg: 40px;
+  --btn-pad-x: 16px;
+  --btn-color-default: var(--color-text-muted);
+  --btn-color-primary: var(--color-text-strong);
+  --btn-bg-primary: var(--gradient-tech-blue);
+  --btn-bg-danger: var(--gradient-risk);
+  --btn-border: var(--color-border);
+
+  /* §10.1 地图工具栏 */
+  --map-tool-w-min: 320px;
+  --map-tool-w-max: 420px;
+  --map-tool-gap: var(--space-sm);
+  --map-tool-bg: var(--glass-bg);
+
+  /* §11 列表与消息栏 */
+  --list-row-h: 56px;
+  --list-row-pad-x: var(--space-md);
+  --list-divider: rgb(255 255 255 / 8%);
+  --message-bar-h: var(--layout-bottom-h);
+  --message-bar-bg: rgb(11 21 38 / 85%);
 }

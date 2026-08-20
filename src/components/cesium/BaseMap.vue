@@ -301,7 +301,7 @@ function renderData(): void {
       id: e.id,
       name: e.name,
       position: C.Cartesian3.fromDegrees(e.lng, e.lat),
-      point: { pixelSize: 9, color: e.color, outlineColor: '#ffffff', outlineWidth: 1.5 },
+      point: { pixelSize: 9, color: e.color, outlineColor: '#ffffff', outlineWidth: 1.5 }, // 描边用纯白（设计稿正文主色 --color-text-strong），高对比利于 Cesium 引擎在暗色 globe 上可见
       properties: { kind: 'alarm', level: e.level },
     });
   }

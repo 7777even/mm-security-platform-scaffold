@@ -3,6 +3,9 @@ import { computed, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useAlarmView } from '@/composables/useAlarmView';
 import type { AlarmItem, AlarmLevel, AlarmStatus } from '@/services/alarm';
+import PanelCard from '@/components/common/PanelCard.vue';
+import AlarmCard from '@/components/common/AlarmCard.vue';
+import AppButton from '@/components/common/AppButton.vue';
 
 const {
   page,
@@ -49,14 +52,26 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="glass-panel page-panel">
+  <PanelCard class="page-panel" title="火灾报警监测" icon="Bell" more="导出">
     <header class="alarm-head">
       <div>
         <h2 class="panel-title">火灾报警监测</h2>
         <p class="alarm-sub">实时报警接入 · 当前待处理 {{ activeCount }} 条</p>
       </div>
-      <el-button type="primary" plain @click="refresh">刷新</el-button>
+      <AppButton variant="primary" size="md" @click="refresh">查看全部</AppButton>
     </header>
+
+    <!-- §13.1 报警等级色块统计：与设计稿图 5-10「重大风险管控」一致 -->
+    <section class="level-summary" aria-label="各等级报警数量">
+      <AlarmCard
+        v-for="l in LEVELS"
+        :key="l"
+        :level="l"
+        :title="LEVEL_TEXT[l]"
+        :desc="`待处理 ${pageResult.list.filter((a) => a.level === l).length} 条`"
+        time="—"
+      />
+    </section>
 
     <div class="alarm-filters">
       <el-select v-model="levelFilter" placeholder="全部等级" clearable style="width: 140px">
@@ -87,17 +102,17 @@ onMounted(() => {
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="120" fixed="right">
+      <el-table-column label="操作" width="160" fixed="right">
         <template #default="{ row }">
-          <el-button
-            size="small"
+          <AppButton
+            variant="primary"
+            size="sm"
             :disabled="!canAck() || row.status !== 'ACTIVE'"
             @click="onAck(row as AlarmItem)"
+            >确认</AppButton
           >
-            确认
-          </el-button>
-          <el-button size="small" link type="primary" @click="openDetail(row as AlarmItem)"
-            >详情</el-button
+          <AppButton variant="ghost" size="sm" @click="openDetail(row as AlarmItem)"
+            >详情</AppButton
           >
         </template>
       </el-table-column>
@@ -127,7 +142,7 @@ onMounted(() => {
         <el-descriptions-item label="上报时间">{{ detail.ts }}</el-descriptions-item>
       </el-descriptions>
     </el-drawer>
-  </section>
+  </PanelCard>
 </template>
 
 <style scoped>
@@ -147,6 +162,14 @@ onMounted(() => {
   margin: 4px 0 0;
   color: var(--color-text-muted);
   font-size: 13px;
+}
+
+/* §13.1 报警等级色块统计：4 个 AlarmCard 横排，间距 16px */
+.level-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
 }
 
 .alarm-filters {

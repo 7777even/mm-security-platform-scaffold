@@ -41,25 +41,32 @@ export interface ZoneEntity {
 // 茂名厂区示意中心（WGS84），与 services/map.ts ZONE_COORDS 同坐标系
 export const MAP_CENTER = { lng: 110.952, lat: 21.672 };
 
+// 报警/设备点位色（对齐设计稿图 5-1 预警色分级 + 语义色）：
+//  - AlarmLevel=1 (一级/最高) → --color-alarm-1 #F46767
+//  - AlarmLevel=2 (二级)      → --color-alarm-2 #F68A2E
+//  - AlarmLevel=3 (三级)      → --color-alarm-3 #F6BA2E
+//  - AlarmLevel=4 (四级/兜底) → --color-alarm-4 #2E7CF6
+// 这里 hardcode 与 styles/tokens.css 保持一致；Cesium 引擎无法消费 CSS 变量。
 const LEVEL_COLORS: Record<number, string> = {
-  1: '#ff4d4f',
-  2: '#faad14',
-  3: '#40a9ff',
-  4: '#8c9cb0',
+  1: '#f46767',
+  2: '#f68a2e',
+  3: '#f6ba2e',
+  4: '#2e7cf6',
 };
 
+// 设备状态色（设计规则 3：成功/警示/危险 + 设计稿语义色）
 const STATUS_COLORS: Record<string, string> = {
-  ONLINE: '#52c41a',
-  OFFLINE: '#8c9cb0',
-  FAULT: '#ff4d4f',
+  ONLINE: '#2ee6a8', // 成功/正常（绿）
+  OFFLINE: '#8fa6c8', // 辅助文字（灰蓝）
+  FAULT: '#ff5a5a', // 危险/报警（红）
 };
 
-/** 风险区评分 → 半透明填充色（与 dashboard zoneColor 一致） */
+/** 风险区评分 → 半透明填充色（与 dashboard zoneColor + 设计稿语义色一致） */
 export function zoneColor(score: number): string {
-  if (score >= 4) return 'rgba(255,77,79,0.22)';
-  if (score >= 3) return 'rgba(250,173,20,0.2)';
-  if (score >= 2) return 'rgba(64,169,255,0.18)';
-  return 'rgba(140,156,176,0.14)';
+  if (score >= 4) return 'rgba(255, 90, 90, 0.22)';
+  if (score >= 3) return 'rgba(246, 186, 46, 0.2)';
+  if (score >= 2) return 'rgba(46, 124, 246, 0.18)';
+  return 'rgba(143, 166, 200, 0.14)';
 }
 
 /** 构建 viewer 初始化配置（瓦片 URL 可配置；默认 3D 二三维一体化模式） */

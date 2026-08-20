@@ -52,14 +52,67 @@
 - **WHEN** 执行 `npm run build`
 - **THEN** dist 同时产出 .js/.css 与对应 .gz，且无任何公网外链资源引用。
 
-### Requirement: 设计 token 与主题
+### Requirement: 设计 token 与主题（对齐 UI 设计规范）
 
-系统须内置安全工业蓝 `#0F1E36` 设计 token 与暗色玻璃拟态公共样式，禁止散落硬编码色值。
+系统须内置与《安全管控平台设计说明》§5.3 / 图 5-1 色彩规范一致的设计 token 与暗色玻璃拟态公共样式，禁止散落硬编码色值。token 命名与权威源在 `docs/UI 设计规范.md`。
 
-#### Scenario: 主题变量
+#### Scenario: 核心色板 token
 
 - **WHEN** 任意页面引用主题变量
-- **THEN** 通过 CSS 自定义属性（如 `--color-primary`）取得，且值以 `#0F1E36` 为基准。
+- **THEN** 通过 CSS 自定义属性取得：主背景 `--color-bg=#0B1526`、面板背景 `--color-panel=#13233C`、面板浅色 `--color-panel-soft=#1A2F4E`、主强调 `--color-accent=#00D8FF`、次强调 `--color-accent-2=#2E7CF6`、边框线 `--color-border=#2A4A78`、正文主色 `--color-text-strong=#FFFFFF`、辅助标题 `--color-text=#EAF4FF`、辅助文字 `--color-text-muted=#8FA6C8`。
+- **AND** Cesium / ECharts 等无法消费 CSS 变量的引擎，以 JS 常量（`src/services/cesium.ts`、`src/views/dashboard/index.vue` 等）镜像同一组色值，并在注释中标注「与 styles/tokens.css 保持一致」。
+
+#### Scenario: 语义色与预警分级 token
+
+- **WHEN** 业务态以语义表达（在线/正常/告警）
+- **THEN** 引用 `--color-success=#2EE6A8`、`--color-warning=#FFB020`、`--color-danger=#FF5A5A`（设计稿规则 3：绿/橙/红）。
+- **AND** 报警等级 1–4 引用 `--color-alarm-1=#F46767`、`--color-alarm-2=#F68A2E`、`--color-alarm-3=#F6BA2E`、`--color-alarm-4=#2E7CF6`（设计稿图 5-1 预警色分级），与业务侧 `AlarmLevel=1..4` 一一对齐。
+
+#### Scenario: 玻璃面板公共样式
+
+- **WHEN** 使用 `.glass-panel` 类
+- **THEN** 渲染深色半透明背景（`rgba(19,35,60,0.62)`）、1px `--color-border` 描边、10px 圆角、12px backdrop-blur、顶部亮线与底部光带（科技深蓝渐变）。hover 时描边颜色向 `--color-accent` 偏移（克制用色规则 4：仅状态变化时微调）。
+
+#### Scenario: 字体规范
+
+- **WHEN** 引用字体相关 token
+- **THEN** 中文字体栈 `var(--font-family-zh)` 优先 `Noto Sans SC`；数字字体栈 `var(--font-family-num)` 优先 `Poppins / DIN`；面板标题 16px / 正文 14px / 辅助 12px / 关键大屏数字 28px / 数据指标 24px（设计稿图 5-3）。
+
+### Requirement: 设计系统通用组件（对齐 UI 设计规范 §8–§11）
+
+系统须提供与《安全管控平台设计说明》§8 信息面板 / §9 统计与告警卡 / §10 地图标注 / §11 列表消息栏 对齐的通用组件，所有外观（色、间距、描边、圆角、字号、字重）一律通过 `styles/tokens.css` 消费，禁止在组件内硬编码色值或尺寸。
+
+#### Scenario: 信息面板 PanelCard
+
+- **WHEN** 业务页（dashboard / fire-alarm / industrial-video / system/deviceCode / system/users / error/NotFound 等）需要承载一段信息
+- **THEN** 使用 `<PanelCard title="...">` 包裹，禁止再以 `.glass-panel` + `<h2 class="panel-title">` 手搭容器。
+- **AND** PanelCard 描边使用 `var(--color-border)`，背景为深色半透明玻璃（`rgba(19,35,60,.62)` + 12px backdrop-blur），标题 16px / `--color-text`，hover 时描边向 `--color-accent` 偏移。
+
+#### Scenario: 统计卡 StatCard
+
+- **WHEN** 概览/大屏/手机端展示"关键数字 + 标题 + 图标"
+- **THEN** 使用 `<StatCard title="..." :value="..." icon="..." />`，其中 `value` 走 `var(--font-family-num)`，强调色 `var(--color-accent)`，边框 `var(--color-border)`，圆角 `var(--radius-md)`。
+
+#### Scenario: 告警卡 AlarmCard
+
+- **WHEN** 列表/消防态势展示一条告警
+- **THEN** 使用 `<AlarmCard :level="1|2|3|4" title="..." desc="..." time="..." />`。
+- **AND** 色点 `alarm-card__dot` 通过 `tone-alarm-${level}` 消费 `--color-alarm-1..4`；卡片左边线按等级上色（设计稿 §9.2）。
+
+#### Scenario: 通用按钮 AppButton
+
+- **WHEN** 页面需要按钮（"查看全部"/"确认派单"/"立即补传"等）
+- **THEN** 使用 `<AppButton variant="primary|ghost|danger" size="sm|md">`，颜色与圆角均走 token；禁止直接使用裸 `el-button`（演示页 `v-permission` 样例外）。
+
+#### Scenario: 地图标注 MapPin
+
+- **WHEN** 地图上需要点位标注
+- **THEN** 使用 `<MapPin :type="..." :label="..." />`，描边/底色按 `type` 消费 `--color-alarm-1..4` / `--color-accent` / `--color-success`。
+
+#### Scenario: 底部消息栏 BottomMessageBar
+
+- **WHEN** 顶导以外需要横向列表/系统消息
+- **THEN** 使用 `<BottomMessageBar />`，描边 `var(--color-border)`，与顶部导航（AppLayout）保持视觉一致。
 
 ### Requirement: 目录结构对齐 S1
 

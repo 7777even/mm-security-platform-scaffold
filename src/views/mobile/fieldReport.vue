@@ -4,6 +4,8 @@ import { ElMessage } from 'element-plus';
 import { useOfflineOutbox } from '@/composables/useOfflineOutbox';
 import { parseDeviceCode } from '@/constants/deviceCode';
 import type { FieldReportItem, FieldReportMedia, OutboxItemKind } from '@/services/offlineOutbox';
+import AppButton from '@/components/common/AppButton.vue';
+import StatCard from '@/components/common/StatCard.vue';
 
 // demo 模拟回传适配器：模拟防爆内网回传延迟；勾选"模拟回传失败"可演示失败重试/超限。
 const forceFail = ref(false);
@@ -103,20 +105,19 @@ const kindLabel = (k: OutboxItemKind): string =>
       <div class="phone-body">
         <!-- 网络模拟与统计 -->
         <div class="panel">
-          <el-button
-            size="small"
-            :type="simulatedOffline ? 'success' : 'warning'"
+          <AppButton
+            :variant="simulatedOffline ? 'primary' : 'danger'"
+            size="sm"
             @click="toggleSimulatedOffline"
+            >{{ simulatedOffline ? '恢复网络' : '模拟断网' }}</AppButton
           >
-            {{ simulatedOffline ? '恢复网络' : '模拟断网' }}
-          </el-button>
-          <el-button size="small" :disabled="!isOnline || flushing" @click="flush"
-            >立即补传</el-button
+          <AppButton variant="ghost" size="sm" :disabled="!isOnline || flushing" @click="flush"
+            >立即补传</AppButton
           >
           <div class="stats">
-            <span class="stat pending">待补传 {{ stats.pending }}</span>
-            <span class="stat done">已回传 {{ stats.done }}</span>
-            <span class="stat failed">失败 {{ stats.failed }}</span>
+            <StatCard title="待补传" :value="stats.pending" icon="⏳" />
+            <StatCard title="已回传" :value="stats.done" icon="✓" />
+            <StatCard title="失败" :value="stats.failed" icon="!" />
           </div>
         </div>
 
@@ -158,9 +159,9 @@ const kindLabel = (k: OutboxItemKind): string =>
             <el-form-item>
               <el-checkbox v-model="forceFail">模拟回传失败（演示重试）</el-checkbox>
             </el-form-item>
-            <el-button type="primary" size="small" style="width: 100%" @click="onSubmit">
-              暂存并回传
-            </el-button>
+            <div class="full-width">
+              <AppButton variant="primary" size="md" @click="onSubmit"> 暂存并回传 </AppButton>
+            </div>
           </el-form>
         </el-card>
 
@@ -219,8 +220,8 @@ const kindLabel = (k: OutboxItemKind): string =>
   width: 390px;
   max-width: 100%;
   min-height: 720px;
-  background: #0b1626;
-  border: 1px solid var(--glass-border, #1d3a5f);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
   border-radius: 22px;
   overflow: hidden;
   box-shadow: 0 18px 50px rgb(0 0 0 / 45%);
@@ -233,12 +234,12 @@ const kindLabel = (k: OutboxItemKind): string =>
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: linear-gradient(180deg, #0f1e36, #0b1626);
-  border-bottom: 1px solid #1d3a5f;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .sb-title {
-  color: #e8f3ff;
+  color: var(--color-text);
   font-size: 14px;
   letter-spacing: 1px;
 }
@@ -261,25 +262,20 @@ const kindLabel = (k: OutboxItemKind): string =>
 .stats {
   margin-left: auto;
   display: flex;
-  gap: 8px;
-  font-size: 12px;
+  gap: 6px;
+  flex: 1 1 200px;
+  min-width: 0;
 }
 
-.stat.pending {
-  color: #f0a020;
-}
-
-.stat.done {
-  color: #67c23a;
-}
-
-.stat.failed {
-  color: #f56c6c;
+.stats :deep(.stat-card) {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
 }
 
 .form-card :deep(.el-card__header) {
   font-size: 13px;
-  color: #cfe6ff;
+  color: var(--color-text);
   padding: 8px 12px;
 }
 
@@ -288,24 +284,24 @@ const kindLabel = (k: OutboxItemKind): string =>
 }
 
 .is-error :deep(.el-input__wrapper) {
-  box-shadow: 0 0 0 1px #f56c6c inset;
+  box-shadow: 0 0 0 1px var(--color-danger) inset;
 }
 
 .err {
-  color: #f56c6c;
+  color: var(--color-danger);
   font-size: 12px;
   margin-top: 2px;
 }
 
 .queue-title {
   font-size: 13px;
-  color: #9fc2e6;
+  color: var(--color-text-muted);
   margin-bottom: 6px;
 }
 
 .q-item {
-  background: #0e2138;
-  border: 1px solid #1d3a5f;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 8px 10px;
   margin-bottom: 8px;
@@ -318,33 +314,42 @@ const kindLabel = (k: OutboxItemKind): string =>
 }
 
 .q-title {
-  color: #e8f3ff;
+  color: var(--color-text);
   font-size: 13px;
 }
 
 .q-meta {
-  color: #8fb0d0;
+  color: var(--color-text-muted);
   font-size: 12px;
   margin-top: 2px;
 }
 
 .q-err {
-  color: #f56c6c;
+  color: var(--color-danger);
   font-size: 12px;
   margin-top: 2px;
 }
 
 .q-ok {
-  color: #67c23a;
+  color: var(--color-success);
   font-size: 12px;
   margin-top: 2px;
 }
 
 .hint {
-  color: #8fb0d0;
+  color: var(--color-text-muted);
   font-size: 12px;
   max-width: 390px;
   line-height: 1.6;
   text-align: center;
+}
+
+/* §9.3 提交按钮：占满表单宽度 */
+.full-width {
+  width: 100%;
+}
+
+.full-width :deep(.btn) {
+  width: 100%;
 }
 </style>
