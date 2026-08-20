@@ -125,7 +125,9 @@ export default defineConfig({
     alias: [
       {
         find: '@zip.js/zip.js/lib/zip-no-worker.js',
-        replacement: fileURLToPath(new URL('./node_modules/@zip.js/zip.js/lib/zip-core.js', import.meta.url)),
+        replacement: fileURLToPath(
+          new URL('./node_modules/@zip.js/zip.js/lib/zip-core.js', import.meta.url),
+        ),
       },
     ],
     // 让 vitest 也走 vite 转换 cesium 内部依赖（Cesium 内部 import 用 vite alias 重定向）

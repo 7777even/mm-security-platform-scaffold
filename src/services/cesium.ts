@@ -51,7 +51,10 @@ function cssColor(hex: string | undefined, fallback: Cesium.Color): Cesium.Color
 
 function levelColor(level?: number): Cesium.Color {
   if (level === undefined) return DEFAULT_MARKER_COLOR;
-  return cssColor(LEVEL_COLORS[level] ?? LEVEL_COLORS[Math.min(4, Math.max(1, level))], DEFAULT_MARKER_COLOR);
+  return cssColor(
+    LEVEL_COLORS[level] ?? LEVEL_COLORS[Math.min(4, Math.max(1, level))],
+    DEFAULT_MARKER_COLOR,
+  );
 }
 
 function statusColor(status?: string): Cesium.Color {
@@ -111,7 +114,9 @@ export function createCesiumViewer(container: HTMLElement): Cesium.Viewer {
     viewer.scene.globe.baseColor = bg;
     viewer.scene.globe.showGroundAtmosphere = false;
     if ('atmosphereLightIntensity' in viewer.scene.globe) {
-      (viewer.scene.globe as unknown as { atmosphereLightIntensity: number }).atmosphereLightIntensity = 0;
+      (
+        viewer.scene.globe as unknown as { atmosphereLightIntensity: number }
+      ).atmosphereLightIntensity = 0;
     }
     if (viewer.scene.globe.translucency) viewer.scene.globe.translucency.enabled = false;
   }
@@ -127,7 +132,11 @@ export function createCesiumViewer(container: HTMLElement): Cesium.Viewer {
 
   // 初始相机（避免默认 home view 归一化除零产生 NaN）
   viewer.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(FACTORY_CENTER[0], FACTORY_CENTER[1], FACTORY_HEIGHT),
+    destination: Cesium.Cartesian3.fromDegrees(
+      FACTORY_CENTER[0],
+      FACTORY_CENTER[1],
+      FACTORY_HEIGHT,
+    ),
     orientation: { heading: 0, pitch: Cesium.Math.toRadians(-45), roll: 0 },
   });
   return viewer;
@@ -252,7 +261,11 @@ export async function loadRiskZones(viewer: Cesium.Viewer): Promise<void> {
 /** 复位相机到厂区初始视角。 */
 export function resetView(viewer: Cesium.Viewer): void {
   viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(FACTORY_CENTER[0], FACTORY_CENTER[1], FACTORY_HEIGHT),
+    destination: Cesium.Cartesian3.fromDegrees(
+      FACTORY_CENTER[0],
+      FACTORY_CENTER[1],
+      FACTORY_HEIGHT,
+    ),
     duration: 1.2,
   });
 }
@@ -334,7 +347,10 @@ export function enablePick(
       const picked = viewer.scene.pick(movement.position);
       if (picked && picked.id && picked.id.properties) {
         const kind = picked.id.properties.kind?.getValue(viewer.clock.currentTime);
-        const raw = (picked.id.properties.raw?.getValue(viewer.clock.currentTime) ?? {}) as Record<string, unknown>;
+        const raw = (picked.id.properties.raw?.getValue(viewer.clock.currentTime) ?? {}) as Record<
+          string,
+          unknown
+        >;
         if (kind === 'alarm' || kind === 'device') {
           cb({
             id: String(raw.id ?? ''),

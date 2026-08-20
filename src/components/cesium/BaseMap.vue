@@ -246,7 +246,11 @@ onUnmounted(() => {
 
     <!-- 完整地图工具栏 -->
     <div class="map-toolbar" data-test="map-toolbar">
-      <button class="map-toolbar__btn" :title="mode === '2d' ? '切换到 3D' : '切换到 2D'" @click="toggleMode">
+      <button
+        class="map-toolbar__btn"
+        :title="mode === '2d' ? '切换到 3D' : '切换到 2D'"
+        @click="toggleMode"
+      >
         {{ mode === '2d' ? '2D' : '3D' }}
       </button>
       <button class="map-toolbar__btn" title="放大" @click="zoomIn">+</button>
@@ -324,8 +328,8 @@ onUnmounted(() => {
   align-items: center;
   gap: 6px;
   padding: 6px 8px;
-  background: rgba(15, 23, 42, 0.82);
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgb(15 23 42 / 82%);
+  border: 1px solid rgb(148 163 184 / 25%);
   border-radius: 8px;
   backdrop-filter: blur(4px);
   font-size: 12px;
@@ -336,9 +340,9 @@ onUnmounted(() => {
   min-width: 28px;
   height: 28px;
   padding: 0 8px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid rgb(148 163 184 / 30%);
   border-radius: 6px;
-  background: rgba(30, 41, 59, 0.9);
+  background: rgb(30 41 59 / 90%);
   color: #e2e8f0;
   cursor: pointer;
   font-size: 13px;
@@ -346,14 +350,14 @@ onUnmounted(() => {
 }
 
 .map-toolbar__btn:hover {
-  background: rgba(51, 65, 85, 0.95);
-  border-color: rgba(148, 163, 184, 0.6);
+  background: rgb(51 65 85 / 95%);
+  border-color: rgb(148 163 184 / 60%);
 }
 
 .map-toolbar__sep {
   width: 1px;
   height: 18px;
-  background: rgba(148, 163, 184, 0.3);
+  background: rgb(148 163 184 / 30%);
   margin: 0 2px;
 }
 
@@ -376,12 +380,12 @@ onUnmounted(() => {
   z-index: 11;
   min-width: 180px;
   padding: 10px 12px;
-  background: rgba(15, 23, 42, 0.92);
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgb(15 23 42 / 92%);
+  border: 1px solid rgb(148 163 184 / 35%);
   border-radius: 8px;
   color: #e2e8f0;
   font-size: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
 }
 
 .map-popup__close {

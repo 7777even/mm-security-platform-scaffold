@@ -13,7 +13,13 @@ describe('cesium 服务层：数据→颜色映射（纯函数 TDD）', () => {
   });
 
   it('报警点按 level 着色：1 绿 → 4 红', () => {
-    const mk = (level: number): MapPoint => ({ id: 'A', name: 'a', lng: 110.95, lat: 21.67, level });
+    const mk = (level: number): MapPoint => ({
+      id: 'A',
+      name: 'a',
+      lng: 110.95,
+      lat: 21.67,
+      level,
+    });
     expect(rgb(markerColor('alarm', mk(1)))).toBe('34,197,94'); // #22c55e 绿
     expect(rgb(markerColor('alarm', mk(4)))).toBe('239,68,68'); // #ef4444 红
   });
@@ -24,7 +30,13 @@ describe('cesium 服务层：数据→颜色映射（纯函数 TDD）', () => {
 
   it('设备点状态着色：online 绿 / offline 灰（大小写不敏感）', () => {
     const online = markerColor('device', { id: 'D', name: 'd', lng: 1, lat: 1, status: 'ONLINE' });
-    const offline = markerColor('device', { id: 'D', name: 'd', lng: 1, lat: 1, status: 'OFFLINE' });
+    const offline = markerColor('device', {
+      id: 'D',
+      name: 'd',
+      lng: 1,
+      lat: 1,
+      status: 'OFFLINE',
+    });
     expect(rgb(online)).toBe('34,197,94'); // #22c55e
     expect(rgb(offline)).toBe('107,114,128'); // #6b7280
   });
