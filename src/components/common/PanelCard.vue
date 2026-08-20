@@ -52,7 +52,9 @@ const iconComp = computed(() => {
 
 .panel-card__icon {
   color: var(--color-accent);
-  font-size: 18px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .panel-card__title {

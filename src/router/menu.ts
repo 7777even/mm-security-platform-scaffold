@@ -1,4 +1,6 @@
 import type { Router, RouteRecordRaw, RouteComponent } from 'vue-router';
+import type { Component } from 'vue';
+import { DataBoard, Warning, VideoCamera, User, Cpu, Cellphone } from '@element-plus/icons-vue';
 import { logger } from '@/utils/logger';
 
 // B3 AUTH-05 菜单契约（GET /auth/menus）返回的菜单项；id 与前端路由 name/权限码对齐
@@ -9,43 +11,50 @@ export interface MenuItem {
   children?: MenuItem[];
 }
 
-// 菜单 id → 前端装配信息（组件懒加载 + 标题 + 权限码）
+// 菜单 id → 前端装配信息（组件懒加载 + 标题 + 权限码 + 导航图标）
 // T7 后端契约到位后若菜单自带 component/perm 字段，仅需改此映射或 adapter
 interface MenuRouteSpec {
   title: string;
   perm: string;
   component: () => Promise<RouteComponent>;
+  icon: Component;
 }
 
 const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
   dashboard: {
     title: '综合态势',
     perm: 'dashboard:view',
+    icon: DataBoard,
     component: () => import('@/views/dashboard/index.vue').then((m) => m.default),
   },
   'fire-alarm': {
     title: '火灾报警',
     perm: 'fire-alarm:view',
+    icon: Warning,
     component: () => import('@/views/fire-alarm/index.vue').then((m) => m.default),
   },
   'industrial-video': {
     title: '工业视频',
     perm: 'video:view',
+    icon: VideoCamera,
     component: () => import('@/views/industrial-video/index.vue').then((m) => m.default),
   },
   'system-users': {
     title: '用户与权限',
     perm: 'system:user:view',
+    icon: User,
     component: () => import('@/views/system/users.vue').then((m) => m.default),
   },
   'system-device-code': {
     title: '设备编码',
     perm: 'system:device-code:view',
+    icon: Cpu,
     component: () => import('@/views/system/deviceCode.vue').then((m) => m.default),
   },
   'mobile-field-report': {
     title: '防爆移动端',
     perm: 'mobile:field-report:view',
+    icon: Cellphone,
     component: () => import('@/views/mobile/fieldReport.vue').then((m) => m.default),
   },
 };
@@ -77,7 +86,7 @@ export function buildDynamicRoutes(menus: MenuItem[]): RouteRecordRaw[] {
         path: menu.path,
         name: menu.id,
         component: spec.component,
-        meta: { title: spec.title, perm: spec.perm },
+        meta: { title: spec.title, perm: spec.perm, icon: spec.icon },
         children: menu.children ? buildDynamicRoutes(menu.children) : undefined,
       });
     } else if (menu.children && menu.children.length > 0) {

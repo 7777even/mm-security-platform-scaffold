@@ -1,6 +1,7 @@
 node_modules
 dist
 dist-ssr
+.verify-tmp
 *.local
 .DS_Store
 logs
