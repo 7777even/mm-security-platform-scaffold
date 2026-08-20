@@ -6,6 +6,7 @@
 -->
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import type { AlarmLevel } from '@/services/alarm';
 import ModuleLayout from '@/components/layout/ModuleLayout.vue';
 import PanelCard from '@/components/common/PanelCard.vue';
@@ -32,6 +33,11 @@ const perimeterAlarms = ref<{ level: AlarmLevel; title: string; desc: string; ti
   { level: 2, title: '罐区 无人机靠近', desc: '低空目标 2 个，已驱离', time: '08:05' },
   { level: 3, title: '危化品库房 门禁异常', desc: '非授权时段开启', time: '07:46' },
 ]);
+
+const router = useRouter();
+function goRecords(): void {
+  router.push('/security-anti-terror/records');
+}
 </script>
 
 <template>
@@ -54,7 +60,7 @@ const perimeterAlarms = ref<{ level: AlarmLevel; title: string; desc: string; ti
         </div>
       </PanelCard>
 
-      <PanelCard title="出入管理 / 门禁事件" icon="Key" more="查看全部">
+      <PanelCard title="出入管理 / 门禁事件" icon="Key" more="查看全部" @more="goRecords">
         <div class="event-list">
           <div v-for="(e, i) in accessEvents" :key="i" class="event-row">
             <span class="event-row__time">{{ e.time }}</span>

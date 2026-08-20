@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 import * as echarts from 'echarts/core';
 import { LineChart, type LineSeriesOption } from 'echarts/charts';
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
@@ -9,6 +10,7 @@ import { MAP_TILE_URL } from '@/constants/map';
 import { markOnce } from '@/utils/perf';
 import BaseMap from '@/components/cesium/BaseMap.vue';
 import PanelCard from '@/components/common/PanelCard.vue';
+import AppButton from '@/components/common/AppButton.vue';
 import DutyPanel from '@/components/dashboard/DutyPanel.vue';
 import EmergencyStrengthPanel from '@/components/dashboard/EmergencyStrengthPanel.vue';
 import EmergencyKnowledgePanel from '@/components/dashboard/EmergencyKnowledgePanel.vue';
@@ -55,6 +57,11 @@ const sceneMode = ref<'2d' | '3d'>('3d');
 function onMapError(): void {
   mapNotice.value = '地图初始化失败：当前环境不支持 WebGL，已降级';
   sceneMode.value = '2d';
+}
+
+const router = useRouter();
+function goPlans(): void {
+  router.push('/dashboard/plans');
 }
 
 const FALLBACK_TREND = [0, 1, 0, 2, 1, 3, 2, 1, 0, 2, 4, 3, 2, 1, 3, 5, 4, 6, 3, 2, 4, 3, 2, 1];
@@ -187,8 +194,15 @@ onUnmounted(() => {
     <!-- 地图降级提示 -->
     <p v-if="mapNotice" class="map-notice">{{ mapNotice }}</p>
 
-    <!-- 左侧面板区（419px）：应急事件 CRUD + 趋势图 + 结案滚动 -->
+    <!-- 左侧面板区（419px）：应急预案入口 + 应急事件 CRUD + 趋势图 + 结案滚动 -->
     <div v-if="!loading" class="dash-left">
+      <PanelCard title="应急预案库" icon="Document">
+        <p class="plan-entry">应急预案、现场处置卡集中管理，支撑应急指挥调度。</p>
+        <div class="plan-entry__actions">
+          <AppButton variant="primary" size="sm" @click="goPlans">进入预案库</AppButton>
+        </div>
+      </PanelCard>
+
       <EmergencyEventCrudPanel />
 
       <PanelCard title="近 24h 应急事件 / 处置率" icon="TrendCharts">
@@ -281,6 +295,17 @@ onUnmounted(() => {
 .chart {
   height: 180px;
   width: 100%;
+}
+
+.plan-entry {
+  margin: 0 0 var(--space-md);
+  color: var(--color-text-muted, #94a3b8);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.plan-entry__actions {
+  display: flex;
 }
 
 /* 骨架屏 */

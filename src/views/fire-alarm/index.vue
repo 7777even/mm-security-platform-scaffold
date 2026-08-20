@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useAlarmView } from '@/composables/useAlarmView';
 import type { AlarmItem, AlarmLevel, AlarmStatus } from '@/services/alarm';
@@ -51,6 +52,11 @@ function onPageChange(p: number): void {
   page.value = p;
 }
 
+const router = useRouter();
+function goRecords(): void {
+  router.push('/fire-alarm/records');
+}
+
 onMounted(() => {
   void refresh();
 });
@@ -82,7 +88,7 @@ onMounted(() => {
 
     <!-- 右侧：消防报警列表（§12.1 设计稿图 5-10 右上消防告警） -->
     <template #right>
-      <PanelCard title="消防报警" icon="Bell" more="导出">
+      <PanelCard title="消防报警" icon="Bell" more="记录" @more="goRecords">
         <div class="alarm-filters">
           <el-select v-model="levelFilter" placeholder="全部等级" clearable style="width: 130px">
             <el-option v-for="l in LEVELS" :key="l" :label="LEVEL_TEXT[l]" :value="l" />
@@ -117,20 +123,40 @@ onMounted(() => {
     </template>
 
     <el-drawer v-model="detailVisible" title="报警详情" direction="rtl" size="380px">
-      <el-descriptions v-if="detail" :column="1" border>
-        <el-descriptions-item label="报警编号">{{ detail.alarmId }}</el-descriptions-item>
-        <el-descriptions-item label="等级">
-          {{ LEVEL_TEXT[detail.level as AlarmLevel] }}
-        </el-descriptions-item>
-        <el-descriptions-item label="类型">{{ detail.type }}</el-descriptions-item>
-        <el-descriptions-item label="设备编码">{{ detail.deviceCode }}</el-descriptions-item>
-        <el-descriptions-item label="位置">{{ detail.location }}</el-descriptions-item>
-        <el-descriptions-item label="描述">{{ detail.description }}</el-descriptions-item>
-        <el-descriptions-item label="状态">
-          {{ STATUS_TEXT[detail.status as AlarmStatus] }}
-        </el-descriptions-item>
-        <el-descriptions-item label="上报时间">{{ detail.ts }}</el-descriptions-item>
-      </el-descriptions>
+      <dl v-if="detail" class="detail-view">
+        <div class="detail-view__row">
+          <dt>报警编号</dt>
+          <dd class="font-number">{{ detail.alarmId }}</dd>
+        </div>
+        <div class="detail-view__row">
+          <dt>等级</dt>
+          <dd>{{ LEVEL_TEXT[detail.level as AlarmLevel] }}</dd>
+        </div>
+        <div class="detail-view__row">
+          <dt>类型</dt>
+          <dd>{{ detail.type }}</dd>
+        </div>
+        <div class="detail-view__row">
+          <dt>设备编码</dt>
+          <dd class="font-number">{{ detail.deviceCode }}</dd>
+        </div>
+        <div class="detail-view__row">
+          <dt>位置</dt>
+          <dd>{{ detail.location }}</dd>
+        </div>
+        <div class="detail-view__row">
+          <dt>描述</dt>
+          <dd>{{ detail.description }}</dd>
+        </div>
+        <div class="detail-view__row">
+          <dt>状态</dt>
+          <dd>{{ STATUS_TEXT[detail.status as AlarmStatus] }}</dd>
+        </div>
+        <div class="detail-view__row">
+          <dt>上报时间</dt>
+          <dd class="font-number">{{ formatTime(detail.ts) }}</dd>
+        </div>
+      </dl>
     </el-drawer>
   </ModuleLayout>
 </template>
@@ -210,5 +236,47 @@ onMounted(() => {
 .alarm-pager {
   margin-top: var(--space-md);
   justify-content: flex-end;
+}
+
+/* 详情抽屉：项目自定义深色描述布局 */
+.detail-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  border: 1px solid rgb(148 163 184 / 18%);
+  border-radius: var(--radius-md, 10px);
+  overflow: hidden;
+  background: linear-gradient(180deg, rgb(15 23 42 / 55%), rgb(11 17 32 / 55%));
+}
+
+.detail-view__row {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  padding: 0 14px;
+  border-bottom: 1px dashed rgb(148 163 184 / 12%);
+  font-size: 13px;
+}
+
+.detail-view__row:last-child {
+  border-bottom: none;
+}
+
+.detail-view__row:nth-child(even) {
+  background: rgb(255 255 255 / 2.5%);
+}
+
+.detail-view dt {
+  color: var(--color-text-muted, #94a3b8);
+  font-size: 12px;
+}
+
+.detail-view dd {
+  margin: 0;
+  color: var(--color-text, #e2e8f0);
+  text-align: right;
 }
 </style>

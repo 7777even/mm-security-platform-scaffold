@@ -6,13 +6,54 @@ import { reportAudit } from '@/services/audit';
 
 // 静态仅保留布局壳与 404；页面路由由 /auth/menus 动态装配（B3 AUTH-05）
 // mock 菜单不可达时降级装配 DEFAULT_MENUS（menu.ts），保证不白屏
+// 二级页面（hidden）：不进顶部导航，由一级页面「更多/查看全部」跳转进入。
+// 权限码沿用 RBAC 表（ROLE_PERMS），守卫自动校验 meta.perm。
+const SECONDARY_ROUTES: RouteRecordRaw[] = [
+  {
+    path: '/fire-alarm/records',
+    name: 'fire-alarm-records',
+    component: () => import('@/views/fire-alarm/records.vue'),
+    meta: { title: '消防报警记录', perm: 'fire-alarm:view', hidden: true },
+  },
+  {
+    path: '/dashboard/plans',
+    name: 'dashboard-plans',
+    component: () => import('@/views/dashboard/plans.vue'),
+    meta: { title: '应急预案库', perm: 'dashboard:view', hidden: true },
+  },
+  {
+    path: '/security-anti-terror/records',
+    name: 'security-anti-terror-records',
+    component: () => import('@/views/security-anti-terror/records.vue'),
+    meta: { title: '门禁事件记录', perm: 'security:view', hidden: true },
+  },
+  {
+    path: '/system/users',
+    name: 'system-users',
+    component: () => import('@/views/system/users.vue'),
+    meta: { title: '用户与权限', perm: 'system:user:view', hidden: true },
+  },
+  {
+    path: '/system/device-code',
+    name: 'system-device-code',
+    component: () => import('@/views/system/deviceCode.vue'),
+    meta: { title: '设备编码解析', perm: 'system:device-code:view', hidden: true },
+  },
+  {
+    path: '/mobile/field-report',
+    name: 'mobile-field-report',
+    component: () => import('@/views/mobile/fieldReport.vue'),
+    meta: { title: '现场采集回传', perm: 'mobile:field-report:view', hidden: true },
+  },
+];
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'layout',
     component: () => import('@/components/layout/AppLayout.vue'),
     redirect: '/dashboard',
-    children: [],
+    children: [...SECONDARY_ROUTES],
   },
   {
     path: '/:pathMatch(.*)*',
