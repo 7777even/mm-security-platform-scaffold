@@ -10,6 +10,7 @@ import { RealtimeClient, type RealtimeMessage } from '@/services/ws';
 import { markOnce } from '@/utils/perf';
 import { recordPerfAsync } from '@/utils/perf-budget';
 import BaseMap from '@/components/cesium/BaseMap.vue';
+import PanelCard from '@/components/common/PanelCard.vue';
 import {
   fetchDashboardOverview,
   fetchAlarmTrend,
@@ -301,11 +302,16 @@ onUnmounted(() => {
   chart?.dispose();
   chart = null;
 });
+
+// 右侧「实时告警」面板「更多」：后续 change 接入告警二级列表页（本轮仅占位，不跳转）
+function onMoreAlarms(): void {
+  // TODO 后续 change：跳转到告警二级列表页
+}
 </script>
 
 <template>
   <div class="dashboard dashboard-map">
-    <!-- Cesium 二三维一体化地图（详细设计 4.2.2.2；引擎懒加载，失败自动降级） -->
+    <!-- Cesium 二三维一体化地图（中央主视觉） -->
     <BaseMap
       :tile-url="MAP_TILE_URL"
       :alarms="alarmPoints"
@@ -319,64 +325,67 @@ onUnmounted(() => {
     <!-- 地图降级提示 -->
     <p v-if="mapNotice" class="map-notice">{{ mapNotice }}</p>
 
-    <!-- 顶部指标卡横条 + 2D/3D 切换 -->
-    <div v-if="!loading" class="stat-bar glass-panel">
-      <div v-for="s in stats" :key="s.label" class="stat-item">
-        <span class="stat-value" :class="'tone-' + s.tone"
-          >{{ s.value }}<i v-if="s.unit">{{ s.unit }}</i></span
-        >
-        <span class="stat-label">{{ s.label }}</span>
-      </div>
-      <div class="mode-switch">
-        <button
-          type="button"
-          class="mode-btn"
-          :class="{ active: sceneMode === '2d' }"
-          @click="sceneMode = '2d'"
-        >
-          2D
-        </button>
-        <button
-          type="button"
-          class="mode-btn"
-          :class="{ active: sceneMode === '3d' }"
-          @click="sceneMode = '3d'"
-        >
-          3D
-        </button>
-      </div>
+    <!-- 2D/3D 切换浮层（地图右上角） -->
+    <div v-if="!loading" class="map-mode-switch">
+      <button
+        type="button"
+        class="mode-btn"
+        :class="{ active: sceneMode === '2d' }"
+        @click="sceneMode = '2d'"
+      >
+        2D
+      </button>
+      <button
+        type="button"
+        class="mode-btn"
+        :class="{ active: sceneMode === '3d' }"
+        @click="sceneMode = '3d'"
+      >
+        3D
+      </button>
     </div>
 
-    <!-- 右侧告警列表 -->
-    <aside v-if="!loading" class="alarm-panel glass-panel">
-      <div class="alarm-head">
-        <h2 class="panel-title">实时告警</h2>
-        <span v-if="mockReady" class="live-tag"><i class="live-dot" />LIVE</span>
-      </div>
-      <p v-if="mockError" class="mock-tip">{{ mockError }}</p>
-      <ul v-else class="alarm-list">
-        <li
-          v-for="(a, index) in alarms"
-          :key="a.id"
-          class="alarm-row"
-          :class="{ 'row-odd': index % 2 === 1 }"
-        >
-          <span class="alarm-dot" :class="'tone-' + a.tone" />
-          <span class="alarm-level" :class="'tone-' + a.tone">{{ a.level }}</span>
-          <span class="alarm-device">{{ a.device }}</span>
-          <span class="alarm-time">{{ a.time }}</span>
-        </li>
-        <li v-if="alarms.length === 0" class="alarm-empty">暂无告警数据</li>
-      </ul>
+    <!-- 左侧面板区（设计稿 419px）：统计卡组 + 趋势图 -->
+    <div v-if="!loading" class="dash-left">
+      <PanelCard title="态势概览" icon="DataBoard">
+        <div class="stat-grid">
+          <div v-for="s in stats" :key="s.label" class="stat-cell">
+            <span class="stat-value font-number" :class="'tone-' + s.tone">
+              {{ s.value }}<i v-if="s.unit">{{ s.unit }}</i>
+            </span>
+            <span class="stat-label">{{ s.label }}</span>
+          </div>
+        </div>
+      </PanelCard>
+
+      <PanelCard title="近 24h 告警/处置" icon="TrendCharts">
+        <div ref="chartRef" class="chart" />
+      </PanelCard>
+    </div>
+
+    <!-- 右侧面板区（设计稿 419px）：实时告警列表 -->
+    <aside v-if="!loading" class="dash-right">
+      <PanelCard title="实时告警" icon="Bell" more="更多" @more="onMoreAlarms">
+        <p v-if="mockError" class="mock-tip">{{ mockError }}</p>
+        <ul v-else class="alarm-list">
+          <li
+            v-for="(a, index) in alarms"
+            :key="a.id"
+            class="alarm-row"
+            :class="{ 'row-odd': index % 2 === 1 }"
+          >
+            <span class="alarm-dot" :class="'tone-' + a.tone" />
+            <span class="alarm-level" :class="'tone-' + a.tone">{{ a.level }}</span>
+            <span class="alarm-device">{{ a.device }}</span>
+            <span class="alarm-time font-number">{{ a.time }}</span>
+          </li>
+          <li v-if="alarms.length === 0" class="alarm-empty">暂无告警数据</li>
+        </ul>
+        <div v-if="mockReady && !mockError" class="live-tag"><i class="live-dot" />LIVE</div>
+      </PanelCard>
     </aside>
 
-    <!-- 左下迷你趋势图 -->
-    <div v-if="!loading" class="mini-trend glass-panel">
-      <h2 class="panel-title">近 24h 告警/处置</h2>
-      <div ref="chartRef" class="chart" />
-    </div>
-
-    <!-- 骨架屏（加载期覆盖，SLO §3 渲染层降级） -->
+    <!-- 加载骨架屏 -->
     <div v-if="loading" class="dashboard-skeleton" data-test="dashboard-skeleton">
       <span class="skeleton skeleton-line" style="width: 200px" />
       <span class="skeleton skeleton-line" style="width: 160px" />
@@ -392,8 +401,6 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-/* Cesium 容器内嵌于 dashboard-map，控件样式弱化在 BaseMap 内部处理 */
-
 /* 地图降级提示 */
 .map-notice {
   position: absolute;
@@ -403,28 +410,18 @@ onUnmounted(() => {
   z-index: 20;
   padding: 6px 16px;
   border-radius: var(--radius-sm);
-  background: rgb(250 173 20 / 15%);
+  background: rgb(255 176 32 / 15%);
   border: 1px solid var(--color-warning);
   color: var(--color-warning);
   font-size: 12px;
 }
 
-/* 顶部指标卡横条 */
-.stat-bar {
+/* 2D/3D 切换浮层（地图右上角，避开右侧面板） */
+.map-mode-switch {
   position: absolute;
   top: var(--space-md);
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: var(--space-lg);
-  padding: var(--space-md) var(--space-lg);
-  z-index: 5;
-  border-radius: var(--radius-md);
-}
-
-/* 2D/3D 切换 */
-.mode-switch {
+  right: calc(419px + var(--space-md) * 2);
+  z-index: 6;
   display: flex;
   gap: 2px;
   padding: 2px;
@@ -447,17 +444,63 @@ onUnmounted(() => {
   background: rgb(0 212 255 / 18%);
 }
 
-.stat-item {
+/* 左侧面板区（设计稿 419px） */
+.dash-left {
+  position: absolute;
+  top: var(--space-md);
+  left: var(--space-md);
+  bottom: var(--space-md);
+  width: 419px;
+  z-index: 5;
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.dash-left > .panel-card:last-child {
+  flex: 1;
+  min-height: 0;
+}
+
+/* 右侧面板区（设计稿 419px） */
+.dash-right {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  bottom: var(--space-md);
+  width: 419px;
+  z-index: 5;
+}
+
+.dash-right :deep(.panel-card) {
+  height: 100%;
+}
+
+.dash-right :deep(.panel-card__body) {
+  overflow: auto;
+}
+
+/* 统计卡网格：2 列 */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+
+.stat-cell {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-xs);
-  white-space: nowrap;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
 }
 
 .stat-value {
-  font-size: 24px;
+  font-size: var(--font-display);
   font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
   color: var(--color-text);
   text-shadow: 0 0 12px rgb(0 212 255 / 25%);
 }
@@ -474,28 +517,19 @@ onUnmounted(() => {
   font-size: 12px;
 }
 
-/* 右侧告警面板 */
-.alarm-panel {
-  position: absolute;
-  top: var(--space-md);
-  right: var(--space-md);
-  bottom: var(--space-md);
-  width: 300px;
-  z-index: 5;
-  padding: var(--space-lg);
-  overflow: auto;
+/* 趋势图高度自适应面板的剩余空间 */
+.chart {
+  height: 100%;
+  min-height: 160px;
+  width: 100%;
 }
 
-.alarm-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
+/* 实时告警列表 */
 .live-tag {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
+  margin-top: var(--space-sm);
   font-size: 12px;
   color: var(--color-success);
   letter-spacing: 1px;
@@ -542,6 +576,10 @@ onUnmounted(() => {
   border-radius: var(--radius-sm);
 }
 
+.alarm-row:hover {
+  background: var(--row-alt-bg);
+}
+
 .alarm-dot {
   width: 8px;
   height: 8px;
@@ -579,7 +617,6 @@ onUnmounted(() => {
 
 .alarm-time {
   color: var(--color-text-muted);
-  font-family: Consolas, 'Courier New', monospace;
   flex-shrink: 0;
 }
 
@@ -588,22 +625,6 @@ onUnmounted(() => {
   text-align: center;
   color: var(--color-text-muted);
   font-size: 13px;
-}
-
-/* 左下迷你趋势图 */
-.mini-trend {
-  position: absolute;
-  left: var(--space-md);
-  bottom: var(--space-md);
-  width: 380px;
-  height: 210px;
-  z-index: 5;
-  padding: var(--space-md);
-}
-
-.chart {
-  height: 160px;
-  width: 100%;
 }
 
 /* 骨架屏 */
