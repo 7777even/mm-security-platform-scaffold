@@ -10,13 +10,13 @@ body,
 }
 
 body {
-  font-family: 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
+  font-family: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
   font-size: var(--font-body);
   color: var(--color-text);
   background-color: var(--color-bg);
   background-image:
     radial-gradient(circle at 50% -12%, rgb(0 212 255 / 10%), transparent 62%),
-    linear-gradient(180deg, #0a1428 0%, #050a15 100%);
+    linear-gradient(180deg, #0b1526 0%, #08111f 100%);
   background-attachment: fixed;
 }
 
@@ -93,4 +93,10 @@ body {
 /* 列表隔行变色 */
 .row-odd {
   background: var(--row-alt-bg);
+}
+
+/* 数字字体（设计稿：数据指标用 Poppins/DIN） */
+.font-number {
+  font-family: var(--font-number);
+  font-variant-numeric: tabular-nums;
 }

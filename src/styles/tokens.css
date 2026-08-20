@@ -1,34 +1,37 @@
 :root {
-  /* ---- 基底色（spec 红线：安全工业蓝 #0F1E36） ---- */
-  --color-bg: #050a15;
-  --color-primary: #0f1e36;
-  --color-primary-soft: #16304f;
+  /* ---- 基底色（设计稿 §5-1 色彩规范） ---- */
+  --color-bg: #0b1526;
+  --color-primary: #13293c;
+  --color-primary-soft: #1a3f4e;
 
-  /* ---- 强调发光（大屏科技青） ---- */
+  /* ---- 强调发光（大屏科技青 #00D0FF） ---- */
   --color-accent: #00d4ff;
+  --color-accent-2: #2e7cf6;
   --color-accent-soft: rgb(0 212 255 / 12%);
   --color-accent-glow: rgb(0 212 255 / 35%);
 
-  /* ---- 语义色 ---- */
-  --color-danger: #f5414b;
-  --color-warning: #faad14;
-  --color-success: #52c41a;
+  /* ---- 语义色（设计稿：成功/警示/危险） ---- */
+  --color-danger: #ff4a5a;
+  --color-warning: #ffb020;
+  --color-success: #2eec68;
 
-  /* ---- 文本（高对比） ---- */
+  /* ---- 文本（设计稿：正文白 / 辅助灰蓝） ---- */
   --color-text: #eaf2fb;
-  --color-text-muted: #7e9bb8;
+  --color-text-muted: #8faec3;
 
-  /* ---- 面板（玻璃拟态） ---- */
-  --glass-bg: rgb(15 30 54 / 62%);
-  --glass-border: rgb(0 212 255 / 28%);
+  /* ---- 面板（玻璃拟态，边框线取 #2AA7B8） ---- */
+  --glass-bg: rgb(19 41 60 / 62%);
+  --glass-border: rgb(42 167 184 / 42%);
   --glass-blur: 12px;
   --row-alt-bg: rgb(0 212 255 / 5%);
 
-  /* ---- 排版（石化智云：标题 16 / 正文 14） ---- */
+  /* ---- 排版（设计稿 §5-3：面板标题 16 / 正文 14 / 辅助 12） ---- */
   --font-title: 16px;
   --font-body: 14px;
+  --font-display: 26px;
+  --font-number: 'Poppins', 'DIN', 'Consolas', monospace;
 
-  /* ---- 间距（石化智云：外边距 16 / 内边距 24） ---- */
+  /* ---- 间距（外边距 16 / 内边距 24） ---- */
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
