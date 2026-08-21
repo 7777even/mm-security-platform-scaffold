@@ -15,7 +15,7 @@ export const FACTORY_HEIGHT = 12000;
 // 报警等级配色（规范 §13.1：1 级最高危=红，4 级最低=蓝）
 const LEVEL_COLORS: Record<number, string> = {
   1: '#f46767', // alarm-1 一级 最高危 红
-  2: '#f68a2e', // alarm-2 二级 橙
+  2: '#f6882e', // alarm-2 二级 橙
   3: '#f6ba2e', // alarm-3 三级 黄
   4: '#2e7cf6', // alarm-4 四级 最低 蓝
 };

@@ -134,8 +134,8 @@ onMounted(async () => {
   padding: 6px 0;
   font-size: 12px;
   color: var(--color-text-primary);
-  background: rgb(0 212 255 / 10%);
-  border: 1px solid rgb(0 212 255 / 35%);
+  background: rgb(0 216 255 / 10%);
+  border: 1px solid rgb(0 216 255 / 35%);
   border-radius: 6px;
   cursor: pointer;
   transition:
@@ -144,8 +144,8 @@ onMounted(async () => {
 }
 
 .duty-actions__btn:hover {
-  background: rgb(0 212 255 / 22%);
-  border-color: rgb(0 212 255 / 70%);
+  background: rgb(0 216 255 / 22%);
+  border-color: rgb(0 216 255 / 70%);
 }
 
 .duty-empty {

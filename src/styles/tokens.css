@@ -24,7 +24,7 @@
 
   /* ---- 预警色分级（设计稿图 5-1 底部） ---- */
   --color-alarm-1: #f46767; /* 一级（最高） */
-  --color-alarm-2: #f68a2e; /* 二级 */
+  --color-alarm-2: #f6882e; /* 二级 */
   --color-alarm-3: #f6ba2e; /* 三级 */
   --color-alarm-4: #2e7cf6; /* 四级（最低/兜底蓝） */
 
@@ -37,7 +37,7 @@
 
   /* ---- 渐变（设计稿图 5-1 中部 / body 兜底） ---- */
   --gradient-tech-blue: linear-gradient(90deg, #00d8ff 0%, #2e7cf6 100%); /* 科技深蓝 */
-  --gradient-risk: linear-gradient(90deg, #ff5a5a 0%, #f68a2e 100%); /* 风险警示 */
+  --gradient-risk: linear-gradient(90deg, #ff5a5a 0%, #f6882e 100%); /* 风险警示 */
   --gradient-bg: linear-gradient(180deg, #0b1526 0%, #08111f 100%); /* 背景兜底 */
 
   /* ---- 玻璃面板（克制用色 + 科技玻璃质感） ---- */

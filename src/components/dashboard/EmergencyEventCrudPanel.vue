@@ -498,7 +498,7 @@ onMounted(load);
 }
 
 .tone-alarm-2 {
-  color: var(--color-alarm-2, #f68a2e);
+  color: var(--color-alarm-2, #f6882e);
 }
 
 .tone-alarm-3 {

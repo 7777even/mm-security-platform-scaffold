@@ -66,7 +66,7 @@
 
 - **WHEN** 业务态以语义表达（在线/正常/告警）
 - **THEN** 引用 `--color-success=#2EE6A8`、`--color-warning=#FFB020`、`--color-danger=#FF5A5A`（设计稿规则 3：绿/橙/红）。
-- **AND** 报警等级 1–4 引用 `--color-alarm-1=#F46767`、`--color-alarm-2=#F68A2E`、`--color-alarm-3=#F6BA2E`、`--color-alarm-4=#2E7CF6`（设计稿图 5-1 预警色分级），与业务侧 `AlarmLevel=1..4` 一一对齐。
+- **AND** 报警等级 1–4 引用 `--color-alarm-1=#F46767`、`--color-alarm-2=#F6882E`、`--color-alarm-3=#F6BA2E`、`--color-alarm-4=#2E7CF6`（设计稿图 5-1 预警色分级），与业务侧 `AlarmLevel=1..4` 一一对齐。
 
 #### Scenario: 玻璃面板公共样式
 
