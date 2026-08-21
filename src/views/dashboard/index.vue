@@ -232,6 +232,7 @@ onUnmounted(() => {
 .dashboard-map {
   position: relative;
   height: 100%;
+
   /* 不裁切子元素的溢出滚动：dash-left / dash-right 内部 overflow-y:auto 仍可滚 */
 }
 
@@ -256,11 +257,12 @@ onUnmounted(() => {
   top: var(--space-md);
   left: var(--space-md);
   bottom: var(--space-md);
-  width: 419px;
+  width: var(--layout-aside-w);
   z-index: 5;
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+
   /* 保留滚动能力 + 隐藏滚动条（鼠标滚轮 / 触控板仍可上下滚） */
   overflow-y: auto;
   scrollbar-width: none; /* Firefox */
@@ -273,7 +275,7 @@ onUnmounted(() => {
   top: var(--space-md);
   right: var(--space-md);
   bottom: var(--space-md);
-  width: 419px;
+  width: var(--layout-aside-w);
   z-index: 5;
   display: flex;
   flex-direction: column;
@@ -341,6 +343,7 @@ onUnmounted(() => {
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }

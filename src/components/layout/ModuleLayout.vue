@@ -95,6 +95,7 @@ function onModeChange(mode: '2d' | '3d'): void {
 .module-map {
   position: relative;
   height: 100%;
+
   /* 不裁切子元素溢出：左右数据列内部 overflow-y:auto 仍可滚 */
 }
 
@@ -119,7 +120,7 @@ function onModeChange(mode: '2d' | '3d'): void {
   top: var(--space-md);
   left: var(--space-md);
   bottom: var(--space-md);
-  width: 419px;
+  width: var(--layout-aside-w);
   z-index: 5;
   display: flex;
   flex-direction: column;
@@ -135,7 +136,7 @@ function onModeChange(mode: '2d' | '3d'): void {
   top: var(--space-md);
   right: var(--space-md);
   bottom: var(--space-md);
-  width: 419px;
+  width: var(--layout-aside-w);
   z-index: 5;
   display: flex;
   flex-direction: column;

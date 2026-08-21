@@ -327,8 +327,8 @@ onUnmounted(() => {
   position: absolute;
   top: 12px;
 
-  /* 与 dashboard 右侧面板对齐：面板宽 419px + 左侧 space-md 间距 */
-  right: calc(419px + var(--space-md, 12px) * 2);
+  /* 与 dashboard 右侧面板对齐：面板宽 = 布局令牌 + 两侧 space-md 间距 */
+  right: calc(var(--layout-aside-w) + var(--space-md, 12px) * 2);
   z-index: 10;
   display: flex;
   flex-direction: column;
