@@ -49,11 +49,11 @@ onMounted(async () => {
   align-items: center;
   font-size: 12px;
   padding: 4px 0;
-  border-bottom: 1px dashed rgba(148, 163, 184, 0.15);
+  border-bottom: 1px dashed var(--color-border-soft);
 }
 
 .phone-row__name {
-  color: var(--color-text-secondary, #cbd5e1);
+  color: var(--color-text-muted);
 }
 
 .phone-row__num {
@@ -64,7 +64,7 @@ onMounted(async () => {
 
 .phone-empty {
   text-align: center;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 12px;
   padding: 16px 0;
 }

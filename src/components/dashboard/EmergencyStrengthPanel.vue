@@ -21,7 +21,11 @@ onMounted(async () => {
 
 <template>
   <PanelCard title="应急力量数据" icon="DataAnalysis">
-    <ul v-if="!loading && resources.length > 0" class="strength-grid" data-test="emergency-strength-grid">
+    <ul
+      v-if="!loading && resources.length > 0"
+      class="strength-grid"
+      data-test="emergency-strength-grid"
+    >
       <li v-for="r in resources" :key="r.kind" class="strength-cell">
         <span class="strength-cell__num font-number">{{ r.total }}</span>
         <span class="strength-cell__label">{{ r.kind }}</span>
@@ -48,16 +52,18 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   padding: 12px 4px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: var(--color-panel-2);
+  border: 1px solid var(--color-border-soft);
   border-radius: 6px;
   text-align: center;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .strength-cell:hover {
-  border-color: rgba(0, 212, 255, 0.5);
-  background: rgba(0, 212, 255, 0.06);
+  border-color: var(--color-accent);
+  background: rgb(0 216 255 / 8%);
 }
 
 .strength-cell__num {
@@ -69,13 +75,13 @@ onMounted(async () => {
 
 .strength-cell__label {
   font-size: 11px;
-  color: var(--color-text-secondary, #cbd5e1);
+  color: var(--color-text-muted);
   margin-top: 4px;
 }
 
 .strength-empty {
   text-align: center;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 12px;
   padding: 16px 0;
 }

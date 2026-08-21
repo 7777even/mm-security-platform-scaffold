@@ -12,24 +12,24 @@ import { recordPerfAsync } from '@/utils/perf-budget';
 export const FACTORY_CENTER: [number, number] = [110.95, 21.6];
 export const FACTORY_HEIGHT = 12000;
 
-// 报警等级 1-4 → 颜色（CSS 十六进制）
+// 报警等级配色（规范 §13.1：1 级最高危=红，4 级最低=蓝）
 const LEVEL_COLORS: Record<number, string> = {
-  1: '#22c55e',
-  2: '#eab308',
-  3: '#f97316',
-  4: '#ef4444',
+  1: '#f46767', // alarm-1 一级 最高危 红
+  2: '#f68a2e', // alarm-2 二级 橙
+  3: '#f6ba2e', // alarm-3 三级 黄
+  4: '#2e7cf6', // alarm-4 四级 最低 蓝
 };
-// 设备状态 → 颜色（mock 返回 online/offline/normal/active 等）
+// 设备状态 → 颜色（mock 返回 online/offline/normal/active 等；规范 §13.3）
 const STATUS_COLORS: Record<string, string> = {
-  online: '#22c55e',
-  normal: '#22c55e',
-  active: '#ef4444',
-  offline: '#6b7280',
-  fault: '#f97316',
+  online: '#2ee6a8', // success 在线
+  normal: '#2ee6a8', // success 正常
+  active: '#ff5a5a', // danger 当前告警中
+  offline: '#8fa6c8', // text-muted 离线静默
+  fault: '#ff5a5a', // danger 故障
 };
 
-const DEFAULT_MARKER_COLOR = Cesium.Color.fromCssColorString('#9ca3af');
-const DEFAULT_ZONE_COLOR = Cesium.Color.fromCssColorString('#38bdf8');
+const DEFAULT_MARKER_COLOR = Cesium.Color.fromCssColorString('#8fa6c8'); // text-muted
+const DEFAULT_ZONE_COLOR = Cesium.Color.fromCssColorString('#2e7cf6'); // accent-2
 
 export interface PickResult {
   id: string;
@@ -61,12 +61,11 @@ function statusColor(status?: string): Cesium.Color {
   return cssColor(status ? STATUS_COLORS[status.toLowerCase()] : undefined, DEFAULT_MARKER_COLOR);
 }
 
-/** 区域填充色（含透明度），按评分分级：≥3.5 红、≥2.5 黄、其余绿。纯函数，便于 TDD。 */
+/** 区域填充色（含透明度），按评分分级（规范 §13.4）：≥4 红、≥3 橙黄、≥2 蓝、其余静默灰。纯函数，便于 TDD。 */
 export function zoneFillColor(score: number): Cesium.Color {
-  return cssColor(
-    score >= 3.5 ? '#f87171' : score >= 2.5 ? '#fbbf24' : '#34d399',
-    DEFAULT_ZONE_COLOR,
-  ).withAlpha(0.25);
+  const hex = score >= 4 ? '#ff5a5a' : score >= 3 ? '#ffb020' : score >= 2 ? '#2e7cf6' : '#8fa6c8';
+  const alpha = score >= 4 ? 0.22 : score >= 3 ? 0.2 : score >= 2 ? 0.18 : 0.14;
+  return cssColor(hex, DEFAULT_ZONE_COLOR).withAlpha(alpha);
 }
 
 /** 点位着色纯函数：报警按 level、设备按 status。便于 TDD 验证等级/状态色映射。 */
@@ -74,7 +73,7 @@ export function markerColor(kind: 'alarm' | 'device', p: MapPoint): Cesium.Color
   return kind === 'alarm' ? levelColor(p.level) : statusColor(p.status);
 }
 
-const DARK_BG = '#050a15';
+const DARK_BG = '#0b1526'; // 规范 --color-bg
 
 /**
  * 创建单一 Cesium viewer，移除默认干扰 UI，仅保留画布。
@@ -180,7 +179,7 @@ function addCompositeMarker(
       font: '12px sans-serif',
       fillColor: Cesium.Color.WHITE,
       showBackground: true,
-      backgroundColor: Cesium.Color.fromCssColorString('#0f172a').withAlpha(0.7),
+      backgroundColor: Cesium.Color.fromCssColorString('#13233c').withAlpha(0.7),
       backgroundPadding: new Cesium.Cartesian2(6, 4),
       pixelOffset: new Cesium.Cartesian2(0, -18),
       verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
@@ -219,7 +218,7 @@ export async function loadRiskZones(viewer: Cesium.Viewer): Promise<void> {
       z.polygon.map(([lng, lat]) => Cesium.Cartesian3.fromDegrees(lng, lat)),
     );
     const fill = cssColor(
-      z.score >= 3.5 ? '#f87171' : z.score >= 2.5 ? '#fbbf24' : '#34d399',
+      z.score >= 4 ? '#ff5a5a' : z.score >= 3 ? '#ffb020' : z.score >= 2 ? '#2e7cf6' : '#8fa6c8',
       DEFAULT_ZONE_COLOR,
     ).withAlpha(0.25);
 
@@ -248,7 +247,7 @@ export async function loadRiskZones(viewer: Cesium.Viewer): Promise<void> {
         font: '13px sans-serif',
         fillColor: Cesium.Color.WHITE,
         showBackground: true,
-        backgroundColor: Cesium.Color.fromCssColorString('#0f172a').withAlpha(0.75),
+        backgroundColor: Cesium.Color.fromCssColorString('#13233c').withAlpha(0.75),
         backgroundPadding: new Cesium.Cartesian2(6, 4),
         heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
@@ -313,7 +312,7 @@ export function setLayerVisible(viewer: Cesium.Viewer, kind: LayerKind, visible:
       } else if (kind === 'labels' && (id.startsWith('alarm:') || id.startsWith('device:'))) {
         // 直接赋 boolean，Cesium 内部会自动包装为 ConstantProperty；
         // 避免显式 new ConstantProperty() 在 destroyed entity 上构造时抛错
-        if (e.label) (e.label as { show: boolean }).show = visible;
+        if (e.label) (e.label as unknown as { show: boolean }).show = visible;
       }
     }
     // requestRenderMode 下，entity show 变更不会自动触发重绘，必须显式 requestRender

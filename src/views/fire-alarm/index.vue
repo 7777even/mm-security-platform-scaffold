@@ -215,15 +215,17 @@ onMounted(() => {
 }
 
 .alarm-list :deep(.alarm-list-item) {
-  border: 1px solid rgb(148 163 184 / 0.16);
+  border: 1px solid rgb(143 166 200 / 16%);
   border-radius: 10px;
-  background: linear-gradient(180deg, rgb(15 23 42 / 0.6), rgb(11 17 32 / 0.6));
-  transition: border-color 0.15s, background 0.15s;
+  background: linear-gradient(180deg, rgb(19 35 60 / 60%), rgb(11 21 38 / 60%));
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .alarm-list :deep(.alarm-list-item:hover) {
-  border-color: rgb(0 212 255 / 0.4);
-  background: linear-gradient(180deg, rgb(15 23 42 / 0.7), rgb(11 17 32 / 0.7));
+  border-color: rgb(0 216 255 / 40%);
+  background: linear-gradient(180deg, rgb(19 35 60 / 70%), rgb(11 21 38 / 70%));
 }
 
 .alarm-empty {
@@ -244,10 +246,10 @@ onMounted(() => {
   flex-direction: column;
   gap: 0;
   margin: 0;
-  border: 1px solid rgb(148 163 184 / 18%);
+  border: 1px solid rgb(143 166 200 / 18%);
   border-radius: var(--radius-md, 10px);
   overflow: hidden;
-  background: linear-gradient(180deg, rgb(15 23 42 / 55%), rgb(11 17 32 / 55%));
+  background: linear-gradient(180deg, rgb(19 35 60 / 55%), rgb(11 21 38 / 55%));
 }
 
 .detail-view__row {
@@ -257,7 +259,7 @@ onMounted(() => {
   gap: 12px;
   min-height: 42px;
   padding: 0 14px;
-  border-bottom: 1px dashed rgb(148 163 184 / 12%);
+  border-bottom: 1px dashed rgb(143 166 200 / 12%);
   font-size: 13px;
 }
 
@@ -276,7 +278,7 @@ onMounted(() => {
 
 .detail-view dd {
   margin: 0;
-  color: var(--color-text, #e2e8f0);
+  color: var(--color-text);
   text-align: right;
 }
 </style>

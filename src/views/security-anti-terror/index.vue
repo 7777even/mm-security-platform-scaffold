@@ -130,16 +130,18 @@ function goRecords(): void {
   align-items: center;
   gap: var(--space-sm);
   padding: 10px 12px;
-  background: linear-gradient(180deg, rgb(15 23 42 / 0.55), rgb(11 17 32 / 0.55));
-  border: 1px solid rgb(148 163 184 / 0.16);
+  background: linear-gradient(180deg, rgb(19 35 60 / 55%), rgb(11 21 38 / 55%));
+  border: 1px solid rgb(143 166 200 / 16%);
   border-radius: 8px;
   font-size: 13px;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .event-row:hover {
-  border-color: rgb(0 212 255 / 0.4);
-  background: linear-gradient(180deg, rgb(15 23 42 / 0.65), rgb(11 17 32 / 0.65));
+  border-color: rgb(0 216 255 / 40%);
+  background: linear-gradient(180deg, rgb(19 35 60 / 65%), rgb(11 21 38 / 65%));
 }
 
 .event-row__time {

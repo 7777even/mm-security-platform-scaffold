@@ -102,7 +102,12 @@ onMounted(load);
 <template>
   <PanelCard title="应急预案库" icon="Document" class="plans-page">
     <div class="plans-toolbar">
-      <el-input v-model="keyword" placeholder="搜索 预案名称 / 负责人" clearable style="width: 240px" />
+      <el-input
+        v-model="keyword"
+        placeholder="搜索 预案名称 / 负责人"
+        clearable
+        style="width: 240px"
+      />
       <el-select v-model="categoryFilter" placeholder="全部类型" clearable style="width: 150px">
         <el-option v-for="c in CATEGORIES" :key="c.value" :label="c.label" :value="c.value" />
       </el-select>
@@ -124,7 +129,9 @@ onMounted(load);
           <div class="plan-card__actions">
             <button class="crud-link" type="button" @click="openView(p)">查看</button>
             <button class="crud-link" type="button" @click="openEdit(p)">编辑</button>
-            <button class="crud-link crud-link--danger" type="button" @click="remove(p)">删除</button>
+            <button class="crud-link crud-link--danger" type="button" @click="remove(p)">
+              删除
+            </button>
           </div>
         </footer>
       </article>
@@ -228,15 +235,17 @@ onMounted(load);
   flex-direction: column;
   gap: 8px;
   padding: 14px 16px;
-  background: linear-gradient(180deg, rgb(15 23 42 / 0.65), rgb(11 17 32 / 0.65));
-  border: 1px solid rgb(148 163 184 / 0.18);
+  background: linear-gradient(180deg, rgb(19 35 60 / 65%), rgb(11 21 38 / 65%));
+  border: 1px solid rgb(143 166 200 / 18%);
   border-radius: 10px;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .plan-card:hover {
-  border-color: rgb(0 212 255 / 0.4);
-  background: linear-gradient(180deg, rgb(15 23 42 / 0.75), rgb(11 17 32 / 0.75));
+  border-color: rgb(0 216 255 / 40%);
+  background: linear-gradient(180deg, rgb(19 35 60 / 75%), rgb(11 21 38 / 75%));
 }
 
 .plan-card__head {
@@ -254,14 +263,14 @@ onMounted(load);
 .plan-card__name {
   margin: 0;
   font-size: 15px;
-  color: var(--color-text, #e2e8f0);
+  color: var(--color-text);
   font-weight: 600;
 }
 
 .plan-card__summary {
   margin: 0;
   font-size: 12px;
-  color: var(--color-text-secondary, #cbd5e1);
+  color: var(--color-text-secondary);
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -274,7 +283,7 @@ onMounted(load);
   justify-content: space-between;
   align-items: center;
   padding-top: 8px;
-  border-top: 1px dashed rgb(148 163 184 / 0.12);
+  border-top: 1px dashed rgb(143 166 200 / 12%);
 }
 
 .plan-card__owner {
@@ -298,16 +307,16 @@ onMounted(load);
 }
 
 .crud-link:hover {
-  color: #4ddeff;
+  color: #00d8ff;
   text-decoration: underline;
 }
 
 .crud-link--danger {
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger, #ff5a5a);
 }
 
 .crud-link--danger:hover {
-  color: #fca5a5;
+  color: #ff8a8a;
 }
 
 .plans-empty {
@@ -323,10 +332,10 @@ onMounted(load);
   flex-direction: column;
   gap: 0;
   margin: 0;
-  border: 1px solid rgb(148 163 184 / 18%);
+  border: 1px solid rgb(143 166 200 / 18%);
   border-radius: var(--radius-md, 10px);
   overflow: hidden;
-  background: linear-gradient(180deg, rgb(15 23 42 / 55%), rgb(11 17 32 / 55%));
+  background: linear-gradient(180deg, rgb(19 35 60 / 55%), rgb(11 21 38 / 55%));
 }
 
 .detail-view__row {
@@ -336,7 +345,7 @@ onMounted(load);
   gap: 12px;
   min-height: 42px;
   padding: 0 14px;
-  border-bottom: 1px dashed rgb(148 163 184 / 12%);
+  border-bottom: 1px dashed rgb(143 166 200 / 12%);
   font-size: 13px;
 }
 
@@ -355,7 +364,7 @@ onMounted(load);
 
 .detail-view dd {
   margin: 0;
-  color: var(--color-text, #e2e8f0);
+  color: var(--color-text);
   text-align: right;
 }
 </style>

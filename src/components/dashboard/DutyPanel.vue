@@ -33,13 +33,13 @@ onMounted(async () => {
     <!-- 顶部交互栏：3D 视角 / 热力图 / 标注默认 -->
     <div v-if="!loading" class="duty-toolbar" data-test="duty-toolbar">
       <label class="duty-toolbar__toggle">
-        <input type="checkbox" v-model="status.view3d" /> 3D 视角
+        <input v-model="status.view3d" type="checkbox" /> 3D 视角
       </label>
       <label class="duty-toolbar__toggle">
-        <input type="checkbox" v-model="status.heatmap" /> 热力图
+        <input v-model="status.heatmap" type="checkbox" /> 热力图
       </label>
       <label class="duty-toolbar__toggle">
-        <input type="checkbox" v-model="status.labelsDefault" /> 标注默认
+        <input v-model="status.labelsDefault" type="checkbox" /> 标注默认
       </label>
     </div>
 
@@ -66,10 +66,10 @@ onMounted(async () => {
   flex-wrap: wrap;
   gap: 12px;
   padding: 6px 0 10px;
-  border-bottom: 1px dashed rgba(148, 163, 184, 0.18);
+  border-bottom: 1px dashed rgb(148 163 184 / 18%);
   margin-bottom: 10px;
   font-size: 12px;
-  color: var(--color-text-secondary, #cbd5e1);
+  color: var(--color-text-secondary);
 }
 
 .duty-toolbar__toggle {
@@ -95,8 +95,8 @@ onMounted(async () => {
   gap: 4px 8px;
   align-items: center;
   padding: 8px 10px;
-  background: rgba(15, 23, 42, 0.55);
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgb(15 23 42 / 55%);
+  border: 1px solid rgb(148 163 184 / 18%);
   border-radius: 6px;
   font-size: 12px;
   transition: border-color 0.15s;
@@ -104,7 +104,7 @@ onMounted(async () => {
 
 .duty-card.is-offline {
   opacity: 0.55;
-  border-color: rgba(248, 113, 113, 0.3);
+  border-color: rgb(248 113 113 / 30%);
 }
 
 .duty-card__role {
@@ -114,7 +114,7 @@ onMounted(async () => {
 }
 
 .duty-card__name {
-  color: var(--color-text-primary, #e2e8f0);
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 
@@ -133,17 +133,19 @@ onMounted(async () => {
   flex: 1;
   padding: 6px 0;
   font-size: 12px;
-  color: var(--color-text-primary, #e2e8f0);
-  background: rgba(0, 212, 255, 0.1);
-  border: 1px solid rgba(0, 212, 255, 0.35);
+  color: var(--color-text-primary);
+  background: rgb(0 212 255 / 10%);
+  border: 1px solid rgb(0 212 255 / 35%);
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .duty-actions__btn:hover {
-  background: rgba(0, 212, 255, 0.22);
-  border-color: rgba(0, 212, 255, 0.7);
+  background: rgb(0 212 255 / 22%);
+  border-color: rgb(0 212 255 / 70%);
 }
 
 .duty-empty {

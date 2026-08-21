@@ -32,6 +32,8 @@
   --color-text-strong: #fff; /* 正文主色：纯白，强对比 */
   --color-text: #eaf4ff; /* 辅助标题：默认正文/标题 */
   --color-text-muted: #8fa6c8; /* 辅助文字：次级说明 */
+  --color-text-primary: var(--color-text); /* 兼容别名：主文本（等同 --color-text） */
+  --color-text-secondary: var(--color-text-muted); /* 兼容别名：次文本（等同 --color-text-muted） */
 
   /* ---- 渐变（设计稿图 5-1 中部 / body 兜底） ---- */
   --gradient-tech-blue: linear-gradient(90deg, #00d8ff 0%, #2e7cf6 100%); /* 科技深蓝 */

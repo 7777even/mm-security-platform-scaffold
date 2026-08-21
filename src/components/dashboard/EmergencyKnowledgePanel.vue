@@ -21,7 +21,11 @@ onMounted(async () => {
 
 <template>
   <PanelCard title="应急生产安全知识" icon="Reading">
-    <ul v-if="!loading && items.length > 0" class="knowledge-grid" data-test="emergency-knowledge-grid">
+    <ul
+      v-if="!loading && items.length > 0"
+      class="knowledge-grid"
+      data-test="emergency-knowledge-grid"
+    >
       <li v-for="k in items" :key="k.id" class="knowledge-cell">
         <span class="knowledge-cell__title">{{ k.title }}</span>
         <span class="knowledge-cell__meta">
@@ -50,20 +54,22 @@ onMounted(async () => {
   flex-direction: column;
   gap: 6px;
   padding: 10px 8px;
-  background: rgba(15, 23, 42, 0.55);
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: var(--color-panel-2);
+  border: 1px solid var(--color-border-soft);
   border-radius: 6px;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .knowledge-cell:hover {
-  border-color: rgba(0, 212, 255, 0.4);
-  background: rgba(0, 212, 255, 0.06);
+  border-color: var(--color-accent);
+  background: rgb(0 216 255 / 8%);
 }
 
 .knowledge-cell__title {
   font-size: 12px;
-  color: var(--color-text-primary, #e2e8f0);
+  color: var(--color-text);
   font-weight: 600;
 }
 
@@ -75,16 +81,16 @@ onMounted(async () => {
 }
 
 .knowledge-cell__hint {
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
 }
 
 .knowledge-cell__stat {
-  color: var(--color-warning, #fbbf24);
+  color: var(--color-warning, #ffb020);
 }
 
 .knowledge-empty {
   text-align: center;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 12px;
   padding: 16px 0;
 }

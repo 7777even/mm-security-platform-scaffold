@@ -44,6 +44,7 @@ onMounted(async () => {
   list-style: none;
   margin: 0;
   padding: 0;
+
   /* 自然撑开，无内部滚动条 */
   overflow: hidden;
 }
@@ -54,7 +55,7 @@ onMounted(async () => {
   grid-template-rows: auto auto;
   gap: 2px 8px;
   padding: 8px 4px;
-  border-bottom: 1px dashed rgba(148, 163, 184, 0.18);
+  border-bottom: 1px dashed rgb(148 163 184 / 18%);
   font-size: 12px;
 }
 
@@ -69,7 +70,7 @@ onMounted(async () => {
 .case-row__title {
   grid-column: 2;
   grid-row: 1;
-  color: var(--color-text-primary, #e2e8f0);
+  color: var(--color-text-primary);
 }
 
 .case-row__time {
@@ -82,7 +83,7 @@ onMounted(async () => {
 .case-row__handler {
   grid-column: 2 / 4;
   grid-row: 2;
-  color: var(--color-text-secondary, #cbd5e1);
+  color: var(--color-text-secondary);
   font-size: 11px;
 }
 

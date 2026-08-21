@@ -290,7 +290,7 @@ onUnmounted(() => {
 .base-map {
   position: absolute;
   inset: 0;
-  background: #050a15;
+  background: #0b1526;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -315,8 +315,8 @@ onUnmounted(() => {
   width: 100% !important;
   height: 100% !important;
   display: block;
-  background: #050a15 !important;
-  background-color: #050a15 !important;
+  background: #0b1526 !important;
+  background-color: #0b1526 !important;
 }
 
 .base-map :deep(.cesium-viewer-bottom) {
@@ -326,6 +326,7 @@ onUnmounted(() => {
 .map-toolbar {
   position: absolute;
   top: 12px;
+
   /* 与 dashboard 右侧面板对齐：面板宽 419px + 左侧 space-md 间距 */
   right: calc(419px + var(--space-md, 12px) * 2);
   z-index: 10;
@@ -334,12 +335,12 @@ onUnmounted(() => {
   align-items: stretch;
   gap: 6px;
   padding: 8px 6px;
-  background: rgb(15 23 42 / 82%);
-  border: 1px solid rgb(148 163 184 / 25%);
+  background: rgb(19 35 60 / 82%);
+  border: 1px solid rgb(143 166 200 / 25%);
   border-radius: 8px;
   backdrop-filter: blur(4px);
   font-size: 12px;
-  color: #e2e8f0;
+  color: var(--color-text);
   min-width: 60px;
 }
 
@@ -347,10 +348,10 @@ onUnmounted(() => {
   min-width: 44px;
   height: 32px;
   padding: 0;
-  border: 1px solid rgb(148 163 184 / 30%);
+  border: 1px solid rgb(143 166 200 / 30%);
   border-radius: 6px;
   background: rgb(30 41 59 / 90%);
-  color: #e2e8f0;
+  color: var(--color-text);
   cursor: pointer;
   font-size: 13px;
   line-height: 1;
@@ -358,12 +359,12 @@ onUnmounted(() => {
 
 .map-toolbar__btn:hover {
   background: rgb(51 65 85 / 95%);
-  border-color: rgb(148 163 184 / 60%);
+  border-color: rgb(143 166 200 / 60%);
 }
 
 .map-toolbar__sep {
   height: 1px;
-  background: rgb(148 163 184 / 30%);
+  background: rgb(143 166 200 / 30%);
   margin: 2px 4px;
 }
 
@@ -390,10 +391,10 @@ onUnmounted(() => {
   z-index: 11;
   min-width: 180px;
   padding: 10px 12px;
-  background: rgb(15 23 42 / 92%);
-  border: 1px solid rgb(148 163 184 / 35%);
+  background: rgb(19 35 60 / 92%);
+  border: 1px solid rgb(143 166 200 / 35%);
   border-radius: 8px;
-  color: #e2e8f0;
+  color: var(--color-text);
   font-size: 12px;
   box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
 }
@@ -420,6 +421,6 @@ onUnmounted(() => {
 
 .map-popup__row {
   line-height: 1.7;
-  color: #cbd5e1;
+  color: var(--color-text-muted);
 }
 </style>

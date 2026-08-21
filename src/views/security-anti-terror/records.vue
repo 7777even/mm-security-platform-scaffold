@@ -63,7 +63,12 @@ onMounted(async () => {
 <template>
   <PanelCard title="门禁事件记录" icon="Key" class="records-page">
     <div class="records-toolbar">
-      <el-input v-model="keyword" placeholder="搜索 人员 / 通道 / 卡号 / 车辆" clearable style="width: 240px" />
+      <el-input
+        v-model="keyword"
+        placeholder="搜索 人员 / 通道 / 卡号 / 车辆"
+        clearable
+        style="width: 240px"
+      />
       <el-select v-model="directionFilter" placeholder="全部方向" clearable style="width: 140px">
         <el-option v-for="d in DIRECTIONS" :key="d.value" :label="d.label" :value="d.value" />
       </el-select>
@@ -104,7 +109,13 @@ onMounted(async () => {
     <p v-else class="records-empty">门禁事件加载中…</p>
     <p v-if="!loading && filtered.length === 0" class="records-empty">暂无符合条件的记录</p>
 
-    <el-drawer v-model="viewingVisible" title="门禁事件详情" direction="rtl" size="400px" @close="viewing = null">
+    <el-drawer
+      v-model="viewingVisible"
+      title="门禁事件详情"
+      direction="rtl"
+      size="400px"
+      @close="viewing = null"
+    >
       <dl v-if="viewing" class="detail-view">
         <div class="detail-view__row">
           <dt>事件编号</dt>
@@ -177,10 +188,10 @@ onMounted(async () => {
   flex-direction: column;
   gap: 0;
   margin: 0;
-  border: 1px solid rgb(148 163 184 / 18%);
+  border: 1px solid rgb(143 166 200 / 18%);
   border-radius: var(--radius-md, 10px);
   overflow: hidden;
-  background: linear-gradient(180deg, rgb(15 23 42 / 55%), rgb(11 17 32 / 55%));
+  background: linear-gradient(180deg, rgb(19 35 60 / 55%), rgb(11 21 38 / 55%));
 }
 
 .detail-view__row {
@@ -190,7 +201,7 @@ onMounted(async () => {
   gap: 12px;
   min-height: 42px;
   padding: 0 14px;
-  border-bottom: 1px dashed rgb(148 163 184 / 12%);
+  border-bottom: 1px dashed rgb(143 166 200 / 12%);
   font-size: 13px;
 }
 
@@ -209,7 +220,7 @@ onMounted(async () => {
 
 .detail-view dd {
   margin: 0;
-  color: var(--color-text, #e2e8f0);
+  color: var(--color-text);
   text-align: right;
 }
 </style>

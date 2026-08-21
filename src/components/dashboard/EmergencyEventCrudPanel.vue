@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import PanelCard from '@/components/common/PanelCard.vue';
 import AppButton from '@/components/common/AppButton.vue';
 import {
@@ -167,7 +167,12 @@ onMounted(load);
     <!-- 卡片网格 -->
     <div class="crud-cards-wrap" data-test="crud-table">
       <ul v-if="!loading && filtered.length > 0" class="crud-cards">
-        <li v-for="e in filtered" :key="e.alarmId" class="crud-card">
+        <li
+          v-for="e in filtered"
+          :key="e.alarmId"
+          class="crud-card"
+          :class="`tone-alarm-${e.level}`"
+        >
           <div class="crud-card__top">
             <span class="crud-card__id font-number">{{ e.alarmId }}</span>
             <span class="crud-card__level tone-alarm-" :class="`tone-alarm-${e.level}`">
@@ -175,7 +180,9 @@ onMounted(load);
             </span>
           </div>
           <div class="crud-card__body">
-            <span class="crud-card__type">{{ TYPE_OPTIONS.find((t) => t.value === e.type)?.label ?? e.type }}</span>
+            <span class="crud-card__type">{{
+              TYPE_OPTIONS.find((t) => t.value === e.type)?.label ?? e.type
+            }}</span>
             <span class="crud-card__sep">·</span>
             <span class="crud-card__device">{{ e.deviceCode }}</span>
           </div>
@@ -185,7 +192,9 @@ onMounted(load);
             <div class="crud-card__actions">
               <button class="crud-link" title="查看" @click="openView(e)">查看</button>
               <button class="crud-link" title="编辑" @click="openEdit(e)">编辑</button>
-              <button class="crud-link crud-link--danger" title="删除" @click="remove(e)">删除</button>
+              <button class="crud-link crud-link--danger" title="删除" @click="remove(e)">
+                删除
+              </button>
             </div>
           </div>
         </li>
@@ -206,13 +215,17 @@ onMounted(load);
           <label class="crud-form__field">
             <span>事件等级</span>
             <select v-model.number="editing.level">
-              <option v-for="l in LEVEL_OPTIONS" :key="l.value" :value="l.value">{{ l.label }}</option>
+              <option v-for="l in LEVEL_OPTIONS" :key="l.value" :value="l.value">
+                {{ l.label }}
+              </option>
             </select>
           </label>
           <label class="crud-form__field">
             <span>事件类型</span>
             <select v-model="editing.type">
-              <option v-for="t in TYPE_OPTIONS" :key="t.value" :value="t.value">{{ t.label }}</option>
+              <option v-for="t in TYPE_OPTIONS" :key="t.value" :value="t.value">
+                {{ t.label }}
+              </option>
             </select>
           </label>
           <label class="crud-form__field">
@@ -236,13 +249,22 @@ onMounted(load);
       <div class="crud-modal__panel">
         <h3 class="crud-modal__title">应急事件详情</h3>
         <dl class="crud-view">
-          <dt>事件 ID</dt><dd class="font-number">{{ viewing.alarmId }}</dd>
-          <dt>等级</dt><dd>{{ LEVEL_OPTIONS.find((l) => l.value === viewing.level)?.label ?? viewing.level }}</dd>
-          <dt>类型</dt><dd>{{ TYPE_OPTIONS.find((t) => t.value === viewing.type)?.label ?? viewing.type }}</dd>
-          <dt>设备</dt><dd>{{ viewing.deviceCode }}</dd>
-          <dt>位置</dt><dd>{{ viewing.location }}</dd>
-          <dt>描述</dt><dd>{{ viewing.description || '—' }}</dd>
-          <dt>时间</dt><dd class="font-number">{{ formatTime(viewing.ts) }}</dd>
+          <dt>事件 ID</dt>
+          <dd class="font-number">{{ viewing.alarmId }}</dd>
+          <dt>等级</dt>
+          <dd>
+            {{ LEVEL_OPTIONS.find((l) => l.value === viewing.level)?.label ?? viewing.level }}
+          </dd>
+          <dt>类型</dt>
+          <dd>{{ TYPE_OPTIONS.find((t) => t.value === viewing.type)?.label ?? viewing.type }}</dd>
+          <dt>设备</dt>
+          <dd>{{ viewing.deviceCode }}</dd>
+          <dt>位置</dt>
+          <dd>{{ viewing.location }}</dd>
+          <dt>描述</dt>
+          <dd>{{ viewing.description || '—' }}</dd>
+          <dt>时间</dt>
+          <dd class="font-number">{{ formatTime(viewing.ts) }}</dd>
         </dl>
         <div class="crud-form__actions">
           <AppButton variant="primary" @click="viewing = null">关闭</AppButton>
@@ -266,31 +288,33 @@ onMounted(load);
   min-width: 140px;
   height: 32px;
   padding: 0 10px;
-  background: rgb(15 23 42 / 0.6);
-  border: 1px solid rgb(148 163 184 / 0.25);
+  background: var(--color-panel-2);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  color: var(--color-text, #e2e8f0);
+  color: var(--color-text);
   font-size: 12px;
   outline: none;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .crud-toolbar__input:focus {
   border-color: var(--color-accent);
-  background: rgb(15 23 42 / 0.75);
+  background: var(--color-panel);
 }
 
 .crud-toolbar__input::placeholder {
-  color: rgb(148 163 184 / 0.6);
+  color: rgb(143 166 200 / 60%);
 }
 
 .crud-toolbar__select {
   height: 32px;
   padding: 0 8px;
-  background: rgb(15 23 42 / 0.6);
-  border: 1px solid rgb(148 163 184 / 0.25);
+  background: var(--color-panel-2);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  color: var(--color-text, #e2e8f0);
+  color: var(--color-text);
   font-size: 12px;
   outline: none;
   cursor: pointer;
@@ -320,19 +344,18 @@ onMounted(load);
   grid-template-rows: auto auto auto auto;
   gap: 6px;
   padding: 12px 14px;
-  background: linear-gradient(
-    180deg,
-    rgb(15 23 42 / 0.65),
-    rgb(11 17 32 / 0.65)
-  );
-  border: 1px solid rgb(148 163 184 / 0.18);
+  background: linear-gradient(180deg, rgb(19 35 60 / 65%), rgb(11 21 38 / 65%));
+  border: 1px solid var(--color-border-soft);
   border-radius: 8px;
-  transition: border-color 0.15s, transform 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    transform 0.15s,
+    background 0.15s;
   position: relative;
 }
 
 .crud-card::before {
-  /* 左侧 4px 状态色条，按等级色变化（柔和描边） */
+  /* 左侧 4px 状态色条，按事件等级着色（规范 §13.1） */
   content: '';
   position: absolute;
   left: 0;
@@ -340,16 +363,28 @@ onMounted(load);
   bottom: 8px;
   width: 3px;
   border-radius: 0 3px 3px 0;
-  background: var(--color-alarm-3, #f97316);
+  background: var(--color-alarm-3);
+}
+
+.crud-card.tone-alarm-1::before {
+  background: var(--color-alarm-1);
+}
+
+.crud-card.tone-alarm-2::before {
+  background: var(--color-alarm-2);
+}
+
+.crud-card.tone-alarm-3::before {
+  background: var(--color-alarm-3);
+}
+
+.crud-card.tone-alarm-4::before {
+  background: var(--color-alarm-4);
 }
 
 .crud-card:hover {
-  border-color: rgb(0 212 255 / 0.4);
-  background: linear-gradient(
-    180deg,
-    rgb(15 23 42 / 0.75),
-    rgb(11 17 32 / 0.75)
-  );
+  border-color: var(--color-accent);
+  background: linear-gradient(180deg, var(--color-panel), rgb(11 21 38 / 75%));
 }
 
 .crud-card:hover::before {
@@ -365,7 +400,7 @@ onMounted(load);
 
 .crud-card__id {
   font-size: 11px;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   letter-spacing: 0.4px;
 }
 
@@ -375,9 +410,9 @@ onMounted(load);
   border-radius: 10px;
   font-weight: 600;
   font-size: 11px;
-  background: rgb(255 255 255 / 0.05);
-  border: 1px solid currentColor;
-  border-color: rgb(255 255 255 / 0.08);
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid currentcolor;
+  border-color: rgb(255 255 255 / 8%);
 }
 
 .crud-card__body {
@@ -386,28 +421,29 @@ onMounted(load);
   gap: 6px;
   padding-left: 6px;
   font-size: 13px;
-  color: var(--color-text, #e2e8f0);
+  color: var(--color-text);
   font-weight: 600;
 }
 
 .crud-card__type {
-  color: var(--color-text, #e2e8f0);
+  color: var(--color-text);
 }
 
 .crud-card__sep {
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
 }
 
 .crud-card__device {
-  color: var(--color-text-secondary, #cbd5e1);
+  color: var(--color-text);
   font-weight: 400;
 }
 
 .crud-card__loc {
   padding-left: 6px;
   font-size: 12px;
-  color: var(--color-text-secondary, #cbd5e1);
+  color: var(--color-text);
   line-height: 1.4;
+
   /* 限制最多两行，避免卡片过高 */
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -421,12 +457,12 @@ onMounted(load);
   align-items: center;
   padding-left: 6px;
   padding-top: 4px;
-  border-top: 1px dashed rgb(148 163 184 / 0.12);
+  border-top: 1px dashed var(--color-border-soft);
 }
 
 .crud-card__time {
   font-size: 11px;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
 }
 
 .crud-card__actions {
@@ -445,37 +481,37 @@ onMounted(load);
 }
 
 .crud-link:hover {
-  color: #4ddeff;
+  color: var(--color-accent);
   text-decoration: underline;
 }
 
 .crud-link--danger {
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger, #ff5a5a);
 }
 
 .crud-link--danger:hover {
-  color: #fca5a5;
+  color: #ff8a8a;
 }
 
 .tone-alarm-1 {
-  color: var(--color-alarm-1, #22c55e);
+  color: var(--color-alarm-1, #f46767);
 }
 
 .tone-alarm-2 {
-  color: var(--color-alarm-2, #eab308);
+  color: var(--color-alarm-2, #f68a2e);
 }
 
 .tone-alarm-3 {
-  color: var(--color-alarm-3, #f97316);
+  color: var(--color-alarm-3, #f6ba2e);
 }
 
 .tone-alarm-4 {
-  color: var(--color-alarm-4, #ef4444);
+  color: var(--color-alarm-4, #2e7cf6);
 }
 
 .crud-empty {
   text-align: center;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 12px;
   padding: 16px 0;
 }
@@ -488,7 +524,7 @@ onMounted(load);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgb(0 0 0 / 0.55);
+  background: rgb(0 0 0 / 55%);
   backdrop-filter: blur(2px);
 }
 
@@ -498,11 +534,11 @@ onMounted(load);
   max-height: calc(100vh - 64px);
   overflow-y: auto;
   padding: 20px;
-  background: linear-gradient(180deg, rgb(15 23 42 / 0.98), rgb(11 17 32 / 0.98));
-  border: 1px solid rgb(0 212 255 / 0.3);
+  background: linear-gradient(180deg, rgb(19 35 60 / 98%), rgb(11 21 38 / 98%));
+  border: 1px solid var(--color-accent);
   border-radius: 10px;
-  box-shadow: 0 12px 36px rgb(0 0 0 / 0.6);
-  color: var(--color-text, #e2e8f0);
+  box-shadow: 0 12px 36px rgb(0 0 0 / 60%);
+  color: var(--color-text);
 }
 
 .crud-modal__title {
@@ -522,11 +558,11 @@ onMounted(load);
   flex-direction: column;
   gap: 4px;
   font-size: 12px;
-  color: var(--color-text-secondary, #cbd5e1);
+  color: var(--color-text);
 }
 
 .crud-form__field em {
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger, #ff5a5a);
   font-style: normal;
 }
 
@@ -534,10 +570,10 @@ onMounted(load);
 .crud-form__field select,
 .crud-form__field textarea {
   padding: 6px 8px;
-  background: rgb(15 23 42 / 0.6);
-  border: 1px solid rgb(148 163 184 / 0.3);
+  background: var(--color-panel-2);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  color: var(--color-text, #e2e8f0);
+  color: var(--color-text);
   font-size: 12px;
   outline: none;
 }
@@ -564,11 +600,11 @@ onMounted(load);
 }
 
 .crud-view dt {
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
 }
 
 .crud-view dd {
   margin: 0;
-  color: var(--color-text, #e2e8f0);
+  color: var(--color-text);
 }
 </style>

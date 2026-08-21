@@ -51,7 +51,12 @@ const channels = [
     <template #right>
       <PanelCard title="视频通道" icon="VideoCamera" more="查看全部">
         <ul class="channel-list" data-test="channel-list">
-          <li v-for="c in channels" :key="c.id" class="channel-card" :class="{ 'is-offline': !c.online }">
+          <li
+            v-for="c in channels"
+            :key="c.id"
+            class="channel-card"
+            :class="{ 'is-offline': !c.online }"
+          >
             <span class="channel-card__id font-number">{{ c.id }}</span>
             <span class="channel-card__name">{{ c.name }}</span>
             <span class="channel-card__state" :class="c.online ? 'is-on' : 'is-fault'">
@@ -106,16 +111,18 @@ const channels = [
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  background: linear-gradient(180deg, rgb(15 23 42 / 0.6), rgb(11 17 32 / 0.6));
-  border: 1px solid rgb(148 163 184 / 0.16);
+  background: linear-gradient(180deg, rgb(19 35 60 / 60%), rgb(11 21 38 / 60%));
+  border: 1px solid rgb(143 166 200 / 16%);
   border-radius: 8px;
   font-size: 12px;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .channel-card:hover {
-  border-color: rgb(0 212 255 / 0.4);
-  background: linear-gradient(180deg, rgb(15 23 42 / 0.7), rgb(11 17 32 / 0.7));
+  border-color: rgb(0 216 255 / 40%);
+  background: linear-gradient(180deg, rgb(19 35 60 / 70%), rgb(11 21 38 / 70%));
 }
 
 .channel-card.is-offline {
@@ -128,14 +135,14 @@ const channels = [
 }
 
 .channel-card__name {
-  color: var(--color-text, #e2e8f0);
+  color: var(--color-text);
 }
 
 .channel-card__state {
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 10px;
-  background: rgb(255 255 255 / 0.05);
+  background: rgb(255 255 255 / 5%);
 }
 
 .channel-card__state.is-on {
@@ -143,7 +150,7 @@ const channels = [
 }
 
 .channel-card__state.is-fault {
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger, #ff5a5a);
 }
 
 .channel-empty {

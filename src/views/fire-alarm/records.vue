@@ -13,17 +13,8 @@ import { useAlarmView } from '@/composables/useAlarmView';
 import type { AlarmItem, AlarmLevel, AlarmStatus } from '@/services/alarm';
 
 const router = useRouter();
-const {
-  page,
-  size,
-  levelFilter,
-  statusFilter,
-  detail,
-  pageResult,
-  refresh,
-  openDetail,
-  ack,
-} = useAlarmView();
+const { page, size, levelFilter, statusFilter, detail, pageResult, refresh, openDetail, ack } =
+  useAlarmView();
 
 const keyword = ref('');
 const detailVisible = computed(() => detail.value !== null);
@@ -101,7 +92,10 @@ onMounted(() => {
       <el-table-column prop="alarmId" label="报警编号" width="150" />
       <el-table-column label="等级" width="90">
         <template #default="{ row }">
-          <el-tag size="small" :type="row.level === 1 ? 'success' : row.level === 2 ? 'warning' : 'danger'">
+          <el-tag
+            size="small"
+            :type="row.level === 1 ? 'success' : row.level === 2 ? 'warning' : 'danger'"
+          >
             {{ LEVEL_TEXT[row.level as AlarmLevel] }}
           </el-tag>
         </template>
@@ -183,7 +177,12 @@ onMounted(() => {
         </div>
       </dl>
       <div v-if="detail" class="records-detail-actions">
-        <AppButton variant="primary" size="sm" :disabled="detail.status !== 'ACTIVE'" @click="onAck(detail)">
+        <AppButton
+          variant="primary"
+          size="sm"
+          :disabled="detail.status !== 'ACTIVE'"
+          @click="onAck(detail)"
+        >
           确认处置
         </AppButton>
         <AppButton variant="ghost" size="sm" @click="detailVisible = false">关闭</AppButton>
@@ -218,11 +217,11 @@ onMounted(() => {
 }
 
 .records-status.is-ACTIVE {
-  color: var(--color-alarm-1, #ef4444);
+  color: var(--color-alarm-1, #f46767);
 }
 
 .records-status.is-ACKED {
-  color: var(--color-warning, #fbbf24);
+  color: var(--color-warning, #ffb020);
 }
 
 .records-status.is-DISPATCHED {
@@ -251,10 +250,10 @@ onMounted(() => {
   flex-direction: column;
   gap: 0;
   margin: 0;
-  border: 1px solid rgb(148 163 184 / 18%);
+  border: 1px solid rgb(143 166 200 / 18%);
   border-radius: var(--radius-md, 10px);
   overflow: hidden;
-  background: linear-gradient(180deg, rgb(15 23 42 / 55%), rgb(11 17 32 / 55%));
+  background: linear-gradient(180deg, rgb(19 35 60 / 55%), rgb(11 21 38 / 55%));
 }
 
 .detail-view__row {
@@ -264,7 +263,7 @@ onMounted(() => {
   gap: 12px;
   min-height: 42px;
   padding: 0 14px;
-  border-bottom: 1px dashed rgb(148 163 184 / 12%);
+  border-bottom: 1px dashed rgb(143 166 200 / 12%);
   font-size: 13px;
 }
 
@@ -283,7 +282,7 @@ onMounted(() => {
 
 .detail-view dd {
   margin: 0;
-  color: var(--color-text, #e2e8f0);
+  color: var(--color-text);
   text-align: right;
 }
 </style>

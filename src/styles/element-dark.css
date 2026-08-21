@@ -9,8 +9,8 @@
 
 /* ---- 下拉选择 Select ---- */
 .el-select__wrapper {
-  background-color: rgb(15 23 42 / 60%) !important;
-  border: 1px solid rgb(148 163 184 / 30%) !important;
+  background-color: rgb(19 35 60 / 60%) !important;
+  border: 1px solid rgb(143 166 200 / 30%) !important;
   border-radius: 6px !important;
   box-shadow: none !important;
   transition:
@@ -19,17 +19,17 @@
 }
 
 .el-select__wrapper.is-focused {
-  background-color: rgb(15 23 42 / 75%) !important;
+  background-color: rgb(19 35 60 / 75%) !important;
   border-color: var(--color-accent) !important;
   box-shadow: 0 0 0 2px rgb(0 216 255 / 12%) !important;
 }
 
 .el-select__placeholder {
-  color: rgb(148 163 184 / 65%) !important;
+  color: rgb(143 166 200 / 65%) !important;
 }
 
 .el-select__selected-item {
-  color: var(--color-text, #e2e8f0) !important;
+  color: var(--color-text) !important;
 }
 
 .el-select__caret {
@@ -38,14 +38,14 @@
 
 /* 下拉面板（teleport 到 body，全局生效） */
 .el-popper.is-light {
-  background-color: rgb(15 23 42 / 96%) !important;
-  border: 1px solid rgb(148 163 184 / 30%) !important;
+  background-color: rgb(19 35 60 / 96%) !important;
+  border: 1px solid rgb(143 166 200 / 30%) !important;
   border-radius: 8px !important;
   box-shadow: 0 8px 24px rgb(0 0 0 / 55%) !important;
 }
 
 .el-popper.is-light .el-select-dropdown__item {
-  color: var(--color-text-secondary, #cbd5e1) !important;
+  color: var(--color-text-secondary) !important;
 }
 
 .el-popper.is-light .el-select-dropdown__item.is-hovering {
@@ -64,21 +64,21 @@
 /* ---- 分页 Pagination ---- */
 .el-pagination {
   --el-pagination-bg-color: transparent;
-  --el-pagination-text-color: var(--color-text-secondary, #cbd5e1);
-  --el-pagination-button-color: var(--color-text-secondary, #cbd5e1);
-  --el-pagination-button-bg-color: rgb(15 23 42 / 55%);
-  --el-pagination-button-disabled-bg-color: rgb(15 23 42 / 35%);
+  --el-pagination-text-color: var(--color-text-secondary);
+  --el-pagination-button-color: var(--color-text-secondary);
+  --el-pagination-button-bg-color: rgb(19 35 60 / 55%);
+  --el-pagination-button-disabled-bg-color: rgb(19 35 60 / 35%);
   --el-pagination-hover-color: var(--color-accent);
   --el-pagination-button-active-color: #04111c;
   --el-pagination-button-active-bg-color: var(--color-accent);
 }
 
 .el-pagination .el-pager li {
-  border: 1px solid rgb(148 163 184 / 25%);
+  border: 1px solid rgb(143 166 200 / 25%);
   border-radius: 6px;
   margin-right: 4px;
-  background-color: rgb(15 23 42 / 55%) !important;
-  color: var(--color-text-secondary, #cbd5e1) !important;
+  background-color: rgb(19 35 60 / 55%) !important;
+  color: var(--color-text-secondary) !important;
   transition: all 0.15s;
 }
 
@@ -96,10 +96,10 @@
 
 .el-pagination .btn-prev,
 .el-pagination .btn-next {
-  border: 1px solid rgb(148 163 184 / 25%);
+  border: 1px solid rgb(143 166 200 / 25%);
   border-radius: 6px;
-  background-color: rgb(15 23 42 / 55%) !important;
-  color: var(--color-text-secondary, #cbd5e1) !important;
+  background-color: rgb(19 35 60 / 55%) !important;
+  color: var(--color-text-secondary) !important;
 }
 
 .el-pagination .btn-prev:hover,
@@ -115,21 +115,21 @@
 
 /* ---- 抽屉 Drawer ---- */
 .el-drawer {
-  background: linear-gradient(180deg, rgb(15 23 42 / 98%), rgb(11 17 32 / 98%)) !important;
+  background: linear-gradient(180deg, rgb(19 35 60 / 98%), rgb(11 21 38 / 98%)) !important;
   border-left: 1px solid rgb(0 216 255 / 25%) !important;
 }
 
 .el-drawer__header {
-  color: var(--color-text, #e2e8f0) !important;
+  color: var(--color-text) !important;
   font-weight: 600;
   letter-spacing: 0.5px;
   margin-bottom: 0 !important;
-  border-bottom: 1px solid rgb(148 163 184 / 15%);
+  border-bottom: 1px solid rgb(143 166 200 / 15%);
   padding-bottom: 14px !important;
 }
 
 .el-drawer__body {
-  color: var(--color-text-secondary, #cbd5e1) !important;
+  color: var(--color-text-secondary) !important;
 }
 
 .el-overlay {
@@ -144,10 +144,10 @@
   flex-direction: column;
   gap: 0;
   margin: 0;
-  border: 1px solid rgb(148 163 184 / 18%);
+  border: 1px solid rgb(143 166 200 / 18%);
   border-radius: var(--radius-md, 10px);
   overflow: hidden;
-  background: linear-gradient(180deg, rgb(15 23 42 / 55%), rgb(11 17 32 / 55%));
+  background: linear-gradient(180deg, rgb(19 35 60 / 55%), rgb(11 21 38 / 55%));
 }
 
 .detail-view__row {
@@ -157,7 +157,7 @@
   gap: 12px;
   min-height: 42px;
   padding: 0 14px;
-  border-bottom: 1px dashed rgb(148 163 184 / 12%);
+  border-bottom: 1px dashed rgb(143 166 200 / 12%);
   font-size: 13px;
 }
 
@@ -176,14 +176,14 @@
 
 .detail-view dd {
   margin: 0;
-  color: var(--color-text, #e2e8f0);
+  color: var(--color-text);
   text-align: right;
 }
 
 /* ---- 描述列表 Descriptions（保留，为兼容旧 el-descriptions 使用处） ----
    注意：不覆盖 EP 全局 --el-fill-* 变量（会影响所有 EP 组件背景导致全黑）。 */
 .el-descriptions {
-  color: var(--color-text-secondary, #cbd5e1) !important;
+  color: var(--color-text-secondary) !important;
 }
 
 .el-descriptions__body .el-descriptions__table td.el-descriptions__cell .el-descriptions__label {
@@ -191,16 +191,16 @@
 }
 
 .el-descriptions__body .el-descriptions__table td.el-descriptions__cell .el-descriptions__content {
-  color: var(--color-text, #e2e8f0) !important;
+  color: var(--color-text) !important;
 }
 
 /* ---- 消息提示 Message ---- */
 .el-message {
-  background-color: rgb(15 23 42 / 92%) !important;
-  border: 1px solid rgb(148 163 184 / 30%) !important;
+  background-color: rgb(19 35 60 / 92%) !important;
+  border: 1px solid rgb(143 166 200 / 30%) !important;
   border-radius: 8px !important;
   box-shadow: 0 8px 24px rgb(0 0 0 / 50%) !important;
-  color: var(--color-text, #e2e8f0) !important;
+  color: var(--color-text) !important;
 }
 
 .el-message--success .el-message__content {
@@ -208,11 +208,11 @@
 }
 
 .el-message--warning .el-message__content {
-  color: var(--color-warning, #fbbf24) !important;
+  color: var(--color-warning, #ffb020) !important;
 }
 
 .el-message--error .el-message__content {
-  color: var(--color-danger, #ef4444) !important;
+  color: var(--color-danger, #ff5a5a) !important;
 }
 
 /* ---- 关闭按钮 / 图标统一 ---- */
@@ -227,15 +227,15 @@
 /* ---- 输入框 Input ---- */
 .el-input__wrapper,
 .el-textarea__inner {
-  background-color: rgb(15 23 42 / 60%) !important;
-  box-shadow: 0 0 0 1px rgb(148 163 184 / 30%) inset !important;
+  background-color: rgb(19 35 60 / 60%) !important;
+  box-shadow: 0 0 0 1px rgb(143 166 200 / 30%) inset !important;
   border-radius: 6px !important;
   transition: box-shadow 0.15s !important;
 }
 
 .el-input__wrapper:hover,
 .el-textarea__inner:hover {
-  box-shadow: 0 0 0 1px rgb(148 163 184 / 50%) inset !important;
+  box-shadow: 0 0 0 1px rgb(143 166 200 / 50%) inset !important;
 }
 
 .el-input__wrapper.is-focus {
@@ -244,30 +244,31 @@
 
 .el-input__inner,
 .el-textarea__inner {
-  color: var(--color-text, #e2e8f0) !important;
+  color: var(--color-text) !important;
   caret-color: var(--color-accent) !important;
 }
 
 .el-input__inner::placeholder,
 .el-textarea__inner::placeholder {
-  color: rgb(148 163 184 / 55%) !important;
+  color: rgb(143 166 200 / 55%) !important;
 }
 
 /* ---- 表格 Table ---- */
 .el-table {
   --el-table-bg-color: transparent !important;
   --el-table-tr-bg-color: transparent !important;
-  --el-table-header-bg-color: rgb(15 23 42 / 55%) !important;
+  --el-table-header-bg-color: rgb(19 35 60 / 55%) !important;
   --el-table-row-hover-bg-color: rgb(0 216 255 / 6%) !important;
-  --el-table-border-color: rgb(148 163 184 / 15%) !important;
+  --el-table-border-color: rgb(143 166 200 / 15%) !important;
   --el-table-header-text-color: var(--color-text-muted, #94a3b8) !important;
-  --el-table-text-color: var(--color-text, #e2e8f0) !important;
+  --el-table-text-color: var(--color-text) !important;
+
   background-color: transparent !important;
-  color: var(--color-text, #e2e8f0) !important;
+  color: var(--color-text) !important;
 }
 
 .el-table th.el-table__cell {
-  background-color: rgb(15 23 42 / 55%) !important;
+  background-color: rgb(19 35 60 / 55%) !important;
 }
 
 .el-table tr,
@@ -276,11 +277,11 @@
 }
 
 .el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
-  background-color: rgb(15 23 42 / 25%) !important;
+  background-color: rgb(19 35 60 / 25%) !important;
 }
 
 .el-table .el-table__cell {
-  color: var(--color-text, #e2e8f0) !important;
+  color: var(--color-text) !important;
 }
 
 .el-table__empty-text {
@@ -290,14 +291,15 @@
 /* ---- 按钮 Button（统一深色玻璃） ---- */
 .el-button {
   --el-button-bg-color: rgb(30 41 59 / 90%) !important;
-  --el-button-border-color: rgb(148 163 184 / 30%) !important;
-  --el-button-text-color: var(--color-text, #e2e8f0) !important;
+  --el-button-border-color: rgb(143 166 200 / 30%) !important;
+  --el-button-text-color: var(--color-text) !important;
   --el-button-hover-bg-color: rgb(51 65 85 / 95%) !important;
   --el-button-hover-border-color: var(--color-accent) !important;
   --el-button-hover-text-color: var(--color-accent) !important;
   --el-button-active-bg-color: rgb(51 65 85 / 95%) !important;
   --el-button-active-border-color: var(--color-accent) !important;
   --el-button-active-text-color: var(--color-accent) !important;
+
   border-radius: 6px !important;
 }
 
@@ -312,15 +314,15 @@
 
 .el-button--danger {
   --el-button-bg-color: rgb(239 68 68 / 15%) !important;
-  --el-button-border-color: var(--color-danger, #ef4444) !important;
-  --el-button-text-color: var(--color-danger, #ef4444) !important;
+  --el-button-border-color: var(--color-danger, #ff5a5a) !important;
+  --el-button-text-color: var(--color-danger, #ff5a5a) !important;
   --el-button-hover-bg-color: rgb(239 68 68 / 25%) !important;
 }
 
 .el-button--warning {
   --el-button-bg-color: rgb(251 191 36 / 15%) !important;
-  --el-button-border-color: var(--color-warning, #fbbf24) !important;
-  --el-button-text-color: var(--color-warning, #fbbf24) !important;
+  --el-button-border-color: var(--color-warning, #ffb020) !important;
+  --el-button-text-color: var(--color-warning, #ffb020) !important;
 }
 
 .el-button.is-disabled {
@@ -335,20 +337,21 @@
 /* ---- 复选 Checkbox / 单选 Radio ---- */
 .el-checkbox,
 .el-radio {
-  --el-checkbox-text-color: var(--color-text-secondary, #cbd5e1);
-  --el-radio-text-color: var(--color-text-secondary, #cbd5e1);
-  color: var(--color-text-secondary, #cbd5e1) !important;
+  --el-checkbox-text-color: var(--color-text-secondary);
+  --el-radio-text-color: var(--color-text-secondary);
+
+  color: var(--color-text-secondary) !important;
 }
 
 .el-checkbox__label,
 .el-radio__label {
-  color: var(--color-text-secondary, #cbd5e1) !important;
+  color: var(--color-text-secondary) !important;
 }
 
 .el-checkbox__inner,
 .el-radio__inner {
-  background-color: rgb(15 23 42 / 60%) !important;
-  border-color: rgb(148 163 184 / 35%) !important;
+  background-color: rgb(19 35 60 / 60%) !important;
+  border-color: rgb(143 166 200 / 35%) !important;
 }
 
 .el-checkbox__input.is-checked .el-checkbox__inner,
@@ -363,20 +366,21 @@
 
 /* ---- 卡片 Card ---- */
 .el-card {
-  --el-card-bg-color: rgb(15 23 42 / 65%) !important;
-  --el-card-border-color: rgb(148 163 184 / 18%) !important;
+  --el-card-bg-color: rgb(19 35 60 / 65%) !important;
+  --el-card-border-color: rgb(143 166 200 / 18%) !important;
+
   border-radius: 10px !important;
-  background: linear-gradient(180deg, rgb(15 23 42 / 65%), rgb(11 17 32 / 65%)) !important;
+  background: linear-gradient(180deg, rgb(19 35 60 / 65%), rgb(11 21 38 / 65%)) !important;
 }
 
 .el-card__header {
-  color: var(--color-text, #e2e8f0) !important;
+  color: var(--color-text) !important;
   font-weight: 600;
-  border-bottom: 1px solid rgb(148 163 184 / 15%) !important;
+  border-bottom: 1px solid rgb(143 166 200 / 15%) !important;
 }
 
 .el-card__body {
-  color: var(--color-text-secondary, #cbd5e1) !important;
+  color: var(--color-text-secondary) !important;
 }
 
 /* ---- 表单 Form ---- */
@@ -386,27 +390,27 @@
 
 /* ---- 弹窗 Dialog ---- */
 .el-dialog {
-  background: linear-gradient(180deg, rgb(15 23 42 / 98%), rgb(11 17 32 / 98%)) !important;
+  background: linear-gradient(180deg, rgb(19 35 60 / 98%), rgb(11 21 38 / 98%)) !important;
   border: 1px solid rgb(0 216 255 / 25%) !important;
   border-radius: 10px !important;
 }
 
 .el-dialog__title {
-  color: var(--color-text, #e2e8f0) !important;
+  color: var(--color-text) !important;
 }
 
 .el-dialog__body {
-  color: var(--color-text-secondary, #cbd5e1) !important;
+  color: var(--color-text-secondary) !important;
 }
 
 .el-form-item__label {
-  color: var(--color-text-secondary, #cbd5e1) !important;
+  color: var(--color-text-secondary) !important;
 }
 
 .el-tag {
-  --el-tag-bg-color: rgb(15 23 42 / 55%) !important;
-  --el-tag-border-color: rgb(148 163 184 / 30%) !important;
-  --el-tag-text-color: var(--color-text-secondary, #cbd5e1) !important;
+  --el-tag-bg-color: rgb(19 35 60 / 55%) !important;
+  --el-tag-border-color: rgb(143 166 200 / 30%) !important;
+  --el-tag-text-color: var(--color-text-secondary) !important;
 }
 
 .el-tag--success {
@@ -418,22 +422,22 @@
 .el-tag--warning {
   --el-tag-bg-color: rgb(251 191 36 / 12%) !important;
   --el-tag-border-color: rgb(251 191 36 / 40%) !important;
-  --el-tag-text-color: var(--color-warning, #fbbf24) !important;
+  --el-tag-text-color: var(--color-warning, #ffb020) !important;
 }
 
 .el-tag--danger {
   --el-tag-bg-color: rgb(239 68 68 / 12%) !important;
   --el-tag-border-color: rgb(239 68 68 / 40%) !important;
-  --el-tag-text-color: var(--color-danger, #ef4444) !important;
+  --el-tag-text-color: var(--color-danger, #ff5a5a) !important;
 }
 
 .el-tag--info {
-  --el-tag-bg-color: rgb(148 163 184 / 12%) !important;
-  --el-tag-border-color: rgb(148 163 184 / 40%) !important;
+  --el-tag-bg-color: rgb(143 166 200 / 12%) !important;
+  --el-tag-border-color: rgb(143 166 200 / 40%) !important;
   --el-tag-text-color: var(--color-text-muted, #94a3b8) !important;
 }
 
 /* ---- 表格内描述：去除描边宽度冗余 ---- */
 .el-descriptions__body .el-descriptions__table .el-descriptions__cell {
-  border-color: rgb(148 163 184 / 20%) !important;
+  border-color: rgb(143 166 200 / 20%) !important;
 }
