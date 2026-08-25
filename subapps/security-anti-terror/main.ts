@@ -1,10 +1,15 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import 'element-plus/theme-chalk/base.css';
+import '@/styles/element-dark.css';
 import View from '@/views/security-anti-terror/index.vue';
 // 设计 token 由主壳经 wujie 沙箱注入（src/shell/wujieTokens.ts），子应用无需再打包 tokens.css。
 import '@/styles/global.css';
+import { installWujieDocumentShim } from '@/shell/wujieDocumentShim';
 import http from '@/services/http';
+
+// 在 wujie 沙箱内为 element-plus 焦点陷阱兜底 document.activeElement
+installWujieDocumentShim();
 import { installDevMock } from '@/mocks/devMock';
 import { useAuthStore } from '@/stores/auth';
 import { createSubappRouter } from '@/shell/subappRouter';
