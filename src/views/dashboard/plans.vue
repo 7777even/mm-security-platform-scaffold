@@ -32,7 +32,7 @@ const LEVELS: Array<{ value: PlanLevel; label: string }> = [
   { value: '三级', label: '三级' },
 ];
 
-const LEVEL_TONE: Record<PlanLevel, string> = {
+const LEVEL_TONE: Record<PlanLevel, 'success' | 'warning' | 'danger'> = {
   一级: 'success',
   二级: 'warning',
   三级: 'danger',
@@ -48,7 +48,15 @@ const filtered = computed(() => {
 });
 
 function openCreate(): void {
-  editing.value = { id: '', name: '', category: '专项预案', level: '二级', owner: '', summary: '' };
+  editing.value = {
+    id: '',
+    name: '',
+    category: '专项预案',
+    level: '二级',
+    owner: '',
+    summary: '',
+    updatedAt: '',
+  };
 }
 
 function openEdit(p: EmergencyPlan): void {

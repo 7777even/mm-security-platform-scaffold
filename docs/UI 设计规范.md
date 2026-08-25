@@ -1,431 +1,244 @@
-# UI 设计规范（自《安全管控平台设计说明》v1 提取）
+# 前端 UI 设计规格书（安全管控指挥系统）
 
-> 来源：`docs/安全管控平台设计说明.docx` §5.3 总体界面设计
-> 本文件是脚手架前端对齐 UI 规范的唯一权威源，组件/页面开发与 token 命名以本文件为准。
-> 对应原始图：图 5-1 色彩规范、图 5-2 图标规范、图 5-3 字体与字号规范、图 5-4 界面层次结构、
-> 图 5-5 顶部导航、图 5-6 信息面板容器、图 5-7 统计与告警卡片、图 5-8 地图工具与标注、
-> 图 5-9 列表与消息栏、图 5-10 消防监测、图 5-11 出入管理、图 5-12 应急救援、图 5-13 安全生产告警、
-> 图 5-14 视频监控、图 5-15 应急调度、图 5-16 区域人员统计、图 5-17 重大危险源、图 5-18 视频墙、
-> 图 5-19 事件调度、图 5-20 防台防汛、图 5-22 卫星云图。
+## 1. 设计 Token（精确值）
 
----
+> 表格中"大屏 / 后台 / 移动"三列分别对应 `:root` / `[data-theme='mgmt']` / `[data-theme='mobile']` 的取值。代码中**只引用 token 名**，不写具体值。
 
-## 1. 色彩规范（§5.3 / 图 5-1）
+### 1.1 语义色板
 
-### 1.1 核心色板
+| token                 | 大屏      | 后台      | 移动      | 用途                           |
+| --------------------- | --------- | --------- | --------- | ------------------------------ |
+| `--color-bg`          | `#0b1526` | `#eff5f9` | `#f4f7fa` | 页面背景                       |
+| `--color-panel`       | `#13233c` | `#ffffff` | `#ffffff` | 卡片 / 面板                    |
+| `--color-panel-soft`  | `#1a2f4e` | `#e8f3ff` | `#e8f2ff` | 面板浅层 / 选中浅底            |
+| `--color-border`      | `#2a4a78` | `#ddebf0` | `#e6edf4` | 分割线 / 边框                  |
+| `--color-accent`      | `#00d8ff` | `#0b69d7` | `#1677ff` | 主强调（选中 / 链接 / 主操作） |
+| `--color-accent-2`    | `#2e7cf6` | `#0b69d7` | `#1677ff` | 次强调（按钮主色）             |
+| `--color-success`     | `#2ee6a8` | `#22c55e` | `#22c55e` | 成功 / 在线 / 已闭环           |
+| `--color-warning`     | `#ffb020` | `#fa8c16` | `#fa8c16` | 警示 / 待处置 / 已确认         |
+| `--color-danger`      | `#ff5a5a` | `#f5222d` | `#f5222d` | 危险 / 火灾 / 待处理           |
+| `--color-alarm-1`     | `#f46767` | `#f5222d` | `#f5222d` | 报警等级一                     |
+| `--color-alarm-2`     | `#f6882e` | `#fa8c16` | `#fa8c16` | 报警等级二                     |
+| `--color-alarm-3`     | `#f6ba2e` | `#fa8c16` | `#fa8c16` | 报警等级三                     |
+| `--color-alarm-4`     | `#2e7cf6` | `#0b69d7` | `#1677ff` | 报警等级四                     |
+| `--color-text-strong` | `#ffffff` | `#1a3550` | `#183b5b` | 标题文字                       |
+| `--color-text`        | `#eaf4ff` | `#1a3550` | `#1e3a52` | 正文文字                       |
+| `--color-text-muted`  | `#8fa6c8` | `#94a4b1` | `#8aa0b3` | 次要 / 辅助文字                |
 
-| 角色     | Token                 | Hex       | 用途                         |
-| -------- | --------------------- | --------- | ---------------------------- |
-| 主背景   | `--color-bg`          | `#0B1526` | 界面最深、底图底黑           |
-| 面板背景 | `--color-panel`       | `#13233C` | 信息容器、半透深蓝           |
-| 面板浅色 | `--color-panel-soft`  | `#1A2F4E` | 卡片内层、衬页底色           |
-| 主强调   | `--color-accent`      | `#00D8FF` | 选中态、链接、点光（科技青） |
-| 次强调   | `--color-accent-2`    | `#2E7CF6` | 按键主、致能主色             |
-| 正文主色 | `--color-text-strong` | `#FFFFFF` | 标题正文白文字               |
-| 辅助标题 | `--color-text`        | `#EAF4FF` | 标题/正文默认（规则 6）      |
-| 辅助文字 | `--color-text-muted`  | `#8FA6C8` | 次级说明、动态着色           |
-| 边框线   | `--color-border`      | `#2A4A78` | 描边、分割线（规则 4）       |
+> 后台 / 移动端报警等级简化为"浅底同色字标签"，色阶仍对应上表 `--color-alarm-*`；大屏保留完整色阶供告警卡左边框使用。
 
-### 1.2 语义色（规则 3：绿/橙/红）
+### 1.2 大屏专属（玻璃 / 渐变 / 光带）
 
-| 角色        | Token             | Hex       |
-| ----------- | ----------------- | --------- |
-| 成功 / 正常 | `--color-success` | `#2EE6A8` |
-| 警示 / 预警 | `--color-warning` | `#FFB020` |
-| 危险 / 报警 | `--color-danger`  | `#FF5A5A` |
+| token                  | 值                                       | 用途              |
+| ---------------------- | ---------------------------------------- | ----------------- |
+| `--glass-bg`           | `rgb(19 35 60 / 62%)`                    | 玻璃面板底        |
+| `--glass-border`       | `rgb(42 74 120 / 60%)`                   | 玻璃面板边        |
+| `--glass-blur`         | `12px`                                   | 背景模糊          |
+| `--gradient-tech-blue` | `linear-gradient(90deg,#00d8ff,#2e7cf6)` | 主按钮 / 科技条   |
+| `--gradient-risk`      | `linear-gradient(90deg,#ff5a5a,#f6882e)` | 危险按钮 / 风险条 |
+| `--panel-title-glow`   | `0 0 8px var(--color-accent-glow)`       | 面板标题发光      |
+| `--color-accent-glow`  | `rgb(0 216 255 / 35%)`                   | 发光色            |
 
-### 1.3 预警色分级（图 5-1 底部）
+> 以上玻璃 / 发光 / 渐变**仅限大屏端**；后台 / 移动端禁止复用。
 
-| 等级 | Token             | Hex       | 场景                   |
-| ---- | ----------------- | --------- | ---------------------- |
-| 一级 | `--color-alarm-1` | `#F46767` | 火灾监测一级（最高）   |
-| 二级 | `--color-alarm-2` | `#F6882E` | 火灾监测二级           |
-| 三级 | `--color-alarm-3` | `#F6BA2E` | 火灾监测三级           |
-| 四级 | `--color-alarm-4` | `#2E7CF6` | 火灾监测四级（兜底蓝） |
+### 1.3 字号阶梯（同屏档位：大屏 ≥7 / 后台 ≤4 / 移动 ≤4）
 
-> 业务侧 `AlarmLevel = 1..4`（1=最高）；`level=1`→`alarm-1`，`level=4`→`alarm-4`。
+| token           | 大屏                       | 后台                        | 移动                      | 角色              |
+| --------------- | -------------------------- | --------------------------- | ------------------------- | ----------------- |
+| 显示 / 大标题   | `--font-size-display:38px` | `--mgmt-fz-page-title:28px` | `--mb-fz-hero:28px`       | 系统大标题        |
+| 页面主标题      | `--font-size-h1:22px`      | `--mgmt-fz-section:22px`    | `--mb-fz-page:20px`       | 页标题            |
+| 区块标题        | `--font-size-h2:16px`      | —                           | `--mb-fz-section:17px`    | 区块 / 面板标题   |
+| 关键数字        | `--font-size-keynum:28px`  | —                           | —                         | 顶部时间 / 指标数 |
+| 数据指标        | `--font-size-metric:24px`  | —                           | —                         | StatCard 值       |
+| 表头 / 侧栏一级 | —                          | `--mgmt-fz-header:16px`     | —                         | 表头              |
+| 正文            | `--font-size-body:14px`    | `--mgmt-fz-body:14px`       | `--mb-fz-form-label:15px` | 正文 / 表单标签   |
+| 辅助            | `--font-size-helper:12px`  | `--mgmt-fz-caption:12px`    | `--mb-fz-tip:12px`        | 说明 / 提示       |
 
-### 1.4 渐变
+### 1.4 间距 / 圆角 / 布局
 
-- 科技深蓝：`var(--gradient-tech-blue)` — 标题光带、致能按钮、提示边框
-- 风险警示：`var(--gradient-risk)` — 风险警示
-- 背景渐变：`var(--gradient-bg)` — body 兜底
-- 面板顶部亮线：`linear-gradient(90deg, transparent, accent, transparent)` — 1px
-- 面板底部光带：同上，2px，opacity 0.55
+| token                 | 大屏              | 后台                              | 移动                                           | 用途     |
+| --------------------- | ----------------- | --------------------------------- | ---------------------------------------------- | -------- |
+| `--space-xs/sm/md/lg` | `4/8/16/24px`     | 同左                              | 同左                                           | 间距档   |
+| `--radius-sm/md/lg`   | `6/10/16px`       | `--mgmt-radius-sm/md/lg:4/6/10px` | `--mb-radius-card:16px` `--mb-radius-ctrl:8px` | 圆角     |
+| `--layout-header-h`   | `64px`            | `--mgmt-header-h:56px`            | `--mb-header-h:48px`                           | 顶栏高   |
+| `--layout-aside-w`    | `419px`           | `--mgmt-aside-w:220px`            | —                                              | 侧栏宽   |
+| `--layout-bottom-h`   | `56px`            | —                                 | `--mb-bottom-bar-h:56px`                       | 底部栏高 |
+| `--layout-page-pad`   | `var(--space-md)` | `--mgmt-content-pad:24px`         | `--mb-pad-x:16px`                              | 页面边距 |
 
-### 1.5 色彩使用原则（规则 1–7）
+### 1.5 Z-index 五层（禁止其他层级）
 
-1. 深色为底（bg/panel/soft 三层）；2. 青蓝强调；3. 语义分级；4. 克制用色；5. 告警优先；
-2. 图层可读；7. 消防一级。
+| token         | 值   | 层级                |
+| ------------- | ---- | ------------------- |
+| `--z-base`    | `0`  | L0 地图底图         |
+| `--z-marker`  | `5`  | L1 地图标注         |
+| `--z-chrome`  | `10` | L2 顶 / 侧 / 消息栏 |
+| `--z-overlay` | `30` | L3 Drawer / Dialog  |
+| `--z-toast`   | `40` | L4 Toast / 紧急浮层 |
 
----
+### 1.6 控件阈值（标准 → 适老）
 
-## 2. 字体与字号规范（§5.3 / 图 5-3）
+| 控件          | 大屏                | 后台                                    | 移动                         |
+| ------------- | ------------------- | --------------------------------------- | ---------------------------- |
+| 主按钮高      | `--btn-h-md:34px`   | `--mgmt-btn-h:32px`→适老`40px`          | `--mb-btn-h:44px`→适老`48px` |
+| 筛选 / 输入高 | —                   | `--mgmt-ctrl-h:40px`→适老`48px`         | —                            |
+| 表格行高      | `--list-row-h:56px` | `--mgmt-table-row-h:48px`→适老`56px`    | `--mb-row-h:48px`→适老`56px` |
+| 侧栏项高      | —                   | `--mgmt-sidebar-item-h:40px`→适老`48px` | —                            |
+| 地图工具栏宽  | `320–420px`         | —                                       | —                            |
 
-| 角色                    | Token                    | Size / LH | 字重     | 字体          |
-| ----------------------- | ------------------------ | --------- | -------- | ------------- |
-| 系统大标题              | `--font-size-display`    | 38 / 400  | Regular  | 思源黑体      |
-| 顶部时间 / 关键大屏数字 | `--font-size-keynum`     | 28 / 36   | Bold     | Poppins       |
-| 用户 / 高亮数据         | `--font-size-highlight`  | 24        | SemiBold | Poppins       |
-| 页面主标题              | `--font-size-h1`         | 22        | Bold     | 思源黑体      |
-| 面板标题                | `--font-size-h2`         | 16        | Bold     | 思源黑体      |
-| 告警标题                | `--font-size-alarm`      | 14        | Regular  | 思源黑体      |
-| 正文内容                | `--font-size-body`       | 14        | Regular  | 思源黑体      |
-| 辅助说明                | `--font-size-helper`     | 12        | Regular  | 思源黑体      |
-| 业务正文                | `--font-size-biz`        | 12        | Regular  | 思源黑体      |
-| 数据指标数字            | `--font-size-metric`     | 24        | Bold     | Poppins / DIN |
-| 统计标签                | `--font-size-stat-label` | 13        | Regular  | 思源黑体      |
-| 时间显示                | `--font-size-time`       | 18        | Regular  | Poppins       |
-| 日期显示                | `--font-size-date`       | 11        | Regular  | 思源黑体      |
+### 1.7 户外高对比阈值（移动端，相对白底）
 
-字体栈：`var(--font-family-zh)` / `var(--font-family-num)` / `var(--font-family-base)`。
+| 角色 | token                  | 推荐色    | 对比目标 |
+| ---- | ---------------------- | --------- | -------- |
+| 标题 | `--text-outdoor-title` | `#0b1f33` | `≥7:1`   |
+| 正文 | `--text-outdoor-body`  | `#1e3a52` | `≥4.5:1` |
+| 辅文 | `--text-outdoor-muted` | `#3d5a73` | `≥3:1`   |
 
----
+### 1.8 状态标签类（后台 / 移动端浅底同色深字）
 
-## 3. 间距与圆角
-
-| Token         | 值   | 用途          |
-| ------------- | ---- | ------------- |
-| `--space-xs`  | 4px  | 微间距        |
-| `--space-sm`  | 8px  | 组件内联      |
-| `--space-md`  | 16px | 容器内边距    |
-| `--space-lg`  | 24px | 容器外边距    |
-| `--radius-sm` | 6px  | 按钮 / 小卡片 |
-| `--radius-md` | 10px | 信息面板      |
-| `--radius-lg` | 16px | 大面板 / 弹窗 |
-
----
-
-## 4. 玻璃面板（§5.3 / 图 5-6）
-
-- 背景：`rgba(19, 35, 60, 0.62)` = `var(--glass-bg)`
-- 描边：`1px solid var(--color-border)` = `var(--glass-border)` 派生
-- 圆角：`var(--radius-md)` = 10px
-- 模糊：`backdrop-filter: blur(var(--glass-blur))` blur = 12px
-- 顶部亮线：1px 青色光带；底部光带：2px 同色 0.55 不透明
-- 阴影：`inset 0 1px 0 rgba(255,255,255,0.06), inset 0 0 24px rgba(0,216,255,0.04)`
-- hover：边框向 accent 偏移，发光 0 0 16px rgba(0,216,255,0.12)
+| 类             | 背景                              | 前景                              | 对应状态               |
+| -------------- | --------------------------------- | --------------------------------- | ---------------------- |
+| `.tag-success` | `var(--tag-success-bg)` `#ebf9ef` | `var(--tag-success-fg)` `#22c55e` | 成功 / 在线 / 已闭环   |
+| `.tag-warning` | `var(--tag-warning-bg)` `#fff7ec` | `var(--tag-warning-fg)` `#fa8c16` | 警示 / 待处置 / 已确认 |
+| `.tag-danger`  | `var(--tag-danger-bg)` `#fdecec`  | `var(--tag-danger-fg)` `#f5222d`  | 危险 / 故障 / 待处理   |
+| `.tag-info`    | `var(--tag-info-bg)` `#e8f3ff`    | `var(--tag-info-fg)` `#0b69d7`    | 已派单 / 注意          |
 
 ---
 
-## 5. 界面层次结构（§5.3 / 图 5-4）
+## 2. 组件规格（生成契约）
 
-### 5.1 五层技术架构
+> 每个组件给出：适用端、变体、引用 token、状态、MUST / MUST NOT。生成代码时按此实现。
 
-```
-L0 · Cesium 三维地图底图        (z-index: 0)
-L1 · 地图标注/标点/路径          (z-index: 5)
-L2 · 顶部导航栏 + 侧栏 + 列表    (z-index: 10)
-L3 · 浮层：Drawer / Dialog / 轨迹回放 (z-index: 30)
-L4 · Toast / Modal              (z-index: 40)
-```
+### 2.1 Button 按钮
 
-### 5.2 界面布局令牌（页面骨架 §5.4 / 图 5-5）
+- **适用端**：全部
+- **变体**：`primary`（实色主） / `secondary`（白底描边） / `ghost`（浅底，表内主操作） / `danger`（危险）
+- **Token**：`background:var(--btn-bg-primary)`（大屏渐变）或 `var(--color-accent)`（后台 / 移动实色）；`color:var(--btn-color-primary)`；`height:var(--btn-h-md)`；`border-radius:var(--btn-radius)`（移动端 `--mb-radius-btn:999px` 胶囊）；`border:1px solid var(--btn-border)`
+- **状态**：hover → 叠加 `var(--color-accent-soft)` 浅底；disabled → `opacity:.5` 且 `cursor:not-allowed`
+- **MUST**：移动端主按钮为胶囊形 + 实色蓝白字；后台主按钮实色 `#0b69d7` 白字
+- **MUST NOT**：后台 / 移动端使用玻璃质感或发光；自写 `#00d8ff` 等硬编码色
 
-| 令牌                | 值                | 用途                           |
-| ------------------- | ----------------- | ------------------------------ |
-| `--layout-header-h` | `64px`            | 顶部导航栏（图 5-5 L2）        |
-| `--layout-aside-w`  | `419px`           | 左侧/右侧侧栏 PanelCard × N    |
-| `--layout-bottom-h` | `56px`            | 底部消息栏（系统消息实时播报） |
-| `--layout-page-pad` | `var(--space-md)` | 主体内容外边距                 |
-| `--z-base`          | `0`               | 地图底图                       |
-| `--z-marker`        | `5`               | 地图标注                       |
-| `--z-chrome`        | `10`              | 顶部/侧栏/消息栏               |
-| `--z-overlay`       | `30`              | Drawer / Dialog                |
-| `--z-toast`         | `40`              | Toast / 紧急浮层               |
+### 2.2 PanelCard 面板（大屏）
 
-### 5.3 设计要点
+- **适用端**：大屏
+- **Token**：`background:var(--glass-bg)`；`backdrop-filter:blur(var(--glass-blur))`；`border:1px solid var(--glass-border)`；`border-radius:var(--panel-radius)`；标题行高 `var(--panel-head-h)`；标题色 `var(--panel-title-color)` + `text-shadow:var(--panel-title-glow)`
+- **MUST**：标题白色发光；面板玻璃质感
+- **MUST NOT**：后台 / 移动端复用此玻璃样式
 
-- 底图 Cesium Z-index 0；页面在其上并行渲染地图标注
-- 全局控制（顶部导航）在最外层；专题业务沿 Y 轴展开
-- 详情以抽屉 / 弹窗 / 视频浮层呈现；打开主面板，让位，不遮挡左面板
+### 2.3 StatCard 统计卡（大屏）
 
-### 5.4 页面骨架映射（与 dashboard / fire-alarm / industrial-video 等五大模块对齐）
+- **适用端**：大屏
+- **Token**：高 `var(--stat-card-h:96px)`；图标底 `var(--stat-card-icon-bg)`；值 `font-size:var(--stat-value-size:28px)` + `color:var(--stat-value-color)`（=accent）；标签 `var(--stat-label-size:12px)` + `var(--stat-label-color)`
+- **MUST**：数值用主强调色，非白色
+- **MUST NOT**：在卡片内再叠一套大数字破坏字号档位
 
-```
-- 地图底图    SharedCesiumMap 全屏铺底，业务路由切换不销毁实例
-- 左侧栏      救援力量 / 特殊作业 / 监测报警 / 设备详情 / 出入统计 / 联动巡查
-- 右侧栏      消防设施总览 / 消防安全告警 / 重大风险管控 / 重要视频巡查 / 详情抽屉
-- 地图浮层    队伍 / 设备 / 人员 / 车辆 / 作业
-- 顶栏全局    六大模块导航共用；切换只切专题，不换底图
-- 六大模块    应急指挥及演练 / 极端天气风险应急 / 消防报警 / 治安防恐 / 工业电视视频墙 / 运维监测
-```
+### 2.4 AlarmCard 告警卡（大屏）
 
----
+- **适用端**：大屏
+- **Token**：左色条 `border-left:3px solid var(--alarm-card-border-l{1..4})`（按 §3.1 等级）；背景 `var(--alarm-card-bg)`（玻璃）
+- **MUST**：用等级色阶左边框，玻璃底
+- **MUST NOT**：纯色块铺满整卡
 
-## 6. 图标规范（§5.3 / 图 5-2）
+### 2.5 AlarmListItem 报警列表项（大屏）
 
-### 6.1 分类与角色
+- **适用端**：大屏
+- **Token**：缩略图 `var(--alarm-list-thumb-w:96px)×(--alarm-list-thumb-h:72px)`；状态点 `var(--alarm-list-status-{active/acked/dispatched/closed})` 对应 §3.2；分隔 `var(--alarm-list-divider)`；行高 `var(--list-row-h:56px)`
+- **MUST**：状态用映射表色，禁文字颜色自造
 
-| 分组         | 用途                                                                                  | 渲染                                      | 来源                                       |
-| ------------ | ------------------------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------ |
-| 业务导航图标 | 顶部导航 64px×88px 尺寸体系                                                           | Element Plus icons + 业务 SVG             | `@/components/icons/`，按 `meta.icon` 引用 |
-| 各类辅助图标 | 消防 / 安防 / 应急 / 工业电视 业务对象                                                | Element Plus icons（色彩按规则 2 取青蓝） | `<el-icon>` 内联                           |
-| 业务类图标   | 电话 / 视频 / 人员 / 部门 / 消防箱 / 灭火器                                           | 24×24                                     | `<el-icon>`                                |
-| 其他图标     | 视频监控 / 应急小组 / 救援队 / 数据人员 / 教官装备 / 救援车辆                         | 24×24                                     | `<el-icon>`                                |
-| 物资类图标   | 救援队伍 / 应急机构 / 应急物资 / 避难场所 / 应急专家 / 应急车辆 / 医疗机构 / 消防设施 | 24×24，数字 + 标签                        | `<el-icon>`                                |
+### 2.6 数据表格 / 筛选（后台）
 
-### 6.2 资源类图标（图标 + 大数字 + 中文标签）
+- **筛选区**：控件高 `var(--mgmt-ctrl-h:40px)`；主查询 + 次重置成组；标准密度字号 `var(--mgmt-fz-filter:13px)`
+- **表格**：表头浅主色底 `var(--color-accent-soft)` + 字 `var(--text-title-mgmt)`；行白底 `var(--card-mgmt)`；分隔 `var(--border-mgmt)`；行高 `var(--mgmt-table-row-h)`；状态列用 `.tag-*` 浅底标签
+- **操作列**：主操作为 `.tag-info` 风浅底小按钮，弱操作为文字链接
+- **MUST NOT**：状态列用纯色字或大屏发光标注；行高叠加破坏 ≤4 档字号
 
-设计稿图 5-2 物资类采用「icon + 大数字 + 文字」三段式：
+### 2.7 步骤条 / 表单（后台）
 
-| Token                 | 值                        |
-| --------------------- | ------------------------- |
-| `--stat-value-size`   | `28px`                    |
-| `--stat-value-weight` | `700`                     |
-| `--stat-value-color`  | `var(--color-accent)`     |
-| `--stat-label-size`   | `12px`                    |
-| `--stat-label-color`  | `var(--color-text-muted)` |
+- **步骤条**：当前步实心主色、已到描边主色、未到灰；详情审核轨迹用垂直时间轴，节点卡浅底与节点色一致
+- **表单**：左色条 + 分区标题；提示条浅橙底 `var(--warning-mgmt-soft)`；内嵌"编辑"主色 + "删除"危险红链接
+- **MUST NOT**：步骤条用大屏发光
 
-### 6.3 图标尺寸
+### 2.8 弹层 Drawer / Dialog
 
-| Token        | 值     | 用途         |
-| ------------ | ------ | ------------ |
-| `--icon-xs`  | `12px` | 行内/状态点  |
-| `--icon-sm`  | `16px` | 面板标题     |
-| `--icon-md`  | `18px` | 顶部导航     |
-| `--icon-lg`  | `24px` | 卡片图标     |
-| `--icon-xl`  | `32px` | 资源类大图标 |
-| `--icon-xxl` | `48px` | 业务专属图标 |
+- **大屏**：`z-index:var(--z-overlay)`；玻璃底 `var(--map-tool-bg)`
+- **后台 / 移动**：白底圆角；遮罩 `rgba(0,0,0,.45)`；可叠二级确认
+- **MUST NOT**：后台 / 移动端照搬大屏发光抽屉边框；移动端用玻璃
+
+### 2.9 移动端专用
+
+- **底部标签栏**：4 入口（首页 / 任务 / 消息 / 我的）；选中 `var(--primary-mobile)` 图标 + 文字，未选中 `var(--text-muted-mobile)`；高 `var(--mb-bottom-bar-h)`
+- **列表**：行高 `var(--mb-row-h)`；卡片间距 `var(--mb-card-gap)`；分隔弱依赖 `var(--border-mobile)`
+- **表单**：标签 `var(--text-title-mobile)`；主按钮胶囊实色蓝白字 `height:var(--mb-btn-h)`；占位符不得替代必填说明
+- **安全区**：顶 / 底 / 主操作条预留 `env(safe-area-inset-*)`，用 `var(--mb-bottom-safe)`
+- **MUST NOT**：内页用沉浸头图；底栏选中态用次要灰；大面积铺主色
 
 ---
 
-## 7. 顶部导航栏（§5.3 / 图 5-5）
+## 3. 状态与等级映射（枚举，复制即用）
 
-### 7.1 组件说明
+```ts
+// 报警等级（大屏色阶；后台/移动端简化为浅底标签）
+export type AlarmLevel = 1 | 2 | 3 | 4;
+export const ALARM_LEVEL_COLOR: Record<AlarmLevel, string> = {
+  1: 'var(--color-alarm-1)',
+  2: 'var(--color-alarm-2)',
+  3: 'var(--color-alarm-3)',
+  4: 'var(--color-alarm-4)',
+};
 
-- 高度：`64px` = `var(--layout-header-h)`
-- 背景：`rgba(11,21,38,0.88)` — 深色半透明 + blur 12px
-- 底部 1px 青色光带：`linear-gradient(90deg, transparent, rgb(0,216,255/55%), transparent)`
-- 导航间距统一：一级菜单胶囊式，6×18 padding，20px 圆角
-- 选中态：文字 `#00D8FF` + `accent-soft` 背景 + `glass-border` 描边 + `0 0 12px rgb(0,216,255/15%)` 外光
-- 导航项图标：18×18，fill=currentColor 跟随文字色
-- 右侧链接统一：选中文案 `EAF4FF`，图标青色色变
-- 右侧顶部时间（Poppins Bold）：天气 + 时间 + 用户信息
+// 报警状态
+export type AlarmStatus = 'ACTIVE' | 'ACKED' | 'DISPATCHED' | 'CLOSED';
+export const ALARM_STATUS_META: Record<
+  AlarmStatus,
+  { label: string; color: string; tagClass: string }
+> = {
+  ACTIVE: { label: '待处理', color: 'var(--color-danger)', tagClass: 'tag-danger' },
+  ACKED: { label: '已确认', color: 'var(--color-warning)', tagClass: 'tag-warning' },
+  DISPATCHED: { label: '已派单', color: 'var(--color-accent-2)', tagClass: 'tag-info' },
+  CLOSED: { label: '已闭环', color: 'var(--color-success)', tagClass: 'tag-success' },
+};
 
----
+// 设备状态
+export type DeviceStatus = 'ONLINE' | 'OFFLINE' | 'FAULT';
+export const DEVICE_STATUS_COLOR: Record<DeviceStatus, string> = {
+  ONLINE: 'var(--color-success)',
+  OFFLINE: 'var(--color-text-muted)',
+  FAULT: 'var(--color-danger)',
+};
 
-## 8. 信息面板容器（§5.3 / 图 5-6）
-
-### 8.1 组件说明
-
-- 圆角 8–12px（深色半透明）；1px `--color-border` 描边；顶部亮线
-- 标题区：43px；内边距自适应
-
-### 8.2 面板 CSS 变量
-
-| Token                 | 值                                 |
-| --------------------- | ---------------------------------- |
-| `--panel-radius`      | `var(--radius-md)` 10px            |
-| `--panel-head-h`      | `43px`                             |
-| `--panel-title-color` | `var(--color-text)`                |
-| `--panel-title-glow`  | `0 0 8px var(--color-accent-glow)` |
-| `--panel-more-color`  | `var(--color-text-muted)`          |
-
-### 8.3 统计图区配色（设计稿右侧大图卡片）
-
-```
-折线 1 --color-success     #2EE6A8
-折线 2 --color-accent-2    #2E7CF6
-折线 3 --color-warning     #FFB020
-折线 4 --color-alarm-4     #2E7CF6
-折线 5 --color-accent      #00D8FF
-面积   --color-success → accent 双色渐变
+// 风险区地图填充（大屏）
+export const RISK_FILL: Record<string, string> = {
+  high: 'rgba(255,90,90,0.22)',
+  warning: 'rgba(246,186,46,0.20)',
+  notice: 'rgba(46,124,246,0.18)',
+  normal: 'rgba(143,166,200,0.14)',
+};
 ```
 
----
-
-## 9. 统计与告警卡片（§5.3 / 图 5-7）
-
-### 9.1 统计卡片 Stat Card
-
-- 卡片圆角 `8px`；内容紧凑
-- 指标名称（大字号）；24–28px 简洁强调；用于核心指标的视觉抓取
-- 数值：`28px` Poppins Bold + `--color-accent` 强调色
-
-| Token                    | 值                    |
-| ------------------------ | --------------------- |
-| `--stat-card-radius`     | `8px`                 |
-| `--stat-card-icon-bg`    | `rgb(0,216,255/8%)`   |
-| `--stat-card-gap`        | `var(--space-sm)` 8px |
-| `--stat-card-h`          | `96px`                |
-| `--stat-card-icon-size`  | `48px`                |
-| `--stat-card-text-size`  | `16px`                |
-| `--stat-card-value-size` | `28px`                |
-
-### 9.2 告警卡片 Alarm Card
-
-- 告警类型图标 + 标题 + 时间 + 关键描述
-- 各报警级别色边 + 紧急程度
-
-| Token                    | 值                     |
-| ------------------------ | ---------------------- |
-| `--alarm-card-border-l1` | `var(--color-alarm-1)` |
-| `--alarm-card-border-l2` | `var(--color-alarm-2)` |
-| `--alarm-card-border-l3` | `var(--color-alarm-3)` |
-| `--alarm-card-border-l4` | `var(--color-alarm-4)` |
-
-### 9.3 按钮组件
-
-- 主按钮：`var(--gradient-tech-blue)` 渐变背景 + 白字
-- 次按钮：透明 + accent 描边
-- 危险按钮：`var(--gradient-risk)` 渐变背景
-- 禁用 / 默认按钮：深色 + muted
-
-| Token          | 值                     |
-| -------------- | ---------------------- |
-| `--btn-radius` | `var(--radius-sm)` 6px |
-| `--btn-h-sm`   | `28px`                 |
-| `--btn-h-md`   | `34px`                 |
-| `--btn-h-lg`   | `40px`                 |
-| `--btn-pad-x`  | `16px`                 |
+> 标签类样式（`.tag-success/-warning/-danger/-info`）背景 / 前景取自 §1.8；大屏直接用语义色。
 
 ---
 
-## 10. 地图工具与标注（§5.3 / 图 5-8）
+## 4. 硬性约束（MUST / MUST NOT，生成时逐项校验）
 
-### 10.1 工具栏
-
-- 工具栏宽度 320–420px
-- 标签方向指示 + 背景图片叠加
-- 报警 / 事件 / 轨迹 / 演播 / 人员分类实现
-- 鼠标曲面追踪 → 标注 → 控件
-
-| Token            | 值                |
-| ---------------- | ----------------- |
-| `--map-tool-w`   | `320px` ~ `420px` |
-| `--map-tool-gap` | `var(--space-sm)` |
-
-### 10.2 风险点（图 5-8 底部 4 色风险点）
-
-| 等级       | Hex       | Token             |
-| ---------- | --------- | ----------------- |
-| 黄色风险点 | `#F6BA2E` | `--color-alarm-3` |
-| 橙色风险点 | `#F6882E` | `--color-alarm-2` |
-| 蓝色风险点 | `#2E7CF6` | `--color-alarm-4` |
-| 红色风险点 | `#F46767` | `--color-alarm-1` |
-
-### 10.3 地图复合标注
-
-复合标注 = 图钉（圆形发光）+ 文本气泡（深色 + 描边）。三个核心等级：
-
-- 红色（最高）：`--color-danger` + glow
-- 黄色（高）：`--color-warning` + glow
-- 蓝色（中）：`--color-accent-2` + glow
+1. **MUST** 所有颜色 / 字号 / 间距 / 圆角 / 层级通过 `var(--token)` 引用，禁止硬编码数值。
+2. **MUST NOT** 在组件内自定义或重声明颜色变量；新增 / 调整 token 一律改 `tokens.css` 单一真源。
+3. **MUST** 状态 / 等级色只用 §3 映射表，禁止自造色阶或文案。
+4. **MUST** z-index 只用 §1.5 五层；禁止随手写 `z-index:999`。
+5. **MUST NOT** 移动端使用玻璃面板、青色光带、发光抽屉边框。
+6. **MUST NOT** 后台 / 移动端复用大屏深色态势配色（深蓝黑底、科技青、玻璃质感）。
+7. **MUST** 同屏字号档位：大屏 ≥7 / 后台 ≤4 / 移动 ≤4，不得叠加更多。
+8. **MUST** 适老开关 / 户外高对比**全局生效**（首页 / 列表 / 表单 / 弹层 / 底栏同步），仅放大字号 / 控件 / 间距，不改业务流程。
+9. **MUST** 移动端户外关键可读性：标题 ≥18、正文 ≥15（达不到则加深一级）。
+10. **MUST** 三端根节点按 `[data-theme]` 切换主题；组件不写端特异硬编码分支（用 token 自然区分）。
 
 ---
 
-## 11. 列表与消息栏（§5.3 / 图 5-9）
+## 5. 代码生成流程
 
-### 11.1 抽屉列表面板（图 5-9 左侧大列表）
-
-- 列表行 `56px` 高；分隔线 `1px` 0.2 透明
-- 消息行：标题 + 时间 + 状态标签
-
-| Token              | 值                    |
-| ------------------ | --------------------- |
-| `--list-row-h`     | `56px`                |
-| `--list-row-pad-x` | `var(--space-md)`     |
-| `--list-divider`   | `rgb(255,255,255/8%)` |
-
-### 11.2 底部消息栏（图 5-9 右侧系统消息栏）
-
-- 滚动条平滑滚动；首尾淡入淡出
-- 标签 + 时间 + 状态分类
-
-| Token              | 值                            |
-| ------------------ | ----------------------------- |
-| `--message-bar-h`  | `var(--layout-bottom-h)` 56px |
-| `--message-bar-bg` | `rgba(11,21,38,0.85)`         |
-
----
-
-## 12. 五大业务专题页面（§5.4 / 图 5-10 ~ 图 5-20）
-
-五大业务（消防监测、生产应急、安全防护、工业电视、应急指挥）共用色板；布局沿用「顶部导航 + 左右 PanelCard + 中央地图 + 底部消息栏」骨架。
-
-### 12.1 消防监测（图 5-10）
-
-- 左：消防救援力量（指标网格）/ 设备运行监测（环形指标）
-- 右：消防设施总览 / 消防告警（按 alarm-1..4 着色）
-- 中心：三维地图 + 风险区着色（`zoneColor` 派生）
-
-### 12.2 出入管理（图 5-11）
-
-- 左：出入统计（环形 + 折线）/ 联动巡查
-- 右：告警趋势 / 告警列表（按状态 ACTIVE/ACKED/DISPATCHED/CLOSED 着色）
-
-### 12.3 应急救援（图 5-12）
-
-- 左：生产设施总览 / 设备总览（8 卡片栅格）
-- 右：生产区域安全告警 / 重大风险管控
-- 底部：5 项数据指标卡（信管总数 / 未处置告警 / 已处置告警 / 处置中告警 / 平均处置时长）
-
-### 12.4 安全生产告警（图 5-13） / 视频监控（图 5-14）
-
-- 共用「告警 + 视频」双栏：告警列表 + 视频巡查（网格 16:9 缩略图）
-
-### 12.5 应急调度（图 5-15）
-
-- 左：应急事件列表（按严重程度红/橙/黄/蓝）
-- 中：地图 + 救援力量 + 应急辅助信息
-- 右：值班值守 / 应急力量数据 / 应急生产安全知识
-
-### 12.6 区域人员统计（图 5-16）
-
-- 顶部：左/中/右三栏人员分类指标卡（重大危险源 / 生产装置 / 门岗闸机 / 救援监控）
-- 右：区域人员统计环形 + 生产区域安全告警
-
-### 12.7 重大危险源（图 5-17）
-
-- 左侧：4 级预警数量统计 + 名称 + 等级标签
-- 右侧：危险源详情抽屉 + 表格（一/二级 / 处置/巡检/光照）
-
-### 12.8 视频墙（图 5-18）
-
-- 4×N 视频网格；左侧目录 / 智能视频告警
-- 视频标注框：`--color-success` 已处置 / `--color-danger` 未处置
-
-### 12.9 事件调度 / 防台防汛 / 卫星云图（图 5-19 / 5-20 / 5-22）
-
-- 紧急程度色与告警一致（`--color-danger` / `--color-warning` / `--color-accent-2`）
-- 顶部：事件标题 + 已持续时间（Poppins Bold 28px）+ 天气 / 环境数据
-
----
-
-## 13. 状态与等级映射表（汇总）
-
-### 13.1 报警等级 → 颜色 + 文案
-
-| level | token                       | label | 边框/点 | 文字 |
-| ----- | --------------------------- | ----- | ------- | ---- |
-| 1     | `--color-alarm-1` `#F46767` | 一级  | ✓       | ✓    |
-| 2     | `--color-alarm-2` `#F6882E` | 二级  | ✓       | ✓    |
-| 3     | `--color-alarm-3` `#F6BA2E` | 三级  | ✓       | ✓    |
-| 4     | `--color-alarm-4` `#2E7CF6` | 四级  | ✓       | ✓    |
-
-### 13.2 报警状态 → 颜色 + 文案
-
-| status     | color              | label  |
-| ---------- | ------------------ | ------ |
-| ACTIVE     | `--color-danger`   | 待处理 |
-| ACKED      | `--color-warning`  | 已确认 |
-| DISPATCHED | `--color-accent-2` | 已派单 |
-| CLOSED     | `--color-success`  | 已闭环 |
-
-### 13.3 设备状态
-
-| status  | color                |
-| ------- | -------------------- |
-| ONLINE  | `--color-success`    |
-| OFFLINE | `--color-text-muted` |
-| FAULT   | `--color-danger`     |
-
-### 13.4 风险区评分 → 填充色
-
-| score | rgba                          |
-| ----- | ----------------------------- |
-| >=4   | `rgba(255,90,90,0.22)` 危险   |
-| 3–4   | `rgba(246,186,46,0.2)` 警示   |
-| 2–3   | `rgba(46,124,246,0.18)` 注意  |
-| <2    | `rgba(143,166,200,0.14)` 常规 |
+1. 确定目标端 → 在应用根节点挂载 `data-theme="mgmt" | "mobile"`（大屏默认无属性，走 `:root`）。
+2. 引入 `src/styles/tokens.css`，不重复定义 token。
+3. 选择组件 → 查 §2 取得变体、引用 token、状态、MUST / MUST NOT。
+4. 需要状态 / 等级着色 → 查 §3 取枚举或 `.tag-*` 类，禁止自造。
+5. 取色取尺寸 → 一律 `var(--token)`，不从 §1 表中拷贝具体 hex 进 style。
+6. 完成后逐条核对 §4 约束；任一 MUST NOT 命中则重写。
+7. 版式 / 布局细节（具体页面结构、原型截图）→ 回查《设计说明 V1.2》§5.3.5 原型图与第 7 章。

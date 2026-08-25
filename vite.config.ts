@@ -23,6 +23,8 @@ const csp = [
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'",
   "connect-src 'self' wss: ws: https: http: ws://localhost:* http://localhost:*",
   "font-src 'self' data:",
+  // wujie 沙箱：主壳注入 blob 文档 iframe 承载子应用，需放行同源 blob 帧（否则 default-src 'self' 拦截 → 二次跨源 location 读取错误）
+  "frame-src 'self' blob:",
 ].join('; ');
 
 // Cesium 静态资源输出目录（供构建/开发期访问；生产由部署服务器按同路径托管）
@@ -113,6 +115,12 @@ export default defineConfig({
     target: 'es2018',
     sourcemap: false,
     rollupOptions: {
+      // 单 dev server 多 HTML 入口：主壳(index.html) + 各 wujie 子应用，
+      // 保证子应用与主壳同源（wujie 强约束），避免跨源 SecurityError
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        dashboardSubapp: fileURLToPath(new URL('./subapps/dashboard/index.html', import.meta.url)),
+      },
       output: { manualChunks: { echarts: ['echarts'] } },
     },
   },

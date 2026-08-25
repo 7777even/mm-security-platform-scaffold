@@ -253,10 +253,10 @@ onMounted(load);
           <dd class="font-number">{{ viewing.alarmId }}</dd>
           <dt>等级</dt>
           <dd>
-            {{ LEVEL_OPTIONS.find((l) => l.value === viewing.level)?.label ?? viewing.level }}
+            {{ LEVEL_OPTIONS.find((l) => l.value === viewing?.level)?.label ?? viewing?.level }}
           </dd>
           <dt>类型</dt>
-          <dd>{{ TYPE_OPTIONS.find((t) => t.value === viewing.type)?.label ?? viewing.type }}</dd>
+          <dd>{{ TYPE_OPTIONS.find((t) => t.value === viewing?.type)?.label ?? viewing?.type }}</dd>
           <dt>设备</dt>
           <dd>{{ viewing.deviceCode }}</dd>
           <dt>位置</dt>

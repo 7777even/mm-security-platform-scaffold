@@ -1,5 +1,6 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
+import WujieVue from 'wujie-vue3';
 // Element Plus 组件由 unplugin-vue-components 按需自动引入（B4 性能优化），此处仅保留基础样式
 import 'element-plus/theme-chalk/base.css';
 import { Odometer, Monitor, Bell } from '@element-plus/icons-vue';
@@ -38,6 +39,8 @@ async function bootstrap(): Promise<void> {
     app.component(icon.name!, icon);
   }
   app.directive('permission', vPermission);
+  // 注册 wujie 全局组件（wujie-shell 主壳）：<WujieVue> 经路由 meta.subappUrl 挂载子应用
+  app.use(WujieVue);
   const pinia = createPinia();
   app.use(pinia);
   // Mock 登录：将访问令牌写入内存态，使请求拦截注入 Authorization（§5.3；正式环境由 IDP SSO 替换）

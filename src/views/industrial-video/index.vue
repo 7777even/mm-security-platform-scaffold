@@ -22,7 +22,7 @@ const channels = [
   { id: 'CAM-102', name: '罐区 B 区 02 号', state: '在线', online: true },
   { id: 'CAM-103', name: '装卸区 01 泊位', state: '在线', online: true },
   { id: 'CAM-104', name: '主控室入口', state: '故障', online: false },
-] as const;
+];
 </script>
 
 <template>

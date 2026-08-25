@@ -18,14 +18,22 @@ interface MenuRouteSpec {
   perm: string;
   component: () => Promise<RouteComponent>;
   icon: Component;
+  /** wujie-shell：是否为子应用挂载（true 时主内容经 WujieHost 装载） */
+  subapp?: boolean;
+  /** wujie-shell：子应用入口地址，由主壳 WujieHost 读取 */
+  subappUrl?: string;
 }
 
-const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
+export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
   dashboard: {
     title: '应急指挥及演练',
     perm: 'dashboard:view',
     icon: DataBoard,
-    component: () => import('@/views/dashboard/index.vue').then((m) => m.default),
+    // wujie-shell 试点：dashboard 作为首个子应用，经 WujieHost 挂载
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    // 同源路径：与主壳同一 Vite 服务(5173)托管，wujie 要求子应用与主应用同源
+    subappUrl: import.meta.env.VITE_DASHBOARD_SUBAPP_URL ?? '/subapps/dashboard/',
   },
   'extreme-weather': {
     title: '极端天气风险应急',
@@ -79,7 +87,13 @@ export function buildDynamicRoutes(menus: MenuItem[]): RouteRecordRaw[] {
         path: menu.path,
         name: menu.id,
         component: spec.component,
-        meta: { title: spec.title, perm: spec.perm, icon: spec.icon },
+        meta: {
+          title: spec.title,
+          perm: spec.perm,
+          icon: spec.icon,
+          subapp: spec.subapp ?? false,
+          subappUrl: spec.subappUrl,
+        },
         children: menu.children ? buildDynamicRoutes(menu.children) : undefined,
       });
     } else if (menu.children && menu.children.length > 0) {

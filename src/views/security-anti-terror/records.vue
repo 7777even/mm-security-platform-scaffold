@@ -101,7 +101,7 @@ onMounted(async () => {
             size="small"
             :type="row.level === 3 ? 'danger' : row.level === 2 ? 'warning' : 'success'"
           >
-            {{ LEVEL_TEXT[row.level] }}
+            {{ LEVEL_TEXT[row.level as AccessLevel] }}
           </el-tag>
         </template>
       </el-table-column>

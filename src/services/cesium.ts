@@ -7,6 +7,7 @@ import type { MapPoint, RiskZone } from '@/services/map';
 import { fetchAlarmPoints, fetchDevicePoints, fetchRiskZones } from '@/services/map';
 import { MAP_TILE_URL } from '@/constants/map';
 import { recordPerfAsync } from '@/utils/perf-budget';
+import { logger } from '@/utils/logger';
 
 // 厂区初始中心（湛江中科炼化坐标附近）+ 初始相机高度
 export const FACTORY_CENTER: [number, number] = [110.95, 21.6];
@@ -141,17 +142,72 @@ export function createCesiumViewer(container: HTMLElement): Cesium.Viewer {
   return viewer;
 }
 
-/** 加载瓦片底图（可配置 URL，生产同源离线 / 开发公网预览）。 */
+/** 生成纯色底图的 data URL（离线模式用，避免依赖外部瓦片文件/网络）。 */
+function solidImageryDataUrl(color: string): string {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1;
+  canvas.height = 1;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, 1, 1);
+  }
+  return canvas.toDataURL('image/png');
+}
+
+/** 探测外部瓦片源是否可达（取一个低层级样例瓦片做 HEAD/GET，cartocdn 支持 CORS）。 */
+async function isTileReachable(template: string): Promise<boolean> {
+  const sample = template.replace('{z}', '4').replace('{x}', '12').replace('{y}', '7');
+  try {
+    const res = await fetch(sample, { method: 'GET' });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 加载瓦片底图（可配置 URL，生产同源离线 / 开发公网预览）。
+ * 策略：先铺一层本地离线底座（纯色 + 网格骨架，零网络请求、地球必可见），
+ * 再按 MAP_TILE_URL 决定是否叠加真实瓦片：
+ *   - 未配置或同源默认 /tiles 路径 → 仅离线骨架；
+ *   - 配置了外部源（如 cartocdn）→ 探测可达性，可达叠加真实底图，不可达保留离线骨架（不刷 502）。
+ */
 export async function loadBaseMap(viewer: Cesium.Viewer): Promise<void> {
   await recordPerfAsync('baseMapMs', async () => {
-    // 当前 Cesium 构建未导出 UrlTemplateImageryProvider.fromUrl 静态方法，
-    // 必须使用构造器；构造器接受 options 对象（同 fromUrl 的第二个参数）。
-    const provider = new Cesium.UrlTemplateImageryProvider({
-      url: MAP_TILE_URL,
-      urlSchemeZeroPadding: true,
-      maximumLevel: 18,
+    // 离线底座：纯色 + 透明网格，地球表面一定渲染且可见
+    const offlineBase = new Cesium.SingleTileImageryProvider({
+      url: solidImageryDataUrl(DARK_BG),
+      tileWidth: 1,
+      tileHeight: 1,
+      rectangle: Cesium.Rectangle.fromDegrees(-180, -90, 180, 90),
     });
-    viewer.imageryLayers.addImageryProvider(provider);
+    viewer.imageryLayers.addImageryProvider(offlineBase);
+    viewer.imageryLayers.addImageryProvider(
+      new Cesium.GridImageryProvider({
+        color: Cesium.Color.fromCssColorString('#3a6ea5'),
+        glowColor: Cesium.Color.TRANSPARENT,
+        backgroundColor: Cesium.Color.TRANSPARENT,
+        cells: 8,
+      }),
+    );
+
+    // 配置了外部瓦片源：探测可达性后再叠加真实底图
+    const useExternal = MAP_TILE_URL && MAP_TILE_URL !== '/tiles/{z}/{x}/{y}.png';
+    if (useExternal) {
+      const reachable = await isTileReachable(MAP_TILE_URL);
+      if (reachable) {
+        // 当前 Cesium 构建未导出 UrlTemplateImageryProvider.fromUrl 静态方法，必须使用构造器
+        const provider = new Cesium.UrlTemplateImageryProvider({
+          url: MAP_TILE_URL,
+          urlSchemeZeroPadding: true,
+          maximumLevel: 18,
+        });
+        viewer.imageryLayers.addImageryProvider(provider);
+      } else {
+        logger.warn('[cesium] 瓦片源不可达，已回退离线网格底图', MAP_TILE_URL);
+      }
+    }
     // requestRenderMode 下需要手动触发重绘，否则瓦片加载完成也不绘制
     viewer.scene.requestRender();
   });

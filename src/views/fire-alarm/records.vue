@@ -117,13 +117,15 @@ onMounted(() => {
       </el-table-column>
       <el-table-column label="操作" width="180" fixed="right">
         <template #default="{ row }">
-          <el-button link type="primary" size="small" @click.stop="openDetail(row)">详情</el-button>
+          <el-button link type="primary" size="small" @click.stop="openDetail(row as AlarmItem)"
+            >详情</el-button
+          >
           <el-button
             link
             type="success"
             size="small"
             :disabled="row.status !== 'ACTIVE'"
-            @click.stop="onAck(row)"
+            @click.stop="onAck(row as AlarmItem)"
           >
             确认
           </el-button>

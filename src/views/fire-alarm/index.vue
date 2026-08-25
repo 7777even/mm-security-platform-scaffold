@@ -23,6 +23,13 @@ const {
   ack,
 } = useAlarmView();
 
+function formatTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const pad = (n: number): string => String(n).padStart(2, '0');
+  return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 const detailVisible = computed(() => detail.value !== null);
 
 const LEVELS: AlarmLevel[] = [1, 2, 3, 4];
