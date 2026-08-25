@@ -44,6 +44,7 @@ declare module 'vue' {
     PanelCard: typeof import('./src/components/common/PanelCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SecondaryPageOverlay: typeof import('./src/components/common/SecondaryPageOverlay.vue')['default']
     StatCard: typeof import('./src/components/common/StatCard.vue')['default']
   }
 }

@@ -12,6 +12,10 @@ import AppButton from '@/components/common/AppButton.vue';
 import { useAlarmView } from '@/composables/useAlarmView';
 import type { AlarmItem, AlarmLevel, AlarmStatus } from '@/services/alarm';
 
+// embedded: 由所属模块主壳内联预览（覆盖层）承载时为真，此时「返回」改为关闭预览而非路由跳转
+const props = defineProps<{ embedded?: boolean }>();
+const emit = defineEmits<{ close: [] }>();
+
 const router = useRouter();
 const { page, size, levelFilter, statusFilter, detail, pageResult, refresh, openDetail, ack } =
   useAlarmView();
@@ -55,6 +59,10 @@ async function onAck(row: AlarmItem): Promise<void> {
 }
 
 function goBack(): void {
+  if (props.embedded) {
+    emit('close');
+    return;
+  }
   router.push('/fire-alarm');
 }
 
@@ -79,7 +87,9 @@ onMounted(() => {
         <el-option v-for="s in STATUSES" :key="s" :label="STATUS_TEXT[s]" :value="s" />
       </el-select>
       <div class="records-toolbar__spacer" />
-      <AppButton variant="ghost" size="sm" @click="goBack">返回</AppButton>
+      <AppButton variant="ghost" size="sm" @click="goBack">{{
+        props.embedded ? '关闭' : '返回'
+      }}</AppButton>
     </div>
 
     <el-table

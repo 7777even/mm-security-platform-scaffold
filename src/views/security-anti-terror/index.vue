@@ -6,7 +6,6 @@
 -->
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 import type { AlarmLevel } from '@/services/alarm';
 import ModuleLayout from '@/components/layout/ModuleLayout.vue';
 import PanelCard from '@/components/common/PanelCard.vue';
@@ -34,62 +33,78 @@ const perimeterAlarms = ref<{ level: AlarmLevel; title: string; desc: string; ti
   { level: 3, title: '危化品库房 门禁异常', desc: '非授权时段开启', time: '07:46' },
 ]);
 
-const router = useRouter();
-function goRecords(): void {
-  router.push('/security-anti-terror/records');
+// 安防反恐记录：模块主壳内联预览，而非跳转到主壳独立页面
+const recordsOpen = ref(false);
+function openRecords(): void {
+  recordsOpen.value = true;
+}
+function closeRecords(): void {
+  recordsOpen.value = false;
 }
 </script>
 
 <template>
-  <ModuleLayout>
-    <!-- 左侧：治安态势 KPI + 出入管理/门禁事件 -->
-    <template #left>
-      <PanelCard title="治安态势概览" icon="DataBoard">
-        <div class="kpi-grid">
-          <StatCard
-            v-for="k in kpis"
-            :key="k.title"
-            :title="k.title"
-            :value="k.value"
-            :icon="k.icon"
-          />
-        </div>
-        <div class="left-actions">
-          <AppButton variant="ghost" size="sm">重点布控</AppButton>
-          <AppButton variant="primary" size="sm">应急处置</AppButton>
-        </div>
-      </PanelCard>
-
-      <PanelCard title="出入管理 / 门禁事件" icon="Key" more="查看全部" @more="goRecords">
-        <div class="event-list">
-          <div v-for="(e, i) in accessEvents" :key="i" class="event-row">
-            <span class="event-row__time">{{ e.time }}</span>
-            <span class="event-row__dot" :class="`tone-alarm-${e.level}`" />
-            <span class="event-row__text">{{ e.text }}</span>
+  <div class="module-shell">
+    <ModuleLayout>
+      <!-- 左侧：治安态势 KPI + 出入管理/门禁事件 -->
+      <template #left>
+        <PanelCard title="治安态势概览" icon="DataBoard">
+          <div class="kpi-grid">
+            <StatCard
+              v-for="k in kpis"
+              :key="k.title"
+              :title="k.title"
+              :value="k.value"
+              :icon="k.icon"
+            />
           </div>
-        </div>
-      </PanelCard>
-    </template>
+          <div class="left-actions">
+            <AppButton variant="ghost" size="sm">重点布控</AppButton>
+            <AppButton variant="primary" size="sm">应急处置</AppButton>
+          </div>
+        </PanelCard>
 
-    <!-- 右侧：周界防恐告警 -->
-    <template #right>
-      <PanelCard title="周界防恐告警" icon="Bell" more="查看全部">
-        <div class="alarm-list">
-          <AlarmCard
-            v-for="(a, i) in perimeterAlarms"
-            :key="i"
-            :level="a.level"
-            :title="a.title"
-            :desc="a.desc"
-            :time="a.time"
-          />
-        </div>
-      </PanelCard>
-    </template>
-  </ModuleLayout>
+        <PanelCard title="出入管理 / 门禁事件" icon="Key" more="查看全部" @more="openRecords">
+          <div class="event-list">
+            <div v-for="(e, i) in accessEvents" :key="i" class="event-row">
+              <span class="event-row__time">{{ e.time }}</span>
+              <span class="event-row__dot" :class="`tone-alarm-${e.level}`" />
+              <span class="event-row__text">{{ e.text }}</span>
+            </div>
+          </div>
+        </PanelCard>
+      </template>
+
+      <!-- 右侧：周界防恐告警 -->
+      <template #right>
+        <PanelCard title="周界防恐告警" icon="Bell" more="查看全部">
+          <div class="alarm-list">
+            <AlarmCard
+              v-for="(a, i) in perimeterAlarms"
+              :key="i"
+              :level="a.level"
+              :title="a.title"
+              :desc="a.desc"
+              :time="a.time"
+            />
+          </div>
+        </PanelCard>
+      </template>
+
+      <!-- 安防反恐记录：模块主壳内联预览（覆盖层），不跳转独立页面 -->
+      <SecondaryPageOverlay v-model:open="recordsOpen">
+        <RecordsView :embedded="true" @close="closeRecords" />
+      </SecondaryPageOverlay>
+    </ModuleLayout>
+  </div>
 </template>
 
 <style scoped>
+.module-shell {
+  position: relative;
+  height: 100%;
+}
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

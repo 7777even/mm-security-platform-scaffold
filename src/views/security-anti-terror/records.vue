@@ -11,6 +11,10 @@ import AppButton from '@/components/common/AppButton.vue';
 import { fetchSecurityEvents } from '@/services/securityEventStore';
 import type { SecurityEvent, AccessDirection, AccessLevel } from '@/services/securityEventStore';
 
+// embedded: 由所属模块主壳内联预览（覆盖层）承载时为真，此时「返回」改为关闭预览而非路由跳转
+const props = defineProps<{ embedded?: boolean }>();
+const emit = defineEmits<{ close: [] }>();
+
 const router = useRouter();
 const events = ref<SecurityEvent[]>([]);
 const loading = ref(true);
@@ -48,6 +52,10 @@ function formatTs(ts: string): string {
 }
 
 function goBack(): void {
+  if (props.embedded) {
+    emit('close');
+    return;
+  }
   router.push('/security-anti-terror');
 }
 
@@ -73,7 +81,9 @@ onMounted(async () => {
         <el-option v-for="d in DIRECTIONS" :key="d.value" :label="d.label" :value="d.value" />
       </el-select>
       <div class="records-toolbar__spacer" />
-      <AppButton variant="ghost" size="sm" @click="goBack">返回</AppButton>
+      <AppButton variant="ghost" size="sm" @click="goBack">{{
+        props.embedded ? '关闭' : '返回'
+      }}</AppButton>
     </div>
 
     <el-table

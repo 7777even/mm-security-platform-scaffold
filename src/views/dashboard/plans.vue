@@ -12,6 +12,10 @@ import AppButton from '@/components/common/AppButton.vue';
 import { fetchPlans, createPlan, updatePlan, deletePlan } from '@/services/emergencyPlanStore';
 import type { EmergencyPlan, PlanLevel, PlanCategory } from '@/services/emergencyPlanStore';
 
+// embedded: 由 dashboard 主壳内联预览（覆盖层）承载时为真，此时「返回」改为关闭预览而非路由跳转
+const props = defineProps<{ embedded?: boolean }>();
+const emit = defineEmits<{ close: [] }>();
+
 const router = useRouter();
 const plans = ref<EmergencyPlan[]>([]);
 const loading = ref(true);
@@ -101,6 +105,10 @@ async function load(): Promise<void> {
 }
 
 function goBack(): void {
+  if (props.embedded) {
+    emit('close');
+    return;
+  }
   router.push('/dashboard');
 }
 
@@ -121,7 +129,9 @@ onMounted(load);
       </el-select>
       <div class="plans-toolbar__spacer" />
       <AppButton variant="primary" size="sm" @click="openCreate">新增预案</AppButton>
-      <AppButton variant="ghost" size="sm" @click="goBack">返回</AppButton>
+      <AppButton variant="ghost" size="sm" @click="goBack">{{
+        props.embedded ? '关闭' : '返回'
+      }}</AppButton>
     </div>
 
     <div v-if="!loading && filtered.length > 0" class="plans-grid" data-test="plans-grid">

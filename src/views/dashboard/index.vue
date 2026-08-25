@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, nextTick } from 'vue';
-import { useRouter } from 'vue-router';
 import * as echarts from 'echarts/core';
 import { LineChart, type LineSeriesOption } from 'echarts/charts';
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
@@ -16,6 +15,8 @@ import EmergencyStrengthPanel from '@/components/dashboard/EmergencyStrengthPane
 import EmergencyKnowledgePanel from '@/components/dashboard/EmergencyKnowledgePanel.vue';
 import ClosedCasePanel from '@/components/dashboard/ClosedCasePanel.vue';
 import EmergencyEventCrudPanel from '@/components/dashboard/EmergencyEventCrudPanel.vue';
+import PlansView from './plans.vue';
+import SecondaryPageOverlay from '@/components/common/SecondaryPageOverlay.vue';
 import { fetchAlarmTrend } from '@/services/alarm';
 import {
   fetchAlarmPoints,
@@ -59,9 +60,13 @@ function onMapError(): void {
   sceneMode.value = '2d';
 }
 
-const router = useRouter();
-function goPlans(): void {
-  router.push('/dashboard/plans');
+// 预案库在 dashboard 主壳内联预览，而非跳转到独立页面
+const plansOpen = ref(false);
+function openPlans(): void {
+  plansOpen.value = true;
+}
+function closePlans(): void {
+  plansOpen.value = false;
 }
 
 const FALLBACK_TREND = [0, 1, 0, 2, 1, 3, 2, 1, 0, 2, 4, 3, 2, 1, 3, 5, 4, 6, 3, 2, 4, 3, 2, 1];
@@ -199,7 +204,7 @@ onUnmounted(() => {
       <PanelCard title="应急预案库" icon="Document">
         <p class="plan-entry">应急预案、现场处置卡集中管理，支撑应急指挥调度。</p>
         <div class="plan-entry__actions">
-          <AppButton variant="primary" size="sm" @click="goPlans">进入预案库</AppButton>
+          <AppButton variant="primary" size="sm" @click="openPlans">进入预案库</AppButton>
         </div>
       </PanelCard>
 
@@ -225,6 +230,11 @@ onUnmounted(() => {
       <span class="skeleton skeleton-line" style="width: 160px" />
       <span class="skeleton skeleton-line" style="width: 180px" />
     </div>
+
+    <!-- 预案库主壳内联预览（覆盖层），不跳转独立页面 -->
+    <SecondaryPageOverlay v-model:open="plansOpen">
+      <PlansView :embedded="true" @close="closePlans" />
+    </SecondaryPageOverlay>
   </div>
 </template>
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, onMounted, ref } from 'vue';
+import SecondaryPageOverlay from '@/components/common/SecondaryPageOverlay.vue';
+import RecordsView from './records.vue';
 import { ElMessage } from 'element-plus';
 import { useAlarmView } from '@/composables/useAlarmView';
 import type { AlarmItem, AlarmLevel, AlarmStatus } from '@/services/alarm';
@@ -59,9 +60,13 @@ function onPageChange(p: number): void {
   page.value = p;
 }
 
-const router = useRouter();
-function goRecords(): void {
-  router.push('/fire-alarm/records');
+// 消防报警记录：模块主壳内联预览，而非跳转到主壳独立页面
+const recordsOpen = ref(false);
+function openRecords(): void {
+  recordsOpen.value = true;
+}
+function closeRecords(): void {
+  recordsOpen.value = false;
 }
 
 onMounted(() => {
@@ -70,105 +75,117 @@ onMounted(() => {
 </script>
 
 <template>
-  <ModuleLayout>
-    <!-- 左侧：报警态势（§13.1 报警等级色块统计，与设计稿图 5-10「重大风险管控」一致） -->
-    <template #left>
-      <PanelCard title="报警态势" icon="DataBoard">
-        <p class="active-tip">
-          当前待处理 <b>{{ activeCount }}</b> 条
-        </p>
-        <div class="level-grid">
-          <AlarmCard
-            v-for="l in LEVELS"
-            :key="l"
-            :level="l"
-            :title="LEVEL_TEXT[l]"
-            :desc="`待处理 ${pageResult.list.filter((a) => a.level === l).length} 条`"
-            time="—"
-          />
-        </div>
-        <div class="left-actions">
-          <AppButton variant="primary" size="sm" @click="refresh">刷新</AppButton>
-        </div>
-      </PanelCard>
-    </template>
-
-    <!-- 右侧：消防报警列表（§12.1 设计稿图 5-10 右上消防告警） -->
-    <template #right>
-      <PanelCard title="消防报警" icon="Bell" more="记录" @more="goRecords">
-        <div class="alarm-filters">
-          <el-select v-model="levelFilter" placeholder="全部等级" clearable style="width: 130px">
-            <el-option v-for="l in LEVELS" :key="l" :label="LEVEL_TEXT[l]" :value="l" />
-          </el-select>
-          <el-select v-model="statusFilter" placeholder="全部状态" clearable style="width: 130px">
-            <el-option v-for="s in STATUSES" :key="s" :label="STATUS_TEXT[s]" :value="s" />
-          </el-select>
-        </div>
-
-        <ul v-if="pageResult.list.length" class="alarm-list">
-          <li v-for="row in pageResult.list" :key="row.alarmId">
-            <AlarmListItem
-              :alarm="row as AlarmItem"
-              @open="openDetail(row as AlarmItem)"
-              @view="ElMessage.info(`跳转现场监控：${row.alarmId}`)"
-              @call="ElMessage.info(`发起音视频通话：${row.alarmId}`)"
-              @dispatch="onAck(row as AlarmItem)"
+  <div class="module-shell">
+    <ModuleLayout>
+      <!-- 左侧：报警态势（§13.1 报警等级色块统计，与设计稿图 5-10「重大风险管控」一致） -->
+      <template #left>
+        <PanelCard title="报警态势" icon="DataBoard">
+          <p class="active-tip">
+            当前待处理 <b>{{ activeCount }}</b> 条
+          </p>
+          <div class="level-grid">
+            <AlarmCard
+              v-for="l in LEVELS"
+              :key="l"
+              :level="l"
+              :title="LEVEL_TEXT[l]"
+              :desc="`待处理 ${pageResult.list.filter((a) => a.level === l).length} 条`"
+              time="—"
             />
-          </li>
-        </ul>
-        <div v-else class="alarm-empty">暂无报警</div>
+          </div>
+          <div class="left-actions">
+            <AppButton variant="primary" size="sm" @click="refresh">刷新</AppButton>
+          </div>
+        </PanelCard>
+      </template>
 
-        <el-pagination
-          v-model:current-page="page"
-          class="alarm-pager"
-          layout="prev, pager, next, total"
-          :total="pageResult.total"
-          :page-size="size"
-          @current-change="onPageChange"
-        />
-      </PanelCard>
-    </template>
+      <!-- 右侧：消防报警列表（§12.1 设计稿图 5-10 右上消防告警） -->
+      <template #right>
+        <PanelCard title="消防报警" icon="Bell" more="记录" @more="openRecords">
+          <div class="alarm-filters">
+            <el-select v-model="levelFilter" placeholder="全部等级" clearable style="width: 130px">
+              <el-option v-for="l in LEVELS" :key="l" :label="LEVEL_TEXT[l]" :value="l" />
+            </el-select>
+            <el-select v-model="statusFilter" placeholder="全部状态" clearable style="width: 130px">
+              <el-option v-for="s in STATUSES" :key="s" :label="STATUS_TEXT[s]" :value="s" />
+            </el-select>
+          </div>
 
-    <el-drawer v-model="detailVisible" title="报警详情" direction="rtl" size="380px">
-      <dl v-if="detail" class="detail-view">
-        <div class="detail-view__row">
-          <dt>报警编号</dt>
-          <dd class="font-number">{{ detail.alarmId }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>等级</dt>
-          <dd>{{ LEVEL_TEXT[detail.level as AlarmLevel] }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>类型</dt>
-          <dd>{{ detail.type }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>设备编码</dt>
-          <dd class="font-number">{{ detail.deviceCode }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>位置</dt>
-          <dd>{{ detail.location }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>描述</dt>
-          <dd>{{ detail.description }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>状态</dt>
-          <dd>{{ STATUS_TEXT[detail.status as AlarmStatus] }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>上报时间</dt>
-          <dd class="font-number">{{ formatTime(detail.ts) }}</dd>
-        </div>
-      </dl>
-    </el-drawer>
-  </ModuleLayout>
+          <ul v-if="pageResult.list.length" class="alarm-list">
+            <li v-for="row in pageResult.list" :key="row.alarmId">
+              <AlarmListItem
+                :alarm="row as AlarmItem"
+                @open="openDetail(row as AlarmItem)"
+                @view="ElMessage.info(`跳转现场监控：${row.alarmId}`)"
+                @call="ElMessage.info(`发起音视频通话：${row.alarmId}`)"
+                @dispatch="onAck(row as AlarmItem)"
+              />
+            </li>
+          </ul>
+          <div v-else class="alarm-empty">暂无报警</div>
+
+          <el-pagination
+            v-model:current-page="page"
+            class="alarm-pager"
+            layout="prev, pager, next, total"
+            :total="pageResult.total"
+            :page-size="size"
+            @current-change="onPageChange"
+          />
+        </PanelCard>
+      </template>
+
+      <el-drawer v-model="detailVisible" title="报警详情" direction="rtl" size="380px">
+        <dl v-if="detail" class="detail-view">
+          <div class="detail-view__row">
+            <dt>报警编号</dt>
+            <dd class="font-number">{{ detail.alarmId }}</dd>
+          </div>
+          <div class="detail-view__row">
+            <dt>等级</dt>
+            <dd>{{ LEVEL_TEXT[detail.level as AlarmLevel] }}</dd>
+          </div>
+          <div class="detail-view__row">
+            <dt>类型</dt>
+            <dd>{{ detail.type }}</dd>
+          </div>
+          <div class="detail-view__row">
+            <dt>设备编码</dt>
+            <dd class="font-number">{{ detail.deviceCode }}</dd>
+          </div>
+          <div class="detail-view__row">
+            <dt>位置</dt>
+            <dd>{{ detail.location }}</dd>
+          </div>
+          <div class="detail-view__row">
+            <dt>描述</dt>
+            <dd>{{ detail.description }}</dd>
+          </div>
+          <div class="detail-view__row">
+            <dt>状态</dt>
+            <dd>{{ STATUS_TEXT[detail.status as AlarmStatus] }}</dd>
+          </div>
+          <div class="detail-view__row">
+            <dt>上报时间</dt>
+            <dd class="font-number">{{ formatTime(detail.ts) }}</dd>
+          </div>
+        </dl>
+      </el-drawer>
+
+      <!-- 消防报警记录：模块主壳内联预览（覆盖层），不跳转独立页面 -->
+      <SecondaryPageOverlay v-model:open="recordsOpen">
+        <RecordsView :embedded="true" @close="closeRecords" />
+      </SecondaryPageOverlay>
+    </ModuleLayout>
+  </div>
 </template>
 
 <style scoped>
+.module-shell {
+  position: relative;
+  height: 100%;
+}
+
 .active-tip {
   margin: 0 0 var(--space-md);
   color: var(--color-text-muted);
