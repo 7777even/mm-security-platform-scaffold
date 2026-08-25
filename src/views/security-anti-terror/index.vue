@@ -90,12 +90,12 @@ function closeRecords(): void {
           </div>
         </PanelCard>
       </template>
-
-      <!-- 安防反恐记录：模块主壳内联预览（覆盖层），不跳转独立页面 -->
-      <SecondaryPageOverlay v-model:open="recordsOpen">
-        <RecordsView :embedded="true" @close="closeRecords" />
-      </SecondaryPageOverlay>
     </ModuleLayout>
+
+    <!-- 安防反恐记录：模块主壳内联预览（覆盖层），不跳转独立页面 -->
+    <SecondaryPageOverlay v-model:open="recordsOpen">
+      <RecordsView :embedded="true" @close="closeRecords" />
+    </SecondaryPageOverlay>
   </div>
 </template>
 

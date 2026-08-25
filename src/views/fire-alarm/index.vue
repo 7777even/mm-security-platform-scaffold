@@ -134,49 +134,49 @@ onMounted(() => {
           />
         </PanelCard>
       </template>
-
-      <el-drawer v-model="detailVisible" title="报警详情" direction="rtl" size="380px">
-        <dl v-if="detail" class="detail-view">
-          <div class="detail-view__row">
-            <dt>报警编号</dt>
-            <dd class="font-number">{{ detail.alarmId }}</dd>
-          </div>
-          <div class="detail-view__row">
-            <dt>等级</dt>
-            <dd>{{ LEVEL_TEXT[detail.level as AlarmLevel] }}</dd>
-          </div>
-          <div class="detail-view__row">
-            <dt>类型</dt>
-            <dd>{{ detail.type }}</dd>
-          </div>
-          <div class="detail-view__row">
-            <dt>设备编码</dt>
-            <dd class="font-number">{{ detail.deviceCode }}</dd>
-          </div>
-          <div class="detail-view__row">
-            <dt>位置</dt>
-            <dd>{{ detail.location }}</dd>
-          </div>
-          <div class="detail-view__row">
-            <dt>描述</dt>
-            <dd>{{ detail.description }}</dd>
-          </div>
-          <div class="detail-view__row">
-            <dt>状态</dt>
-            <dd>{{ STATUS_TEXT[detail.status as AlarmStatus] }}</dd>
-          </div>
-          <div class="detail-view__row">
-            <dt>上报时间</dt>
-            <dd class="font-number">{{ formatTime(detail.ts) }}</dd>
-          </div>
-        </dl>
-      </el-drawer>
-
-      <!-- 消防报警记录：模块主壳内联预览（覆盖层），不跳转独立页面 -->
-      <SecondaryPageOverlay v-model:open="recordsOpen">
-        <RecordsView :embedded="true" @close="closeRecords" />
-      </SecondaryPageOverlay>
     </ModuleLayout>
+
+    <el-drawer v-model="detailVisible" title="报警详情" direction="rtl" size="380px">
+      <dl v-if="detail" class="detail-view">
+        <div class="detail-view__row">
+          <dt>报警编号</dt>
+          <dd class="font-number">{{ detail.alarmId }}</dd>
+        </div>
+        <div class="detail-view__row">
+          <dt>等级</dt>
+          <dd>{{ LEVEL_TEXT[detail.level as AlarmLevel] }}</dd>
+        </div>
+        <div class="detail-view__row">
+          <dt>类型</dt>
+          <dd>{{ detail.type }}</dd>
+        </div>
+        <div class="detail-view__row">
+          <dt>设备编码</dt>
+          <dd class="font-number">{{ detail.deviceCode }}</dd>
+        </div>
+        <div class="detail-view__row">
+          <dt>位置</dt>
+          <dd>{{ detail.location }}</dd>
+        </div>
+        <div class="detail-view__row">
+          <dt>描述</dt>
+          <dd>{{ detail.description }}</dd>
+        </div>
+        <div class="detail-view__row">
+          <dt>状态</dt>
+          <dd>{{ STATUS_TEXT[detail.status as AlarmStatus] }}</dd>
+        </div>
+        <div class="detail-view__row">
+          <dt>上报时间</dt>
+          <dd class="font-number">{{ formatTime(detail.ts) }}</dd>
+        </div>
+      </dl>
+    </el-drawer>
+
+    <!-- 消防报警记录：模块主壳内联预览（覆盖层），不跳转独立页面 -->
+    <SecondaryPageOverlay v-model:open="recordsOpen">
+      <RecordsView :embedded="true" @close="closeRecords" />
+    </SecondaryPageOverlay>
   </div>
 </template>
 
