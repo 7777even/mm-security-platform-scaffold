@@ -9,6 +9,8 @@ export interface WujieEventMap {
   'emergency-event-changed': { eventId: string; status: string };
   'theme-changed': { theme: string };
   'perm-changed': { perms: string[] };
+  // 子应用内路由跳转委托主壳（二级页由主壳 SECONDARY_ROUTES 承载）
+  'route-navigate': { path: string };
 }
 
 export interface WujieBus {

@@ -60,6 +60,14 @@ async function bootstrap(): Promise<void> {
   await installMenus();
 
   app.use(router);
+
+  // 子应用内路由跳转统一委托主壳路由（二级页由主壳 SECONDARY_ROUTES 承载）。
+  // 子应用经 wujie 总线 emit('route-navigate')，主壳监听后执行 router.push。
+  WujieVue.bus.$on('route-navigate', (event: string, data: { path: string }) => {
+    void event;
+    void router.push(data.path);
+  });
+
   await router.isReady();
 
   app.mount('#app');

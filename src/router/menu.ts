@@ -45,19 +45,29 @@ export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
     title: '消防报警',
     perm: 'fire-alarm:view',
     icon: Warning,
-    component: () => import('@/views/fire-alarm/index.vue').then((m) => m.default),
+    // wujie-shell：作为子应用经 WujieHost 挂载，复用主壳下发的设计 token
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_FIRE_ALARM_SUBAPP_URL ?? '/subapps/fire-alarm/',
   },
   'security-anti-terror': {
     title: '治安防恐',
     perm: 'security:view',
     icon: Lock,
-    component: () => import('@/views/security-anti-terror/index.vue').then((m) => m.default),
+    // wujie-shell：作为子应用经 WujieHost 挂载，复用主壳下发的设计 token
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl:
+      import.meta.env.VITE_SECURITY_ANTI_TERROR_SUBAPP_URL ?? '/subapps/security-anti-terror/',
   },
   'industrial-video': {
     title: '工业电视视频墙',
     perm: 'video:view',
     icon: VideoCamera,
-    component: () => import('@/views/industrial-video/index.vue').then((m) => m.default),
+    // wujie-shell：作为子应用经 WujieHost 挂载，复用主壳下发的设计 token
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_INDUSTRIAL_VIDEO_SUBAPP_URL ?? '/subapps/industrial-video/',
   },
   'ops-monitor': {
     title: '运维监测',

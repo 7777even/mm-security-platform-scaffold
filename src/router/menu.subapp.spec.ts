@@ -28,3 +28,22 @@ describe('dashboard 路由 → wujie 子应用挂载映射', () => {
     expect(typeof spec!.component).toBe('function');
   });
 });
+
+describe('其余业务模块 → wujie 子应用挂载映射', () => {
+  const migrated = ['fire-alarm', 'security-anti-terror', 'industrial-video'] as const;
+
+  it('迁移模块均标记为子应用且 subappUrl 指向同源子应用入口', () => {
+    for (const id of migrated) {
+      const spec = MENU_ROUTE_SPECS[id];
+      expect(spec).toBeDefined();
+      expect(spec!.subapp).toBe(true);
+      expect(spec!.subappUrl ?? '').toMatch(/^\/subapps\//);
+    }
+  });
+
+  it('迁移模块路由组件均指向 WujieHost（经主壳挂载子应用）', () => {
+    for (const id of migrated) {
+      expect(MENU_ROUTE_SPECS[id]!.component.toString()).toContain('WujieHost');
+    }
+  });
+});
