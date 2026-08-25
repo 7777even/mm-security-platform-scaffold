@@ -41,5 +41,5 @@
 
 - [x] 运行 `npm run dev` 实跑（单 Vite 多入口，主壳 5173 同源托管 `/subapps/dashboard/`）：验证 wujie 实际挂载与 props 下传。DEBUG 浮层已确认 `dash=dashboard-map 1244x736`、`dash.children=3`、`devMock=true`，证明子应用挂载、布局与 mock 拦截均生效；验证后已移除临时 DEBUG 浮层（`subapps/dashboard/main.ts`）。
 - [x] 消除 `vue-tsc -b` 9 个预存类型错误（scaffold 基线，与微前端无关）：已修复 `EmergencyEventCrudPanel.vue`（`viewing?.` 防空）、`plans.vue`（补全 `updatedAt`、收窄 `LEVEL_TONE` 字面量联合）、`fire-alarm/index.vue`（补 `formatTime`）、`fire-alarm/records.vue`（行断言 `AlarmItem`）、`industrial-video/index.vue`（移除 `as const`）、`security-anti-terror/records.vue`（索引断言 `AccessLevel`）。`vue-tsc -b` 现已 0 错误。
-- [ ] 设计 token 经 wujie 沙箱注入子应用（当前子应用独立 import tokens.css，需确认沙箱样式隔离策略）。
-- [ ] 渐进迁移其余 5 模块为子应用（复用同 WujieHost 机制）。
+- [x] 设计 token 经 wujie 沙箱注入子应用：已确认并采用「单一真源 + 沙箱注入」策略。wujie 子应用运行于独立 iframe 沙箱 document，与主壳 style 隔离，无法读取主壳 `:root` 变量，故原先各子应用需各自 `import tokens.css`。现改为：主壳经 `<WujieVue>` 的 `beforeMount` 生命周期（`src/shell/WujieHost.vue` → `src/shell/wujieTokens.ts` 的 `injectDesignTokens`）把 `tokens.css`（`?raw` 读为字符串）注入子应用沙箱 `document.head`（固定 id `wujie-design-tokens`，幂等）；子应用（`subapps/dashboard/main.ts`）移除 `import '@/styles/tokens.css'`，不再打包 token，由主壳统一下发。`global.css`（子应用自身布局重置/工具类）仍由子应用自带。非 dark 主题会在沙箱 `documentElement` 置 `data-theme` 激活覆盖块。配套 `wujieTokens.spec.ts` 已覆盖注入/幂等/主题逻辑。
+- [ ] 渐进迁移其余 5 模块为子应用（复用同 WujieHost 机制；fire-alarm / industrial-video / security-anti-terror / plans / system-users）。

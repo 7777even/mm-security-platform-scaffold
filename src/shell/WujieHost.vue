@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import WujieVue from 'wujie-vue3';
 import { useAuthStore } from '@/stores/auth';
+import { injectDesignTokens } from './wujieTokens';
 
 // wujie 主壳装载槽（wujie-shell spec）。
 // 经 <RouterView> 渲染：当路由 meta.subappUrl 存在时挂载对应子应用，
@@ -21,6 +22,12 @@ const sharedProps = computed(() => ({
   perms: auth.perms,
   theme: 'dark',
 }));
+
+// 子应用沙箱 style 隔离，无法读取主壳 :root 变量；
+// 在挂载前把设计 token 注入其沙箱 document（单一真源，子应用不再打包 tokens.css）。
+function onBeforeMount(appWindow: Window) {
+  injectDesignTokens(appWindow, sharedProps.value.theme);
+}
 </script>
 
 <template>
@@ -33,6 +40,7 @@ const sharedProps = computed(() => ({
     :name="subappName"
     :url="subappUrl"
     :props="sharedProps"
+    :before-mount="onBeforeMount"
     width="100%"
     height="100%"
     :sandbox="'allow-scripts allow-same-origin'"

@@ -3,7 +3,7 @@ import { createPinia } from 'pinia';
 import { createRouter, createWebHistory } from 'vue-router';
 import 'element-plus/theme-chalk/base.css';
 import Dashboard from '@/views/dashboard/index.vue';
-import '@/styles/tokens.css';
+// 设计 token 由主壳经 wujie 沙箱注入（src/shell/wujieTokens.ts），子应用无需再打包 tokens.css。
 import '@/styles/global.css';
 import http from '@/services/http';
 import { installDevMock } from '@/mocks/devMock';
