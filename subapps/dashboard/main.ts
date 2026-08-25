@@ -7,6 +7,7 @@ import '@/styles/global.css';
 import http from '@/services/http';
 import { installDevMock } from '@/mocks/devMock';
 import { useAuthStore } from '@/stores/auth';
+import { createSubappRouter } from '@/shell/subappRouter';
 
 // dashboard 子应用入口（wujie-shell 试点）。
 // 复用主壳已验证的 views/dashboard/index.vue，独立 Pinia 挂载；
