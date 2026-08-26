@@ -14,6 +14,8 @@ import {
   setLayerVisible,
   enablePick,
   setBaseMapMode,
+  loadTerrainRelief,
+  setTerrainHillshadeVisible,
   type BaseMapMode,
   type LayerKind,
   type PickResult,
@@ -62,7 +64,8 @@ const containerRef = ref<HTMLDivElement | null>(null);
 const mode = ref<'2d' | '3d'>(props.sceneMode);
 const picked = ref<PickResult | null>(null);
 const layers = reactive({ base: true, markers: true, zones: true, labels: true });
-const baseMapMode = ref<BaseMapMode>('night');
+const baseMapMode = ref<BaseMapMode>('satellite');
+const terrainVisible = ref(true);
 
 function toggleBaseMapMode(): void {
   if (!viewer) return;
@@ -121,6 +124,7 @@ async function createViewer(): Promise<Cesium.Viewer> {
 async function renderAll(): Promise<void> {
   if (!viewer) return;
   await loadBaseMap(viewer);
+  await loadTerrainRelief(viewer);
   await loadRiskZones(viewer);
   // 点位统一由聚合打点图层渲染（已接入 clusterPoints 时）；否则回退经典复合标注
   if (!props.clusterPoints || props.clusterPoints.length === 0) {
@@ -210,6 +214,11 @@ function toggleLayer(kind: LayerKind): void {
   if (!viewer) return;
   layers[kind] = !layers[kind];
   setLayerVisible(viewer, kind, layers[kind]);
+}
+
+function toggleTerrain(): void {
+  terrainVisible.value = !terrainVisible.value;
+  if (viewer) setTerrainHillshadeVisible(viewer, terrainVisible.value);
 }
 
 function levelText(p: PickResult | null): string {
@@ -369,6 +378,10 @@ onUnmounted(() => {
       <label class="map-toolbar__toggle" title="标注显隐">
         <input type="checkbox" :checked="layers.labels" @change="toggleLayer('labels')" />
         <span>标注</span>
+      </label>
+      <label class="map-toolbar__toggle" title="地形浮雕显隐">
+        <input type="checkbox" :checked="terrainVisible" @change="toggleTerrain" />
+        <span>地形</span>
       </label>
       <label
         v-if="props.clusterPoints && props.clusterPoints.length"

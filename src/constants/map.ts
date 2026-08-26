@@ -28,14 +28,25 @@ export const TIANDITU = {
   imageLabel: tdt('cia'),
 };
 
+// 地形 / 高程服务（受控联网）。
+// 说明：天地图 T=ter_w 是「地形晕渲」影像（山体阴影贴图），并非 Cesium 可用的高程(quantized-mesh)数据。
+// 因此 layered：
+//  - TERRAIN_HILLSHADE：天地图地形晕渲影像，仅作视觉浮雕叠加（不提供真实高程几何，但观感接近 3D 起伏）。
+//  - TERRAIN_URL：可选的真实高程瓦片服务（Cesium quantized-mesh），由 VITE_TERRAIN_URL 注入；
+//    缺省为空 → 不加载真实地形，仅用地形晕渲影像做视觉增强。
+export const TERRAIN_HILLSHADE = tdt('ter');
+export const TERRAIN_URL: string = (import.meta.env.VITE_TERRAIN_URL as string | undefined) ?? '';
+// 真实地形 readyPromise 超时保护（ms），避免不可达服务长期挂起
+export const TERRAIN_TIMEOUT_MS = 6000;
+
 // 保留原离线瓦片配置（同源内网瓦片服务），作为无 VITE_MAP_TILE_URL 时的兜底占位
 export const MAP_TILE_URL: string = import.meta.env.VITE_MAP_TILE_URL ?? '/tiles/{z}/{x}/{y}.png';
 
-// one-brain 暗夜风格调色（仅作用于矢量底图 imageryLayer）：轻微降亮 + 蓝向色相偏移 + 提饱和/对比，
-// 复刻 one-brain 默认「夜景」暗蓝观感（renderColor.js 默认不调色，其夜景来自 sdmap 暗色矢量层，此处以调色近似）。
+// one-brain 暗夜风格调色（仅作用于矢量底图 imageryLayer）：压低亮度 + 蓝向色相偏移 + 提饱和/对比，
+// 复刻 one-brain 默认「夜景」暗蓝观感。默认即以 night 模式加载（BaseMap.baseMapMode='night'）。
 export const NIGHT_GRADING = {
-  brightness: 0.82,
-  saturation: 1.12,
-  contrast: 1.06,
-  hue: 0.045,
+  brightness: 0.68,
+  saturation: 1.22,
+  contrast: 1.14,
+  hue: 0.07,
 };

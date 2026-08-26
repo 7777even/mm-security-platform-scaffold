@@ -6,14 +6,20 @@ import * as Cesium from 'cesium';
 import type { MapPoint, RiskZone } from '@/services/map';
 import { fetchAlarmPoints, fetchDevicePoints, fetchRiskZones } from '@/services/map';
 import { wktToCartesians, wktCenter } from '@/services/geo';
-import { TIANDITU, NIGHT_GRADING } from '@/constants/map';
+import {
+  TIANDITU,
+  NIGHT_GRADING,
+  TERRAIN_HILLSHADE,
+  TERRAIN_URL,
+  TERRAIN_TIMEOUT_MS,
+} from '@/constants/map';
 import { recordPerfAsync } from '@/utils/perf-budget';
 import { logger } from '@/utils/logger';
 import { readCssVar } from '@/utils/theme';
 
 // 厂区初始中心（茂名市中心坐标）+ 初始相机高度
 export const FACTORY_CENTER: [number, number] = [110.925, 21.663];
-export const FACTORY_HEIGHT = 12000;
+export const FACTORY_HEIGHT = 8000;
 
 // 报警等级配色：语义色 token（规范 §13.1：1 级最高危=红，4 级最低=蓝）
 const LEVEL_TOKEN: Record<number, string> = {
@@ -150,17 +156,20 @@ export function createCesiumViewer(container: HTMLElement): Cesium.Viewer {
   viewer.scene.backgroundColor = bg;
   if (viewer.scene.globe) {
     viewer.scene.globe.baseColor = bg;
-    viewer.scene.globe.showGroundAtmosphere = false;
+    // 开启地面大气辉光，增强 3D 纵深观感（纯 shader 计算，不依赖网络）
+    viewer.scene.globe.showGroundAtmosphere = true;
     if ('atmosphereLightIntensity' in viewer.scene.globe) {
       (
         viewer.scene.globe as unknown as { atmosphereLightIntensity: number }
-      ).atmosphereLightIntensity = 0;
+      ).atmosphereLightIntensity = 8;
     }
     if (viewer.scene.globe.translucency) viewer.scene.globe.translucency.enabled = false;
   }
-  // 关闭远景白色雾化与天体光晕
+  // 远景雾化保持关闭，避免白雾/白屏；3D 纵深由大气辉光 + 太阳光照 + 地形浮雕提供
   if (viewer.scene.fog) viewer.scene.fog.enabled = false;
-  if (viewer.scene.sun) viewer.scene.sun.show = false;
+  // 开启天空大气辉光与太阳光照，强化球面立体感（均为本地着色，无网络请求）
+  if (viewer.scene.skyAtmosphere) viewer.scene.skyAtmosphere.show = true;
+  if (viewer.scene.sun) viewer.scene.sun.show = true;
   if (viewer.scene.moon) viewer.scene.moon.show = false;
 
   viewer.scene.renderError.addEventListener((_scene: unknown, error: unknown) => {
@@ -175,7 +184,7 @@ export function createCesiumViewer(container: HTMLElement): Cesium.Viewer {
       FACTORY_CENTER[1],
       FACTORY_HEIGHT,
     ),
-    orientation: { heading: 0, pitch: Cesium.Math.toRadians(-45), roll: 0 },
+    orientation: { heading: 0, pitch: Cesium.Math.toRadians(-30), roll: 0 },
   });
   return viewer;
 }
@@ -256,7 +265,7 @@ export type BaseMapMode = 'night' | 'satellite';
  */
 export async function loadBaseMap(
   viewer: Cesium.Viewer,
-  mode: BaseMapMode = 'night',
+  mode: BaseMapMode = 'satellite',
 ): Promise<void> {
   await recordPerfAsync('baseMapMs', async () => {
     // 离线底座：纯色 + 透明网格，地球表面一定渲染且可见
@@ -293,6 +302,75 @@ export function setBaseMapMode(viewer: Cesium.Viewer, mode: BaseMapMode): void {
   if (!viewer || viewer.isDestroyed?.()) return;
   addTianditu(viewer, mode);
   viewer.scene.requestRender();
+}
+
+// ---- 地形浮雕增强（受控联网 / 离线安全） ----
+
+const TERRAIN_HILLSHADE_NAME = 'tianditu-terrain';
+
+/** 移除已添加的天地图地形晕渲层。 */
+function clearTerrainHillshade(viewer: Cesium.Viewer): void {
+  const layers = viewer.imageryLayers;
+  for (let i = layers.length - 1; i >= 0; i--) {
+    const layer = layers.get(i) as Cesium.ImageryLayer & { name?: string };
+    if (layer.name === TERRAIN_HILLSHADE_NAME) layers.remove(layer);
+  }
+}
+
+/** 天地图地形晕渲叠加（视觉浮雕，非真实高程）。半透明叠加在底图上，给出山体明暗起伏观感。 */
+function addTerrainHillshade(viewer: Cesium.Viewer): void {
+  clearTerrainHillshade(viewer);
+  const layer = viewer.imageryLayers.addImageryProvider(makeTiandituProvider(TERRAIN_HILLSHADE));
+  (layer as Cesium.ImageryLayer & { name?: string }).name = TERRAIN_HILLSHADE_NAME;
+  layer.alpha = 0.28;
+  layer.contrast = 1.1;
+}
+
+/** 切换天地图地形晕渲层显隐（真实高程地形不可由此关闭，仅控制视觉浮雕）。 */
+export function setTerrainHillshadeVisible(viewer: Cesium.Viewer, visible: boolean): void {
+  const layers = viewer.imageryLayers;
+  for (let i = 0; i < layers.length; i++) {
+    const layer = layers.get(i) as Cesium.ImageryLayer & { name?: string };
+    if (layer.name === TERRAIN_HILLSHADE_NAME) layer.show = visible;
+  }
+  viewer.scene.requestRender();
+}
+
+/** 带超时的「真实高程地形」尝试（Cesium quantized-mesh）。不可达/超时则回落 false。 */
+async function tryRealTerrain(viewer: Cesium.Viewer): Promise<boolean> {
+  if (!TERRAIN_URL) return false;
+  try {
+    // Cesium 1.119 经 fromUrl 异步构造（同步构造器已不再接受 url 选项）
+    const provider = await Promise.race([
+      Cesium.CesiumTerrainProvider.fromUrl(TERRAIN_URL, { requestVertexNormals: true }),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('terrain timeout')), TERRAIN_TIMEOUT_MS),
+      ),
+    ]);
+    viewer.terrainProvider = provider;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 地形浮雕增强：
+ * 1) 若配置了真实高程服务(VITE_TERRAIN_URL) 且可达 → 加载 quantized-mesh 地形（真实几何起伏）。
+ * 2) 否则叠加天地图地形晕渲影像（视觉浮雕，不提供几何但观感接近起伏）。
+ * 全程受控联网、离线安全：任何失败静默回落到平滑椭球（无白屏）。
+ */
+export async function loadTerrainRelief(viewer: Cesium.Viewer): Promise<void> {
+  await recordPerfAsync('terrainMs', async () => {
+    const real = await tryRealTerrain(viewer);
+    if (!real) {
+      // 受控联网：天地图晕渲影像，给出地形起伏观感
+      const reachable = await isTiandituReachable(TERRAIN_HILLSHADE);
+      if (reachable) addTerrainHillshade(viewer);
+      else logger.warn('[cesium] 天地图晕渲不可达，已跳过地形浮雕');
+    }
+    viewer.scene.requestRender();
+  });
 }
 
 /** 将点位渲染为「图形 + 文字」复合标注（point 圆点 + label 名称）。 */
@@ -408,7 +486,7 @@ export async function loadRiskZones(viewer: Cesium.Viewer): Promise<void> {
   }
 }
 
-/** 复位相机到厂区初始视角。 */
+/** 复位相机到厂区初始视角（带 3D 俯角，避免俯视变成「平面地图」观感）。 */
 export function resetView(viewer: Cesium.Viewer): void {
   viewer.camera.flyTo({
     destination: Cesium.Cartesian3.fromDegrees(
@@ -416,6 +494,11 @@ export function resetView(viewer: Cesium.Viewer): void {
       FACTORY_CENTER[1],
       FACTORY_HEIGHT,
     ),
+    orientation: {
+      heading: 0,
+      pitch: Cesium.Math.toRadians(-30),
+      roll: 0,
+    },
     duration: 1.2,
   });
 }

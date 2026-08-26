@@ -5,6 +5,7 @@ export interface PerfBudget {
   enterPlatformMs: number; // P7 进入平台 ≤5s
   functionWindowMs: number; // P8 功能窗口切换 ≤2s
   baseMapMs: number; // P9 基础地图 ≤2s（由地图模块在各自 change 触发打点）
+  terrainMs: number; // 地形浮雕加载耗时（非硬性 P 档预算，仅观测）
   componentQueryMs: number; // P10 部件查询 ≤2s（由查询模块在各自 change 触发打点）
 }
 
@@ -12,6 +13,7 @@ export const PERF_BUDGETS: PerfBudget = {
   enterPlatformMs: 5000,
   functionWindowMs: 2000,
   baseMapMs: 2000,
+  terrainMs: 3000,
   componentQueryMs: 2000,
 };
 
