@@ -13,12 +13,14 @@
 ## Capabilities
 
 ### New Capabilities
+
 - `scaffold-foundation`：工程基座与技术/合规基线。
 - `realtime-channel`：WebSocket 可靠实时通道。
 - `device-code`：20 位 MDM 设备编码解析。
 - `rbac-permission`：动态路由菜单 + 按钮级权限。
 
 ### Modified Capabilities
+
 - 无。
 
 ## Impact
