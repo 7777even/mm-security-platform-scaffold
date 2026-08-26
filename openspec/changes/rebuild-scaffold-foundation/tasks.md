@@ -1,3 +1,7 @@
+## Status
+
+可归档（待评审）· 2026-08-26 验证：build ✓ / lint 0 error / test 全 PASS
+
 ## 1. OpenSpec 骨架（文档先行）
 
 - [x] 1.1 编写 `openspec/config.yaml`（项目上下文 + 提案/任务规则）。
