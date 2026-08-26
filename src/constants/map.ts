@@ -50,11 +50,11 @@ export const BUILDING_TILESET_TIMEOUT_MS = 10000;
 // 保留原离线瓦片配置（同源内网瓦片服务），作为无 VITE_MAP_TILE_URL 时的兜底占位
 export const MAP_TILE_URL: string = import.meta.env.VITE_MAP_TILE_URL ?? '/tiles/{z}/{x}/{y}.png';
 
-// one-brain 暗夜风格调色（仅作用于矢量底图 imageryLayer）：压低亮度 + 蓝向色相偏移 + 提饱和/对比，
-// 复刻 one-brain 默认「夜景」暗蓝观感。默认即以 night 模式加载（BaseMap.baseMapMode='night'）。
+// 底图统一深蓝科技调色（作用于矢量/影像底图 imageryLayer）：压低亮度 + 蓝向色相偏移 + 提饱和/对比，
+// 使真实世界底图融入系统深蓝基色，与两侧面板同色系；影像/夜景两种模式共用。
 export const NIGHT_GRADING = {
-  brightness: 0.68,
-  saturation: 1.22,
-  contrast: 1.14,
-  hue: 0.07,
+  brightness: 0.62,
+  saturation: 1.18,
+  contrast: 1.16,
+  hue: 0.085,
 };

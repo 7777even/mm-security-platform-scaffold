@@ -120,7 +120,8 @@ export function markerColor(kind: 'alarm' | 'device', p: MapPoint): Cesium.Color
   return kind === 'alarm' ? levelColor(p.level) : statusColor(p.status);
 }
 
-const DARK_BG = readCssVar('--color-bg', '#0b1526'); // 规范 --color-bg
+// 离线/无瓦片时的地图底色：取系统面板基色（深蓝），使地图基色与两侧面板同色系，消除「地图突兀」感
+const BASE_FILL = readCssVar('--color-panel', '#13233c');
 
 /**
  * 创建单一 Cesium viewer，移除默认干扰 UI，仅保留画布。
@@ -153,8 +154,8 @@ export function createCesiumViewer(container: HTMLElement): Cesium.Viewer {
     requestRenderMode: true,
   });
 
-  // 深色底座：background + globe.baseColor 与 dashboard 同色，globe 失败也看不出白屏
-  const bg = Cesium.Color.fromCssColorString(DARK_BG);
+  // 深色底座：background + globe.baseColor 取系统面板基色（深蓝），与两侧面板同色系，消除突兀感
+  const bg = Cesium.Color.fromCssColorString(BASE_FILL);
   viewer.scene.backgroundColor = bg;
   if (viewer.scene.globe) {
     viewer.scene.globe.baseColor = bg;
@@ -240,7 +241,7 @@ function clearTianditu(viewer: Cesium.Viewer): void {
   }
 }
 
-/** 添加天地图底图（矢量+注记 或 影像+注记），夜景模式叠加暗色调色。 */
+/** 添加天地图底图（矢量+注记 或 影像+注记），统一叠加深蓝科技色调色，使地图基色与系统面板同色系。 */
 function addTianditu(viewer: Cesium.Viewer, mode: 'night' | 'satellite'): void {
   clearTianditu(viewer);
   const baseUrl = mode === 'satellite' ? TIANDITU.image : TIANDITU.vector;
@@ -249,13 +250,11 @@ function addTianditu(viewer: Cesium.Viewer, mode: 'night' | 'satellite'): void {
   (baseLayer as Cesium.ImageryLayer & { name?: string }).name = TD_LAYER_NAME;
   const labelLayer = viewer.imageryLayers.addImageryProvider(makeTiandituProvider(labelUrl));
   (labelLayer as Cesium.ImageryLayer & { name?: string }).name = TD_LAYER_NAME;
-  // 暗夜风格调色（仅夜景矢量层；与 one-brain OnemapSynthesis 暗蓝观感对齐）
-  if (mode === 'night') {
-    baseLayer.brightness = NIGHT_GRADING.brightness;
-    baseLayer.saturation = NIGHT_GRADING.saturation;
-    baseLayer.contrast = NIGHT_GRADING.contrast;
-    baseLayer.hue = NIGHT_GRADING.hue;
-  }
+  // 两种模式统一深蓝科技调色：压亮、提蓝向色相、增强对比，使真实世界底图融入深蓝系统基色
+  baseLayer.brightness = NIGHT_GRADING.brightness;
+  baseLayer.saturation = NIGHT_GRADING.saturation;
+  baseLayer.contrast = NIGHT_GRADING.contrast;
+  baseLayer.hue = NIGHT_GRADING.hue;
 }
 
 export type BaseMapMode = 'night' | 'satellite';
@@ -270,9 +269,9 @@ export async function loadBaseMap(
   mode: BaseMapMode = 'satellite',
 ): Promise<void> {
   await recordPerfAsync('baseMapMs', async () => {
-    // 离线底座：纯色 + 透明网格，地球表面一定渲染且可见
+    // 离线底座：纯色（系统面板深蓝）+ 透明网格，地球表面一定渲染且可见，且与两侧面板同色系
     const offlineBase = new Cesium.SingleTileImageryProvider({
-      url: solidImageryDataUrl(DARK_BG),
+      url: solidImageryDataUrl(BASE_FILL),
       tileWidth: 1,
       tileHeight: 1,
       rectangle: Cesium.Rectangle.fromDegrees(-180, -90, 180, 90),

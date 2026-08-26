@@ -218,55 +218,45 @@ onUnmounted(() => {
 
 <template>
   <div class="dashboard dashboard-map">
-    <!-- 地图舞台：带发光边框、暗角、边缘渐变遮罩，让地图与两侧面板融为同一视觉整体 -->
-    <div class="map-stage">
-      <!-- Cesium 二三维一体化地图（中央主视觉） -->
-      <BaseMap
-        :tile-url="MAP_TILE_URL"
-        :alarms="alarmPoints"
-        :devices="devicePoints"
-        :zones="riskZones"
-        :cluster-points="clusterPoints"
-        :scene-mode="sceneMode"
-        @error="onMapError"
-        @mode-change="(m) => (sceneMode = m)"
-      />
-
-      <!-- 舞台装饰框：青辉光 + 顶部亮线 + 暗角 -->
-      <div class="map-stage__frame" aria-hidden="true" />
-
-      <!-- 左右边缘渐变遮罩：地图色向面板背景色自然过渡，弱化硬边 -->
-      <div class="map-stage__mask map-stage__mask--left" aria-hidden="true" />
-      <div class="map-stage__mask map-stage__mask--right" aria-hidden="true" />
-
-      <!-- 左侧面板区（419px）：应急预案入口 + 应急事件 CRUD + 趋势图 + 结案滚动 -->
-      <div v-if="!loading" class="dash-left">
-        <PanelCard title="应急预案库" icon="Document">
-          <p class="plan-entry">应急预案、现场处置卡集中管理，支撑应急指挥调度。</p>
-          <div class="plan-entry__actions">
-            <AppButton variant="primary" size="sm" @click="openPlans">进入预案库</AppButton>
-          </div>
-        </PanelCard>
-
-        <EmergencyEventCrudPanel />
-
-        <PanelCard title="近 24h 应急事件 / 处置率" icon="TrendCharts">
-          <div ref="chartRef" class="chart" />
-        </PanelCard>
-
-        <ClosedCasePanel />
-      </div>
-
-      <!-- 右侧面板区（419px）：值班值守 + 应急力量数据 + 应急生产安全知识 -->
-      <aside v-if="!loading" class="dash-right">
-        <DutyPanel />
-        <EmergencyStrengthPanel />
-        <EmergencyKnowledgePanel />
-      </aside>
-    </div>
+    <!-- Cesium 二三维一体化地图（中央主视觉，底图经统一深蓝科技色调色与系统基色融合） -->
+    <BaseMap
+      :tile-url="MAP_TILE_URL"
+      :alarms="alarmPoints"
+      :devices="devicePoints"
+      :zones="riskZones"
+      :cluster-points="clusterPoints"
+      :scene-mode="sceneMode"
+      @error="onMapError"
+      @mode-change="(m) => (sceneMode = m)"
+    />
 
     <!-- 地图降级提示 -->
     <p v-if="mapNotice" class="map-notice">{{ mapNotice }}</p>
+
+    <!-- 左侧面板区（419px）：应急预案入口 + 应急事件 CRUD + 趋势图 + 结案滚动 -->
+    <div v-if="!loading" class="dash-left">
+      <PanelCard title="应急预案库" icon="Document">
+        <p class="plan-entry">应急预案、现场处置卡集中管理，支撑应急指挥调度。</p>
+        <div class="plan-entry__actions">
+          <AppButton variant="primary" size="sm" @click="openPlans">进入预案库</AppButton>
+        </div>
+      </PanelCard>
+
+      <EmergencyEventCrudPanel />
+
+      <PanelCard title="近 24h 应急事件 / 处置率" icon="TrendCharts">
+        <div ref="chartRef" class="chart" />
+      </PanelCard>
+
+      <ClosedCasePanel />
+    </div>
+
+    <!-- 右侧面板区（419px）：值班值守 + 应急力量数据 + 应急生产安全知识 -->
+    <aside v-if="!loading" class="dash-right">
+      <DutyPanel />
+      <EmergencyStrengthPanel />
+      <EmergencyKnowledgePanel />
+    </aside>
 
     <!-- 加载骨架屏 -->
     <div v-if="loading" class="dashboard-skeleton" data-test="dashboard-skeleton">
@@ -286,71 +276,14 @@ onUnmounted(() => {
 .dashboard-map {
   position: relative;
   height: 100%;
-  padding: var(--space-md);
-  box-sizing: border-box;
-  background: var(--color-bg);
 
   /* 不裁切子元素的溢出滚动：dash-left / dash-right 内部 overflow-y:auto 仍可滚 */
-}
-
-/* 地图舞台：发光边框 + 圆角 + 暗角，让地图与面板形成同一视觉容器 */
-.map-stage {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow:
-    0 0 28px var(--color-accent-glow),
-    0 0 8px var(--color-accent-faint),
-    inset 0 0 0 1px var(--color-accent-glow);
-}
-
-/* 舞台装饰框：顶部亮线 + 内暗角，强化科技大屏边框感 */
-.map-stage__frame {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 6;
-  box-shadow: inset 0 0 60px rgb(0 0 0 / 35%);
-}
-
-.map-stage__frame::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 24px;
-  right: 24px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
-  opacity: 0.7;
-}
-
-/* 左右边缘渐变遮罩：让地图边缘向 --color-bg 自然过渡，避免面板与地图硬切 */
-.map-stage__mask {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 120px;
-  pointer-events: none;
-  z-index: 4;
-}
-
-.map-stage__mask--left {
-  left: 0;
-  background: linear-gradient(to right, var(--color-bg), transparent);
-}
-
-.map-stage__mask--right {
-  right: 0;
-  background: linear-gradient(to left, var(--color-bg), transparent);
 }
 
 /* 地图降级提示 */
 .map-notice {
   position: absolute;
-  top: calc(var(--space-md) + var(--space-sm));
+  top: var(--space-md);
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
