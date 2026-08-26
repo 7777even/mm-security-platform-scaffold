@@ -170,18 +170,26 @@ export function createCesiumViewer(container: HTMLElement): Cesium.Viewer {
     skyAtmosphere: false,
     // 关闭内建 HTML 错误面板，避免遮挡
     showRenderLoopErrors: false,
-    // canvas 不透明 + 保留 framebuffer，杜绝白屏假象与截图丢帧
-    contextOptions: { webgl: { alpha: false, preserveDrawingBuffer: true } },
+    // canvas 不透明；不保留 framebuffer（preserveDrawingBuffer 会显著拖慢弱 GPU 帧率，
+    // 此处仅用于离线纯色底图，无需保留缓冲；白屏由 requestRenderMode 下的显式 requestRender 兜底）
+    contextOptions: { webgl: { alpha: false } },
     requestRenderMode: true,
   });
 
   // 深色底座：background + globe.baseColor 取系统面板基色（深蓝），与两侧面板同色系，消除突兀感
   const bg = getBaseFillColor();
   viewer.scene.backgroundColor = bg;
+  // 渲染分辨率缩放：弱 GPU（石化窗/海光 C86）下将内部帧缓冲降采样到 0.8，
+  // 像素量下降 ~36%，直接削减每帧片元着色开销，平移更顺滑；可按硬件能力经
+  // VITE_CESIUM_RESOLUTION_SCALE 调整（1.0 为原生分辨率）。
+  viewer.resolutionScale = Number(import.meta.env.VITE_CESIUM_RESOLUTION_SCALE) || 0.8;
   if (viewer.scene.globe) {
     viewer.scene.globe.baseColor = bg;
-    // 开启地面大气辉光，增强 3D 纵深观感（纯 shader 计算，不依赖网络）
-    viewer.scene.globe.showGroundAtmosphere = true;
+    // 降低影像/地形细节层级（默认 2 → 4），减少平移时的瓦片请求与解码开销，提升弱 GPU 流畅度
+    viewer.scene.globe.maximumScreenSpaceError = 4;
+    // 关闭地面大气辉光：该效果为全屏片元计算，弱 GPU 下是平移卡顿主因之一；
+    // 3D 纵深观感改由光照 + 地形浮雕提供，深蓝底图视觉不受损。
+    viewer.scene.globe.showGroundAtmosphere = false;
     if ('atmosphereLightIntensity' in viewer.scene.globe) {
       (
         viewer.scene.globe as unknown as { atmosphereLightIntensity: number }
@@ -414,7 +422,8 @@ export async function loadBuildingModel(viewer: Cesium.Viewer): Promise<void> {
   try {
     const tileset = await Promise.race([
       Cesium.Cesium3DTileset.fromUrl(BUILDING_TILESET_URL, {
-        shadows: Cesium.ShadowMode.ENABLED,
+        // 关闭阴影以省去每帧 shadow map 渲染，降低弱 GPU 下 3D 建筑平移开销
+        shadows: Cesium.ShadowMode.DISABLED,
         maximumScreenSpaceError: 64,
       }),
       new Promise<never>((_, reject) =>

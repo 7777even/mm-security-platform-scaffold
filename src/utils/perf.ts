@@ -11,20 +11,20 @@
  */
 
 function queryFlag(): boolean | null {
-  if (typeof window === 'undefined') return null
-  const p = new URLSearchParams(window.location.search)
-  if (p.get('perf') === '0') return false
-  if (p.has('perf')) return true
-  return null
+  if (typeof window === 'undefined') return null;
+  const p = new URLSearchParams(window.location.search);
+  if (p.get('perf') === '0') return false;
+  if (p.has('perf')) return true;
+  return null;
 }
 
 /** 埋点是否启用 */
 export function isPerfEnabled(): boolean {
-  return queryFlag() ?? import.meta.env.DEV
+  return queryFlag() ?? import.meta.env.DEV;
 }
 
 function hasPerf(): boolean {
-  return isPerfEnabled() && typeof performance !== 'undefined'
+  return isPerfEnabled() && typeof performance !== 'undefined';
 }
 
 /**
@@ -32,23 +32,31 @@ function hasPerf(): boolean {
  * 输出为相对 app:start 的偏移（时间轴），如 `layout:ready @ +42.0ms`；
  * 无 app:start 时退回相对当前时刻。
  */
+// 同名 mark 会被反复创建（每次导航都会 mark('nav:start')），Performance Timeline 不会覆盖旧 entry。
+// 因此一律取「最近一次」的 entry，否则 measure/mark 会拿到最早那次，度量值随会话时间无限增大
+// （表现为 functionWindowMs 持续累积直到触发 2000ms 预算超时）。
+function lastEntry(name: string): PerformanceEntry | undefined {
+  const entries = performance.getEntriesByName(name);
+  return entries.length ? entries[entries.length - 1] : undefined;
+}
+
 export function mark(name: string): void {
-  if (!hasPerf()) return
-  performance.mark(name)
-  const origin = performance.getEntriesByName('app:start')[0]
-  const self = performance.getEntriesByName(name)[0]
-  const offset = origin && self ? self.startTime - origin.startTime : relativeMs(name)
-  console.info(`[perf] ${name} @ +${offset.toFixed(1)}ms`)
+  if (!hasPerf()) return;
+  performance.mark(name);
+  const origin = lastEntry('app:start');
+  const self = lastEntry(name);
+  const offset = origin && self ? self.startTime - origin.startTime : relativeMs(name);
+  console.info(`[perf] ${name} @ +${offset.toFixed(1)}ms`);
 }
 
 // markOnce 已打点的标记名（避免组件重复打点覆盖首次记录）
-const markedOnce = new Set<string>()
+const markedOnce = new Set<string>();
 
 /** 同名单次打点：重复调用不覆盖首次记录 */
 export function markOnce(name: string): void {
-  if (markedOnce.has(name)) return
-  markedOnce.add(name)
-  mark(name)
+  if (markedOnce.has(name)) return;
+  markedOnce.add(name);
+  mark(name);
 }
 
 /**
@@ -56,17 +64,17 @@ export function markOnce(name: string): void {
  * 起点标记缺失时返回 null（不计入）。
  */
 export function measure(name: string, fromMark: string, toMark?: string): number | null {
-  if (!hasPerf()) return null
-  const from = performance.getEntriesByName(fromMark)[0]
-  if (!from) return null
-  const to = toMark ? performance.getEntriesByName(toMark)[0] : undefined
-  const ms = to ? to.startTime - from.startTime : performance.now() - from.startTime
-  console.info(`[perf] ${name}=${ms.toFixed(1)}ms (${fromMark}${toMark ? ` → ${toMark}` : ''})`)
-  return ms
+  if (!hasPerf()) return null;
+  const from = lastEntry(fromMark);
+  if (!from) return null;
+  const to = toMark ? lastEntry(toMark) : undefined;
+  const ms = to ? to.startTime - from.startTime : performance.now() - from.startTime;
+  console.info(`[perf] ${name}=${ms.toFixed(1)}ms (${fromMark}${toMark ? ` → ${toMark}` : ''})`);
+  return ms;
 }
 
 /** 某标记相对当前时刻的毫秒数（缺失时近似取 now） */
 function relativeMs(name: string): number {
-  const entry = performance.getEntriesByName(name)[0]
-  return entry ? performance.now() - entry.startTime : performance.now()
+  const entry = lastEntry(name);
+  return entry ? performance.now() - entry.startTime : performance.now();
 }

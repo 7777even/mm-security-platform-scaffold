@@ -259,6 +259,8 @@ export class ClusterBillboardLayer {
   private pickedEntity: Cesium.Entity | null = null;
   private pickBillboard: Cesium.BillboardGraphics | null = null;
   private points: ClusterPoint[] = [];
+  private moveRaf = 0;
+  private lastMoveXY: { x: number; y: number } | null = null;
 
   constructor(viewer: Cesium.Viewer, config: ClusterLayerConfig = {}) {
     this.viewer = viewer;
@@ -399,11 +401,28 @@ export class ClusterBillboardLayer {
   }
 
   private onMove(movement: Cesium.ScreenSpaceEventHandler.MotionEvent): void {
-    const picked = this.viewer.scene.pick(movement.endPosition) as
-      Cesium.Entity | Cesium.Primitive | Cesium.Cesium3DTileFeature | undefined;
-    const { kind } = classifyPick(picked ?? null, this.typeName);
-    const el = this.viewer.canvas as HTMLCanvasElement;
-    el.style.cursor = kind === 'none' ? 'default' : 'pointer';
+    const p = movement.endPosition as Cesium.Cartesian2;
+    if (!p) return;
+    // 缓存最新坐标，用 rAF 兜底：鼠标每移动一像素 Cesium 都会抛 MOUSE_MOVE，
+    // 若每次都 scene.pick()（GPU 拾取回读）会严重阻塞渲染线程，导致地图滑动卡顿。
+    // 改为每帧最多拾取一次，并复用最近坐标。
+    this.lastMoveXY = { x: p.x, y: p.y };
+    if (this.moveRaf) return;
+    const tick = () => {
+      this.moveRaf = 0;
+      const xy = this.lastMoveXY;
+      if (!xy) return;
+      const picked = this.viewer.scene.pick(new Cesium.Cartesian2(xy.x, xy.y)) as
+        Cesium.Entity | Cesium.Primitive | Cesium.Cesium3DTileFeature | undefined;
+      const { kind } = classifyPick(picked ?? null, this.typeName);
+      const el = this.viewer.canvas as HTMLCanvasElement;
+      el.style.cursor = kind === 'none' ? 'default' : 'pointer';
+    };
+    if (typeof requestAnimationFrame === 'function') {
+      this.moveRaf = requestAnimationFrame(tick);
+    } else {
+      tick();
+    }
   }
 
   private recoverPicked(): void {
@@ -458,6 +477,11 @@ export class ClusterBillboardLayer {
   }
 
   private removeHandlers(): void {
+    if (this.moveRaf) {
+      cancelAnimationFrame(this.moveRaf);
+      this.moveRaf = 0;
+    }
+    this.lastMoveXY = null;
     if (this.handlerClick) {
       this.handlerClick.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
       this.handlerClick = null;
