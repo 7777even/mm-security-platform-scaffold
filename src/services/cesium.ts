@@ -16,6 +16,7 @@ import {
   BUILDING_TILESET_TIMEOUT_MS,
 } from '@/constants/map';
 import { recordPerfAsync } from '@/utils/perf-budget';
+import { getRenderConfig } from '@/config/render-config';
 import { logger } from '@/utils/logger';
 import { readCssVar } from '@/utils/theme';
 
@@ -179,43 +180,10 @@ export function createCesiumViewer(container: HTMLElement): Cesium.Viewer {
   // 深色底座：background + globe.baseColor 取系统面板基色（深蓝），与两侧面板同色系，消除突兀感
   const bg = getBaseFillColor();
   viewer.scene.backgroundColor = bg;
-  // 渲染分辨率缩放：弱 GPU（石化窗/海光 C86）下将内部帧缓冲降采样到 0.7，
-  // 像素量下降 ~51%，直接削减每帧片元着色开销，平移更顺滑；可按硬件能力经
-  // VITE_CESIUM_RESOLUTION_SCALE 调整（1.0 为原生分辨率；仍偏卡可降到 0.6）。
-  viewer.resolutionScale = Number(import.meta.env.VITE_CESIUM_RESOLUTION_SCALE) || 0.6;
-  // 关闭多重采样抗锯齿（默认 msaaSamples=4 在 WebGL2 下每帧多 4 倍片元着色），弱 GPU 下是平移卡顿主因之一；
-  // 配合下方关闭 FXAA，整体不叠加抗锯齿开销，换取每帧绘制成本大幅下降。
-  viewer.scene.msaaSamples = 0;
-  if (viewer.scene.globe) {
-    viewer.scene.globe.baseColor = bg;
-    // 降低影像/地形细节层级（默认 2 → 8），减少平移时的瓦片请求、解码与绘制开销，提升弱 GPU 流畅度
-    // （代价是地形/影像更粗糙，对监控指挥大屏可接受）
-    viewer.scene.globe.maximumScreenSpaceError = 8;
-    // 关闭瓦片预加载，减少平移时无关祖先/兄弟瓦片的请求与解码，降低主线程与 GPU 抖动
-    viewer.scene.globe.preloadAncestors = false;
-    viewer.scene.globe.preloadSiblings = false;
-    // 关闭地面大气辉光：该效果为全屏片元计算，弱 GPU 下是平移卡顿主因之一；
-    // 3D 纵深观感改由光照 + 地形浮雕提供，深蓝底图视觉不受损。
-    viewer.scene.globe.showGroundAtmosphere = false;
-    if ('atmosphereLightIntensity' in viewer.scene.globe) {
-      (
-        viewer.scene.globe as unknown as { atmosphereLightIntensity: number }
-      ).atmosphereLightIntensity = 8;
-    }
-    if (viewer.scene.globe.translucency) viewer.scene.globe.translucency.enabled = false;
-  }
-  // 远景雾化保持关闭，避免白雾/白屏
-  if (viewer.scene.fog) viewer.scene.fog.enabled = false;
-  // 关闭天空大气辉光：该效果是全屏逐片元大气散射，弱 GPU（石化窗/海光 C86）下每帧都多一次全屏绘制，
-  // 是平移/缩放卡顿的显著来源；立体感改由地形浮雕 + 深蓝底图提供，视觉损失极小。
-  if (viewer.scene.skyAtmosphere) viewer.scene.skyAtmosphere.show = false;
-  // 关闭太阳光照逐片元计算（同属全屏开销），进一步释放弱 GPU 每帧预算
-  if (viewer.scene.sun) viewer.scene.sun.show = false;
-  if (viewer.scene.moon) viewer.scene.moon.show = false;
-  // 关闭 FXAA 全屏后处理抗锯齿（与关闭 msaaSamples 配合，整体不叠加抗锯齿开销），再降每帧片元压力
-  if (viewer.scene.postProcessStages && viewer.scene.postProcessStages.fxaa) {
-    viewer.scene.postProcessStages.fxaa.enabled = false;
-  }
+  // 渲染参数按机器能力档位统一配置（弱 GPU 降负预设见 src/config/render-config.ts）：
+  // 自动探测/手动覆盖由 getRenderConfig() 解析，resolutionScale 仍可由
+  // VITE_CESIUM_RESOLUTION_SCALE 单独微调。
+  applyRenderConfig(viewer, bg);
 
   viewer.scene.renderError.addEventListener((_scene: unknown, error: unknown) => {
     const err = error as { message?: string; stack?: string };
@@ -232,6 +200,38 @@ export function createCesiumViewer(container: HTMLElement): Cesium.Viewer {
     orientation: { heading: 0, pitch: Cesium.Math.toRadians(-30), roll: 0 },
   });
   return viewer;
+}
+
+/**
+ * 应用渲染配置到 viewer：按机器能力档位（high/low）设置分辨率缩放、抗锯齿、
+ * 大气辉光、瓦片预加载、雾化等参数；地球不透明（translucency 关闭）为固定行为，
+ * 不随档位变化。配置来源与档位解析见 src/config/render-config.ts。
+ */
+function applyRenderConfig(viewer: Cesium.Viewer, bg: Cesium.Color): void {
+  const rc = getRenderConfig();
+  viewer.resolutionScale = rc.resolutionScale;
+  viewer.scene.msaaSamples = rc.msaaSamples;
+  if (viewer.scene.globe) {
+    viewer.scene.globe.baseColor = bg;
+    viewer.scene.globe.maximumScreenSpaceError = rc.globeMaximumScreenSpaceError;
+    viewer.scene.globe.preloadAncestors = rc.globePreloadAncestors;
+    viewer.scene.globe.preloadSiblings = rc.globePreloadSiblings;
+    viewer.scene.globe.showGroundAtmosphere = rc.globeShowGroundAtmosphere;
+    if ('atmosphereLightIntensity' in viewer.scene.globe) {
+      (
+        viewer.scene.globe as unknown as { atmosphereLightIntensity: number }
+      ).atmosphereLightIntensity = rc.globeAtmosphereLightIntensity;
+    }
+    // 地球不透明：不保留半透明缓冲，固定关闭（非性能档位项）
+    if (viewer.scene.globe.translucency) viewer.scene.globe.translucency.enabled = false;
+  }
+  if (viewer.scene.fog) viewer.scene.fog.enabled = rc.fogEnabled;
+  if (viewer.scene.skyAtmosphere) viewer.scene.skyAtmosphere.show = rc.skyAtmosphereShow;
+  if (viewer.scene.sun) viewer.scene.sun.show = rc.sunShow;
+  if (viewer.scene.moon) viewer.scene.moon.show = rc.moonShow;
+  if (viewer.scene.postProcessStages && viewer.scene.postProcessStages.fxaa) {
+    viewer.scene.postProcessStages.fxaa.enabled = rc.fxaaEnabled;
+  }
 }
 
 /** 生成纯色底图的 data URL（离线模式用，避免依赖外部瓦片文件/网络）。 */
