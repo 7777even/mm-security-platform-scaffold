@@ -33,6 +33,7 @@ import {
   type ClusterPickInfo,
 } from '@/services/cesium-cluster';
 import MapClusterPopup from '@/components/cesium/MapClusterPopup.vue';
+import MapDetailPanel from '@/components/cesium/MapDetailPanel.vue';
 
 /**
  * Cesium 二三维一体化地图容器（详细设计 4.2.2.2「地图集成服务 map」前端消费侧）。
@@ -76,6 +77,20 @@ const props = withDefaults(
 const containerRef = ref<HTMLDivElement | null>(null);
 const mode = ref<'2d' | '3d'>(props.sceneMode);
 const picked = ref<PickResult | null>(null);
+const pickedPos = ref<Cesium.Cartesian3 | null>(null);
+// 风险分区点击详情（与点位详情互斥，二选一展示，锚定在分区中心上方）
+const zoneDetail = ref<ZonePick | null>(null);
+const zonePos = ref<Cesium.Cartesian3 | null>(null);
+// 详情弹窗屏幕坐标（随相机实时跟随，等价于聚合弹窗）
+const detailPopupPos = reactive({ left: 0, top: 0 });
+let detailPostRender: (() => void) | null = null;
+
+function closeDetail(): void {
+  picked.value = null;
+  pickedPos.value = null;
+  zoneDetail.value = null;
+  zonePos.value = null;
+}
 const layers = reactive({ base: true, markers: true, zones: true, labels: true });
 const baseMapMode = ref<BaseMapMode>('satellite');
 const terrainVisible = ref(true);
@@ -164,6 +179,9 @@ async function init(): Promise<void> {
       applySceneMode(mode.value);
       cancelPick = enablePick(viewer, (result) => {
         picked.value = result;
+        pickedPos.value = result?.position ?? null;
+        // 点位与分区详情互斥：点中点位清掉分区详情
+        if (result) zoneDetail.value = null;
         emit('pick', result);
       });
       // 风险分区点击 → 飞入并向上 emit，供宿主页联动
@@ -171,9 +189,16 @@ async function init(): Promise<void> {
       cancelZonePick = enableZonePick(v, (zone) => {
         if (zone) {
           flyToZone(v, zone.name);
+          zoneDetail.value = zone;
+          zonePos.value = zone.position ?? null;
+          // 点位与分区详情互斥：点中分区清掉点位详情
+          picked.value = null;
           emit('zone-pick', zone);
         }
       });
+      // 详情弹窗随相机实时跟随（点位 / 分区共用）
+      detailPostRender = () => updateDetailPopupPos();
+      viewer.scene.postRender.addEventListener(detailPostRender);
       // 首屏渲染显式 requestRender，确保 useDefaultRenderLoop=false 或 destroy竞态下仍出图
       try {
         viewer?.scene.requestRender();
@@ -250,11 +275,23 @@ function toggleBuildings(): void {
   setBuildingModelVisible(buildingsVisible.value);
 }
 
-function levelText(p: PickResult | null): string {
-  if (!p) return '';
-  if (p.kind === 'alarm') return p.level !== undefined ? `等级 ${p.level}` : '报警';
-  return p.status ? `状态 ${p.status}` : '设备';
+// 当前展示的详情（点位优先，其次分区），及锚定位置
+const activeDetail = computed(() => picked.value ?? zoneDetail.value);
+const activeDetailPos = computed(() => pickedPos.value ?? zonePos.value);
+
+function updateDetailPopupPos(): void {
+  if (!viewer || !activeDetailPos.value) return;
+  const wp = new Cesium.Cartesian2();
+  Cesium.SceneTransforms.wgs84ToWindowCoordinates(viewer.scene, activeDetailPos.value, wp);
+  const canvasH = viewer.scene.canvas.clientHeight || viewer.scene.canvas.height;
+  detailPopupPos.left = wp.x;
+  detailPopupPos.top = canvasH - wp.y;
 }
+
+const detailStyle = computed(() => ({
+  left: `${detailPopupPos.left}px`,
+  top: `${detailPopupPos.top}px`,
+}));
 
 // ---- 聚合打点图层（复用 one-brain-web MapClusterBillboard 能力） ----
 const clusterLayer = ref<ClusterBillboardLayer | null>(null);
@@ -359,6 +396,14 @@ onUnmounted(() => {
     }
     clusterPostRender = null;
   }
+  if (detailPostRender && viewer) {
+    try {
+      viewer.scene.postRender.removeEventListener(detailPostRender);
+    } catch {
+      /* noop */
+    }
+    detailPostRender = null;
+  }
   if (viewer) {
     try {
       if (!(viewer as unknown as { isDestroyed?: () => boolean }).isDestroyed?.()) {
@@ -434,14 +479,13 @@ onUnmounted(() => {
       </label>
     </div>
 
-    <!-- 点击拾取浮窗 -->
-    <div v-if="picked" class="map-popup" data-test="map-popup">
-      <button class="map-popup__close" title="关闭" @click="picked = null">×</button>
-      <div class="map-popup__title">{{ picked.name }}</div>
-      <div class="map-popup__row">类型：{{ picked.kind === 'alarm' ? '报警点' : '设备点' }}</div>
-      <div class="map-popup__row">{{ levelText(picked) }}</div>
-      <div class="map-popup__row">ID：{{ picked.id }}</div>
-    </div>
+    <!-- 点位/分区点击详情弹窗：锚定在拾取点正上方，随相机实时跟随 -->
+    <MapDetailPanel
+      v-if="activeDetail"
+      :point="activeDetail"
+      :style="detailStyle"
+      @close="closeDetail"
+    />
 
     <!-- 聚合打点拾取浮窗（随相机实时跟随） -->
     <MapClusterPopup
@@ -549,45 +593,5 @@ onUnmounted(() => {
 .map-toolbar__toggle input {
   cursor: pointer;
   margin: 0;
-}
-
-.map-popup {
-  position: absolute;
-  top: 56px;
-  left: 12px;
-  z-index: 11;
-  min-width: 180px;
-  padding: 10px 12px;
-  background: color-mix(in srgb, var(--color-panel) 92%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-accent) 55%, transparent);
-  border-radius: 8px;
-  color: var(--color-text);
-  font-size: 12px;
-  box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
-}
-
-.map-popup__close {
-  position: absolute;
-  top: 4px;
-  right: 6px;
-  border: none;
-  background: transparent;
-  color: var(--color-text-muted);
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.map-popup__title {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 6px;
-  padding-right: 14px;
-  color: var(--color-text-strong);
-}
-
-.map-popup__row {
-  line-height: 1.7;
-  color: var(--color-text-muted);
 }
 </style>

@@ -48,8 +48,11 @@ const rows = computed<{ label: string; value: string }[]>(() => {
 <style scoped>
 .map-detail {
   position: absolute;
-  left: var(--space-md);
-  bottom: var(--space-md);
+  left: 0;
+  top: 0;
+
+  /* 锚定在传递进来的屏幕坐标正上方居中（left/top 由父级 postRender 实时注入） */
+  transform: translate(-50%, calc(-100% - 14px));
   z-index: 30;
   width: 248px;
   padding: var(--space-md);
@@ -59,6 +62,7 @@ const rows = computed<{ label: string; value: string }[]>(() => {
   box-shadow: 0 6px 24px rgb(0 0 0 / 35%);
   color: var(--color-text-strong);
   backdrop-filter: blur(6px);
+  pointer-events: auto;
 }
 
 .map-detail__close {

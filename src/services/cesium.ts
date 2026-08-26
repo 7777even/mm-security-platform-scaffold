@@ -65,6 +65,8 @@ export interface PickResult {
   level?: number;
   status?: string;
   raw: Record<string, unknown>;
+  /** 拾取实体的世界坐标（用于详情弹窗锚定在屏幕点位上方并随相机跟随）。 */
+  position?: Cesium.Cartesian3;
 }
 
 /** 风险分区拾取结果（点击围栏面触发）。 */
@@ -73,6 +75,8 @@ export interface ZonePick {
   center: [number, number];
   score: number;
   raw: Record<string, unknown>;
+  /** 分区中心世界坐标（用于详情弹窗锚定在屏幕点位上方并随相机跟随）。 */
+  position?: Cesium.Cartesian3;
 }
 
 /** 解析 zone 实体 id（'zone:名称'），非 zone 返回 null。纯函数，便于单测守卫。 */
@@ -650,6 +654,8 @@ export function enablePick(
           unknown
         >;
         if (kind === 'alarm' || kind === 'device') {
+          const position = picked.id.position?.getValue?.(viewer.clock.currentTime) as
+            Cesium.Cartesian3 | undefined;
           cb({
             id: String(raw.id ?? ''),
             name: String(raw.name ?? ''),
@@ -657,6 +663,7 @@ export function enablePick(
             level: raw.level as number | undefined,
             status: raw.status as string | undefined,
             raw,
+            position,
           });
           return;
         }
@@ -745,7 +752,8 @@ export function enableZonePick(
         const positions = hierarchy?.positions ?? [];
         const center = zoneCenterFromPositions(positions);
         const score = Number(entity?.properties?.score?.getValue?.(viewer.clock.currentTime) ?? 0);
-        cb({ name, center, score, raw: { score } });
+        const position = Cesium.Cartesian3.fromDegrees(center[0], center[1], 0);
+        cb({ name, center, score, raw: { score }, position });
         return;
       }
       cb(null);
