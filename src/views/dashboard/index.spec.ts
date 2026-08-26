@@ -80,4 +80,20 @@ describe('dashboard 大屏首页', () => {
     expect(right.find('[data-test="emergency-strength-grid"]').exists()).toBe(true);
     expect(right.find('[data-test="emergency-knowledge-grid"]').exists()).toBe(true);
   });
+
+  it('加载完成后展示趋势图容器并隐藏骨架屏', async () => {
+    const wrapper = mountDash();
+    await flushPromises();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('.chart').exists()).toBe(true);
+    expect(wrapper.find('[data-test="dashboard-skeleton"]').exists()).toBe(false);
+  });
+
+  it('已移除顶部核心指标条（主界面级态势概览）', async () => {
+    const wrapper = mountDash();
+    await flushPromises();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-test="dashboard-kpi"]').exists()).toBe(false);
+    expect(wrapper.find('.dash-kpi').exists()).toBe(false);
+  });
 });

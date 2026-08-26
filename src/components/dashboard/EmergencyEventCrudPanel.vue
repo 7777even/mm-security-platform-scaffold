@@ -168,7 +168,7 @@ onMounted(loadEvents);
 
 <template>
   <div class="event-crud">
-    <div class="ec-tabs">
+    <div class="ec-tabs" data-test="crud-toolbar">
       <button
         class="ec-tab"
         :class="{ active: activeTab === 'event' }"
@@ -228,7 +228,7 @@ onMounted(loadEvents);
         </el-select>
       </div>
 
-      <div class="ec-list">
+      <div class="ec-list" data-test="crud-table">
         <AlarmListItem
           v-for="a in events"
           :key="a.alarmId"
@@ -403,7 +403,7 @@ onMounted(loadEvents);
 }
 
 .ec-tab.active {
-  color: #fff;
+  color: var(--color-text-strong);
   background: var(--color-accent);
   border-color: var(--color-accent);
 }

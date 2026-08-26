@@ -17,7 +17,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="knowledge-strip">
+  <div class="knowledge-strip" data-test="emergency-knowledge-grid">
     <div v-for="k in items" :key="k.id" class="knowledge-card">
       <div class="k-head">
         <span class="k-dot" :style="{ background: CATEGORY_COLOR[k.category] }" />

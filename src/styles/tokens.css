@@ -35,6 +35,27 @@
   --color-text-primary: var(--color-text); /* 兼容别名：主文本（等同 --color-text） */
   --color-text-secondary: var(--color-text-muted); /* 兼容别名：次文本（等同 --color-text-muted） */
 
+  /* ---- 业务域/状态补充色（被组件引用但此前未定义，补齐以修复失效 token） ---- */
+  --color-info: #2e7cf6; /* 信息蓝（与 --color-accent-2 同系） */
+  --color-accent-fire: #ff5a5a; /* 应急知识·装置应急 */
+  --color-accent-gas: #f6882e; /* 应急知识·罐区应急 */
+  --color-accent-temp: #f6ba2e; /* 应急知识·装卸应急 */
+  --color-border-soft: rgb(42 74 120 / 40%); /* 浅边框（虚线分隔） */
+  --transition-fast: 0.15s ease; /* 通用微交互过渡 */
+  --radius-pill: 999px; /* 胶囊圆角（标签/按钮） */
+
+  /* ---- 图表专用（ECharts canvas 需显式色值，主题切换时经 CSS 变量解析） ---- */
+  --chart-accent: var(--color-accent);
+  --chart-success: var(--color-success);
+  --chart-text: var(--color-text-muted);
+  --chart-text-strong: var(--color-text);
+  --chart-panel-bg: color-mix(in srgb, var(--color-panel) 92%, transparent);
+  --chart-panel-border: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  --chart-grid-line: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  --chart-axis-line: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  --chart-area-top: color-mix(in srgb, var(--color-accent) 28%, transparent);
+  --chart-line-glow: color-mix(in srgb, var(--color-accent) 60%, transparent);
+
   /* ---- 渐变（设计稿图 5-1 中部 / body 兜底） ---- */
   --gradient-tech-blue: linear-gradient(90deg, #00d8ff 0%, #2e7cf6 100%); /* 科技深蓝 */
   --gradient-risk: linear-gradient(90deg, #ff5a5a 0%, #f6882e 100%); /* 风险警示 */

@@ -46,7 +46,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="strength-grid">
+  <div class="strength-grid" data-test="emergency-strength-grid">
     <div v-for="r in resources" :key="r.kind" class="strength-cell">
       <div class="cell-icon" :style="{ color: COLOR_MAP[r.kind] }">
         <el-icon :size="22"><component :is="ICON_MAP[r.kind]" /></el-icon>

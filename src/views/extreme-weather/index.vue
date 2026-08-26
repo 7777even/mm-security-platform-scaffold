@@ -117,7 +117,7 @@ const alerts = ref<{ level: AlarmLevel; title: string; desc: string; time: strin
   border-radius: var(--radius-md);
   border: 1px dashed var(--color-border);
   background:
-    radial-gradient(120% 120% at 70% 20%, rgb(0 216 255 / 12%), transparent 60%),
+    radial-gradient(120% 120% at 70% 20%, var(--color-accent-soft), transparent 60%),
     color-mix(in srgb, var(--color-panel-soft) 40%, transparent);
   display: flex;
   flex-direction: column;

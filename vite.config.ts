@@ -154,7 +154,7 @@ export default defineConfig({
     // 让 vitest 也走 vite 转换 cesium 内部依赖（Cesium 内部 import 用 vite alias 重定向）
     server: {
       deps: {
-        inline: ['cesium', '@cesium/engine', '@cesium/widgets'],
+        inline: ['cesium', '@cesium/engine', '@cesium/widgets', 'element-plus'],
       },
     },
   },

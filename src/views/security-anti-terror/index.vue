@@ -12,6 +12,7 @@ import PanelCard from '@/components/common/PanelCard.vue';
 import StatCard from '@/components/common/StatCard.vue';
 import AlarmCard from '@/components/common/AlarmCard.vue';
 import AppButton from '@/components/common/AppButton.vue';
+import RecordsView from './records.vue';
 
 const kpis = ref([
   { title: '在厂人数', value: 1286, icon: 'User' },

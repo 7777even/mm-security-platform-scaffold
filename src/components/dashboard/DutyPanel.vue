@@ -12,7 +12,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="duty">
+  <div class="duty" data-test="duty-toolbar">
     <ul class="duty-list">
       <li v-for="p in persons" :key="p.id" class="duty-item">
         <span class="status-dot" :class="{ online: p.online }" />
