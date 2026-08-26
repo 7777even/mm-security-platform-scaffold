@@ -82,32 +82,42 @@ function onModeChange(mode: '2d' | '3d'): void {
 
 <template>
   <div class="module-map">
-    <!-- 中央地图底座（默认） / 或 #center 插槽覆盖 -->
-    <slot name="center">
-      <BaseMap
-        v-if="showMap"
-        :tile-url="tileUrl"
-        :alarms="alarms"
-        :devices="devices"
-        :zones="zones"
-        :cluster-points="clusterPointsData"
-        :scene-mode="sceneMode"
-        @error="onMapError"
-        @mode-change="onModeChange"
-      />
-    </slot>
+    <!-- 地图舞台：发光边框 + 圆角 + 边缘渐变遮罩，统一地图与两侧面板视觉 -->
+    <div class="module-map__stage">
+      <!-- 中央地图底座（默认） / 或 #center 插槽覆盖 -->
+      <slot name="center">
+        <BaseMap
+          v-if="showMap"
+          :tile-url="tileUrl"
+          :alarms="alarms"
+          :devices="devices"
+          :zones="zones"
+          :cluster-points="clusterPointsData"
+          :scene-mode="sceneMode"
+          @error="onMapError"
+          @mode-change="onModeChange"
+        />
+      </slot>
+
+      <!-- 舞台装饰框：青辉光 + 顶部亮线 + 暗角 -->
+      <div class="module-map__frame" aria-hidden="true" />
+
+      <!-- 左右边缘渐变遮罩 -->
+      <div class="module-map__mask module-map__mask--left" aria-hidden="true" />
+      <div class="module-map__mask module-map__mask--right" aria-hidden="true" />
+
+      <!-- 左侧数据列（设计稿 419px） -->
+      <div v-if="$slots.left" class="module-map__left">
+        <slot name="left" />
+      </div>
+
+      <!-- 右侧数据列（设计稿 419px） -->
+      <div v-if="$slots.right" class="module-map__right">
+        <slot name="right" />
+      </div>
+    </div>
 
     <p v-if="mapNotice" class="module-map__notice">{{ mapNotice }}</p>
-
-    <!-- 左侧数据列（设计稿 419px） -->
-    <div v-if="$slots.left" class="module-map__left">
-      <slot name="left" />
-    </div>
-
-    <!-- 右侧数据列（设计稿 419px） -->
-    <div v-if="$slots.right" class="module-map__right">
-      <slot name="right" />
-    </div>
 
     <!-- 加载骨架屏 -->
     <div v-if="loading" class="module-map__skeleton">
@@ -122,14 +132,71 @@ function onModeChange(mode: '2d' | '3d'): void {
 .module-map {
   position: relative;
   height: 100%;
+  padding: var(--space-md);
+  box-sizing: border-box;
+  background: var(--color-bg);
 
   /* 不裁切子元素溢出：左右数据列内部 overflow-y:auto 仍可滚 */
+}
+
+/* 地图舞台：发光边框 + 圆角 + 暗角，统一地图与面板视觉 */
+.module-map__stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow:
+    0 0 28px var(--color-accent-glow),
+    0 0 8px var(--color-accent-faint),
+    inset 0 0 0 1px var(--color-accent-glow);
+}
+
+/* 舞台装饰框：顶部亮线 + 内暗角 */
+.module-map__frame {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 6;
+  box-shadow: inset 0 0 60px rgb(0 0 0 / 35%);
+}
+
+.module-map__frame::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+  opacity: 0.7;
+}
+
+/* 左右边缘渐变遮罩：地图边缘向面板背景自然过渡 */
+.module-map__mask {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 120px;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.module-map__mask--left {
+  left: 0;
+  background: linear-gradient(to right, var(--color-bg), transparent);
+}
+
+.module-map__mask--right {
+  right: 0;
+  background: linear-gradient(to left, var(--color-bg), transparent);
 }
 
 /* 地图降级提示 */
 .module-map__notice {
   position: absolute;
-  top: var(--space-md);
+  top: calc(var(--space-md) + var(--space-sm));
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;

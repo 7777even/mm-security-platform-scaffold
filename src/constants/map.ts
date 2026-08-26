@@ -39,6 +39,14 @@ export const TERRAIN_URL: string = (import.meta.env.VITE_TERRAIN_URL as string |
 // 真实地形 readyPromise 超时保护（ms），避免不可达服务长期挂起
 export const TERRAIN_TIMEOUT_MS = 6000;
 
+// 厂区/园区 3D 建筑模型（3D Tiles，受控联网）。
+// 示例：茂名石化园区倾斜摄影 / BIM 轻量化后的 3D Tiles 服务地址。
+// 缺省为空 → 不加载建筑模型，仅显示卫星/矢量底图 + 风险区域。
+export const BUILDING_TILESET_URL: string =
+  (import.meta.env.VITE_BUILDING_TILESET_URL as string | undefined) ?? '';
+// 3D Tiles 异步加载超时保护（ms）
+export const BUILDING_TILESET_TIMEOUT_MS = 10000;
+
 // 保留原离线瓦片配置（同源内网瓦片服务），作为无 VITE_MAP_TILE_URL 时的兜底占位
 export const MAP_TILE_URL: string = import.meta.env.VITE_MAP_TILE_URL ?? '/tiles/{z}/{x}/{y}.png';
 

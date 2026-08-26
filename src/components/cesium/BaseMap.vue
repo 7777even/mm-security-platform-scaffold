@@ -16,6 +16,8 @@ import {
   setBaseMapMode,
   loadTerrainRelief,
   setTerrainHillshadeVisible,
+  loadBuildingModel,
+  setBuildingModelVisible,
   type BaseMapMode,
   type LayerKind,
   type PickResult,
@@ -56,8 +58,15 @@ const props = withDefaults(
     viewerFactory?: (container: HTMLElement) => Promise<Cesium.Viewer>;
     /** 聚合打点图层数据（复用 one-brain-web 聚合打点能力）；为空则不挂载该图层。 */
     clusterPoints?: ClusterPoint[];
+    /** 厂区/园区 3D Tiles 建筑模型地址；缺省读取 env.VITE_BUILDING_TILESET_URL */
+    tilesetUrl?: string;
   }>(),
-  { sceneMode: '3d', viewerFactory: undefined, clusterPoints: undefined },
+  {
+    sceneMode: '3d',
+    viewerFactory: undefined,
+    clusterPoints: undefined,
+    tilesetUrl: undefined,
+  },
 );
 
 const containerRef = ref<HTMLDivElement | null>(null);
@@ -66,6 +75,7 @@ const picked = ref<PickResult | null>(null);
 const layers = reactive({ base: true, markers: true, zones: true, labels: true });
 const baseMapMode = ref<BaseMapMode>('satellite');
 const terrainVisible = ref(true);
+const buildingsVisible = ref(true);
 
 function toggleBaseMapMode(): void {
   if (!viewer) return;
@@ -125,6 +135,7 @@ async function renderAll(): Promise<void> {
   if (!viewer) return;
   await loadBaseMap(viewer);
   await loadTerrainRelief(viewer);
+  await loadBuildingModel(viewer);
   await loadRiskZones(viewer);
   // 点位统一由聚合打点图层渲染（已接入 clusterPoints 时）；否则回退经典复合标注
   if (!props.clusterPoints || props.clusterPoints.length === 0) {
@@ -219,6 +230,11 @@ function toggleLayer(kind: LayerKind): void {
 function toggleTerrain(): void {
   terrainVisible.value = !terrainVisible.value;
   if (viewer) setTerrainHillshadeVisible(viewer, terrainVisible.value);
+}
+
+function toggleBuildings(): void {
+  buildingsVisible.value = !buildingsVisible.value;
+  setBuildingModelVisible(buildingsVisible.value);
 }
 
 function levelText(p: PickResult | null): string {
@@ -382,6 +398,10 @@ onUnmounted(() => {
       <label class="map-toolbar__toggle" title="地形浮雕显隐">
         <input type="checkbox" :checked="terrainVisible" @change="toggleTerrain" />
         <span>地形</span>
+      </label>
+      <label class="map-toolbar__toggle" title="厂区 3D 建筑模型显隐">
+        <input type="checkbox" :checked="buildingsVisible" @change="toggleBuildings" />
+        <span>建筑</span>
       </label>
       <label
         v-if="props.clusterPoints && props.clusterPoints.length"

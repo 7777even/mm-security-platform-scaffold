@@ -12,6 +12,8 @@ import {
   TERRAIN_HILLSHADE,
   TERRAIN_URL,
   TERRAIN_TIMEOUT_MS,
+  BUILDING_TILESET_URL,
+  BUILDING_TILESET_TIMEOUT_MS,
 } from '@/constants/map';
 import { recordPerfAsync } from '@/utils/perf-budget';
 import { logger } from '@/utils/logger';
@@ -371,6 +373,40 @@ export async function loadTerrainRelief(viewer: Cesium.Viewer): Promise<void> {
     }
     viewer.scene.requestRender();
   });
+}
+
+// ---- 厂区 3D 建筑模型（3D Tiles，受控联网） ----
+
+let buildingTileset: Cesium.Cesium3DTileset | undefined;
+
+/** 加载厂区 3D Tiles 建筑模型。失败或超时时静默回落（不影响底图）。 */
+export async function loadBuildingModel(viewer: Cesium.Viewer): Promise<void> {
+  if (!BUILDING_TILESET_URL) return;
+  try {
+    const tileset = await Promise.race([
+      Cesium.Cesium3DTileset.fromUrl(BUILDING_TILESET_URL, {
+        shadows: Cesium.ShadowMode.ENABLED,
+        maximumScreenSpaceError: 64,
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('building tileset timeout')),
+          BUILDING_TILESET_TIMEOUT_MS,
+        ),
+      ),
+    ]);
+    viewer.scene.primitives.add(tileset);
+    buildingTileset = tileset;
+  } catch {
+    logger.warn('[cesium] 3D 建筑模型加载失败或超时，已跳过');
+  }
+}
+
+/** 显隐控制厂区 3D 建筑模型。 */
+export function setBuildingModelVisible(visible: boolean): void {
+  if (buildingTileset && !buildingTileset.isDestroyed()) {
+    buildingTileset.show = visible;
+  }
 }
 
 /** 将点位渲染为「图形 + 文字」复合标注（point 圆点 + label 名称）。 */
