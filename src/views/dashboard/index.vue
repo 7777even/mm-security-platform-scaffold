@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, nextTick } from 'vue';
+import { onMounted, onUnmounted, ref, computed, nextTick } from 'vue';
 import * as echarts from 'echarts/core';
 import { LineChart, type LineSeriesOption } from 'echarts/charts';
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
@@ -9,6 +9,7 @@ import { MAP_TILE_URL } from '@/constants/map';
 import { markOnce } from '@/utils/perf';
 import { readCssVar } from '@/utils/theme';
 import BaseMap from '@/components/cesium/BaseMap.vue';
+import type { ClusterPoint } from '@/services/cesium-cluster';
 import PanelCard from '@/components/common/PanelCard.vue';
 import AppButton from '@/components/common/AppButton.vue';
 import DutyPanel from '@/components/dashboard/DutyPanel.vue';
@@ -61,6 +62,26 @@ const mapNotice = ref('');
 const alarmPoints = ref<MapPoint[]>([]);
 const devicePoints = ref<MapPoint[]>([]);
 const riskZones = ref<RiskZone[]>([]);
+
+// 聚合打点数据：复用地图底座聚合图层，将报警/设备点位统一接入（遵循项目 UI 规范着色）
+const clusterPoints = computed<ClusterPoint[]>(() => [
+  ...alarmPoints.value.map((p) => ({
+    id: `alarm:${p.id}`,
+    name: p.name,
+    lng: p.lng,
+    lat: p.lat,
+    type: 'alarm',
+    raw: { ...p },
+  })),
+  ...devicePoints.value.map((p) => ({
+    id: `device:${p.id}`,
+    name: p.name,
+    lng: p.lng,
+    lat: p.lat,
+    type: 'device',
+    raw: { ...p },
+  })),
+]);
 
 // Cesium 二三维一体化：sceneMode 切换
 const sceneMode = ref<'2d' | '3d'>('3d');
@@ -203,6 +224,7 @@ onUnmounted(() => {
       :alarms="alarmPoints"
       :devices="devicePoints"
       :zones="riskZones"
+      :cluster-points="clusterPoints"
       :scene-mode="sceneMode"
       @error="onMapError"
       @mode-change="(m) => (sceneMode = m)"

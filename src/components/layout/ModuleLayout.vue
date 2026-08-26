@@ -10,17 +10,19 @@
   中央底座默认渲染 BaseMap；亦可通过 #center 插槽覆盖（如工业视频墙）。
 -->
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { MAP_TILE_URL } from '@/constants/map';
 import BaseMap from '@/components/cesium/BaseMap.vue';
 import type { MapPoint, RiskZone } from '@/services/map';
+import type { ClusterPoint } from '@/services/cesium-cluster';
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     tileUrl?: string;
     alarms?: MapPoint[];
     devices?: MapPoint[];
     zones?: RiskZone[];
+    clusterPoints?: ClusterPoint[];
     loading?: boolean;
     showMap?: boolean;
   }>(),
@@ -29,6 +31,7 @@ withDefaults(
     alarms: () => [],
     devices: () => [],
     zones: () => [],
+    clusterPoints: () => [],
     loading: false,
     showMap: true,
   },
@@ -41,6 +44,29 @@ const emit = defineEmits<{
 
 const sceneMode = ref<'2d' | '3d'>('3d');
 const mapNotice = ref('');
+
+// 聚合打点数据：优先使用外部传入的 clusterPoints，否则由 alarms/devices 自动聚合（遵循项目 UI 规范着色）
+const clusterPointsData = computed<ClusterPoint[]>(() => {
+  if (props.clusterPoints && props.clusterPoints.length) return props.clusterPoints;
+  return [
+    ...props.alarms.map((p) => ({
+      id: `alarm:${p.id}`,
+      name: p.name,
+      lng: p.lng,
+      lat: p.lat,
+      type: 'alarm',
+      raw: { ...p },
+    })),
+    ...props.devices.map((p) => ({
+      id: `device:${p.id}`,
+      name: p.name,
+      lng: p.lng,
+      lat: p.lat,
+      type: 'device',
+      raw: { ...p },
+    })),
+  ];
+});
 
 function onMapError(): void {
   mapNotice.value = '地图初始化失败：当前环境不支持 WebGL，已降级';
@@ -64,6 +90,7 @@ function onModeChange(mode: '2d' | '3d'): void {
         :alarms="alarms"
         :devices="devices"
         :zones="zones"
+        :cluster-points="clusterPointsData"
         :scene-mode="sceneMode"
         @error="onMapError"
         @mode-change="onModeChange"

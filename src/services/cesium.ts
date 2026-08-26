@@ -5,32 +5,50 @@
 import * as Cesium from 'cesium';
 import type { MapPoint, RiskZone } from '@/services/map';
 import { fetchAlarmPoints, fetchDevicePoints, fetchRiskZones } from '@/services/map';
-import { MAP_TILE_URL } from '@/constants/map';
+import { wktToCartesians, wktCenter } from '@/services/geo';
+import { TIANDITU, NIGHT_GRADING } from '@/constants/map';
 import { recordPerfAsync } from '@/utils/perf-budget';
 import { logger } from '@/utils/logger';
+import { readCssVar } from '@/utils/theme';
 
-// 厂区初始中心（湛江中科炼化坐标附近）+ 初始相机高度
-export const FACTORY_CENTER: [number, number] = [110.95, 21.6];
+// 厂区初始中心（茂名市中心坐标）+ 初始相机高度
+export const FACTORY_CENTER: [number, number] = [110.925, 21.663];
 export const FACTORY_HEIGHT = 12000;
 
-// 报警等级配色（规范 §13.1：1 级最高危=红，4 级最低=蓝）
-const LEVEL_COLORS: Record<number, string> = {
-  1: '#f46767', // alarm-1 一级 最高危 红
-  2: '#f6882e', // alarm-2 二级 橙
-  3: '#f6ba2e', // alarm-3 三级 黄
-  4: '#2e7cf6', // alarm-4 四级 最低 蓝
+// 报警等级配色：语义色 token（规范 §13.1：1 级最高危=红，4 级最低=蓝）
+const LEVEL_TOKEN: Record<number, string> = {
+  1: '--color-alarm-1', // alarm-1 一级 最高危 红
+  2: '--color-alarm-2', // alarm-2 二级 橙
+  3: '--color-alarm-3', // alarm-3 三级 黄
+  4: '--color-alarm-4', // alarm-4 四级 最低 蓝
 };
-// 设备状态 → 颜色（mock 返回 online/offline/normal/active 等；规范 §13.3）
-const STATUS_COLORS: Record<string, string> = {
-  online: '#2ee6a8', // success 在线
-  normal: '#2ee6a8', // success 正常
-  active: '#ff5a5a', // danger 当前告警中
-  offline: '#8fa6c8', // text-muted 离线静默
-  fault: '#ff5a5a', // danger 故障
+// 设备状态 → 颜色 token（mock 返回 online/offline/normal/active 等；规范 §13.3）
+const STATUS_TOKEN: Record<string, string> = {
+  online: '--color-success', // 在线
+  normal: '--color-success', // 正常
+  active: '--color-danger', // 当前告警中
+  offline: '--color-text-muted', // 离线静默
+  fault: '--color-danger', // 故障
+};
+// 报警等级 / 设备状态 fallback：原语义色，保证无 CSS 环境下与浏览器 token 取值一致
+const LEVEL_FALLBACK: Record<number, string> = {
+  1: '#f46767',
+  2: '#f6882e',
+  3: '#f6ba2e',
+  4: '#2e7cf6',
+};
+const STATUS_FALLBACK: Record<string, string> = {
+  online: '#2ee6a8',
+  normal: '#2ee6a8',
+  active: '#ff5a5a',
+  offline: '#8fa6c8',
+  fault: '#ff5a5a',
 };
 
-const DEFAULT_MARKER_COLOR = Cesium.Color.fromCssColorString('#8fa6c8'); // text-muted
-const DEFAULT_ZONE_COLOR = Cesium.Color.fromCssColorString('#2e7cf6'); // accent-2
+// 默认色：解析自设计 token，回退值与原语义色一致（保证 SSR/测试环境色值稳定）
+const DEFAULT_MARKER_COLOR = Cesium.Color.fromCssColorString(
+  readCssVar('--color-text-muted', '#8fa6c8'),
+);
 
 export interface PickResult {
   id: string;
@@ -41,32 +59,52 @@ export interface PickResult {
   raw: Record<string, unknown>;
 }
 
-function cssColor(hex: string | undefined, fallback: Cesium.Color): Cesium.Color {
-  if (!hex) return fallback;
+/**
+ * token 名 / hex → Cesium.Color。token 经 readCssVar 运行时解析（跟随主题切换），
+ * 传入 hex 或解析失败时回落 fallback，保证不抛错、色值稳定。
+ */
+function toColor(tokenOrHex: string | undefined, fallback: string): Cesium.Color {
+  if (!tokenOrHex) return Cesium.Color.fromCssColorString(fallback);
   try {
-    return Cesium.Color.fromCssColorString(hex);
+    return Cesium.Color.fromCssColorString(readCssVar(tokenOrHex, fallback));
   } catch {
-    return fallback;
+    return Cesium.Color.fromCssColorString(fallback);
   }
 }
 
 function levelColor(level?: number): Cesium.Color {
   if (level === undefined) return DEFAULT_MARKER_COLOR;
-  return cssColor(
-    LEVEL_COLORS[level] ?? LEVEL_COLORS[Math.min(4, Math.max(1, level))],
-    DEFAULT_MARKER_COLOR,
-  );
+  const idx = Math.min(4, Math.max(1, level));
+  // fallback 为原语义色，保证 SSR/测试环境（无 CSS）色值稳定、与浏览器 token 取值一致
+  const fallback = LEVEL_FALLBACK[idx];
+  const token = LEVEL_TOKEN[idx];
+  return toColor(token, fallback);
 }
 
 function statusColor(status?: string): Cesium.Color {
-  return cssColor(status ? STATUS_COLORS[status.toLowerCase()] : undefined, DEFAULT_MARKER_COLOR);
+  if (!status) return DEFAULT_MARKER_COLOR;
+  const key = status.toLowerCase();
+  // fallback 为原语义色，理由同上
+  const fallback = STATUS_FALLBACK[key] ?? '#8fa6c8';
+  const token = STATUS_TOKEN[key];
+  return toColor(token, fallback);
 }
 
 /** 区域填充色（含透明度），按评分分级（规范 §13.4）：≥4 红、≥3 橙黄、≥2 蓝、其余静默灰。纯函数，便于 TDD。 */
 export function zoneFillColor(score: number): Cesium.Color {
-  const hex = score >= 4 ? '#ff5a5a' : score >= 3 ? '#ffb020' : score >= 2 ? '#2e7cf6' : '#8fa6c8';
+  const token =
+    score >= 4
+      ? '--color-danger'
+      : score >= 3
+        ? '--color-warning'
+        : score >= 2
+          ? '--color-accent-2'
+          : '--color-text-muted';
   const alpha = score >= 4 ? 0.22 : score >= 3 ? 0.2 : score >= 2 ? 0.18 : 0.14;
-  return cssColor(hex, DEFAULT_ZONE_COLOR).withAlpha(alpha);
+  // fallback 为原语义色（红/橙黄/蓝/灰），理由同上
+  const fallback =
+    score >= 4 ? '#ff5a5a' : score >= 3 ? '#ffb020' : score >= 2 ? '#2e7cf6' : '#8fa6c8';
+  return toColor(token, fallback).withAlpha(alpha);
 }
 
 /** 点位着色纯函数：报警按 level、设备按 status。便于 TDD 验证等级/状态色映射。 */
@@ -74,7 +112,7 @@ export function markerColor(kind: 'alarm' | 'device', p: MapPoint): Cesium.Color
   return kind === 'alarm' ? levelColor(p.level) : statusColor(p.status);
 }
 
-const DARK_BG = '#0b1526'; // 规范 --color-bg
+const DARK_BG = readCssVar('--color-bg', '#0b1526'); // 规范 --color-bg
 
 /**
  * 创建单一 Cesium viewer，移除默认干扰 UI，仅保留画布。
@@ -155,9 +193,13 @@ function solidImageryDataUrl(color: string): string {
   return canvas.toDataURL('image/png');
 }
 
-/** 探测外部瓦片源是否可达（取一个低层级样例瓦片做 HEAD/GET，cartocdn 支持 CORS）。 */
-async function isTileReachable(template: string): Promise<boolean> {
-  const sample = template.replace('{z}', '4').replace('{x}', '12').replace('{y}', '7');
+/** 探测天地图瓦片是否可达（取低层级样例瓦片做 GET；Cesium 会替换 {z}/{x}/{y}/{s}）。 */
+async function isTiandituReachable(template: string): Promise<boolean> {
+  const sample = template
+    .replace('{s}', '0')
+    .replace('{z}', '4')
+    .replace('{x}', '12')
+    .replace('{y}', '7');
   try {
     const res = await fetch(sample, { method: 'GET' });
     return res.ok;
@@ -166,14 +208,56 @@ async function isTileReachable(template: string): Promise<boolean> {
   }
 }
 
+/** 构造天地图瓦片 Provider（t{s} 子域负载均衡，与 one-brain MapPlot 一致）。 */
+function makeTiandituProvider(url: string): Cesium.UrlTemplateImageryProvider {
+  return new Cesium.UrlTemplateImageryProvider({
+    url,
+    subdomains: '01234567',
+    maximumLevel: 18,
+    credit: new Cesium.Credit('© 天地图 GS(2023)323号'),
+  });
+}
+
+const TD_LAYER_NAME = 'tianditu';
+
+/** 移除已添加的天地图图层（用于底图模式切换）。 */
+function clearTianditu(viewer: Cesium.Viewer): void {
+  const layers = viewer.imageryLayers;
+  for (let i = layers.length - 1; i >= 0; i--) {
+    const layer = layers.get(i) as Cesium.ImageryLayer & { name?: string };
+    if (layer.name === TD_LAYER_NAME) layers.remove(layer);
+  }
+}
+
+/** 添加天地图底图（矢量+注记 或 影像+注记），夜景模式叠加暗色调色。 */
+function addTianditu(viewer: Cesium.Viewer, mode: 'night' | 'satellite'): void {
+  clearTianditu(viewer);
+  const baseUrl = mode === 'satellite' ? TIANDITU.image : TIANDITU.vector;
+  const labelUrl = mode === 'satellite' ? TIANDITU.imageLabel : TIANDITU.vectorLabel;
+  const baseLayer = viewer.imageryLayers.addImageryProvider(makeTiandituProvider(baseUrl));
+  (baseLayer as Cesium.ImageryLayer & { name?: string }).name = TD_LAYER_NAME;
+  const labelLayer = viewer.imageryLayers.addImageryProvider(makeTiandituProvider(labelUrl));
+  (labelLayer as Cesium.ImageryLayer & { name?: string }).name = TD_LAYER_NAME;
+  // 暗夜风格调色（仅夜景矢量层；与 one-brain OnemapSynthesis 暗蓝观感对齐）
+  if (mode === 'night') {
+    baseLayer.brightness = NIGHT_GRADING.brightness;
+    baseLayer.saturation = NIGHT_GRADING.saturation;
+    baseLayer.contrast = NIGHT_GRADING.contrast;
+    baseLayer.hue = NIGHT_GRADING.hue;
+  }
+}
+
+export type BaseMapMode = 'night' | 'satellite';
+
 /**
- * 加载瓦片底图（可配置 URL，生产同源离线 / 开发公网预览）。
- * 策略：先铺一层本地离线底座（纯色 + 网格骨架，零网络请求、地球必可见），
- * 再按 MAP_TILE_URL 决定是否叠加真实瓦片：
- *   - 未配置或同源默认 /tiles 路径 → 仅离线骨架；
- *   - 配置了外部源（如 cartocdn）→ 探测可达性，可达叠加真实底图，不可达保留离线骨架（不刷 502）。
+ * 加载底图：复用 one-brain 同款天地图在线瓦片（默认夜景暗色风格）。
+ * 策略：先铺离线底座（纯色 + 网格骨架，保证地球必可见、不白屏），再探测天地图可达性，
+ * 可达则叠加天地图矢量/影像底图 + 注记；不可达保留离线骨架。
  */
-export async function loadBaseMap(viewer: Cesium.Viewer): Promise<void> {
+export async function loadBaseMap(
+  viewer: Cesium.Viewer,
+  mode: BaseMapMode = 'night',
+): Promise<void> {
   await recordPerfAsync('baseMapMs', async () => {
     // 离线底座：纯色 + 透明网格，地球表面一定渲染且可见
     const offlineBase = new Cesium.SingleTileImageryProvider({
@@ -185,32 +269,30 @@ export async function loadBaseMap(viewer: Cesium.Viewer): Promise<void> {
     viewer.imageryLayers.addImageryProvider(offlineBase);
     viewer.imageryLayers.addImageryProvider(
       new Cesium.GridImageryProvider({
-        color: Cesium.Color.fromCssColorString('#3a6ea5'),
+        color: Cesium.Color.fromCssColorString(readCssVar('--color-accent-2', '#1a4a6e')),
         glowColor: Cesium.Color.TRANSPARENT,
         backgroundColor: Cesium.Color.TRANSPARENT,
         cells: 8,
       }),
     );
 
-    // 配置了外部瓦片源：探测可达性后再叠加真实底图
-    const useExternal = MAP_TILE_URL && MAP_TILE_URL !== '/tiles/{z}/{x}/{y}.png';
-    if (useExternal) {
-      const reachable = await isTileReachable(MAP_TILE_URL);
-      if (reachable) {
-        // 当前 Cesium 构建未导出 UrlTemplateImageryProvider.fromUrl 静态方法，必须使用构造器
-        const provider = new Cesium.UrlTemplateImageryProvider({
-          url: MAP_TILE_URL,
-          urlSchemeZeroPadding: true,
-          maximumLevel: 18,
-        });
-        viewer.imageryLayers.addImageryProvider(provider);
-      } else {
-        logger.warn('[cesium] 瓦片源不可达，已回退离线网格底图', MAP_TILE_URL);
-      }
+    // 在线天地图（复用 one-brain tk）：探测可达性后叠加真实底图
+    const reachable = await isTiandituReachable(TIANDITU.vector);
+    if (reachable) {
+      addTianditu(viewer, mode);
+    } else {
+      logger.warn('[cesium] 天地图不可达，已回退离线网格底图');
     }
     // requestRenderMode 下需要手动触发重绘，否则瓦片加载完成也不绘制
     viewer.scene.requestRender();
   });
+}
+
+/** 切换底图模式（夜景 / 影像），对应 one-brain 的 pagechangeImageFunctionByName。 */
+export function setBaseMapMode(viewer: Cesium.Viewer, mode: BaseMapMode): void {
+  if (!viewer || viewer.isDestroyed?.()) return;
+  addTianditu(viewer, mode);
+  viewer.scene.requestRender();
 }
 
 /** 将点位渲染为「图形 + 文字」复合标注（point 圆点 + label 名称）。 */
@@ -226,16 +308,20 @@ function addCompositeMarker(
     point: {
       pixelSize: 12,
       color,
-      outlineColor: Cesium.Color.WHITE,
+      // 描边环：项目强调色（--color-accent，规范统一蓝青）
+      outlineColor: Cesium.Color.fromCssColorString(readCssVar('--color-accent', '#00d8ff')),
       outlineWidth: 2,
       heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
     },
     label: {
       text: p.name,
       font: '12px sans-serif',
-      fillColor: Cesium.Color.WHITE,
+      fillColor: toColor('--color-text-strong', '#ffffff'),
       showBackground: true,
-      backgroundColor: Cesium.Color.fromCssColorString('#13233c').withAlpha(0.7),
+      // 标签底：项目面板色（--color-panel）
+      backgroundColor: Cesium.Color.fromCssColorString(
+        readCssVar('--color-panel', '#0b1e2b'),
+      ).withAlpha(0.83),
       backgroundPadding: new Cesium.Cartesian2(6, 4),
       pixelOffset: new Cesium.Cartesian2(0, -18),
       verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
@@ -269,14 +355,13 @@ export async function loadDeviceMarkers(viewer: Cesium.Viewer): Promise<void> {
 export async function loadRiskZones(viewer: Cesium.Viewer): Promise<void> {
   const zones: RiskZone[] = await fetchRiskZones();
   for (const z of zones) {
-    if (!z.polygon || z.polygon.length < 3) continue;
-    const hierarchy = new Cesium.PolygonHierarchy(
-      z.polygon.map(([lng, lat]) => Cesium.Cartesian3.fromDegrees(lng, lat)),
-    );
-    const fill = cssColor(
-      z.score >= 4 ? '#ff5a5a' : z.score >= 3 ? '#ffb020' : z.score >= 2 ? '#2e7cf6' : '#8fa6c8',
-      DEFAULT_ZONE_COLOR,
-    ).withAlpha(0.25);
+    // 围栏来源：优先 WKT，回退坐标数组
+    const ring: Cesium.Cartesian3[] = z.wkt
+      ? wktToCartesians(z.wkt)
+      : (z.polygon ?? []).map(([lng, lat]) => Cesium.Cartesian3.fromDegrees(lng, lat));
+    if (ring.length < 3) continue;
+    const hierarchy = new Cesium.PolygonHierarchy(ring);
+    const fill = zoneFillColor(z.score).withAlpha(0.25);
 
     viewer.entities.add({
       id: `zone:${z.name}`,
@@ -284,26 +369,36 @@ export async function loadRiskZones(viewer: Cesium.Viewer): Promise<void> {
         hierarchy,
         material: fill,
         outline: true,
-        outlineColor: Cesium.Color.fromCssColorString('#f8fafc'),
+        // 描边：项目强调色（--color-accent，规范统一蓝青）
+        outlineColor: Cesium.Color.fromCssColorString(readCssVar('--color-accent', '#00d8ff')),
         outlineWidth: 2,
         heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
       },
     });
 
     // 独立 label 实体置于质心，避免与 polygon 同实体导致的渲染异常（白块）
-    const center = z.polygon.reduce(
-      (acc, c) => [acc[0] + c[0] / z.polygon.length, acc[1] + c[1] / z.polygon.length],
-      [0, 0],
-    ) as [number, number];
+    // 质心优先取 WKT（支持无 polygon 的围栏），否则取坐标数组均值
+    const center: [number, number] = z.wkt
+      ? (wktCenter(z.wkt).slice(0, 2) as [number, number])
+      : ((z.polygon ?? []).reduce(
+          (acc, c) => [
+            acc[0] + c[0] / (z.polygon?.length || 1),
+            acc[1] + c[1] / (z.polygon?.length || 1),
+          ],
+          [0, 0],
+        ) as [number, number]);
     viewer.entities.add({
       id: `zone-label:${z.name}`,
       position: Cesium.Cartesian3.fromDegrees(center[0], center[1]),
       label: {
         text: `${z.name} 风险 ${z.score.toFixed(1)}`,
         font: '13px sans-serif',
-        fillColor: Cesium.Color.WHITE,
+        fillColor: toColor('--color-text-strong', '#ffffff'),
         showBackground: true,
-        backgroundColor: Cesium.Color.fromCssColorString('#13233c').withAlpha(0.75),
+        // 标签底：项目面板色（--color-panel）
+        backgroundColor: Cesium.Color.fromCssColorString(
+          readCssVar('--color-panel', '#0b1e2b'),
+        ).withAlpha(0.83),
         backgroundPadding: new Cesium.Cartesian2(6, 4),
         heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,

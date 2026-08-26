@@ -15,7 +15,10 @@ export interface MapPoint {
 export interface RiskZone {
   name: string;
   score: number;
-  polygon: [number, number][];
+  /** 坐标数组围栏（WGS84）。 */
+  polygon?: [number, number][];
+  /** 可选：WKT 几何围栏（优先级高于 polygon；复用 geo.ts 解析，支持 Point/LineString/Polygon）。 */
+  wkt?: string;
 }
 
 interface GeoJsonFeature {
@@ -27,34 +30,34 @@ interface GeoJsonFeature {
 // 区域静态坐标（茂名厂区示意，WGS84）；生产以真实地理围栏/GeoJSON 替换
 const ZONE_COORDS: Record<string, [number, number][]> = {
   罐区: [
-    [110.945, 21.678],
-    [110.955, 21.678],
-    [110.955, 21.67],
-    [110.945, 21.67],
+    [110.915, 21.668],
+    [110.925, 21.668],
+    [110.925, 21.66],
+    [110.915, 21.66],
   ],
   装置区: [
-    [110.953, 21.674],
-    [110.962, 21.674],
-    [110.962, 21.665],
-    [110.953, 21.665],
+    [110.923, 21.664],
+    [110.932, 21.664],
+    [110.932, 21.655],
+    [110.923, 21.655],
   ],
   装卸区: [
-    [110.94, 21.668],
-    [110.948, 21.668],
-    [110.948, 21.66],
-    [110.94, 21.66],
+    [110.91, 21.658],
+    [110.918, 21.658],
+    [110.918, 21.65],
+    [110.91, 21.65],
   ],
   公用工程: [
-    [110.958, 21.68],
-    [110.965, 21.68],
-    [110.965, 21.675],
-    [110.958, 21.675],
+    [110.928, 21.67],
+    [110.935, 21.67],
+    [110.935, 21.665],
+    [110.928, 21.665],
   ],
   行政办公: [
-    [110.948, 21.68],
-    [110.956, 21.68],
-    [110.956, 21.676],
-    [110.948, 21.676],
+    [110.918, 21.67],
+    [110.926, 21.67],
+    [110.926, 21.666],
+    [110.918, 21.666],
   ],
 };
 
@@ -109,17 +112,17 @@ export async function fetchRiskZones(): Promise<RiskZone[]> {
   }
 }
 
-// 静态兜底：mock 不可达时保留展示，不白屏
+// 静态兜底：mock 不可达时保留展示，不白屏（坐标已对齐茂名厂区）
 export const FALLBACK_ALARM_POINTS: MapPoint[] = [
-  { id: 'A-FB-1', name: '罐区-01 烟感报警', lng: 110.951, lat: 21.672, level: 1 },
-  { id: 'A-FB-2', name: '装置区-03 可燃报警', lng: 110.955, lat: 21.67, level: 2 },
-  { id: 'A-FB-3', name: '装卸区-02 温度报警', lng: 110.944, lat: 21.665, level: 3 },
+  { id: 'A-FB-1', name: '罐区-01 烟感报警', lng: 110.921, lat: 21.663, level: 1 },
+  { id: 'A-FB-2', name: '装置区-03 可燃报警', lng: 110.925, lat: 21.661, level: 2 },
+  { id: 'A-FB-3', name: '装卸区-02 温度报警', lng: 110.914, lat: 21.656, level: 3 },
 ];
 
 export const FALLBACK_DEVICE_POINTS: MapPoint[] = [
-  { id: 'D-FB-1', name: '罐区-01 烟感', lng: 110.951, lat: 21.672, status: 'ONLINE' },
-  { id: 'D-FB-2', name: '装置区-03 可燃', lng: 110.953, lat: 21.67, status: 'ONLINE' },
-  { id: 'D-FB-3', name: '装卸区-02 温度', lng: 110.944, lat: 21.665, status: 'FAULT' },
+  { id: 'D-FB-1', name: '罐区-01 烟感', lng: 110.921, lat: 21.663, status: 'ONLINE' },
+  { id: 'D-FB-2', name: '装置区-03 可燃', lng: 110.923, lat: 21.661, status: 'ONLINE' },
+  { id: 'D-FB-3', name: '装卸区-02 温度', lng: 110.914, lat: 21.656, status: 'FAULT' },
 ];
 
 export const FALLBACK_RISK_ZONES: RiskZone[] = Object.entries(ZONE_COORDS).map(

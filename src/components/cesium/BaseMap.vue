@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import * as Cesium from 'cesium';
 import { detectWebGL } from '@/utils/webgl';
 import {
@@ -13,11 +13,19 @@ import {
   setSceneMode3D,
   setLayerVisible,
   enablePick,
+  setBaseMapMode,
+  type BaseMapMode,
   type LayerKind,
   type PickResult,
 } from '@/services/cesium';
 import type { MapPoint, RiskZone } from '@/services/map';
 import { recordPerfAsync } from '@/utils/perf-budget';
+import {
+  ClusterBillboardLayer,
+  type ClusterPoint,
+  type ClusterPickInfo,
+} from '@/services/cesium-cluster';
+import MapClusterPopup from '@/components/cesium/MapClusterPopup.vue';
 
 /**
  * Cesium 二三维一体化地图容器（详细设计 4.2.2.2「地图集成服务 map」前端消费侧）。
@@ -44,14 +52,23 @@ const props = withDefaults(
     zones: RiskZone[];
     sceneMode?: '2d' | '3d';
     viewerFactory?: (container: HTMLElement) => Promise<Cesium.Viewer>;
+    /** 聚合打点图层数据（复用 one-brain-web 聚合打点能力）；为空则不挂载该图层。 */
+    clusterPoints?: ClusterPoint[];
   }>(),
-  { sceneMode: '3d', viewerFactory: undefined },
+  { sceneMode: '3d', viewerFactory: undefined, clusterPoints: undefined },
 );
 
 const containerRef = ref<HTMLDivElement | null>(null);
 const mode = ref<'2d' | '3d'>(props.sceneMode);
 const picked = ref<PickResult | null>(null);
 const layers = reactive({ base: true, markers: true, zones: true, labels: true });
+const baseMapMode = ref<BaseMapMode>('night');
+
+function toggleBaseMapMode(): void {
+  if (!viewer) return;
+  baseMapMode.value = baseMapMode.value === 'night' ? 'satellite' : 'night';
+  setBaseMapMode(viewer, baseMapMode.value);
+}
 let viewer: Cesium.Viewer | null = null;
 let cancelPick: (() => void) | null = null;
 // 卸载时需要清理的异步句柄（setTimeout / ResizeObserver），避免在已销毁 viewer 上回调
@@ -104,9 +121,12 @@ async function createViewer(): Promise<Cesium.Viewer> {
 async function renderAll(): Promise<void> {
   if (!viewer) return;
   await loadBaseMap(viewer);
-  await loadAlarmMarkers(viewer);
-  await loadDeviceMarkers(viewer);
   await loadRiskZones(viewer);
+  // 点位统一由聚合打点图层渲染（已接入 clusterPoints 时）；否则回退经典复合标注
+  if (!props.clusterPoints || props.clusterPoints.length === 0) {
+    await loadAlarmMarkers(viewer);
+    await loadDeviceMarkers(viewer);
+  }
 }
 
 async function init(): Promise<void> {
@@ -132,6 +152,8 @@ async function init(): Promise<void> {
       } catch {
         /* viewer destroyed during init, ignore */
       }
+      // 挂载聚合打点图层（若有数据）
+      setupClusterLayer();
     }
     emit('ready');
   } catch (err) {
@@ -196,6 +218,47 @@ function levelText(p: PickResult | null): string {
   return p.status ? `状态 ${p.status}` : '设备';
 }
 
+// ---- 聚合打点图层（复用 one-brain-web MapClusterBillboard 能力） ----
+const clusterLayer = ref<ClusterBillboardLayer | null>(null);
+const clusterPicked = ref<ClusterPickInfo | null>(null);
+const clusterVisible = ref(true);
+const clusterPopupPos = reactive({ left: 0, top: 0 });
+let clusterPostRender: (() => void) | null = null;
+
+function setupClusterLayer(): void {
+  if (!viewer || !props.clusterPoints || props.clusterPoints.length === 0) return;
+  if (clusterLayer.value) return;
+  clusterLayer.value = new ClusterBillboardLayer(viewer, {
+    typeName: 'mapCluster',
+    onPick: (info) => {
+      clusterPicked.value = info.kind === 'none' ? null : info;
+    },
+  });
+  clusterLayer.value.setData(props.clusterPoints);
+  clusterLayer.value.setVisible(clusterVisible.value);
+  clusterPostRender = () => updateClusterPopupPos();
+  viewer.scene.postRender.addEventListener(clusterPostRender);
+}
+
+function updateClusterPopupPos(): void {
+  if (!viewer || !clusterPicked.value || !clusterPicked.value.position) return;
+  const wp = new Cesium.Cartesian2();
+  Cesium.SceneTransforms.wgs84ToWindowCoordinates(viewer.scene, clusterPicked.value.position, wp);
+  const canvasH = viewer.scene.canvas.clientHeight || viewer.scene.canvas.height;
+  clusterPopupPos.left = wp.x;
+  clusterPopupPos.top = canvasH - wp.y;
+}
+
+function clearCluster(): void {
+  clusterPicked.value = null;
+  clusterLayer.value?.clearSelection();
+}
+
+const popupStyle = computed(() => ({
+  left: `${clusterPopupPos.left}px`,
+  top: `${clusterPopupPos.top}px`,
+}));
+
 watch(
   () => props.sceneMode,
   (m) => {
@@ -205,6 +268,20 @@ watch(
     emit('mode-change', m);
   },
 );
+
+// 聚合打点数据变化：首次挂载或增量刷新
+watch(
+  () => props.clusterPoints,
+  (pts) => {
+    if (!clusterLayer.value) {
+      setupClusterLayer();
+      return;
+    }
+    if (pts) clusterLayer.value.setData(pts);
+  },
+);
+
+watch(clusterVisible, (v) => clusterLayer.value?.setVisible(v));
 
 onMounted(init);
 
@@ -227,6 +304,19 @@ onUnmounted(() => {
     if (w.__cesiumViewer === viewer) w.__cesiumViewer = null;
   }
   // 4) 销毁 viewer
+  // 先销毁聚合打点图层（移除其事件监听与数据源），避免 viewer 销毁后再访问
+  if (clusterLayer.value) {
+    clusterLayer.value.destroy();
+    clusterLayer.value = null;
+  }
+  if (clusterPostRender && viewer) {
+    try {
+      viewer.scene.postRender.removeEventListener(clusterPostRender);
+    } catch {
+      /* noop */
+    }
+    clusterPostRender = null;
+  }
   if (viewer) {
     try {
       if (!(viewer as unknown as { isDestroyed?: () => boolean }).isDestroyed?.()) {
@@ -256,6 +346,13 @@ onUnmounted(() => {
       <button class="map-toolbar__btn" title="放大" @click="zoomIn">+</button>
       <button class="map-toolbar__btn" title="缩小" @click="zoomOut">−</button>
       <button class="map-toolbar__btn" title="复位视角" @click="onReset">⟳</button>
+      <button
+        class="map-toolbar__btn"
+        :title="baseMapMode === 'night' ? '切换到影像底图' : '切换到夜景底图'"
+        @click="toggleBaseMapMode"
+      >
+        {{ baseMapMode === 'night' ? '夜景' : '影像' }}
+      </button>
       <span class="map-toolbar__sep" />
       <label class="map-toolbar__toggle" title="底图显隐">
         <input type="checkbox" :checked="layers.base" @change="toggleLayer('base')" />
@@ -273,6 +370,18 @@ onUnmounted(() => {
         <input type="checkbox" :checked="layers.labels" @change="toggleLayer('labels')" />
         <span>标注</span>
       </label>
+      <label
+        v-if="props.clusterPoints && props.clusterPoints.length"
+        class="map-toolbar__toggle"
+        title="聚合打点显隐"
+      >
+        <input
+          type="checkbox"
+          :checked="clusterVisible"
+          @change="clusterVisible = !clusterVisible"
+        />
+        <span>聚合</span>
+      </label>
     </div>
 
     <!-- 点击拾取浮窗 -->
@@ -283,6 +392,14 @@ onUnmounted(() => {
       <div class="map-popup__row">{{ levelText(picked) }}</div>
       <div class="map-popup__row">ID：{{ picked.id }}</div>
     </div>
+
+    <!-- 聚合打点拾取浮窗（随相机实时跟随） -->
+    <MapClusterPopup
+      v-if="clusterPicked"
+      :info="clusterPicked"
+      :style="popupStyle"
+      @close="clearCluster"
+    />
   </div>
 </template>
 
@@ -290,7 +407,7 @@ onUnmounted(() => {
 .base-map {
   position: absolute;
   inset: 0;
-  background: #0b1526;
+  background: var(--color-bg);
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -315,8 +432,8 @@ onUnmounted(() => {
   width: 100% !important;
   height: 100% !important;
   display: block;
-  background: #0b1526 !important;
-  background-color: #0b1526 !important;
+  background: var(--color-bg) !important;
+  background-color: var(--color-bg) !important;
 }
 
 .base-map :deep(.cesium-viewer-bottom) {
@@ -335,8 +452,8 @@ onUnmounted(() => {
   align-items: stretch;
   gap: 6px;
   padding: 8px 6px;
-  background: rgb(19 35 60 / 82%);
-  border: 1px solid rgb(143 166 200 / 25%);
+  background: color-mix(in srgb, var(--color-panel) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text-muted) 25%, transparent);
   border-radius: 8px;
   backdrop-filter: blur(4px);
   font-size: 12px;
@@ -348,9 +465,9 @@ onUnmounted(() => {
   min-width: 44px;
   height: 32px;
   padding: 0;
-  border: 1px solid rgb(143 166 200 / 30%);
+  border: 1px solid color-mix(in srgb, var(--color-text-muted) 30%, transparent);
   border-radius: 6px;
-  background: rgb(30 41 59 / 90%);
+  background: color-mix(in srgb, var(--color-panel-soft) 90%, transparent);
   color: var(--color-text);
   cursor: pointer;
   font-size: 13px;
@@ -358,13 +475,13 @@ onUnmounted(() => {
 }
 
 .map-toolbar__btn:hover {
-  background: rgb(51 65 85 / 95%);
-  border-color: rgb(143 166 200 / 60%);
+  background: color-mix(in srgb, var(--color-panel-soft) 95%, transparent);
+  border-color: color-mix(in srgb, var(--color-text-muted) 60%, transparent);
 }
 
 .map-toolbar__sep {
   height: 1px;
-  background: rgb(143 166 200 / 30%);
+  background: color-mix(in srgb, var(--color-text-muted) 30%, transparent);
   margin: 2px 4px;
 }
 
@@ -391,8 +508,8 @@ onUnmounted(() => {
   z-index: 11;
   min-width: 180px;
   padding: 10px 12px;
-  background: rgb(19 35 60 / 92%);
-  border: 1px solid rgb(143 166 200 / 35%);
+  background: color-mix(in srgb, var(--color-panel) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 55%, transparent);
   border-radius: 8px;
   color: var(--color-text);
   font-size: 12px;
@@ -405,7 +522,7 @@ onUnmounted(() => {
   right: 6px;
   border: none;
   background: transparent;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
@@ -416,7 +533,7 @@ onUnmounted(() => {
   font-weight: 600;
   margin-bottom: 6px;
   padding-right: 14px;
-  color: #f8fafc;
+  color: var(--color-text-strong);
 }
 
 .map-popup__row {

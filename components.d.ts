@@ -42,6 +42,7 @@ declare module 'vue' {
     EmergencyKnowledgePanel: typeof import('./src/components/dashboard/EmergencyKnowledgePanel.vue')['default']
     EmergencyPhonePanel: typeof import('./src/components/dashboard/EmergencyPhonePanel.vue')['default']
     EmergencyStrengthPanel: typeof import('./src/components/dashboard/EmergencyStrengthPanel.vue')['default']
+    MapClusterPopup: typeof import('./src/components/cesium/MapClusterPopup.vue')['default']
     MapPin: typeof import('./src/components/common/MapPin.vue')['default']
     ModuleLayout: typeof import('./src/components/layout/ModuleLayout.vue')['default']
     PanelCard: typeof import('./src/components/common/PanelCard.vue')['default']
