@@ -436,8 +436,3 @@
   --el-tag-border-color: rgb(143 166 200 / 40%) !important;
   --el-tag-text-color: var(--color-text-muted, #94a3b8) !important;
 }
-
-/* ---- 表格内描述：去除描边宽度冗余 ---- */
-.el-descriptions__body .el-descriptions__table .el-descriptions__cell {
-  border-color: rgb(143 166 200 / 20%) !important;
-}
