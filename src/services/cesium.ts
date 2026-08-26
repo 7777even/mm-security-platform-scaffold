@@ -120,8 +120,11 @@ export function markerColor(kind: 'alarm' | 'device', p: MapPoint): Cesium.Color
   return kind === 'alarm' ? levelColor(p.level) : statusColor(p.status);
 }
 
-// 离线/无瓦片时的地图底色：取系统面板基色（深蓝），使地图基色与两侧面板同色系，消除「地图突兀」感
-const BASE_FILL = readCssVar('--color-panel', '#13233c');
+// 离线/无瓦片时的地图底色：取系统面板基色（深蓝），使地图基色与两侧面板同色系，消除「地图突兀」感。
+// 导出为纯函数便于单测（守卫 DARK_BG/BASE_FILL 重命名回归）。
+export function getBaseFillColor(): Cesium.Color {
+  return Cesium.Color.fromCssColorString(readCssVar('--color-panel', '#13233c'));
+}
 
 /**
  * 创建单一 Cesium viewer，移除默认干扰 UI，仅保留画布。
@@ -155,7 +158,7 @@ export function createCesiumViewer(container: HTMLElement): Cesium.Viewer {
   });
 
   // 深色底座：background + globe.baseColor 取系统面板基色（深蓝），与两侧面板同色系，消除突兀感
-  const bg = Cesium.Color.fromCssColorString(BASE_FILL);
+  const bg = getBaseFillColor();
   viewer.scene.backgroundColor = bg;
   if (viewer.scene.globe) {
     viewer.scene.globe.baseColor = bg;
@@ -193,13 +196,13 @@ export function createCesiumViewer(container: HTMLElement): Cesium.Viewer {
 }
 
 /** 生成纯色底图的 data URL（离线模式用，避免依赖外部瓦片文件/网络）。 */
-function solidImageryDataUrl(color: string): string {
+function solidImageryDataUrl(color: Cesium.Color): string {
   const canvas = document.createElement('canvas');
   canvas.width = 1;
   canvas.height = 1;
   const ctx = canvas.getContext('2d');
   if (ctx) {
-    ctx.fillStyle = color;
+    ctx.fillStyle = color.toCssColorString();
     ctx.fillRect(0, 0, 1, 1);
   }
   return canvas.toDataURL('image/png');
@@ -241,6 +244,14 @@ function clearTianditu(viewer: Cesium.Viewer): void {
   }
 }
 
+/**
+ * 底图调色决策：影像/夜景两种模式统一共用深蓝科技调色（NIGHT_GRADING），
+ * 使真实世界底图融入系统深蓝基色。导出为纯函数便于单测守卫「两种模式同调色」。
+ */
+export function gradingForMode(_mode: BaseMapMode): typeof NIGHT_GRADING {
+  return NIGHT_GRADING;
+}
+
 /** 添加天地图底图（矢量+注记 或 影像+注记），统一叠加深蓝科技色调色，使地图基色与系统面板同色系。 */
 function addTianditu(viewer: Cesium.Viewer, mode: 'night' | 'satellite'): void {
   clearTianditu(viewer);
@@ -251,9 +262,10 @@ function addTianditu(viewer: Cesium.Viewer, mode: 'night' | 'satellite'): void {
   const labelLayer = viewer.imageryLayers.addImageryProvider(makeTiandituProvider(labelUrl));
   (labelLayer as Cesium.ImageryLayer & { name?: string }).name = TD_LAYER_NAME;
   // 两种模式统一深蓝科技调色：压亮、提蓝向色相、增强对比，使真实世界底图融入深蓝系统基色
-  baseLayer.brightness = NIGHT_GRADING.brightness;
-  baseLayer.saturation = NIGHT_GRADING.saturation;
-  baseLayer.contrast = NIGHT_GRADING.contrast;
+  const g = gradingForMode(mode);
+  baseLayer.brightness = g.brightness;
+  baseLayer.saturation = g.saturation;
+  baseLayer.contrast = g.contrast;
   baseLayer.hue = NIGHT_GRADING.hue;
 }
 
@@ -271,7 +283,7 @@ export async function loadBaseMap(
   await recordPerfAsync('baseMapMs', async () => {
     // 离线底座：纯色（系统面板深蓝）+ 透明网格，地球表面一定渲染且可见，且与两侧面板同色系
     const offlineBase = new Cesium.SingleTileImageryProvider({
-      url: solidImageryDataUrl(BASE_FILL),
+      url: solidImageryDataUrl(getBaseFillColor()),
       tileWidth: 1,
       tileHeight: 1,
       rectangle: Cesium.Rectangle.fromDegrees(-180, -90, 180, 90),
@@ -279,7 +291,7 @@ export async function loadBaseMap(
     viewer.imageryLayers.addImageryProvider(offlineBase);
     viewer.imageryLayers.addImageryProvider(
       new Cesium.GridImageryProvider({
-        color: Cesium.Color.fromCssColorString(readCssVar('--color-accent-2', '#1a4a6e')),
+        color: Cesium.Color.fromCssColorString(readCssVar('--color-accent-2', '#2e7cf6')),
         glowColor: Cesium.Color.TRANSPARENT,
         backgroundColor: Cesium.Color.TRANSPARENT,
         cells: 8,
@@ -337,8 +349,8 @@ export function setTerrainHillshadeVisible(viewer: Cesium.Viewer, visible: boole
   viewer.scene.requestRender();
 }
 
-/** 带超时的「真实高程地形」尝试（Cesium quantized-mesh）。不可达/超时则回落 false。 */
-async function tryRealTerrain(viewer: Cesium.Viewer): Promise<boolean> {
+/** 带超时的「真实高程地形」尝试（Cesium quantized-mesh）。不可达/超时则回落 false。导出便于单测守卫提前返回。 */
+export async function tryRealTerrain(viewer: Cesium.Viewer): Promise<boolean> {
   if (!TERRAIN_URL) return false;
   try {
     // Cesium 1.119 经 fromUrl 异步构造（同步构造器已不再接受 url 选项）
@@ -433,7 +445,7 @@ function addCompositeMarker(
       showBackground: true,
       // 标签底：项目面板色（--color-panel）
       backgroundColor: Cesium.Color.fromCssColorString(
-        readCssVar('--color-panel', '#0b1e2b'),
+        readCssVar('--color-panel', '#13233c'),
       ).withAlpha(0.83),
       backgroundPadding: new Cesium.Cartesian2(6, 4),
       pixelOffset: new Cesium.Cartesian2(0, -18),
@@ -510,7 +522,7 @@ export async function loadRiskZones(viewer: Cesium.Viewer): Promise<void> {
         showBackground: true,
         // 标签底：项目面板色（--color-panel）
         backgroundColor: Cesium.Color.fromCssColorString(
-          readCssVar('--color-panel', '#0b1e2b'),
+          readCssVar('--color-panel', '#13233c'),
         ).withAlpha(0.83),
         backgroundPadding: new Cesium.Cartesian2(6, 4),
         heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
