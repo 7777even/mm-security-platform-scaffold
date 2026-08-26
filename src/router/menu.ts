@@ -39,7 +39,10 @@ export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
     title: '极端天气风险应急',
     perm: 'weather:view',
     icon: Cloudy,
-    component: () => import('@/views/extreme-weather/index.vue').then((m) => m.default),
+    // wujie-shell：作为子应用经 WujieHost 挂载，复用主壳下发的设计 token
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_EXTREME_WEATHER_SUBAPP_URL ?? '/subapps/extreme-weather/',
   },
   'fire-alarm': {
     title: '消防报警',
@@ -73,7 +76,10 @@ export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
     title: '运维监测',
     perm: 'ops:view',
     icon: Cpu,
-    component: () => import('@/views/ops-monitor/index.vue').then((m) => m.default),
+    // wujie-shell：作为子应用经 WujieHost 挂载，复用主壳下发的设计 token
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_OPS_MONITOR_SUBAPP_URL ?? '/subapps/ops-monitor/',
   },
 };
 

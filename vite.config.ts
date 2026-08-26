@@ -127,6 +127,12 @@ export default defineConfig({
         industrialVideoSubapp: fileURLToPath(
           new URL('./subapps/industrial-video/index.html', import.meta.url),
         ),
+        extremeWeatherSubapp: fileURLToPath(
+          new URL('./subapps/extreme-weather/index.html', import.meta.url),
+        ),
+        opsMonitorSubapp: fileURLToPath(
+          new URL('./subapps/ops-monitor/index.html', import.meta.url),
+        ),
       },
       output: { manualChunks: { echarts: ['echarts'] } },
     },
