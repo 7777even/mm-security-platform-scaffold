@@ -242,7 +242,7 @@ onMounted(loadEvents);
 
       <div class="ec-pager">
         <el-pagination
-          small
+          size="small"
           background
           layout="prev, pager, next"
           :total="total"
