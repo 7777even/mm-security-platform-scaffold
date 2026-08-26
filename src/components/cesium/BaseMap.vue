@@ -282,10 +282,17 @@ const activeDetailPos = computed(() => pickedPos.value ?? zonePos.value);
 function updateDetailPopupPos(): void {
   if (!viewer || !activeDetailPos.value) return;
   const wp = new Cesium.Cartesian2();
-  Cesium.SceneTransforms.wgs84ToWindowCoordinates(viewer.scene, activeDetailPos.value, wp);
-  const canvasH = viewer.scene.canvas.clientHeight || viewer.scene.canvas.height;
+  // wgs84ToWindowCoordinates 返回的 wp 已是「自画布顶部向下」的 DOM 坐标（Cesium 内部已翻转 y 轴）。
+  // 画布通过 inset:0 铺满 .base-map，故 wp 即相对地图底座的坐标，弹窗据此锚定在点位正上方。
+  const res = Cesium.SceneTransforms.wgs84ToWindowCoordinates(
+    viewer.scene,
+    activeDetailPos.value,
+    wp,
+  );
+  // 点位位于相机背面时该函数返回 undefined，跳过本帧定位（沿用上一帧位置，避免跳到 (0,0)）。
+  if (!res) return;
   detailPopupPos.left = wp.x;
-  detailPopupPos.top = canvasH - wp.y;
+  detailPopupPos.top = wp.y;
 }
 
 const detailStyle = computed(() => ({
@@ -318,10 +325,15 @@ function setupClusterLayer(): void {
 function updateClusterPopupPos(): void {
   if (!viewer || !clusterPicked.value || !clusterPicked.value.position) return;
   const wp = new Cesium.Cartesian2();
-  Cesium.SceneTransforms.wgs84ToWindowCoordinates(viewer.scene, clusterPicked.value.position, wp);
-  const canvasH = viewer.scene.canvas.clientHeight || viewer.scene.canvas.height;
+  // 同 updateDetailPopupPos：wp.y 已是自画布顶部向下的 DOM 坐标，画布铺满 .base-map，故锚定在聚合点正上方。
+  const res = Cesium.SceneTransforms.wgs84ToWindowCoordinates(
+    viewer.scene,
+    clusterPicked.value.position,
+    wp,
+  );
+  if (!res) return;
   clusterPopupPos.left = wp.x;
-  clusterPopupPos.top = canvasH - wp.y;
+  clusterPopupPos.top = wp.y;
 }
 
 function clearCluster(): void {
