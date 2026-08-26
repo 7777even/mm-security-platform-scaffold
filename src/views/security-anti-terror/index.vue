@@ -145,18 +145,18 @@ function closeRecords(): void {
   align-items: center;
   gap: var(--space-sm);
   padding: 10px 12px;
-  background: linear-gradient(180deg, rgb(19 35 60 / 55%), rgb(11 21 38 / 55%));
-  border: 1px solid rgb(143 166 200 / 16%);
+  background: var(--glass-bg);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 13px;
   transition:
-    border-color 0.15s,
-    background 0.15s;
+    border-color var(--transition-fast),
+    background var(--transition-fast);
 }
 
 .event-row:hover {
-  border-color: rgb(0 216 255 / 40%);
-  background: linear-gradient(180deg, rgb(19 35 60 / 65%), rgb(11 21 38 / 65%));
+  border-color: var(--color-accent);
+  background: var(--color-panel-soft);
 }
 
 .event-row__time {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, nextTick } from 'vue';
+import { computed, onMounted, onUnmounted, ref, nextTick } from 'vue';
 import * as echarts from 'echarts/core';
 import { LineChart, type LineSeriesOption } from 'echarts/charts';
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
@@ -71,6 +71,20 @@ function closePlans(): void {
 
 const FALLBACK_TREND = [0, 1, 0, 2, 1, 3, 2, 1, 0, 2, 4, 3, 2, 1, 3, 5, 4, 6, 3, 2, 4, 3, 2, 1];
 const trendData = ref<number[]>(FALLBACK_TREND);
+
+// 顶部核心指标（主界面级态势概览）
+const handleRate = computed(() => {
+  const ev = trendData.value.reduce((s, c) => s + c, 0);
+  const done = trendData.value.reduce((s, c) => s + Math.ceil(c / 2), 0);
+  return ev ? Math.round((done / ev) * 100) : 0;
+});
+
+const kpis = computed(() => [
+  { label: '报警点位', value: alarmPoints.value.length, unit: '处' },
+  { label: '设备点位', value: devicePoints.value.length, unit: '台' },
+  { label: '风险区域', value: riskZones.value.length, unit: '片' },
+  { label: '处置完成率', value: handleRate.value, unit: '%' },
+]);
 
 function hours(): string[] {
   const list: string[] = [];
@@ -199,6 +213,16 @@ onUnmounted(() => {
     <!-- 地图降级提示 -->
     <p v-if="mapNotice" class="map-notice">{{ mapNotice }}</p>
 
+    <!-- 顶部核心指标条（主界面级态势概览） -->
+    <div v-if="!loading" class="dash-kpi" data-test="dashboard-kpi">
+      <div v-for="k in kpis" :key="k.label" class="kpi-cell">
+        <span class="kpi-value font-number"
+          >{{ k.value }}<i class="kpi-unit">{{ k.unit }}</i></span
+        >
+        <span class="kpi-label">{{ k.label }}</span>
+      </div>
+    </div>
+
     <!-- 左侧面板区（419px）：应急预案入口 + 应急事件 CRUD + 趋势图 + 结案滚动 -->
     <div v-if="!loading" class="dash-left">
       <PanelCard title="应急预案库" icon="Document">
@@ -311,9 +335,67 @@ onUnmounted(() => {
 
 .plan-entry {
   margin: 0 0 var(--space-md);
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 13px;
   line-height: 1.6;
+}
+
+/* 顶部核心指标条 */
+.dash-kpi {
+  position: absolute;
+  top: var(--space-md);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex;
+  gap: 1px;
+  padding: 8px 10px;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-panel);
+}
+
+.kpi-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 96px;
+  padding: 0 14px;
+  position: relative;
+}
+
+.kpi-cell:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background: var(--color-border);
+}
+
+.kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-unit {
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin-left: 2px;
+}
+
+.kpi-label {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-text-muted);
 }
 
 .plan-entry__actions {

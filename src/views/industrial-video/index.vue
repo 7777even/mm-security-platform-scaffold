@@ -111,18 +111,18 @@ const channels = [
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  background: linear-gradient(180deg, rgb(19 35 60 / 60%), rgb(11 21 38 / 60%));
-  border: 1px solid rgb(143 166 200 / 16%);
+  background: var(--glass-bg);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 12px;
   transition:
-    border-color 0.15s,
-    background 0.15s;
+    border-color var(--transition-fast),
+    background var(--transition-fast);
 }
 
 .channel-card:hover {
-  border-color: rgb(0 216 255 / 40%);
-  background: linear-gradient(180deg, rgb(19 35 60 / 70%), rgb(11 21 38 / 70%));
+  border-color: var(--color-accent);
+  background: var(--color-panel-soft);
 }
 
 .channel-card.is-offline {
@@ -130,7 +130,7 @@ const channels = [
 }
 
 .channel-card__id {
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 11px;
 }
 
@@ -142,20 +142,20 @@ const channels = [
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 10px;
-  background: rgb(255 255 255 / 5%);
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
 }
 
 .channel-card__state.is-on {
-  color: var(--color-success, #2ee6a8);
+  color: var(--color-success);
 }
 
 .channel-card__state.is-fault {
-  color: var(--color-danger, #ff5a5a);
+  color: var(--color-danger);
 }
 
 .channel-empty {
   text-align: center;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 12px;
   padding: 16px 0;
 }

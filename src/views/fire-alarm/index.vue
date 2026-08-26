@@ -239,17 +239,17 @@ onMounted(() => {
 }
 
 .alarm-list :deep(.alarm-list-item) {
-  border: 1px solid rgb(143 166 200 / 16%);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
-  background: linear-gradient(180deg, rgb(19 35 60 / 60%), rgb(11 21 38 / 60%));
+  background: var(--glass-bg);
   transition:
-    border-color 0.15s,
-    background 0.15s;
+    border-color var(--transition-fast),
+    background var(--transition-fast);
 }
 
 .alarm-list :deep(.alarm-list-item:hover) {
-  border-color: rgb(0 216 255 / 40%);
-  background: linear-gradient(180deg, rgb(19 35 60 / 70%), rgb(11 21 38 / 70%));
+  border-color: var(--color-accent);
+  background: var(--color-panel-soft);
 }
 
 .alarm-empty {
@@ -270,10 +270,10 @@ onMounted(() => {
   flex-direction: column;
   gap: 0;
   margin: 0;
-  border: 1px solid rgb(143 166 200 / 18%);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md, 10px);
   overflow: hidden;
-  background: linear-gradient(180deg, rgb(19 35 60 / 55%), rgb(11 21 38 / 55%));
+  background: var(--glass-bg);
 }
 
 .detail-view__row {
@@ -283,7 +283,7 @@ onMounted(() => {
   gap: 12px;
   min-height: 42px;
   padding: 0 14px;
-  border-bottom: 1px dashed rgb(143 166 200 / 12%);
+  border-bottom: 1px dashed var(--color-border);
   font-size: 13px;
 }
 
@@ -292,11 +292,11 @@ onMounted(() => {
 }
 
 .detail-view__row:nth-child(even) {
-  background: rgb(255 255 255 / 2.5%);
+  background: color-mix(in srgb, var(--color-text) 4%, transparent);
 }
 
 .detail-view dt {
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 

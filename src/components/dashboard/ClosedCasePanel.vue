@@ -55,7 +55,7 @@ onMounted(async () => {
   grid-template-rows: auto auto;
   gap: 2px 8px;
   padding: 8px 4px;
-  border-bottom: 1px dashed rgb(148 163 184 / 18%);
+  border-bottom: 1px dashed var(--color-border);
   font-size: 12px;
 }
 
@@ -63,7 +63,7 @@ onMounted(async () => {
   grid-column: 1;
   grid-row: 1 / 3;
   align-self: center;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 11px;
 }
 
@@ -76,7 +76,7 @@ onMounted(async () => {
 .case-row__time {
   grid-column: 3;
   grid-row: 1;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 11px;
 }
 
@@ -89,7 +89,7 @@ onMounted(async () => {
 
 .case-empty {
   text-align: center;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 12px;
   padding: 16px 0;
 }
