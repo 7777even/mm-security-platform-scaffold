@@ -5,8 +5,11 @@ import {
   FACTORY_CENTER,
   getBaseFillColor,
   gradingForMode,
+  parseZoneId,
+  zoneCenterFromPositions,
 } from './cesium';
 import type { MapPoint } from './map';
+import * as Cesium from 'cesium';
 
 // Cesium.Color.red/green/blue 通道值范围 0..1。转为 0..255 整数便于断言。
 const rgb = (c: { red: number; green: number; blue: number }): string =>
@@ -79,5 +82,29 @@ describe('cesium 服务层：底图与系统基色融合', () => {
     const fakeViewer = { terrainProvider: undefined } as unknown as never;
     const ok = await tryRealTerrain(fakeViewer);
     expect(ok).toBe(false); // 未配置地形服务 → 不加载真实地形，安全回落
+  });
+});
+
+// 交互闭环：分区点击飞入相关纯函数 TDD
+describe('cesium 服务层：风险分区点击飞入', () => {
+  it('parseZoneId 正确解析 zone 实体 id，非 zone 返回 null（守卫拾取分支）', () => {
+    expect(parseZoneId('zone:高压罐区')).toBe('高压罐区');
+    expect(parseZoneId('alarm:1')).toBeNull();
+    expect(parseZoneId('device:2')).toBeNull();
+    expect(parseZoneId(undefined)).toBeNull();
+    expect(parseZoneId(null)).toBeNull();
+  });
+
+  it('zoneCenterFromPositions 取围栏点位质心（经纬度均值），空数组回落厂区中心', () => {
+    const pts = [
+      Cesium.Cartesian3.fromDegrees(110.9, 21.6),
+      Cesium.Cartesian3.fromDegrees(111.0, 21.7),
+      Cesium.Cartesian3.fromDegrees(110.95, 21.65),
+    ];
+    const [lng, lat] = zoneCenterFromPositions(pts);
+    expect(lng).toBeCloseTo((110.9 + 111.0 + 110.95) / 3, 4);
+    expect(lat).toBeCloseTo((21.6 + 21.7 + 21.65) / 3, 4);
+    // 空围栏回落到厂区中心
+    expect(zoneCenterFromPositions([])).toEqual(FACTORY_CENTER);
   });
 });

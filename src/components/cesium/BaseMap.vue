@@ -13,6 +13,8 @@ import {
   setSceneMode3D,
   setLayerVisible,
   enablePick,
+  enableZonePick,
+  flyToZone,
   setBaseMapMode,
   loadTerrainRelief,
   setTerrainHillshadeVisible,
@@ -21,6 +23,7 @@ import {
   type BaseMapMode,
   type LayerKind,
   type PickResult,
+  type ZonePick,
 } from '@/services/cesium';
 import type { MapPoint, RiskZone } from '@/services/map';
 import { recordPerfAsync } from '@/utils/perf-budget';
@@ -46,6 +49,7 @@ const emit = defineEmits<{
   ready: [];
   'mode-change': [mode: '2d' | '3d'];
   pick: [result: PickResult | null];
+  'zone-pick': [zone: ZonePick];
 }>();
 
 const props = withDefaults(
@@ -84,6 +88,7 @@ function toggleBaseMapMode(): void {
 }
 let viewer: Cesium.Viewer | null = null;
 let cancelPick: (() => void) | null = null;
+let cancelZonePick: (() => void) | null = null;
 // 卸载时需要清理的异步句柄（setTimeout / ResizeObserver），避免在已销毁 viewer 上回调
 const resizeTimers: ReturnType<typeof setTimeout>[] = [];
 let resizeObserver: ResizeObserver | null = null;
@@ -160,6 +165,14 @@ async function init(): Promise<void> {
       cancelPick = enablePick(viewer, (result) => {
         picked.value = result;
         emit('pick', result);
+      });
+      // 风险分区点击 → 飞入并向上 emit，供宿主页联动
+      const v = viewer;
+      cancelZonePick = enableZonePick(v, (zone) => {
+        if (zone) {
+          flyToZone(v, zone.name);
+          emit('zone-pick', zone);
+        }
       });
       // 首屏渲染显式 requestRender，确保 useDefaultRenderLoop=false 或 destroy竞态下仍出图
       try {
@@ -322,6 +335,10 @@ onUnmounted(() => {
   if (cancelPick) {
     cancelPick();
     cancelPick = null;
+  }
+  if (cancelZonePick) {
+    cancelZonePick();
+    cancelZonePick = null;
   }
   // 3) dev 模式下挂的全局 viewer 句柄需解除，否则 Cesium 内部 RAF tick 仍会访问
   if (typeof window !== 'undefined') {

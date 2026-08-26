@@ -9,7 +9,9 @@ import { MAP_TILE_URL } from '@/constants/map';
 import { markOnce } from '@/utils/perf';
 import { readCssVar } from '@/utils/theme';
 import BaseMap from '@/components/cesium/BaseMap.vue';
+import MapDetailPanel from '@/components/cesium/MapDetailPanel.vue';
 import type { ClusterPoint } from '@/services/cesium-cluster';
+import type { PickResult, ZonePick } from '@/services/cesium';
 import PanelCard from '@/components/common/PanelCard.vue';
 import AppButton from '@/components/common/AppButton.vue';
 import DutyPanel from '@/components/dashboard/DutyPanel.vue';
@@ -89,6 +91,18 @@ const sceneMode = ref<'2d' | '3d'>('3d');
 function onMapError(): void {
   mapNotice.value = '地图初始化失败：当前环境不支持 WebGL，已降级';
   sceneMode.value = '2d';
+}
+
+// 地图交互闭环：点位/分区拾取 → 详情面板联动
+const selected = ref<PickResult | ZonePick | null>(null);
+function onMapPick(r: PickResult | null): void {
+  selected.value = r;
+}
+function onZonePick(z: ZonePick): void {
+  selected.value = z; // 分区已飞入，此处仅展示详情
+}
+function closeDetail(): void {
+  selected.value = null;
 }
 
 // 预案库在 dashboard 主壳内联预览，而非跳转到独立页面
@@ -228,7 +242,12 @@ onUnmounted(() => {
       :scene-mode="sceneMode"
       @error="onMapError"
       @mode-change="(m) => (sceneMode = m)"
+      @pick="onMapPick"
+      @zone-pick="onZonePick"
     />
+
+    <!-- 点位/分区拾取详情联动面板 -->
+    <MapDetailPanel :point="selected" @close="closeDetail" />
 
     <!-- 地图降级提示 -->
     <p v-if="mapNotice" class="map-notice">{{ mapNotice }}</p>

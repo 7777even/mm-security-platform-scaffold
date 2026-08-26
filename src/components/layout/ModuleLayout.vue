@@ -15,6 +15,7 @@ import { MAP_TILE_URL } from '@/constants/map';
 import BaseMap from '@/components/cesium/BaseMap.vue';
 import type { MapPoint, RiskZone } from '@/services/map';
 import type { ClusterPoint } from '@/services/cesium-cluster';
+import type { PickResult, ZonePick } from '@/services/cesium';
 
 const props = withDefaults(
   defineProps<{
@@ -40,6 +41,8 @@ const props = withDefaults(
 const emit = defineEmits<{
   error: [];
   'mode-change': [mode: '2d' | '3d'];
+  pick: [result: PickResult | null];
+  'zone-pick': [zone: ZonePick];
 }>();
 
 const sceneMode = ref<'2d' | '3d'>('3d');
@@ -78,6 +81,14 @@ function onModeChange(mode: '2d' | '3d'): void {
   sceneMode.value = mode;
   emit('mode-change', mode);
 }
+
+function onPick(result: PickResult | null): void {
+  emit('pick', result);
+}
+
+function onZonePick(zone: ZonePick): void {
+  emit('zone-pick', zone);
+}
 </script>
 
 <template>
@@ -94,6 +105,8 @@ function onModeChange(mode: '2d' | '3d'): void {
         :scene-mode="sceneMode"
         @error="onMapError"
         @mode-change="onModeChange"
+        @pick="onPick"
+        @zone-pick="onZonePick"
       />
     </slot>
 

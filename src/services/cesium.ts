@@ -67,6 +67,20 @@ export interface PickResult {
   raw: Record<string, unknown>;
 }
 
+/** 风险分区拾取结果（点击围栏面触发）。 */
+export interface ZonePick {
+  name: string;
+  center: [number, number];
+  score: number;
+  raw: Record<string, unknown>;
+}
+
+/** 解析 zone 实体 id（'zone:名称'），非 zone 返回 null。纯函数，便于单测守卫。 */
+export function parseZoneId(id: unknown): string | null {
+  if (typeof id !== 'string' || !id.startsWith('zone:')) return null;
+  return id.slice('zone:'.length);
+}
+
 /**
  * token 名 / hex → Cesium.Color。token 经 readCssVar 运行时解析（跟随主题切换），
  * 传入 hex 或解析失败时回落 fallback，保证不抛错、色值稳定。
@@ -490,6 +504,10 @@ export async function loadRiskZones(viewer: Cesium.Viewer): Promise<void> {
 
     viewer.entities.add({
       id: `zone:${z.name}`,
+      properties: {
+        kind: 'zone',
+        score: z.score,
+      },
       polygon: {
         hierarchy,
         material: fill,
@@ -647,6 +665,93 @@ export function enablePick(
     } catch (err) {
       if (!(err instanceof Cesium.DeveloperError)) {
         console.warn('[cesium] pick suppressed error', err);
+      }
+    }
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+  return () => {
+    disposed = true;
+    handler.destroy();
+  };
+}
+
+// ---- 风险分区点击飞入（联动） ----
+
+/** 由围栏点位近似质心（经纬度均值）。纯计算，便于单测。 */
+export function zoneCenterFromPositions(positions: Cesium.Cartesian3[]): [number, number] {
+  if (!positions.length) return FACTORY_CENTER;
+  let lng = 0;
+  let lat = 0;
+  for (const p of positions) {
+    const c = Cesium.Cartographic.fromCartesian(p);
+    lng += Cesium.Math.toDegrees(c.longitude);
+    lat += Cesium.Math.toDegrees(c.latitude);
+  }
+  const n = positions.length;
+  return [lng / n, lat / n];
+}
+
+/** 飞入指定风险分区（按 'zone:名称' 实体查围栏 bbox 计算视角）。失败静默。 */
+export function flyToZone(viewer: Cesium.Viewer, name: string): void {
+  try {
+    if ((viewer as unknown as { isDestroyed?: () => boolean }).isDestroyed?.()) return;
+    const entity = viewer.entities.getById(`zone:${name}`);
+    const poly = entity?.polygon;
+    if (!poly) return;
+    const hierarchy = poly?.hierarchy?.getValue(viewer.clock.currentTime) as
+      Cesium.PolygonHierarchy | undefined;
+    const positions = hierarchy?.positions ?? [];
+    if (!positions.length) return;
+    const sphere = Cesium.BoundingSphere.fromPoints(positions);
+    const center = Cesium.Cartographic.fromCartesian(sphere.center);
+    const height = Math.max(3000, sphere.radius * 2.2);
+    viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(
+        Cesium.Math.toDegrees(center.longitude),
+        Cesium.Math.toDegrees(center.latitude),
+        height,
+      ),
+      orientation: { heading: 0, pitch: Cesium.Math.toRadians(-35), roll: 0 },
+      duration: 1.0,
+    });
+  } catch (err) {
+    if (!(err instanceof Cesium.DeveloperError)) {
+      console.warn('[cesium] flyToZone suppressed error', err);
+    }
+  }
+}
+
+/**
+ * 注册风险分区点击拾取：命中围栏面（'zone:名称' 实体）回调 ZonePick 并触发飞入，
+ * 命中空白回调 null。返回取消注册函数。
+ */
+export function enableZonePick(
+  viewer: Cesium.Viewer,
+  cb: (z: ZonePick | null) => void,
+): () => void {
+  const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+  let disposed = false;
+  handler.setInputAction((movement: Cesium.ScreenSpaceEventHandler.PositionedEvent) => {
+    if (disposed) return;
+    try {
+      const v = viewer as unknown as { isDestroyed?: () => boolean };
+      if (v.isDestroyed?.()) return;
+      const picked = viewer.scene.pick(movement.position);
+      const name = parseZoneId(picked?.id);
+      if (name) {
+        const entity = viewer.entities.getById(`zone:${name}`);
+        const poly = entity?.polygon;
+        const hierarchy = poly?.hierarchy?.getValue(viewer.clock.currentTime) as
+          Cesium.PolygonHierarchy | undefined;
+        const positions = hierarchy?.positions ?? [];
+        const center = zoneCenterFromPositions(positions);
+        const score = Number(entity?.properties?.score?.getValue?.(viewer.clock.currentTime) ?? 0);
+        cb({ name, center, score, raw: { score } });
+        return;
+      }
+      cb(null);
+    } catch (err) {
+      if (!(err instanceof Cesium.DeveloperError)) {
+        console.warn('[cesium] zone pick suppressed error', err);
       }
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
