@@ -313,10 +313,19 @@ export function renderGeoJson(
         polygon: {
           hierarchy,
           material: c.withAlpha(fillOpacity),
-          outline: true,
-          outlineColor: c,
-          outlineWidth: strokeWidth,
+          // 地面贴地下多边形不支持 outline（Cesium 会告警并自动禁用），且需显式 height 抑制另一告警；
+          // 描边改由下方独立的「贴地线」实体绘制（见后）。
           heightReference: CLAMP,
+          height: 0,
+        },
+      });
+      // 贴地多边形边框：用独立 ground-clamped polyline 表达，避免 terrain 下 outline 不受支持告警。
+      addEntity({
+        polyline: {
+          positions: ring.map(([x, y]) => Cesium.Cartesian3.fromDegrees(x, y, height)),
+          width: strokeWidth,
+          material: c.clone(),
+          clampToGround: height === 0,
         },
       });
     } else if (geom.type === 'MultiLineString') {
@@ -350,10 +359,17 @@ export function renderGeoJson(
           polygon: {
             hierarchy,
             material: c.withAlpha(fillOpacity),
-            outline: true,
-            outlineColor: c,
-            outlineWidth: strokeWidth,
+            // 同 Polygon 分支：贴地下不支持 outline，补 height 抑制告警
             heightReference: CLAMP,
+            height: 0,
+          },
+        });
+        addEntity({
+          polyline: {
+            positions: ring.map(([x, y]) => Cesium.Cartesian3.fromDegrees(x, y, height)),
+            width: strokeWidth,
+            material: c.clone(),
+            clampToGround: height === 0,
           },
         });
       }

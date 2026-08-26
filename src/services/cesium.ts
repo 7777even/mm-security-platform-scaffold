@@ -524,11 +524,22 @@ export async function loadRiskZones(viewer: Cesium.Viewer): Promise<void> {
       polygon: {
         hierarchy,
         material: fill,
-        outline: true,
-        // 描边：项目强调色（--color-accent，规范统一蓝青）
-        outlineColor: Cesium.Color.fromCssColorString(readCssVar('--color-accent', '#00d8ff')),
-        outlineWidth: 2,
+        // 地面贴地下多边形不支持 outline（Cesium 会告警并自动禁用），且需显式 height 抑制另一告警；
+        // 描边改由下方独立的「贴地线」实体 zone-outline:<name> 绘制。
         heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+        height: 0,
+      },
+    });
+
+    // 风险区边框：用独立 ground-clamped polyline 表达，避免 terrain 下 polygon outline 不受支持告警。
+    viewer.entities.add({
+      id: `zone-outline:${z.name}`,
+      polyline: {
+        positions: ring,
+        width: 2,
+        // 描边：项目强调色（--color-accent，规范统一蓝青）
+        material: Cesium.Color.fromCssColorString(readCssVar('--color-accent', '#00d8ff')),
+        clampToGround: true,
       },
     });
 
