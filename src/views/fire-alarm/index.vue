@@ -1,12 +1,11 @@
 <!--
   views/fire-alarm/index.vue — 消防救援 Tab 业务视图（wujie 子应用挂载点）
-  布局（对齐原型）：左 3 面板（数据力量/设施监测/特殊作业）+ 中央地图 + 右侧悬浮工具栏 + 右 2 面板（消防设备/消防告警）
+  布局（对齐原型）：左 3 面板（数据力量/设施监测/特殊作业）+ 中央地图 + 右 2 面板（消防设备/消防告警）
 -->
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import { MAP_TILE_URL } from '@/constants/map';
 import BaseMap from '@/components/cesium/BaseMap.vue';
-import MapFloatTools from '@/components/map/MapFloatTools.vue';
 import type { ClusterPoint } from '@/services/cesium-cluster';
 import FireStrengthPanel from '@/components/fire/FireStrengthPanel.vue';
 import FireFacilityPanel from '@/components/fire/FireFacilityPanel.vue';
@@ -54,11 +53,6 @@ const clusterPoints = computed<ClusterPoint[]>(() => [
   })),
 ]);
 
-function onToolCommand(name: string): void {
-  // 骨架占位：后续接入图层/搜索/标绘/热力等具体能力
-  console.warn('[map-tool]', name);
-}
-
 function onMapError(): void {
   mapNotice.value = '地图初始化失败：当前环境不支持 WebGL，已降级';
   sceneMode.value = '2d';
@@ -97,13 +91,6 @@ onMounted(async () => {
       @error="onMapError"
       @mode-change="(m) => (sceneMode = m)"
     />
-    <!-- 地图右侧悬浮工具栏（图层/区域/搜索/3D视角/热力模式/标绘默认/地图切换/切换组件） -->
-    <MapFloatTools
-      :scene-mode="sceneMode"
-      @toggle-scene="(m: '2d' | '3d') => (sceneMode = m)"
-      @command="onToolCommand"
-    />
-
     <!-- 地图降级提示 -->
     <p v-if="mapNotice" class="map-notice">{{ mapNotice }}</p>
 

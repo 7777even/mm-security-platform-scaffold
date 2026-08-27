@@ -13,7 +13,6 @@
 import { ref, computed } from 'vue';
 import { MAP_TILE_URL } from '@/constants/map';
 import BaseMap from '@/components/cesium/BaseMap.vue';
-import MapFloatTools from '@/components/map/MapFloatTools.vue';
 import type { MapPoint, RiskZone } from '@/services/map';
 import type { ClusterPoint } from '@/services/cesium-cluster';
 import type { PickResult, ZonePick } from '@/services/cesium';
@@ -90,11 +89,6 @@ function onPick(result: PickResult | null): void {
 function onZonePick(zone: ZonePick): void {
   emit('zone-pick', zone);
 }
-
-// 右侧地图工具栏（图层/区域/搜索/3D视角/热力/标绘/地图切换/切换组件）命令占位
-function onToolCommand(name: string): void {
-  console.warn('[map-tool]', name);
-}
 </script>
 
 <template>
@@ -115,9 +109,6 @@ function onToolCommand(name: string): void {
         @zone-pick="onZonePick"
       />
     </slot>
-
-    <!-- 右侧地图悬浮工具栏（图层/区域/搜索/3D视角/热力/标绘/地图切换/切换组件） -->
-    <MapFloatTools :scene-mode="sceneMode" @toggle-scene="onModeChange" @command="onToolCommand" />
 
     <p v-if="mapNotice" class="module-map__notice">{{ mapNotice }}</p>
 
