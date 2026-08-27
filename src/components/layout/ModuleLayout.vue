@@ -13,6 +13,7 @@
 import { ref, computed } from 'vue';
 import { MAP_TILE_URL } from '@/constants/map';
 import BaseMap from '@/components/cesium/BaseMap.vue';
+import MapFloatTools from '@/components/map/MapFloatTools.vue';
 import type { MapPoint, RiskZone } from '@/services/map';
 import type { ClusterPoint } from '@/services/cesium-cluster';
 import type { PickResult, ZonePick } from '@/services/cesium';
@@ -89,6 +90,11 @@ function onPick(result: PickResult | null): void {
 function onZonePick(zone: ZonePick): void {
   emit('zone-pick', zone);
 }
+
+// 右侧地图工具栏（图层/区域/搜索/3D视角/热力/标绘/地图切换/切换组件）命令占位
+function onToolCommand(name: string): void {
+  console.warn('[map-tool]', name);
+}
 </script>
 
 <template>
@@ -110,7 +116,15 @@ function onZonePick(zone: ZonePick): void {
       />
     </slot>
 
+    <!-- 右侧地图悬浮工具栏（图层/区域/搜索/3D视角/热力/标绘/地图切换/切换组件） -->
+    <MapFloatTools :scene-mode="sceneMode" @toggle-scene="onModeChange" @command="onToolCommand" />
+
     <p v-if="mapNotice" class="module-map__notice">{{ mapNotice }}</p>
+
+    <!-- 底部快捷控制（原型安全防范地图底部一排图标，默认无内容） -->
+    <div v-if="$slots.bottom" class="module-map__bottom">
+      <slot name="bottom" />
+    </div>
 
     <!-- 左侧数据列（设计稿 419px） -->
     <div v-if="$slots.left" class="module-map__left">
@@ -152,6 +166,15 @@ function onZonePick(zone: ZonePick): void {
   border: 1px solid var(--color-warning);
   color: var(--color-warning);
   font-size: 12px;
+}
+
+/* 底部快捷控制（地图正下方居中） */
+.module-map__bottom {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 6;
 }
 
 /* 左侧数据列（设计稿 419px）：超出可滚动但隐藏滚动条（与 dashboard 一致） */

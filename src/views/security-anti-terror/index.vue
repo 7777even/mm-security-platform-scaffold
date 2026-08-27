@@ -1,180 +1,72 @@
 <!--
   治安防恐（六大模块之四）
-  参考设计说明 §12.2 出入管理 / 周界防恐（图 5-9 / 图 5-11）
-  布局：中央地图底座 + 两侧 PanelCard（§5.4 页面骨架）
-  统一使用设计系统组件：ModuleLayout / PanelCard / StatCard / AlarmCard / AppButton
+  对齐原型图 §安全防范：
+    左：出入统计（Tab+折线+环形）/ 联动巡查（6格+5G+声光报警）
+    中：Cesium 地图（打点+右侧悬浮工具栏+底部一排快捷控制）
+    右：告警趋势（折线）/ 告警列表（状态徽标）
+  使用统一骨架 ModuleLayout（中央地图+左/右 419px 数据列+底部插槽）。
 -->
 <script setup lang="ts">
-import { ref } from 'vue';
-import type { AlarmLevel } from '@/services/alarm';
+import { ref, onMounted } from 'vue';
 import ModuleLayout from '@/components/layout/ModuleLayout.vue';
-import PanelCard from '@/components/common/PanelCard.vue';
-import StatCard from '@/components/common/StatCard.vue';
-import AlarmCard from '@/components/common/AlarmCard.vue';
-import AppButton from '@/components/common/AppButton.vue';
-import RecordsView from './records.vue';
+import MapBottomTools from '@/components/map/MapBottomTools.vue';
+import AccessStatsPanel from '@/components/security/AccessStatsPanel.vue';
+import LinkPatrolPanel from '@/components/security/LinkPatrolPanel.vue';
+import AlarmTrendPanel from '@/components/security/AlarmTrendPanel.vue';
+import AlarmListPanel from '@/components/security/AlarmListPanel.vue';
+import type { MapPoint, RiskZone } from '@/services/map';
+import {
+  fetchAlarmPoints,
+  fetchDevicePoints,
+  fetchRiskZones,
+  FALLBACK_ALARM_POINTS,
+  FALLBACK_DEVICE_POINTS,
+  FALLBACK_RISK_ZONES,
+} from '@/services/map';
 
-const kpis = ref([
-  { title: '在厂人数', value: 1286, icon: 'User' },
-  { title: '门禁事件', value: 342, icon: 'Key' },
-  { title: '周界告警', value: 4, icon: 'Bell' },
-  { title: '巡更完成率', value: '96%', icon: 'Odometer' },
-]);
+// 中央地图打点数据（与消防/应急指挥同源 mock）
+const loading = ref(true);
+const alarmPoints = ref<MapPoint[]>([]);
+const devicePoints = ref<MapPoint[]>([]);
+const riskZones = ref<RiskZone[]>([]);
 
-const accessEvents = ref([
-  { time: '08:42', text: '北门 员工刷卡进厂 工号 20871', level: 4 },
-  { time: '08:35', text: '东门 访客登记 危化品运输车', level: 3 },
-  { time: '08:21', text: '西门 承包商人员离厂', level: 4 },
-  { time: '07:58', text: '南门 物资出厂核验通过', level: 4 },
-]);
-
-const perimeterAlarms = ref<{ level: AlarmLevel; title: string; desc: string; time: string }[]>([
-  { level: 1, title: '周界 II 区 翻越入侵', desc: '红外对射触发，视频复核中', time: '08:30' },
-  { level: 2, title: '罐区 无人机靠近', desc: '低空目标 2 个，已驱离', time: '08:05' },
-  { level: 3, title: '危化品库房 门禁异常', desc: '非授权时段开启', time: '07:46' },
-]);
-
-// 安防反恐记录：模块主壳内联预览，而非跳转到主壳独立页面
-const recordsOpen = ref(false);
-function openRecords(): void {
-  recordsOpen.value = true;
-}
-function closeRecords(): void {
-  recordsOpen.value = false;
-}
+onMounted(async () => {
+  try {
+    const [ap, dp, zones] = await Promise.all([
+      fetchAlarmPoints(),
+      fetchDevicePoints(),
+      fetchRiskZones(),
+    ]);
+    alarmPoints.value = ap;
+    devicePoints.value = dp;
+    riskZones.value = zones;
+  } catch {
+    alarmPoints.value = FALLBACK_ALARM_POINTS;
+    devicePoints.value = FALLBACK_DEVICE_POINTS;
+    riskZones.value = FALLBACK_RISK_ZONES;
+  } finally {
+    loading.value = false;
+  }
+});
 </script>
 
 <template>
-  <div class="module-shell">
-    <ModuleLayout>
-      <!-- 左侧：治安态势 KPI + 出入管理/门禁事件 -->
-      <template #left>
-        <PanelCard title="治安态势概览" icon="DataBoard">
-          <div class="kpi-grid">
-            <StatCard
-              v-for="k in kpis"
-              :key="k.title"
-              :title="k.title"
-              :value="k.value"
-              :icon="k.icon"
-            />
-          </div>
-          <div class="left-actions">
-            <AppButton variant="ghost" size="sm">重点布控</AppButton>
-            <AppButton variant="primary" size="sm">应急处置</AppButton>
-          </div>
-        </PanelCard>
+  <ModuleLayout :alarms="alarmPoints" :devices="devicePoints" :zones="riskZones" :loading="loading">
+    <!-- 左侧：出入统计 + 联动巡查 -->
+    <template #left>
+      <AccessStatsPanel />
+      <LinkPatrolPanel />
+    </template>
 
-        <PanelCard title="出入管理 / 门禁事件" icon="Key" more="查看全部" @more="openRecords">
-          <div class="event-list">
-            <div v-for="(e, i) in accessEvents" :key="i" class="event-row">
-              <span class="event-row__time">{{ e.time }}</span>
-              <span class="event-row__dot" :class="`tone-alarm-${e.level}`" />
-              <span class="event-row__text">{{ e.text }}</span>
-            </div>
-          </div>
-        </PanelCard>
-      </template>
+    <!-- 右侧：告警趋势 + 告警列表 -->
+    <template #right>
+      <AlarmTrendPanel />
+      <AlarmListPanel />
+    </template>
 
-      <!-- 右侧：周界防恐告警 -->
-      <template #right>
-        <PanelCard title="周界防恐告警" icon="Bell" more="查看全部">
-          <div class="alarm-list">
-            <AlarmCard
-              v-for="(a, i) in perimeterAlarms"
-              :key="i"
-              :level="a.level"
-              :title="a.title"
-              :desc="a.desc"
-              :time="a.time"
-            />
-          </div>
-        </PanelCard>
-      </template>
-    </ModuleLayout>
-
-    <!-- 安防反恐记录：模块主壳内联预览（覆盖层），不跳转独立页面 -->
-    <SecondaryPageOverlay v-model:open="recordsOpen">
-      <RecordsView :embedded="true" @close="closeRecords" />
-    </SecondaryPageOverlay>
-  </div>
+    <!-- 地图底部一排快捷控制（原型中央底部 8 个图标） -->
+    <template #bottom>
+      <MapBottomTools />
+    </template>
+  </ModuleLayout>
 </template>
-
-<style scoped>
-.module-shell {
-  position: relative;
-  height: 100%;
-}
-
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-md);
-  margin-bottom: var(--space-md);
-}
-
-.left-actions {
-  display: flex;
-  gap: var(--space-sm);
-  justify-content: center;
-}
-
-.alarm-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  max-height: calc(100vh - 420px);
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.alarm-list::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  background: transparent;
-}
-
-.event-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-}
-
-.event-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: 10px 12px;
-  background: var(--glass-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  font-size: 13px;
-  transition:
-    border-color var(--transition-fast),
-    background var(--transition-fast);
-}
-
-.event-row:hover {
-  border-color: var(--color-accent);
-  background: var(--color-panel-soft);
-}
-
-.event-row__time {
-  font-family: var(--font-family-num);
-  color: var(--color-text-muted);
-  flex-shrink: 0;
-}
-
-.event-row__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: currentcolor;
-}
-
-.event-row__text {
-  color: var(--color-text);
-}
-</style>

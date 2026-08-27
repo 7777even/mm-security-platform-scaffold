@@ -11,9 +11,12 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AccessStatsPanel: typeof import('./src/components/security/AccessStatsPanel.vue')['default']
     AlarmCard: typeof import('./src/components/common/AlarmCard.vue')['default']
     AlarmDetailView: typeof import('./src/components/common/AlarmDetailView.vue')['default']
     AlarmListItem: typeof import('./src/components/common/AlarmListItem.vue')['default']
+    AlarmListPanel: typeof import('./src/components/security/AlarmListPanel.vue')['default']
+    AlarmTrendPanel: typeof import('./src/components/security/AlarmTrendPanel.vue')['default']
     AppButton: typeof import('./src/components/common/AppButton.vue')['default']
     AppErrorBoundary: typeof import('./src/components/AppErrorBoundary.vue')['default']
     AppLayout: typeof import('./src/components/layout/AppLayout.vue')['default']
@@ -48,6 +51,9 @@ declare module 'vue' {
     FireFacilityPanel: typeof import('./src/components/fire/FireFacilityPanel.vue')['default']
     FireStrengthPanel: typeof import('./src/components/fire/FireStrengthPanel.vue')['default']
     GaugeChart: typeof import('./src/components/charts/GaugeChart.vue')['default']
+    LineChart: typeof import('./src/components/charts/LineChart.vue')['default']
+    LinkPatrolPanel: typeof import('./src/components/security/LinkPatrolPanel.vue')['default']
+    MapBottomTools: typeof import('./src/components/map/MapBottomTools.vue')['default']
     MapClusterPopup: typeof import('./src/components/cesium/MapClusterPopup.vue')['default']
     MapDetailPanel: typeof import('./src/components/cesium/MapDetailPanel.vue')['default']
     MapFloatTools: typeof import('./src/components/map/MapFloatTools.vue')['default']
