@@ -10,7 +10,8 @@ import { ElMessage } from 'element-plus';
 import PanelCard from '@/components/common/PanelCard.vue';
 import AppButton from '@/components/common/AppButton.vue';
 import { useAlarmView } from '@/composables/useAlarmView';
-import type { AlarmItem, AlarmLevel, AlarmStatus } from '@/services/alarm';
+import { ALARM_LEVEL_TEXT, ALARM_STATUS_TEXT, ALARM_TYPE_LABEL } from '@/composables/useAlarmMeta';
+import type { AlarmItem, AlarmLevel, AlarmStatus, AlarmType } from '@/services/alarm';
 
 // embedded: 由所属模块主壳内联预览（覆盖层）承载时为真，此时「返回」改为关闭预览而非路由跳转
 const props = defineProps<{ embedded?: boolean }>();
@@ -25,14 +26,6 @@ const detailVisible = computed(() => detail.value !== null);
 
 const LEVELS: AlarmLevel[] = [1, 2, 3, 4];
 const STATUSES: AlarmStatus[] = ['ACTIVE', 'ACKED', 'DISPATCHED', 'CLOSED'];
-const LEVEL_TEXT: Record<AlarmLevel, string> = { 1: '一级', 2: '二级', 3: '三级', 4: '四级' };
-const STATUS_TEXT: Record<AlarmStatus, string> = {
-  ACTIVE: '待处理',
-  ACKED: '已确认',
-  DISPATCHED: '已派单',
-  CLOSED: '已闭环',
-};
-
 const filtered = computed(() => {
   const k = keyword.value.trim().toLowerCase();
   if (!k) return pageResult.value.list;
@@ -44,13 +37,6 @@ const filtered = computed(() => {
     return hit;
   });
 });
-
-function formatTs(ts: string): string {
-  const d = new Date(ts);
-  if (Number.isNaN(d.getTime())) return ts;
-  const pad = (n: number): string => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}
 
 async function onAck(row: AlarmItem): Promise<void> {
   const ok = await ack(row.alarmId);
@@ -81,10 +67,10 @@ onMounted(() => {
         style="width: 240px"
       />
       <el-select v-model="levelFilter" placeholder="全部等级" clearable style="width: 140px">
-        <el-option v-for="l in LEVELS" :key="l" :label="LEVEL_TEXT[l]" :value="l" />
+        <el-option v-for="l in LEVELS" :key="l" :label="ALARM_LEVEL_TEXT[l]" :value="l" />
       </el-select>
       <el-select v-model="statusFilter" placeholder="全部状态" clearable style="width: 140px">
-        <el-option v-for="s in STATUSES" :key="s" :label="STATUS_TEXT[s]" :value="s" />
+        <el-option v-for="s in STATUSES" :key="s" :label="ALARM_STATUS_TEXT[s]" :value="s" />
       </el-select>
       <div class="records-toolbar__spacer" />
       <AppButton variant="ghost" size="sm" @click="goBack">{{
@@ -106,24 +92,24 @@ onMounted(() => {
             size="small"
             :type="row.level === 1 ? 'success' : row.level === 2 ? 'warning' : 'danger'"
           >
-            {{ LEVEL_TEXT[row.level as AlarmLevel] }}
+            {{ ALARM_LEVEL_TEXT[row.level as AlarmLevel] }}
           </el-tag>
         </template>
       </el-table-column>
       <el-table-column label="类型" width="120">
-        <template #default="{ row }">{{ row.type }}</template>
+        <template #default="{ row }">{{ ALARM_TYPE_LABEL[row.type as AlarmType] }}</template>
       </el-table-column>
       <el-table-column label="状态" width="110">
         <template #default="{ row }">
           <span class="records-status" :class="`is-${row.status}`">
-            {{ STATUS_TEXT[row.status as AlarmStatus] }}
+            {{ ALARM_STATUS_TEXT[row.status as AlarmStatus] }}
           </span>
         </template>
       </el-table-column>
       <el-table-column prop="deviceCode" label="设备编码" width="140" />
       <el-table-column prop="location" label="位置" min-width="180" show-overflow-tooltip />
       <el-table-column label="上报时间" width="180">
-        <template #default="{ row }">{{ formatTs(row.ts) }}</template>
+        <template #default="{ row }">{{ formatAlarmTs(row.ts) }}</template>
       </el-table-column>
       <el-table-column label="操作" width="180" fixed="right">
         <template #default="{ row }">
@@ -153,53 +139,9 @@ onMounted(() => {
       />
     </div>
 
-    <el-drawer v-model="detailVisible" title="报警详情" direction="rtl" size="400px">
-      <dl v-if="detail" class="detail-view">
-        <div class="detail-view__row">
-          <dt>报警编号</dt>
-          <dd class="font-number">{{ detail.alarmId }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>等级</dt>
-          <dd>{{ LEVEL_TEXT[detail.level as AlarmLevel] }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>类型</dt>
-          <dd>{{ detail.type }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>设备编码</dt>
-          <dd class="font-number">{{ detail.deviceCode }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>位置</dt>
-          <dd>{{ detail.location }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>描述</dt>
-          <dd>{{ detail.description }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>状态</dt>
-          <dd>{{ STATUS_TEXT[detail.status as AlarmStatus] }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>上报时间</dt>
-          <dd class="font-number">{{ formatTs(detail.ts) }}</dd>
-        </div>
-      </dl>
-      <div v-if="detail" class="records-detail-actions">
-        <AppButton
-          variant="primary"
-          size="sm"
-          :disabled="detail.status !== 'ACTIVE'"
-          @click="onAck(detail)"
-        >
-          确认处置
-        </AppButton>
-        <AppButton variant="ghost" size="sm" @click="detailVisible = false">关闭</AppButton>
-      </div>
-    </el-drawer>
+    <el-dialog v-model="detailVisible" title="报警详情" width="460px" append-to-body>
+      <AlarmDetailView v-if="detail" :alarm="detail" @ack="onAck" @close="detailVisible = false" />
+    </el-dialog>
   </PanelCard>
 </template>
 
@@ -248,53 +190,5 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   margin-top: var(--space-md);
-}
-
-.records-detail-actions {
-  display: flex;
-  gap: var(--space-sm);
-  margin-top: var(--space-lg);
-}
-
-/* 详情抽屉：项目自定义深色描述布局（对齐 §5.3 详情抽屉 + dashboard .crud-view 风格） */
-.detail-view {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin: 0;
-  border: 1px solid rgb(143 166 200 / 18%);
-  border-radius: var(--radius-md, 10px);
-  overflow: hidden;
-  background: linear-gradient(180deg, rgb(19 35 60 / 55%), rgb(11 21 38 / 55%));
-}
-
-.detail-view__row {
-  display: grid;
-  grid-template-columns: 96px 1fr;
-  align-items: center;
-  gap: 12px;
-  min-height: 42px;
-  padding: 0 14px;
-  border-bottom: 1px dashed rgb(143 166 200 / 12%);
-  font-size: 13px;
-}
-
-.detail-view__row:last-child {
-  border-bottom: none;
-}
-
-.detail-view__row:nth-child(even) {
-  background: rgb(255 255 255 / 2.5%);
-}
-
-.detail-view dt {
-  color: var(--color-text-muted, #94a3b8);
-  font-size: 12px;
-}
-
-.detail-view dd {
-  margin: 0;
-  color: var(--color-text);
-  text-align: right;
 }
 </style>

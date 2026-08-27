@@ -37,7 +37,7 @@ describe('消防报警 模块', () => {
           'el-select': true,
           'el-option': true,
           'el-pagination': true,
-          'el-drawer': true,
+          'el-dialog': true,
         },
       },
     });

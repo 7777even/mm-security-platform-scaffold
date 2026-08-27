@@ -289,7 +289,7 @@ onUnmounted(() => {
   z-index: 20;
   padding: 6px 16px;
   border-radius: var(--radius-sm);
-  background: rgb(255 176 32 / 15%);
+  background: var(--notice-warning-bg);
   border: 1px solid var(--color-warning);
   color: var(--color-warning);
   font-size: 12px;
@@ -372,9 +372,9 @@ onUnmounted(() => {
   display: block;
   background: linear-gradient(
     90deg,
-    rgb(120 160 210 / 8%),
-    rgb(120 160 210 / 18%),
-    rgb(120 160 210 / 8%)
+    var(--skeleton-base),
+    var(--skeleton-hi),
+    var(--skeleton-base)
   );
   background-size: 200% 100%;
   animation: skeleton-sweep 1.4s ease-in-out infinite;

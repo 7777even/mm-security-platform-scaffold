@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
 import AlarmListItem from '@/components/common/AlarmListItem.vue';
+import AlarmDetailView from '@/components/common/AlarmDetailView.vue';
+import MonitorDialog from '@/components/common/MonitorDialog.vue';
 import {
   createEmergencyEvent,
   fetchAlarmPage,
@@ -94,36 +96,10 @@ const viewDialogVisible = ref(false);
 const viewPayload = ref<AlarmItem | null>(null);
 
 // 事件详情按 UI 规范 §3.1 映射为中文文案（应急指挥本地映射，不污染消防报警模块）
-const STATUS_TEXT: Record<AlarmStatus, string> = {
-  ACTIVE: '未处置',
-  ACKED: '已确认',
-  DISPATCHED: '已派单',
-  CLOSED: '已闭环',
-};
-const TYPE_LABEL: Record<AlarmType, string> = {
-  FIRE: '火灾',
-  GAS: '可燃气体',
-  TEMP: '温度',
-  CCTV: '视频',
-  SOS: '紧急呼叫',
-};
-function formatTs(ts: string): string {
-  const d = new Date(ts);
-  if (Number.isNaN(d.getTime())) return ts;
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}
 
 // 事件详情按 UI 规范 §3.1 映射为中文文案 + 等级色阶，禁止直接展示后端枚举原始值
-const viewStatusText = computed(() =>
-  viewPayload.value ? STATUS_TEXT[viewPayload.value.status] : '',
-);
-const viewTypeLabel = computed(() => (viewPayload.value ? TYPE_LABEL[viewPayload.value.type] : ''));
-const viewTsText = computed(() => (viewPayload.value ? formatTs(viewPayload.value.ts) : ''));
+
 // 等级色阶用内联 color 直接绑定 --color-alarm-N（最高优先级，且详情改用 dl.detail-view 结构避免 Element 默认白底覆盖）
-const viewLevelColor = computed(() =>
-  viewPayload.value ? `var(--color-alarm-${viewPayload.value.level})` : '',
-);
 
 // 现场监控弹窗（与事件详情区分：AlarmListItem 的"现场监控"发 view 事件）
 const monitorDialogVisible = ref(false);
@@ -163,6 +139,12 @@ async function submitCreate() {
 function openView(a: AlarmItem) {
   viewPayload.value = a;
   viewDialogVisible.value = true;
+}
+
+function onViewAck(a: AlarmItem) {
+  const item = events.value.find((e) => e.alarmId === a.alarmId);
+  if (item) item.status = 'ACKED';
+  if (viewPayload.value) viewPayload.value = { ...viewPayload.value, status: 'ACKED' };
 }
 
 onMounted(loadEvents);
@@ -318,63 +300,17 @@ onMounted(loadEvents);
 
     <!-- 查看 -->
     <el-dialog v-model="viewDialogVisible" title="事件详情" width="460px" append-to-body>
-      <dl v-if="viewPayload" class="detail-view">
-        <div class="detail-view__row">
-          <dt>事件 ID</dt>
-          <dd class="font-number">{{ viewPayload.alarmId }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>等级</dt>
-          <dd>
-            <span class="event-level" :style="{ color: viewLevelColor }"
-              >{{ viewPayload.level }} 级</span
-            >
-          </dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>类型</dt>
-          <dd>{{ viewTypeLabel }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>状态</dt>
-          <dd>{{ viewStatusText }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>设备编码</dt>
-          <dd class="font-number">{{ viewPayload.deviceCode }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>位置</dt>
-          <dd>{{ viewPayload.location }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>时间</dt>
-          <dd class="font-number">{{ viewTsText }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>描述</dt>
-          <dd>{{ viewPayload.description }}</dd>
-        </div>
-      </dl>
+      <AlarmDetailView
+        v-if="viewPayload"
+        :alarm="viewPayload"
+        @ack="onViewAck"
+        @close="viewDialogVisible = false"
+      />
     </el-dialog>
 
     <!-- 现场监控 -->
-    <el-dialog
-      v-model="monitorDialogVisible"
-      title="现场监控"
-      class="monitor-dialog"
-      width="460px"
-      append-to-body
-    >
-      <div v-if="monitorPayload" class="monitor-box">
-        <div class="monitor-box__screen">
-          <span class="monitor-box__icon">🎥</span>
-          <span class="monitor-box__text">现场实时监控画面</span>
-        </div>
-        <p class="monitor-box__meta">
-          {{ monitorPayload.location }} · {{ formatTs(monitorPayload.ts) }}
-        </p>
-      </div>
+    <el-dialog v-model="monitorDialogVisible" title="现场监控" width="460px" append-to-body>
+      <MonitorDialog :alarm="monitorPayload" />
     </el-dialog>
   </div>
 </template>
@@ -514,41 +450,5 @@ onMounted(loadEvents);
 .drill-status.计划 {
   color: var(--color-info);
   background: color-mix(in srgb, var(--color-info) 16%, transparent);
-}
-
-/* 等级色阶：内联 color 已着色，此处仅强化字重与对齐规范色阶观感 */
-.event-level {
-  font-weight: 700;
-}
-
-/* 现场监控占位区 */
-.monitor-box {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.monitor-box__screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 200px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-panel-soft) 60%, transparent);
-  color: var(--color-text-muted);
-}
-
-.monitor-box__icon {
-  font-size: 32px;
-}
-
-.monitor-box__meta {
-  margin: 0;
-  font-size: 13px;
-  color: var(--color-text-muted);
-  text-align: center;
 }
 </style>

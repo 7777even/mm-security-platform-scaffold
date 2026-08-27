@@ -198,10 +198,10 @@ onMounted(async () => {
   flex-direction: column;
   gap: 0;
   margin: 0;
-  border: 1px solid rgb(143 166 200 / 18%);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md, 10px);
   overflow: hidden;
-  background: linear-gradient(180deg, rgb(19 35 60 / 55%), rgb(11 21 38 / 55%));
+  background: var(--glass-bg);
 }
 
 .detail-view__row {
@@ -211,7 +211,7 @@ onMounted(async () => {
   gap: 12px;
   min-height: 42px;
   padding: 0 14px;
-  border-bottom: 1px dashed rgb(143 166 200 / 12%);
+  border-bottom: 1px dashed var(--glass-border);
   font-size: 13px;
 }
 
@@ -220,7 +220,7 @@ onMounted(async () => {
 }
 
 .detail-view__row:nth-child(even) {
-  background: rgb(255 255 255 / 2.5%);
+  background: var(--row-alt-bg);
 }
 
 .detail-view dt {

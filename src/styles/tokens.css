@@ -204,6 +204,13 @@
   --list-divider: rgb(255 255 255 / 8%);
   --message-bar-h: var(--layout-bottom-h);
   --message-bar-bg: rgb(11 21 38 / 85%);
+
+  /* §5.5 骨架屏（加载态占位，瞬态扫描光） */
+  --skeleton-base: rgb(120 160 210 / 8%);
+  --skeleton-hi: rgb(120 160 210 / 18%);
+
+  /* §5.6 瞬态提示条底色（警示/降级，warning 15% 透明） */
+  --notice-warning-bg: color-mix(in srgb, var(--color-warning) 15%, transparent);
 }
 
 /* =========================================================================

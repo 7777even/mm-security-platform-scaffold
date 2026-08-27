@@ -36,7 +36,7 @@ function close(): void {
 .secondary-overlay__backdrop {
   position: absolute;
   inset: 0;
-  background: rgb(6 12 24 / 72%);
+  background: color-mix(in srgb, var(--color-bg) 72%, transparent);
   backdrop-filter: blur(2px);
 }
 

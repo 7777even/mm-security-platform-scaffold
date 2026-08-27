@@ -4,11 +4,13 @@ import SecondaryPageOverlay from '@/components/common/SecondaryPageOverlay.vue';
 import RecordsView from './records.vue';
 import { ElMessage } from 'element-plus';
 import { useAlarmView } from '@/composables/useAlarmView';
+import { ALARM_LEVEL_TEXT, ALARM_STATUS_TEXT } from '@/composables/useAlarmMeta';
 import type { AlarmItem, AlarmLevel, AlarmStatus } from '@/services/alarm';
 import ModuleLayout from '@/components/layout/ModuleLayout.vue';
 import PanelCard from '@/components/common/PanelCard.vue';
 import AlarmCard from '@/components/common/AlarmCard.vue';
 import AlarmListItem from '@/components/common/AlarmListItem.vue';
+import MonitorDialog from '@/components/common/MonitorDialog.vue';
 import AppButton from '@/components/common/AppButton.vue';
 
 const {
@@ -24,31 +26,10 @@ const {
   ack,
 } = useAlarmView();
 
-function formatTime(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const pad = (n: number): string => String(n).padStart(2, '0');
-  return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
 const detailVisible = computed(() => detail.value !== null);
 
 const LEVELS: AlarmLevel[] = [1, 2, 3, 4];
 const STATUSES: AlarmStatus[] = ['ACTIVE', 'ACKED', 'DISPATCHED', 'CLOSED'];
-
-const STATUS_TEXT: Record<AlarmStatus, string> = {
-  ACTIVE: '待处理',
-  ACKED: '已确认',
-  DISPATCHED: '已派单',
-  CLOSED: '已闭环',
-};
-
-const LEVEL_TEXT: Record<AlarmLevel, string> = {
-  1: '一级',
-  2: '二级',
-  3: '三级',
-  4: '四级',
-};
 
 async function onAck(row: AlarmItem): Promise<void> {
   const ok = await ack(row.alarmId);
@@ -67,6 +48,14 @@ function openRecords(): void {
 }
 function closeRecords(): void {
   recordsOpen.value = false;
+}
+
+// 现场监控弹窗（与应急指挥共用 MonitorDialog，统一观感）
+const monitorDialogVisible = ref(false);
+const monitorPayload = ref<AlarmItem | null>(null);
+function openMonitor(a: AlarmItem): void {
+  monitorPayload.value = a;
+  monitorDialogVisible.value = true;
 }
 
 onMounted(() => {
@@ -88,7 +77,7 @@ onMounted(() => {
               v-for="l in LEVELS"
               :key="l"
               :level="l"
-              :title="LEVEL_TEXT[l]"
+              :title="ALARM_LEVEL_TEXT[l]"
               :desc="`待处理 ${pageResult.list.filter((a) => a.level === l).length} 条`"
               time="—"
             />
@@ -104,10 +93,10 @@ onMounted(() => {
         <PanelCard title="消防报警" icon="Bell" more="记录" @more="openRecords">
           <div class="alarm-filters">
             <el-select v-model="levelFilter" placeholder="全部等级" clearable style="width: 130px">
-              <el-option v-for="l in LEVELS" :key="l" :label="LEVEL_TEXT[l]" :value="l" />
+              <el-option v-for="l in LEVELS" :key="l" :label="ALARM_LEVEL_TEXT[l]" :value="l" />
             </el-select>
             <el-select v-model="statusFilter" placeholder="全部状态" clearable style="width: 130px">
-              <el-option v-for="s in STATUSES" :key="s" :label="STATUS_TEXT[s]" :value="s" />
+              <el-option v-for="s in STATUSES" :key="s" :label="ALARM_STATUS_TEXT[s]" :value="s" />
             </el-select>
           </div>
 
@@ -116,7 +105,7 @@ onMounted(() => {
               <AlarmListItem
                 :alarm="row as AlarmItem"
                 @open="openDetail(row as AlarmItem)"
-                @view="ElMessage.info(`跳转现场监控：${row.alarmId}`)"
+                @view="openMonitor(row as AlarmItem)"
                 @call="ElMessage.info(`发起音视频通话：${row.alarmId}`)"
                 @dispatch="onAck(row as AlarmItem)"
               />
@@ -136,42 +125,14 @@ onMounted(() => {
       </template>
     </ModuleLayout>
 
-    <el-drawer v-model="detailVisible" title="报警详情" direction="rtl" size="380px">
-      <dl v-if="detail" class="detail-view">
-        <div class="detail-view__row">
-          <dt>报警编号</dt>
-          <dd class="font-number">{{ detail.alarmId }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>等级</dt>
-          <dd>{{ LEVEL_TEXT[detail.level as AlarmLevel] }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>类型</dt>
-          <dd>{{ detail.type }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>设备编码</dt>
-          <dd class="font-number">{{ detail.deviceCode }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>位置</dt>
-          <dd>{{ detail.location }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>描述</dt>
-          <dd>{{ detail.description }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>状态</dt>
-          <dd>{{ STATUS_TEXT[detail.status as AlarmStatus] }}</dd>
-        </div>
-        <div class="detail-view__row">
-          <dt>上报时间</dt>
-          <dd class="font-number">{{ formatTime(detail.ts) }}</dd>
-        </div>
-      </dl>
-    </el-drawer>
+    <el-dialog v-model="detailVisible" title="报警详情" width="460px" append-to-body>
+      <AlarmDetailView v-if="detail" :alarm="detail" @ack="onAck" @close="detailVisible = false" />
+    </el-dialog>
+
+    <!-- 现场监控 -->
+    <el-dialog v-model="monitorDialogVisible" title="现场监控" width="460px" append-to-body>
+      <MonitorDialog :alarm="monitorPayload" />
+    </el-dialog>
 
     <!-- 消防报警记录：模块主壳内联预览（覆盖层），不跳转独立页面 -->
     <SecondaryPageOverlay v-model:open="recordsOpen">
@@ -262,47 +223,5 @@ onMounted(() => {
 .alarm-pager {
   margin-top: var(--space-md);
   justify-content: flex-end;
-}
-
-/* 详情抽屉：项目自定义深色描述布局 */
-.detail-view {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  margin: 0;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md, 10px);
-  overflow: hidden;
-  background: var(--glass-bg);
-}
-
-.detail-view__row {
-  display: grid;
-  grid-template-columns: 96px 1fr;
-  align-items: center;
-  gap: 12px;
-  min-height: 42px;
-  padding: 0 14px;
-  border-bottom: 1px dashed var(--color-border);
-  font-size: 13px;
-}
-
-.detail-view__row:last-child {
-  border-bottom: none;
-}
-
-.detail-view__row:nth-child(even) {
-  background: color-mix(in srgb, var(--color-text) 4%, transparent);
-}
-
-.detail-view dt {
-  color: var(--color-text-muted);
-  font-size: 12px;
-}
-
-.detail-view dd {
-  margin: 0;
-  color: var(--color-text);
-  text-align: right;
 }
 </style>
