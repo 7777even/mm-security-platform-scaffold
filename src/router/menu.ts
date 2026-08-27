@@ -1,6 +1,13 @@
 import type { Router, RouteRecordRaw, RouteComponent } from 'vue-router';
 import type { Component } from 'vue';
-import { DataBoard, Warning, VideoCamera, Cloudy, Lock, Cpu } from '@element-plus/icons-vue';
+import {
+  DataBoard,
+  Warning,
+  VideoCamera,
+  Cloudy,
+  Lock,
+  OfficeBuilding,
+} from '@element-plus/icons-vue';
 import { logger } from '@/utils/logger';
 
 // B3 AUTH-05 菜单契约（GET /auth/menus）返回的菜单项；id 与前端路由 name/权限码对齐
@@ -24,9 +31,12 @@ interface MenuRouteSpec {
   subappUrl?: string;
 }
 
+// 顶栏六大业务模块 Tab（文案对齐《安全管控指挥系统》大屏原型：
+//   应急指挥 / 消防救援 / 安全防范 / 工业电视 / 生产应急 / 预警中心）
+// id 与 subapps/* 子应用目录一一对应；title 为原型 Tab 展示名。
 export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
   dashboard: {
-    title: '应急指挥及演练',
+    title: '应急指挥',
     perm: 'dashboard:view',
     icon: DataBoard,
     // wujie-shell 试点：dashboard 作为首个子应用，经 WujieHost 挂载
@@ -35,62 +45,57 @@ export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
     // 同源路径：与主壳同一 Vite 服务(5173)托管，wujie 要求子应用与主应用同源
     subappUrl: import.meta.env.VITE_DASHBOARD_SUBAPP_URL ?? '/subapps/dashboard/',
   },
-  'extreme-weather': {
-    title: '极端天气风险应急',
-    perm: 'weather:view',
-    icon: Cloudy,
-    // wujie-shell：作为子应用经 WujieHost 挂载，复用主壳下发的设计 token
-    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
-    subapp: true,
-    subappUrl: import.meta.env.VITE_EXTREME_WEATHER_SUBAPP_URL ?? '/subapps/extreme-weather/',
-  },
   'fire-alarm': {
-    title: '消防报警',
+    title: '消防救援',
     perm: 'fire-alarm:view',
     icon: Warning,
-    // wujie-shell：作为子应用经 WujieHost 挂载，复用主壳下发的设计 token
     component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
     subapp: true,
     subappUrl: import.meta.env.VITE_FIRE_ALARM_SUBAPP_URL ?? '/subapps/fire-alarm/',
   },
   'security-anti-terror': {
-    title: '治安防恐',
+    title: '安全防范',
     perm: 'security:view',
     icon: Lock,
-    // wujie-shell：作为子应用经 WujieHost 挂载，复用主壳下发的设计 token
     component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
     subapp: true,
     subappUrl:
       import.meta.env.VITE_SECURITY_ANTI_TERROR_SUBAPP_URL ?? '/subapps/security-anti-terror/',
   },
   'industrial-video': {
-    title: '工业电视视频墙',
+    title: '工业电视',
     perm: 'video:view',
     icon: VideoCamera,
-    // wujie-shell：作为子应用经 WujieHost 挂载，复用主壳下发的设计 token
     component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
     subapp: true,
     subappUrl: import.meta.env.VITE_INDUSTRIAL_VIDEO_SUBAPP_URL ?? '/subapps/industrial-video/',
   },
   'ops-monitor': {
-    title: '运维监测',
+    title: '生产应急',
     perm: 'ops:view',
-    icon: Cpu,
-    // wujie-shell：作为子应用经 WujieHost 挂载，复用主壳下发的设计 token
+    icon: OfficeBuilding,
     component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
     subapp: true,
     subappUrl: import.meta.env.VITE_OPS_MONITOR_SUBAPP_URL ?? '/subapps/ops-monitor/',
+  },
+  'extreme-weather': {
+    title: '预警中心',
+    perm: 'weather:view',
+    icon: Cloudy,
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_EXTREME_WEATHER_SUBAPP_URL ?? '/subapps/extreme-weather/',
   },
 };
 
 // 降级默认菜单：mock/后端菜单不可达时装配，保证不白屏（对齐六大业务模块原型）
 export const DEFAULT_MENUS: MenuItem[] = [
-  { id: 'dashboard', name: '应急指挥及演练', path: '/dashboard' },
-  { id: 'extreme-weather', name: '极端天气风险应急', path: '/extreme-weather' },
-  { id: 'fire-alarm', name: '消防报警', path: '/fire-alarm' },
-  { id: 'security-anti-terror', name: '治安防恐', path: '/security-anti-terror' },
-  { id: 'industrial-video', name: '工业电视视频墙', path: '/industrial-video' },
-  { id: 'ops-monitor', name: '运维监测', path: '/ops-monitor' },
+  { id: 'dashboard', name: '应急指挥', path: '/dashboard' },
+  { id: 'fire-alarm', name: '消防救援', path: '/fire-alarm' },
+  { id: 'security-anti-terror', name: '安全防范', path: '/security-anti-terror' },
+  { id: 'industrial-video', name: '工业电视', path: '/industrial-video' },
+  { id: 'ops-monitor', name: '生产应急', path: '/ops-monitor' },
+  { id: 'extreme-weather', name: '预警中心', path: '/extreme-weather' },
 ];
 
 // 菜单 → 路由记录（递归；未注册 id 跳过并告警，避免装配无组件路由）

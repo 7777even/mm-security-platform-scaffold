@@ -9,6 +9,7 @@ import { MAP_TILE_URL } from '@/constants/map';
 import { markOnce } from '@/utils/perf';
 import { readCssVar } from '@/utils/theme';
 import BaseMap from '@/components/cesium/BaseMap.vue';
+import MapFloatTools from '@/components/map/MapFloatTools.vue';
 import type { ClusterPoint } from '@/services/cesium-cluster';
 import PanelCard from '@/components/common/PanelCard.vue';
 import AppButton from '@/components/common/AppButton.vue';
@@ -85,6 +86,11 @@ const clusterPoints = computed<ClusterPoint[]>(() => [
 
 // Cesium 二三维一体化：sceneMode 切换
 const sceneMode = ref<'2d' | '3d'>('3d');
+
+function onToolCommand(name: string): void {
+  // 骨架占位：后续接入图层/搜索/标绘/热力等具体能力
+  console.warn('[map-tool]', name);
+}
 
 function onMapError(): void {
   mapNotice.value = '地图初始化失败：当前环境不支持 WebGL，已降级';
@@ -228,6 +234,12 @@ onUnmounted(() => {
       :scene-mode="sceneMode"
       @error="onMapError"
       @mode-change="(m) => (sceneMode = m)"
+    />
+    <!-- 原型图：地图右侧悬浮工具栏（图层/区域/搜索/3D视角/热力模式/标绘默认/地图切换/切换组件） -->
+    <MapFloatTools
+      :scene-mode="sceneMode"
+      @toggle-scene="(m: '2d' | '3d') => (sceneMode = m)"
+      @command="onToolCommand"
     />
 
     <!-- 地图降级提示 -->

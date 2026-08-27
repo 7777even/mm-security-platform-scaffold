@@ -1,8 +1,8 @@
 <!--
-  AppLayout — §5 / §7 顶部导航栏 + 内容区 + 底部消息栏（设计稿图 5-5）
+  AppLayout — §7 顶部导航栏 + 内容区 + 底部消息栏（设计稿图 5-5）
   全屏骨架：
     - 顶部：64px（var(--layout-header-h)）
-    - 中部：flex:1 主路由出口（var(--layout-page-pad)）
+    - 中部：flex:1 主路由出口（大屏视图铺满，无内边距）
     - 底部：消息栏（BottomMessageBar，56px）
   五层 z-index（§5.1）严格遵循。
 -->
@@ -91,6 +91,7 @@ onUnmounted(() => {
         <span class="brand-title">安全管控指挥系统</span>
       </div>
 
+      <!-- 原型顶部 Tab 条：6 个一级业务模块，选中态青色底边高亮 -->
       <nav class="nav" aria-label="模块导航">
         <RouterLink
           v-for="item in menuRoutes"
@@ -122,7 +123,7 @@ onUnmounted(() => {
       </div>
     </header>
 
-    <!-- 主路由出口 -->
+    <!-- 主路由出口（大屏视图铺满，无内边距；视图内部自行控制边距） -->
     <main class="content">
       <RouterView />
     </main>
@@ -193,27 +194,38 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
+/* §7 顶部 Tab 条：占满 header 高度，居中排列；选中态青色底边高亮（对齐原型） */
 .nav {
   display: flex;
-  gap: var(--space-xs);
+  align-items: stretch;
+  align-self: stretch;
+  gap: 0;
   flex: 1;
   justify-content: center;
+  height: 100%;
 }
 
 .nav-item {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 18px;
-  border-radius: 20px;
-  font-size: var(--font-body);
-  letter-spacing: 1px;
+
+  /* 占满整个 nav 高度，使选中/悬停背景覆盖整条导航而非仅文字行高 */
+  height: 100%;
+  padding: 0 22px;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 2px;
   color: var(--color-text-muted);
   text-decoration: none;
-  border: 1px solid transparent;
+  border: none;
+  border-radius: 6px;
+  box-shadow: none;
   transition:
     color 0.25s ease,
     background 0.25s ease,
+    border-color 0.25s ease,
     box-shadow 0.25s ease;
   white-space: nowrap;
 }
@@ -235,10 +247,27 @@ onUnmounted(() => {
 }
 
 .nav-item.active {
-  color: var(--color-accent);
-  background: var(--color-accent-soft);
-  border-color: var(--glass-border);
-  box-shadow: 0 0 12px rgb(0 216 255 / 15%);
+  color: #fff;
+  font-weight: 600;
+
+  /* 原型选中态：无边框。底部一条薄而柔的光条——径向光团（中心亮青，向左右/上方渐暗、无硬边）；
+     中部一层泛光（中间亮、四周渐暗）；底色深蓝与顶栏自然融合 */
+  background:
+    radial-gradient(
+      72% 48% at 50% 102%,
+      rgb(0 240 255 / 95%) 0%,
+      rgb(0 150 195 / 42%) 38%,
+      transparent 74%
+    ),
+    radial-gradient(
+      150% 140% at 50% 56%,
+      rgb(0 130 175 / 36%) 0%,
+      rgb(0 55 90 / 16%) 46%,
+      transparent 76%
+    ),
+    linear-gradient(180deg, rgb(0 14 32 / 85%) 0%, rgb(0 20 42 / 78%) 100%);
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .header-right {
@@ -274,10 +303,11 @@ onUnmounted(() => {
   color: var(--color-text);
 }
 
-/* §5.4 主路由区：内边距 = --layout-page-pad；内容可滚动 */
+/* §5.4 主路由区：大屏铺满，无内边距；视图内部自行控制布局与边距 */
 .content {
+  position: relative;
   flex: 1;
-  padding: var(--layout-page-pad);
-  overflow: auto;
+  min-height: 0;
+  overflow: hidden;
 }
 </style>

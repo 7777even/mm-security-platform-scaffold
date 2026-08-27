@@ -43,8 +43,14 @@ declare module 'vue' {
     EmergencyKnowledgePanel: typeof import('./src/components/dashboard/EmergencyKnowledgePanel.vue')['default']
     EmergencyPhonePanel: typeof import('./src/components/dashboard/EmergencyPhonePanel.vue')['default']
     EmergencyStrengthPanel: typeof import('./src/components/dashboard/EmergencyStrengthPanel.vue')['default']
+    FireAlarmPanel: typeof import('./src/components/fire/FireAlarmPanel.vue')['default']
+    FireDevicePanel: typeof import('./src/components/fire/FireDevicePanel.vue')['default']
+    FireFacilityPanel: typeof import('./src/components/fire/FireFacilityPanel.vue')['default']
+    FireStrengthPanel: typeof import('./src/components/fire/FireStrengthPanel.vue')['default']
+    GaugeChart: typeof import('./src/components/charts/GaugeChart.vue')['default']
     MapClusterPopup: typeof import('./src/components/cesium/MapClusterPopup.vue')['default']
     MapDetailPanel: typeof import('./src/components/cesium/MapDetailPanel.vue')['default']
+    MapFloatTools: typeof import('./src/components/map/MapFloatTools.vue')['default']
     MapPin: typeof import('./src/components/common/MapPin.vue')['default']
     ModuleLayout: typeof import('./src/components/layout/ModuleLayout.vue')['default']
     MonitorDialog: typeof import('./src/components/common/MonitorDialog.vue')['default']
@@ -52,6 +58,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SecondaryPageOverlay: typeof import('./src/components/common/SecondaryPageOverlay.vue')['default']
+    SpecialWorkPanel: typeof import('./src/components/fire/SpecialWorkPanel.vue')['default']
     StatCard: typeof import('./src/components/common/StatCard.vue')['default']
   }
 }
