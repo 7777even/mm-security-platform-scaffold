@@ -32,7 +32,7 @@ interface MenuRouteSpec {
 }
 
 // 顶栏六大业务模块 Tab（文案对齐《安全管控指挥系统》大屏原型：
-//   应急指挥 / 消防救援 / 安全防恐 / 工业电视 / 生产应急 / 预警中心）
+//   应急指挥 / 消防报警 / 安全防恐 / 工业电视 / 生产应急 / 预警中心）
 // id 与 subapps/* 子应用目录一一对应；title 为原型 Tab 展示名。
 export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
   dashboard: {
@@ -46,7 +46,7 @@ export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
     subappUrl: import.meta.env.VITE_DASHBOARD_SUBAPP_URL ?? '/subapps/dashboard/',
   },
   'fire-alarm': {
-    title: '消防救援',
+    title: '消防报警',
     perm: 'fire-alarm:view',
     icon: Warning,
     component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
@@ -91,7 +91,7 @@ export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
 // 降级默认菜单：mock/后端菜单不可达时装配，保证不白屏（对齐六大业务模块原型）
 export const DEFAULT_MENUS: MenuItem[] = [
   { id: 'dashboard', name: '应急指挥', path: '/dashboard' },
-  { id: 'fire-alarm', name: '消防救援', path: '/fire-alarm' },
+  { id: 'fire-alarm', name: '消防报警', path: '/fire-alarm' },
   { id: 'security-anti-terror', name: '安全防恐', path: '/security-anti-terror' },
   { id: 'industrial-video', name: '工业电视', path: '/industrial-video' },
   { id: 'ops-monitor', name: '生产应急', path: '/ops-monitor' },

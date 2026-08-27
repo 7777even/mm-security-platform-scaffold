@@ -1,5 +1,5 @@
 <!--
-  FireStrengthPanel — §消防救援「消防数据力量」
+  FireStrengthPanel — §消防报警「消防数据力量」
   指标名称 + 大数字（StatCard ×4），绿色玻璃卡。
 -->
 <script setup lang="ts">
@@ -10,7 +10,7 @@ const stats = [
   { title: '消防站', value: 10, icon: 'OfficeBuilding' },
   { title: '救援人员', value: 398, icon: 'User' },
   { title: '救援设备', value: 123, icon: 'Tools' },
-  { title: '救援车辆', value: 83, icon: 'Truck' },
+  { title: '救援车辆', value: 83, icon: 'Van' },
 ];
 </script>
 

@@ -15,7 +15,7 @@ export interface EmergencyPhoneBook {
 // 开发期自包含 mock：8 行关键应急电话
 const DEV_FIXTURE: EmergencyPhoneBook = {
   entries: [
-    { id: 'ph1', name: '消防救援', number: '119', category: '消防' },
+    { id: 'ph1', name: '消防报警', number: '119', category: '消防' },
     { id: 'ph2', name: '医疗急救', number: '120', category: '医疗' },
     { id: 'ph3', name: '公安报警', number: '110', category: '公安' },
     { id: 'ph4', name: '厂内应急指挥', number: '8001', category: '厂内应急' },

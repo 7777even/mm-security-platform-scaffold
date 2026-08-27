@@ -5,6 +5,8 @@
     - 标题区：43px 高度 + 青色竖条 + 发光（panel-title 来自 global.css）
     - 提供 optional "more" 链接按钮（panel-more）
     - 提供底部光带（panel-card__glow）
+    - 标题区支持 "tabs" 插槽：传 tabs 插槽时整个标题区作为 tab 切换器
+      （不传 title，只传 tabs 插槽即可；不传 tabs 插槽时回退到 title prop，行为不变）
 -->
 <script setup lang="ts">
 import { computed } from 'vue';
@@ -29,9 +31,15 @@ const iconComp = computed(() => {
 
 <template>
   <section class="panel-card glass-panel">
-    <header v-if="title" class="panel-card__head">
+    <header v-if="title || $slots.tabs" class="panel-card__head">
       <component :is="iconComp" v-if="iconComp" class="panel-card__icon" />
-      <h2 class="panel-title panel-card__title">{{ title }}</h2>
+      <h2 class="panel-title panel-card__title">
+        <template v-if="$slots.tabs">
+          <span v-if="title" class="panel-card__title-text">{{ title }}</span>
+          <slot name="tabs" />
+        </template>
+        <template v-else>{{ title }}</template>
+      </h2>
       <button v-if="more" type="button" class="panel-more" @click="emit('more')">
         {{ more }}
         <span class="panel-more__arrow">›</span>
@@ -71,6 +79,11 @@ const iconComp = computed(() => {
 
 .panel-card__title {
   flex: 1;
+  min-width: 0;
+}
+
+.panel-card__title-text {
+  flex-shrink: 0;
 }
 
 .panel-more {
