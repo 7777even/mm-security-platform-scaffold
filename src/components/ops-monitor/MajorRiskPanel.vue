@@ -1,21 +1,48 @@
 <!--
   MajorRiskPanel — §生产应急「重大风险管控」
-  顶部 3 色预警计数（红 / 橙 / 黄）+ 底部二维码健康证（占位）。
+  列出重大风险装置区的预警信息：黄色 flag 标签 + 装置名 + 预警描述 + 负责人/联系方式。
 -->
 <script setup lang="ts">
 import PanelCard from '@/components/common/PanelCard.vue';
 
-interface Risk {
-  key: 'red' | 'orange' | 'yellow';
-  label: string;
-  count: number;
-  color: string;
+interface RiskAlert {
+  key: string;
+  levelLabel: string;
+  levelColor: string;
+  area: string;
+  warning: string;
+  owner: string;
+  contact: string;
 }
 
-const risks: Risk[] = [
-  { key: 'red', label: '红点预警', count: 0, color: '#ff4d4f' },
-  { key: 'orange', label: '橙色预警', count: 0, color: '#ff8a4c' },
-  { key: 'yellow', label: '黄色预警', count: 1, color: '#ffc24b' },
+const alerts: RiskAlert[] = [
+  {
+    key: 'r1',
+    levelLabel: '黄色',
+    levelColor: '#ffc24b',
+    area: '乙烯装置区（二）',
+    warning: '高温预警：2026-03-17 02:00:46',
+    owner: '/A1',
+    contact: '6/1N12345/6',
+  },
+  {
+    key: 'r2',
+    levelLabel: '黄色',
+    levelColor: '#ffc24b',
+    area: '丙烯罐区',
+    warning: '可燃气体浓度预警：2026-03-17 01:22:10',
+    owner: '/B2',
+    contact: '6/2N23456/7',
+  },
+  {
+    key: 'r3',
+    levelLabel: '黄色',
+    levelColor: '#ffc24b',
+    area: '催化裂化装置',
+    warning: '温度异常：2026-03-16 23:45:30',
+    owner: '/C3',
+    contact: '6/3N34567/8',
+  },
 ];
 
 function view(): void {
@@ -25,149 +52,92 @@ function view(): void {
 
 <template>
   <PanelCard title="重大风险管控" icon="WarningFilled" more="查看详情" @more="view">
-    <div class="stats">
-      <div v-for="r in risks" :key="r.key" class="stat">
-        <span class="stat__dot" :style="{ background: r.color }" />
-        <span class="stat__label">{{ r.label }}</span>
-        <span class="stat__count">{{ r.count }}</span>
-      </div>
-    </div>
-
-    <div class="qr">
-      <div class="qr__box">
-        <span class="qr__hint">二维码占位</span>
-      </div>
-      <div class="qr__main">
-        <div class="qr__head">
-          <span class="qr__title">二维码健康证</span>
-          <span class="qr__badge">J42</span>
+    <ul class="alerts">
+      <li v-for="a in alerts" :key="a.key" class="alert">
+        <div class="alert__head">
+          <span
+            class="alert__flag"
+            :style="{
+              color: a.levelColor,
+              borderColor: a.levelColor,
+              background: a.levelColor + '22',
+            }"
+          >
+            {{ a.levelLabel }}
+          </span>
+          <span class="alert__area">{{ a.area }}</span>
         </div>
-        <div class="qr__row">
-          <span class="qr__label">负责人</span>
-          <span class="qr__value">J42</span>
+        <div class="alert__warning">{{ a.warning }}</div>
+        <div class="alert__foot">
+          <span class="alert__col">负责人：{{ a.owner }}</span>
+          <span class="alert__col alert__col--right">联系方式：{{ a.contact }}</span>
         </div>
-        <div class="qr__row">
-          <span class="qr__label">时间</span>
-          <span class="qr__value">2026-03-17 10:00:46</span>
-        </div>
-        <div class="qr__row">
-          <span class="qr__label">联系方式</span>
-          <span class="qr__value">6234123456</span>
-        </div>
-      </div>
-    </div>
+      </li>
+    </ul>
   </PanelCard>
 </template>
 
 <style scoped>
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.stat {
+.alerts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 8px;
-  border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
+  flex-direction: column;
+  gap: 10px;
 }
 
-.stat__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.stat__label {
-  flex: 1;
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-
-.stat__count {
-  font-family: var(--font-number);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--color-text-strong);
-}
-
-.qr {
-  display: flex;
-  gap: 12px;
-  padding: 10px;
-  border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
-}
-
-.qr__box {
-  width: 88px;
-  height: 88px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  background: repeating-conic-gradient(#fff 0% 25%, #2c3e50 0% 50%) 50% / 8px 8px;
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 30%));
-}
-
-.qr__hint {
-  font-size: 10px;
-  color: #fff;
-  background: rgb(0 0 0 / 60%);
-  padding: 1px 4px;
-  border-radius: 4px;
-}
-
-.qr__main {
-  flex: 1;
+.alert {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: rgb(255 255 255 / 3%);
+  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
 }
 
-.qr__head {
+.alert__head {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.qr__title {
+.alert__flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid;
+  border-radius: 2px;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+.alert__area {
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text-strong);
 }
 
-.qr__badge {
-  font-family: var(--font-number);
-  font-size: 11px;
-  padding: 1px 8px;
-  border-radius: 8px;
-  color: #fff;
-  background: #ffc24b;
-  border: 1px solid rgb(255 194 75 / 55%);
+.alert__warning {
+  font-size: 12px;
+  color: var(--color-text);
+  padding-left: 2px;
 }
 
-.qr__row {
+.alert__foot {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-}
-
-.qr__label {
   color: var(--color-text-muted);
+  padding-left: 2px;
 }
 
-.qr__value {
-  color: var(--color-text-strong);
-  font-family: var(--font-number);
+.alert__col--right {
+  text-align: right;
 }
 </style>
