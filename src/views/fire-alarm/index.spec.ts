@@ -1,57 +1,37 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { ref } from 'vue';
 import FireAlarm from './index.vue';
-import AlarmCard from '@/components/common/AlarmCard.vue';
-import AppButton from '@/components/common/AppButton.vue';
 
-// 闭环 useAlarmView，避免真实网络请求，并固定无报警的渲染分支
-vi.mock('@/composables/useAlarmView', () => ({
-  useAlarmView: () => ({
-    page: ref(1),
-    size: ref(10),
-    levelFilter: ref<number | undefined>(undefined),
-    statusFilter: ref<string | undefined>(undefined),
-    detail: ref(null),
-    pageResult: ref({ list: [], total: 0 }),
-    activeCount: ref(0),
-    refresh: vi.fn(async () => {}),
-    openDetail: vi.fn(),
-    ack: vi.fn(async () => true),
-  }),
-}));
-
-// records.vue 引入 element-plus 表格样式，测试环境 stub 掉以免 .css 转换失败
-vi.mock('./records.vue', () => ({
-  default: { name: 'RecordsView', template: '<div class="records-view" />' },
-}));
-
+// 消防报警为自定义地图布局（非 ModuleLayout），子面板独立渲染；
+// 测试仅验证容器与骨架屏挂载成功，面板/图表组件以 stub 隔离。
 describe('消防报警 模块', () => {
   const mountView = () =>
     mount(FireAlarm, {
       global: {
         stubs: {
           BaseMap: true,
-          SecondaryPageOverlay: true,
-          'el-select': true,
-          'el-option': true,
-          'el-pagination': true,
-          'el-dialog': true,
+          FireStrengthPanel: true,
+          SpecialWorkPanel: true,
+          FireFacilityPanel: true,
+          FireDevicePanel: true,
+          FireAlarmPanel: true,
+          FireDutyPanel: true,
+          SystemMessageBar: true,
         },
       },
     });
 
-  it('渲染双栏面板骨架与 4 张等级告警卡', () => {
+  it('mount 不抛错并渲染地图骨架屏', () => {
     const wrapper = mountView();
-    expect(wrapper.find('.module-shell').exists()).toBe(true);
-    // 左侧报警态势：4 个等级色块
-    expect(wrapper.findAllComponents(AlarmCard).length).toBe(4);
+    expect(wrapper.find('.dashboard').exists()).toBe(true);
+    expect(wrapper.find('[data-test="firealarm-skeleton"]').exists()).toBe(true);
   });
 
-  it('无报警时展示空态并提供刷新操作', () => {
+  it('底部定位层存在', () => {
     const wrapper = mountView();
-    expect(wrapper.find('.alarm-empty').exists()).toBe(true);
-    expect(wrapper.findAllComponents(AppButton).length).toBeGreaterThan(0);
+    expect(wrapper.find('.foot-tools').exists()).toBe(true);
+    // 系统消息条（foot-tools__msg）当前临时注释，恢复时同步开启此断言
+    // expect(wrapper.find('.foot-tools__msg').exists()).toBe(true);
   });
 });

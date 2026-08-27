@@ -1,59 +1,255 @@
 <!--
-  FireAlarmPanel — §消防救援「消防告警」
-  复用 AlarmListItem（3px 等级色边 + 类型图标 + 快捷操作），消防主题 mock 数据。
+  FireAlarmPanel — §消防报警「消防告警」
+  告警卡：左图 + 主信息（标题 + 类型chip + 未处置badge + 位置 + 时间 + 描述
+         + 操作链接：视频监控/告警图片/现场监控/处置调度 + 一键应急）。
+  色调：fire 暖色（橙），dcs 冷色（青）。
 -->
 <script setup lang="ts">
-import { ref } from 'vue';
+import { WarningFilled } from '@element-plus/icons-vue';
 import PanelCard from '@/components/common/PanelCard.vue';
-import AlarmListItem from '@/components/common/AlarmListItem.vue';
-import type { AlarmItem } from '@/services/alarm';
-import { makeAlarm } from '@/mocks/fixtures';
 
-const alarms = ref<AlarmItem[]>(
-  Array.from({ length: 8 }, (_, i) => {
-    const a = makeAlarm(i + 20);
-    return {
-      ...a,
-      type: i % 3 === 0 ? 'FIRE' : a.type,
-      description: '消防报警：烟感/温感越限触发',
-    };
-  }),
-);
+type Tone = 'fire' | 'dcs';
 
-function onView(a: AlarmItem): void {
-  console.warn('[fire-alarm] view', a.alarmId);
+interface FireAlarm {
+  id: string;
+  title: string;
+  typeLabel: string;
+  tone: Tone;
+  location: string;
+  time: string;
+  desc: string;
+  unhandled: boolean;
 }
-function onCall(a: AlarmItem): void {
-  console.warn('[fire-alarm] call', a.alarmId);
-}
-function onDispatch(a: AlarmItem): void {
-  console.warn('[fire-alarm] dispatch', a.alarmId);
-}
-function onOpen(a: AlarmItem): void {
-  console.warn('[fire-alarm] open', a.alarmId);
+
+const actions = ['视频监控', '告警图片', '现场监控', '处置调度'];
+
+const alarms: FireAlarm[] = [
+  {
+    id: '1',
+    title: 'A装置区火灾',
+    typeLabel: '火灾报警',
+    tone: 'fire',
+    location: '炼油厂区西侧',
+    time: '2026/03/17 14:21:30',
+    desc: 'A装置区发现明火，请立即核实并启动处置。',
+    unhandled: true,
+  },
+  {
+    id: '2',
+    title: 'GDS报警',
+    typeLabel: 'DCS/GDS',
+    tone: 'dcs',
+    location: '炼油厂区西侧',
+    time: '2026/03/17 14:18:12',
+    desc: 'GDS检测到可燃气体浓度短时升高，请现场复核。',
+    unhandled: true,
+  },
+  {
+    id: '3',
+    title: 'A仓库失火',
+    typeLabel: '火灾报警',
+    tone: 'fire',
+    location: '仓储区A库',
+    time: '2026/03/17 13:56:08',
+    desc: '视频监控识别到烟雾异常，疑似火点。',
+    unhandled: true,
+  },
+];
+
+function onAction(act: string, a: FireAlarm): void {
+  console.warn('[fire-alarm]', act, a.id);
 }
 </script>
 
 <template>
   <PanelCard title="消防告警" icon="Bell" more="全部">
-    <div class="alarm-list">
-      <AlarmListItem
-        v-for="a in alarms"
-        :key="a.alarmId"
-        :alarm="a"
-        @view="onView"
-        @call="onCall"
-        @dispatch="onDispatch"
-        @open="onOpen"
-      />
-    </div>
+    <ul class="list">
+      <li v-for="a in alarms" :key="a.id" class="alarm">
+        <div :class="['alarm__img', `alarm__img--${a.tone}`]" aria-hidden="true">
+          <WarningFilled class="alarm__img-icon" />
+        </div>
+        <div class="alarm__main">
+          <div class="alarm__head">
+            <span :class="['alarm__title', `alarm__title--${a.tone}`]">{{ a.title }}</span>
+            <span :class="['alarm__type', `alarm__type--${a.tone}`]">{{ a.typeLabel }}</span>
+            <span v-if="a.unhandled" class="alarm__badge">未处置</span>
+          </div>
+          <div class="alarm__loc">{{ a.location }}</div>
+          <div class="alarm__time">{{ a.time }}</div>
+          <div class="alarm__desc">{{ a.desc }}</div>
+          <div class="alarm__actions">
+            <button
+              v-for="act in actions"
+              :key="act"
+              type="button"
+              class="alarm__action"
+              @click="onAction(act, a)"
+            >
+              {{ act }}
+            </button>
+          </div>
+          <button type="button" class="alarm__start" @click="onAction('一键应急', a)">
+            一键应急
+          </button>
+        </div>
+      </li>
+    </ul>
   </PanelCard>
 </template>
 
 <style scoped>
-.alarm-list {
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: 10px;
+}
+
+.alarm {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 12px;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  background: rgb(255 255 255 / 3%);
+  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
+}
+
+/* 左侧告警图片占位（按告警色调区分） */
+.alarm__img {
+  width: 80px;
+  height: 60px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.alarm__img--fire {
+  background: linear-gradient(135deg, #2a1810, #6a2a14);
+  color: #ff8a4c;
+}
+
+.alarm__img--dcs {
+  background: linear-gradient(135deg, #0a1a2a, #1a3a5a);
+  color: #4dd6ff;
+}
+
+.alarm__img-icon {
+  width: 26px;
+  height: 26px;
+}
+
+.alarm__main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* 标题行：标题 + 类型 chip + 未处置（行右） */
+.alarm__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alarm__title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.alarm__title--fire {
+  color: #ff8a4c;
+}
+
+.alarm__title--dcs {
+  color: #4dd6ff;
+}
+
+.alarm__type {
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 4px;
+}
+
+.alarm__type--fire {
+  color: #ff8a4c;
+  border: 1px solid rgb(255 138 76 / 60%);
+  background: rgb(255 138 76 / 12%);
+}
+
+.alarm__type--dcs {
+  color: #4dd6ff;
+  border: 1px solid rgb(77 214 255 / 60%);
+  background: rgb(77 214 255 / 12%);
+}
+
+.alarm__badge {
+  margin-left: auto;
+  font-size: 10px;
+  padding: 1px 8px;
+  border-radius: 4px;
+  color: #ff5b6e;
+  background: rgb(255 91 110 / 15%);
+  border: 1px solid rgb(255 91 110 / 50%);
+  white-space: nowrap;
+}
+
+.alarm__loc {
+  font-size: 12px;
+  color: var(--color-text);
+}
+
+.alarm__time {
+  font-family: var(--font-number);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.alarm__desc {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+/* 操作链接（青色文本） */
+.alarm__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 4px;
+}
+
+.alarm__action {
+  font-size: 12px;
+  color: var(--color-accent);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.alarm__action:hover {
+  text-decoration: underline;
+}
+
+/* 一键应急：单独行，突出红色 */
+.alarm__start {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ff5b6e;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.alarm__start:hover {
+  text-decoration: underline;
 }
 </style>

@@ -1,6 +1,7 @@
 <!--
-  views/fire-alarm/index.vue — 消防救援 Tab 业务视图（wujie 子应用挂载点）
-  布局（对齐原型）：左 3 面板（数据力量/设施监测/特殊作业）+ 中央地图 + 右 2 面板（消防设备/消防告警）
+  views/fire-alarm/index.vue — 消防报警 Tab 业务视图（wujie 子应用挂载点）
+  布局（对齐原型）：左 4 面板（数据力量/特殊作业/设施监测/值班信息）+ 中央地图 + 右 2 面板（消防设备/消防告警）
+  底部：系统消息条（绝对定位，不影响面板滚动）。
 -->
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
@@ -8,10 +9,11 @@ import { MAP_TILE_URL } from '@/constants/map';
 import BaseMap from '@/components/cesium/BaseMap.vue';
 import type { ClusterPoint } from '@/services/cesium-cluster';
 import FireStrengthPanel from '@/components/fire/FireStrengthPanel.vue';
-import FireFacilityPanel from '@/components/fire/FireFacilityPanel.vue';
 import SpecialWorkPanel from '@/components/fire/SpecialWorkPanel.vue';
+import FireFacilityPanel from '@/components/fire/FireFacilityPanel.vue';
 import FireDevicePanel from '@/components/fire/FireDevicePanel.vue';
 import FireAlarmPanel from '@/components/fire/FireAlarmPanel.vue';
+import FireDutyPanel from '@/components/fire/FireDutyPanel.vue';
 import {
   fetchAlarmPoints,
   fetchDevicePoints,
@@ -94,11 +96,12 @@ onMounted(async () => {
     <!-- 地图降级提示 -->
     <p v-if="mapNotice" class="map-notice">{{ mapNotice }}</p>
 
-    <!-- 左侧面板区：消防数据力量 + 设施运行监测 + 特殊作业 -->
+    <!-- 左侧面板区：消防数据力量 + 特殊作业 + 消防设施运行监测 + 值班信息 -->
     <div v-if="!loading" class="dash-left">
       <FireStrengthPanel />
-      <FireFacilityPanel />
       <SpecialWorkPanel />
+      <FireFacilityPanel />
+      <FireDutyPanel />
     </div>
 
     <!-- 右侧面板区：消防设备 + 消防告警 -->
@@ -106,6 +109,13 @@ onMounted(async () => {
       <FireDevicePanel />
       <FireAlarmPanel />
     </aside>
+
+    <!-- 底部：系统消息条（绝对定位，不影响面板滚动） -->
+    <div class="foot-tools">
+      <!-- <div class="foot-tools__msg">
+        <SystemMessageBar />
+      </div> -->
+    </div>
 
     <!-- 加载骨架屏 -->
     <div v-if="loading" class="dashboard-skeleton" data-test="firealarm-skeleton">
@@ -137,7 +147,7 @@ onMounted(async () => {
   font-size: 12px;
 }
 
-/* 左侧面板区：3 个面板自然撑开，超出可滚动但隐藏滚动条 */
+/* 左侧面板区：4 个面板自然撑开，超出可滚动但隐藏滚动条 */
 .dash-left {
   position: absolute;
   top: var(--space-md);
@@ -174,6 +184,22 @@ onMounted(async () => {
   width: 0;
   height: 0;
   background: transparent;
+}
+
+/* 底部系统消息条 + 地图快捷工具定位层 */
+.foot-tools {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.foot-tools__msg {
+  position: absolute;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: auto;
 }
 
 /* 骨架屏 */
