@@ -112,7 +112,7 @@ function onZonePick(zone: ZonePick): void {
 
     <p v-if="mapNotice" class="module-map__notice">{{ mapNotice }}</p>
 
-    <!-- 底部快捷控制（原型安全防范地图底部一排图标，默认无内容） -->
+    <!-- 底部快捷控制（原型安全防恐地图底部一排图标，默认无内容） -->
     <div v-if="$slots.bottom" class="module-map__bottom">
       <slot name="bottom" />
     </div>

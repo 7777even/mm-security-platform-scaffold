@@ -1,5 +1,5 @@
 <!--
-  LinkPatrolPanel — §安全防范「联动巡查」
+  LinkPatrolPanel — §安全防恐「联动巡查」
   6 格联动按钮 + 5G 联动展示 + 声光报警开关（仿原型）。
 -->
 <script setup lang="ts">

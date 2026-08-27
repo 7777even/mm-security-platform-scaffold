@@ -32,7 +32,7 @@ interface MenuRouteSpec {
 }
 
 // 顶栏六大业务模块 Tab（文案对齐《安全管控指挥系统》大屏原型：
-//   应急指挥 / 消防救援 / 安全防范 / 工业电视 / 生产应急 / 预警中心）
+//   应急指挥 / 消防救援 / 安全防恐 / 工业电视 / 生产应急 / 预警中心）
 // id 与 subapps/* 子应用目录一一对应；title 为原型 Tab 展示名。
 export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
   dashboard: {
@@ -54,7 +54,7 @@ export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
     subappUrl: import.meta.env.VITE_FIRE_ALARM_SUBAPP_URL ?? '/subapps/fire-alarm/',
   },
   'security-anti-terror': {
-    title: '安全防范',
+    title: '安全防恐',
     perm: 'security:view',
     icon: Lock,
     component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
@@ -92,7 +92,7 @@ export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
 export const DEFAULT_MENUS: MenuItem[] = [
   { id: 'dashboard', name: '应急指挥', path: '/dashboard' },
   { id: 'fire-alarm', name: '消防救援', path: '/fire-alarm' },
-  { id: 'security-anti-terror', name: '安全防范', path: '/security-anti-terror' },
+  { id: 'security-anti-terror', name: '安全防恐', path: '/security-anti-terror' },
   { id: 'industrial-video', name: '工业电视', path: '/industrial-video' },
   { id: 'ops-monitor', name: '生产应急', path: '/ops-monitor' },
   { id: 'extreme-weather', name: '预警中心', path: '/extreme-weather' },

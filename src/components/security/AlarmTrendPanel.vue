@@ -1,5 +1,5 @@
 <!--
-  AlarmTrendPanel — §安全防范「告警趋势」
+  AlarmTrendPanel — §安全防恐「告警趋势」
   顶部筛选（告警类型/全部）+ 日期折线趋势（单 series 面积图）。
 -->
 <script setup lang="ts">

@@ -1,5 +1,5 @@
 <!--
-  AccessStatsPanel — §安全防范「出入统计」
+  AccessStatsPanel — §安全防恐「出入统计」
   顶部 Tab 切换（人数/警车车辆/危化车）+ 进出数字 + 小时折线趋势 + 车辆环形+图例。
 -->
 <script setup lang="ts">
@@ -223,7 +223,6 @@ const donutGradient = computed(() => {
   border-radius: 50%;
 
   /* 用 mask 掏空中心，做成环形 */
-  mask: radial-gradient(circle, transparent 52%, black 53%);
   mask: radial-gradient(circle, transparent 52%, black 53%);
 }
 

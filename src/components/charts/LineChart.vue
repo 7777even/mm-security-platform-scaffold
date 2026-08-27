@@ -1,5 +1,5 @@
 <!--
-  LineChart — 通用 ECharts 折线图（安全防范「出入统计」「告警趋势」复用）
+  LineChart — 通用 ECharts 折线图（安全防恐「出入统计」「告警趋势」复用）
   支持多 series、平滑曲线、面积渐变、图例开关、类目 X 轴。
 -->
 <script setup lang="ts">
