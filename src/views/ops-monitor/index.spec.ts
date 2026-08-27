@@ -2,20 +2,45 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import OpsMonitor from './index.vue';
-import StatCard from '@/components/common/StatCard.vue';
 import ModuleLayout from '@/components/layout/ModuleLayout.vue';
+import ProductionFacilityOverviewPanel from '@/components/ops-monitor/ProductionFacilityOverviewPanel.vue';
+import EquipmentOverviewPanel from '@/components/ops-monitor/EquipmentOverviewPanel.vue';
+import ProductionAlarmPanel from '@/components/ops-monitor/ProductionAlarmPanel.vue';
+import MajorRiskPanel from '@/components/ops-monitor/MajorRiskPanel.vue';
+import AlarmStatsBar from '@/components/ops-monitor/AlarmStatsBar.vue';
 
-describe('运维监测 模块', () => {
-  const mountView = () => mount(OpsMonitor, { global: { stubs: { BaseMap: true } } });
+describe('生产应急 模块', () => {
+  const mountView = () =>
+    mount(OpsMonitor, {
+      global: { stubs: { BaseMap: true } },
+    });
 
-  it('渲染双栏面板骨架与 4 张运维态势 KPI 卡', () => {
+  it('使用 ModuleLayout 骨架并装配 5 块面板', () => {
     const wrapper = mountView();
     expect(wrapper.findComponent(ModuleLayout).exists()).toBe(true);
-    expect(wrapper.findAllComponents(StatCard).length).toBe(4);
+    expect(wrapper.findComponent(ProductionFacilityOverviewPanel).exists()).toBe(true);
+    expect(wrapper.findComponent(EquipmentOverviewPanel).exists()).toBe(true);
+    expect(wrapper.findComponent(ProductionAlarmPanel).exists()).toBe(true);
+    expect(wrapper.findComponent(MajorRiskPanel).exists()).toBe(true);
+    expect(wrapper.findComponent(AlarmStatsBar).exists()).toBe(true);
   });
 
-  it('渲染设备健康与 DCS/PLC 点位状态列表', () => {
-    const wrapper = mountView();
-    expect(wrapper.findAll('.row-list').length).toBeGreaterThanOrEqual(2);
+  it('生产区域安全告警渲染 4 条', () => {
+    const wrapper = mount(ProductionAlarmPanel, {
+      global: { stubs: { PanelCard: true } },
+    });
+    expect(wrapper.findAll('.alarm').length).toBe(4);
+  });
+
+  it('告警统计条渲染 5 项指标', () => {
+    const wrapper = mount(AlarmStatsBar);
+    expect(wrapper.findAll('.bar > .stat').length).toBe(5);
+  });
+
+  it('重大风险管控展示 3 色预警', () => {
+    const wrapper = mount(MajorRiskPanel, {
+      global: { stubs: { PanelCard: true } },
+    });
+    expect(wrapper.findAll('.stat').length).toBe(3);
   });
 });
