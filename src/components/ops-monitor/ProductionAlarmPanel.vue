@@ -1,103 +1,109 @@
 <!--
   ProductionAlarmPanel — §生产应急「生产区域安全告警」
-  4 条告警卡：左侧图标 + 标题 + 时间 + 区域 + 右侧告警级别 + 处理链接。
+  4 条告警事件卡：三列布局 = [左侧彩色类型图标+主信息] | [告警图片] | [三个操作链接]
 -->
 <script setup lang="ts">
 import type { Component } from 'vue';
 import PanelCard from '@/components/common/PanelCard.vue';
 import { User, WarningFilled } from '@element-plus/icons-vue';
 
-type Level = '一般' | '严重' | '重要';
-type Tone = 'person' | 'warning';
-
 interface Alarm {
   id: string;
   icon: Component;
-  tone: Tone;
+  toneColor: string;
   title: string;
   unhandled: boolean;
-  time: string;
   location: string;
-  level: Level;
+  time: string;
+  desc: string;
 }
 
 const alarms: Alarm[] = [
   {
     id: '1',
     icon: User,
-    tone: 'person',
-    title: '人员跌落',
+    toneColor: '#ffc24b',
+    title: '人员跌倒',
     unhandled: true,
-    time: '2026-03-17 14:21:30',
-    location: 'A 楼厂区',
-    level: '严重',
+    location: '炼化厂区内院',
+    time: '2026年3月17日 14:21:30',
+    desc: 'A装置区域发现人员跌倒。',
   },
   {
     id: '2',
     icon: User,
-    tone: 'person',
-    title: '人员区域闯入',
-    unhandled: false,
-    time: '2026-03-17 14:21:30',
-    location: 'A 楼厂区',
-    level: '一般',
+    toneColor: '#ffc24b',
+    title: '人员违规进入',
+    unhandled: true,
+    location: '炼化厂区内院',
+    time: '2026年3月17日 14:21:30',
+    desc: 'A装置区域发现专注班人员，请核实。',
   },
   {
     id: '3',
     icon: User,
-    tone: 'person',
+    toneColor: '#ff8a4c',
     title: '人员聚集',
     unhandled: true,
-    time: '2026-03-17 14:21:30',
-    location: 'A 楼厂区',
-    level: '一般',
+    location: '炼化厂区内院',
+    time: '2026年3月17日 14:21:30',
+    desc: 'A装置区域聚集30人，超过20人，超出50%。',
   },
   {
     id: '4',
     icon: WarningFilled,
-    tone: 'warning',
+    toneColor: '#a78bfa',
     title: '有毒气体超标',
-    unhandled: false,
-    time: '2026-03-17 14:21:30',
-    location: 'A 楼厂区',
-    level: '重要',
+    unhandled: true,
+    location: '炼化厂区内院',
+    time: '2026年3月17日 14:21:30',
+    desc: '炼化厂区内院。',
   },
 ];
 
-const LEVEL_TONE: Record<Level, string> = {
-  一般: 'level--mid',
-  严重: 'level--high',
-  重要: 'level--crit',
-};
-
-function onItem(a: Alarm): void {
-  console.warn('[prod-alarm]', a.id);
-}
-
-function onHandle(a: Alarm, e: Event): void {
-  e.stopPropagation();
-  console.warn('[prod-alarm] handle', a.id);
+function onAction(a: Alarm, action: string): void {
+  console.warn('[prod-alarm]', a.id, action);
 }
 </script>
 
 <template>
   <PanelCard title="生产区域安全告警" icon="Warning" more="查看全部">
     <ul class="list">
-      <li v-for="a in alarms" :key="a.id" class="alarm" @click="onItem(a)">
-        <div :class="['alarm__icon', `alarm__icon--${a.tone}`]">
-          <component :is="a.icon" />
-        </div>
-        <div class="alarm__main">
-          <div class="alarm__head">
-            <span class="alarm__title">{{ a.title }}</span>
-            <span v-if="a.unhandled" class="alarm__badge">未处置</span>
+      <li v-for="a in alarms" :key="a.id" class="alarm">
+        <div class="alarm__left">
+          <div
+            class="alarm__icon"
+            :style="{
+              background: a.toneColor + '22',
+              color: a.toneColor,
+              borderColor: a.toneColor + '70',
+            }"
+          >
+            <component :is="a.icon" />
           </div>
-          <div class="alarm__time">{{ a.time }}</div>
-          <div class="alarm__loc">{{ a.location }}区域异常入员。</div>
+          <div class="alarm__main">
+            <div class="alarm__head">
+              <span class="alarm__title">{{ a.title }}</span>
+              <span v-if="a.unhandled" class="alarm__badge">未处置</span>
+            </div>
+            <div class="alarm__loc">{{ a.location }}</div>
+            <div class="alarm__time">{{ a.time }}</div>
+            <div class="alarm__desc">{{ a.desc }}</div>
+          </div>
         </div>
-        <div class="alarm__side">
-          <span :class="['alarm__level', LEVEL_TONE[a.level]]">{{ a.level }}</span>
-          <button type="button" class="alarm__handle" @click="onHandle(a, $event)">一般划付</button>
+        <div class="alarm__img">
+          <span>告警图片</span>
+        </div>
+        <div class="alarm__actions">
+          <button type="button" class="alarm__action" @click="onAction(a, 'monitor')">
+            现场监控<span class="alarm__arrow">›</span>
+          </button>
+          <button type="button" class="alarm__action" @click="onAction(a, 'broadcast')">
+            一键广播<span class="alarm__arrow">›</span>
+          </button>
+          <button type="button" class="alarm__action" @click="onAction(a, 'control')">
+            一键控制<span class="alarm__arrow">›</span>
+          </button>
         </div>
       </li>
     </ul>
@@ -115,56 +121,44 @@ function onHandle(a: Alarm, e: Event): void {
 }
 
 .alarm {
-  display: flex;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: center;
   padding: 10px;
   border-radius: var(--radius-sm);
   background: rgb(255 255 255 / 3%);
   border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
-  cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    border-color var(--transition-fast);
 }
 
-.alarm:hover {
-  background: rgb(0 225 255 / 6%);
-  border-color: rgb(0 225 255 / 40%);
+.alarm__left {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  min-width: 0;
 }
 
 .alarm__icon {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  border: 1px solid;
   flex-shrink: 0;
 }
 
 .alarm__icon :deep(svg) {
-  width: 22px;
-  height: 22px;
-}
-
-.alarm__icon--person {
-  background: rgb(255 193 7 / 18%);
-  color: #ffc107;
-  border: 1px solid rgb(255 193 7 / 45%);
-}
-
-.alarm__icon--warning {
-  background: rgb(255 107 107 / 18%);
-  color: #ff6b6b;
-  border: 1px solid rgb(255 107 107 / 45%);
+  width: 24px;
+  height: 24px;
 }
 
 .alarm__main {
-  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 0;
 }
 
 .alarm__head {
@@ -186,6 +180,12 @@ function onHandle(a: Alarm, e: Event): void {
   color: #ff6b6b;
   background: rgb(255 107 107 / 18%);
   border: 1px solid rgb(255 107 107 / 45%);
+  white-space: nowrap;
+}
+
+.alarm__loc {
+  font-size: 12px;
+  color: var(--color-text);
 }
 
 .alarm__time {
@@ -194,53 +194,53 @@ function onHandle(a: Alarm, e: Event): void {
   color: var(--color-text-muted);
 }
 
-.alarm__loc {
+.alarm__desc {
   font-size: 11px;
   color: var(--color-text-muted);
+  line-height: 1.5;
 }
 
-.alarm__side {
+.alarm__img {
+  width: 80px;
+  height: 60px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgb(0 216 255 / 35%);
+  border-radius: 4px;
+  background: rgb(0 0 0 / 25%);
+  color: var(--color-text-muted);
+  font-size: 11px;
   flex-shrink: 0;
 }
 
-.alarm__level {
+.alarm__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.alarm__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   font-size: 11px;
-  padding: 1px 8px;
-  border-radius: 8px;
-}
-
-.level--mid {
-  color: #ffc107;
-  background: rgb(255 193 7 / 16%);
-  border: 1px solid rgb(255 193 7 / 45%);
-}
-
-.level--high {
-  color: #ff8a4c;
-  background: rgb(255 138 76 / 16%);
-  border: 1px solid rgb(255 138 76 / 45%);
-}
-
-.level--crit {
-  color: #ff6b6b;
-  background: rgb(255 107 107 / 16%);
-  border: 1px solid rgb(255 107 107 / 45%);
-}
-
-.alarm__handle {
-  font-size: 11px;
+  color: var(--color-accent);
   background: transparent;
   border: none;
-  color: var(--color-accent);
-  cursor: pointer;
   padding: 0;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-.alarm__handle:hover {
+.alarm__action:hover {
   text-decoration: underline;
+}
+
+.alarm__arrow {
+  font-size: 12px;
+  line-height: 1;
 }
 </style>
