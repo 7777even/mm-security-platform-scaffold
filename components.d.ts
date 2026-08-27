@@ -46,6 +46,8 @@ declare module 'vue' {
     EmergencyKnowledgePanel: typeof import('./src/components/dashboard/EmergencyKnowledgePanel.vue')['default']
     EmergencyPhonePanel: typeof import('./src/components/dashboard/EmergencyPhonePanel.vue')['default']
     EmergencyStrengthPanel: typeof import('./src/components/dashboard/EmergencyStrengthPanel.vue')['default']
+    EventAnalysisPanel: typeof import('./src/components/industrial-video/EventAnalysisPanel.vue')['default']
+    FactoryInspectionPanel: typeof import('./src/components/industrial-video/FactoryInspectionPanel.vue')['default']
     FireAlarmPanel: typeof import('./src/components/fire/FireAlarmPanel.vue')['default']
     FireDevicePanel: typeof import('./src/components/fire/FireDevicePanel.vue')['default']
     FireFacilityPanel: typeof import('./src/components/fire/FireFacilityPanel.vue')['default']
@@ -53,6 +55,7 @@ declare module 'vue' {
     GaugeChart: typeof import('./src/components/charts/GaugeChart.vue')['default']
     LineChart: typeof import('./src/components/charts/LineChart.vue')['default']
     LinkPatrolPanel: typeof import('./src/components/security/LinkPatrolPanel.vue')['default']
+    MaintenanceOrderPanel: typeof import('./src/components/industrial-video/MaintenanceOrderPanel.vue')['default']
     MapBottomTools: typeof import('./src/components/map/MapBottomTools.vue')['default']
     MapClusterPopup: typeof import('./src/components/cesium/MapClusterPopup.vue')['default']
     MapDetailPanel: typeof import('./src/components/cesium/MapDetailPanel.vue')['default']
@@ -66,5 +69,9 @@ declare module 'vue' {
     SecondaryPageOverlay: typeof import('./src/components/common/SecondaryPageOverlay.vue')['default']
     SpecialWorkPanel: typeof import('./src/components/fire/SpecialWorkPanel.vue')['default']
     StatCard: typeof import('./src/components/common/StatCard.vue')['default']
+    SystemNoticeBar: typeof import('./src/components/industrial-video/SystemNoticeBar.vue')['default']
+    VideoAnalysisPanel: typeof import('./src/components/industrial-video/VideoAnalysisPanel.vue')['default']
+    VideoOverviewPanel: typeof import('./src/components/industrial-video/VideoOverviewPanel.vue')['default']
+    VideoPatrolPanel: typeof import('./src/components/industrial-video/VideoPatrolPanel.vue')['default']
   }
 }
