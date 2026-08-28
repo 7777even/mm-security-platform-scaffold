@@ -46,3 +46,11 @@
 - **Git 提交规范：`type(scope): 描述`（conventional commits + 端 scope）**。scope 固定枚举，禁止自造：`screen`（大屏壳 + `subapps/`）、`mgmt`（`apps/mgmt`）、`mobile`（`apps/mobile`）、`shared`（`src/` 跨端公共服务、`src/styles/tokens.css`、`vite.config.ts`）、`docs`、`chore`。跨端改动**按影响面拆成多个提交**：共享文件（token、公共服务）先行，端内跟随；确属一个原子改动且拆不开时才允许双 scope（如 `feat(mgmt,shared):`），不得常态化。禁止提交临时输出文件（如 `tsc-out.txt`、`vitest-out.txt`）。
 - 提交前钩子（husky + lint-staged）会执行 eslint / prettier / stylelint，遵循现有 `.prettierrc.json`、`.stylelintrc.json` 配置，不新增例外。
 - 性能基线与验收记录见 `docs/perf/`；架构决策与规格见 `openspec/`。
+
+## 7. 硬性前置流程（三端通用：superpowers + openspec）
+
+**任何端的代码改动（大屏 screen / 后台 mgmt / 移动 mobile，含新增、修改、重构）在动手前都必须走以下流程，禁止当作"简单编辑"直接改文件：**
+
+1. **superpowers 纪律先于一切动作**：动手前先按 `using-superpowers` 规则核查并调用相关 skill——创意 / UI / 行为类改动先走 `brainstorming` 澄清意图与方案；多步任务先 `writing-plans` 写计划；关键逻辑走 `test-driven-development`（先红后绿）；完成前必须 `verification-before-completion`（跑通验证再声称完成）。即"先想清 / 先规划 / 先测试 / 后动手 / 验完再交付"。
+2. **openspec spec-driven 流程**：改动若对应既有 capability，按 `openspec/specs/` 实现；若是新能力或破坏性变更，先在 `openspec/changes/<name>/` 建 `proposal.md`（含 Why / What Changes / Capabilities / Impact，≤500 字、聚焦单一变更），并拆可勾选任务清单（单条 ≤2h，[TDD] 任务先写失败测试）；实现完成并验证后归档至 `openspec/archive/`。`openspec/config.yaml` 的 proposal / tasks 规则为强制门禁，不得跳过。
+3. **三端一致适用**：大屏、后台、移动端任一端的改动都适用上述 1–2，不因为任何端"体量小"或"只是页面"而豁免。
