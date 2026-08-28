@@ -61,7 +61,7 @@ function onBeforeMount(appWindow: Window) {
   align-items: center;
   justify-content: center;
   color: var(--color-text-muted, #94a3b8);
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   background: var(--color-bg);
 }
 </style>

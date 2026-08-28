@@ -34,10 +34,10 @@ type ECOption = ComposeOption<LineSeriesOption>;
 // 图表配色（ECharts canvas 需显式色值，统一从设计 token 解析，保证主题切换一致）
 function chartTheme() {
   return {
-    accent: readCssVar('--chart-accent', '#00d8ff'),
-    success: readCssVar('--chart-success', '#2ee6a8'),
-    text: readCssVar('--chart-text', '#8fa6c8'),
-    textStrong: readCssVar('--chart-text-strong', '#eaf4ff'),
+    accent: readCssVar('--chart-accent', 'var(--color-accent)'),
+    success: readCssVar('--chart-success', 'var(--color-success)'),
+    text: readCssVar('--chart-text', 'var(--color-text-muted)'),
+    textStrong: readCssVar('--chart-text-strong', 'var(--color-text)'),
     panelBg: readCssVar('--chart-panel-bg', 'rgba(19, 35, 60, 0.92)'),
     panelBorder: readCssVar('--chart-panel-border', 'rgba(0, 216, 255, 0.4)'),
     axisLine: readCssVar('--chart-axis-line', 'rgba(0, 216, 255, 0.3)'),

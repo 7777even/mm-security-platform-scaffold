@@ -62,7 +62,7 @@ function onInput(value: string): void {
 .desc {
   margin-top: var(--space-md);
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
 }
 
 .code-input {
@@ -106,20 +106,20 @@ function onInput(value: string): void {
 
 .part-label {
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
 }
 
 .part-value {
   font-family: Consolas, 'Courier New', monospace;
   color: var(--color-accent);
-  font-size: 15px;
+  font-size: var(--font-size-subtitle);
   letter-spacing: 1px;
 }
 
 .join {
   margin-top: var(--space-sm);
   color: var(--color-text);
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   font-family: Consolas, 'Courier New', monospace;
 }
 </style>

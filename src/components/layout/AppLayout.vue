@@ -217,7 +217,7 @@ onUnmounted(() => {
   /* 占满整个 nav 高度，使选中/悬停背景覆盖整条导航而非仅文字行高 */
   height: 100%;
   padding: 0 22px;
-  font-size: 15px;
+  font-size: var(--font-size-subtitle);
   font-weight: 500;
   letter-spacing: 2px;
   color: var(--color-text-muted);
@@ -268,7 +268,11 @@ onUnmounted(() => {
       color-mix(in srgb, var(--color-accent) 16%, transparent) 46%,
       transparent 76%
     ),
-    linear-gradient(180deg, rgb(0 14 32 / 85%) 0%, rgb(0 20 42 / 78%) 100%);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-bg) 85%, transparent) 0%,
+      color-mix(in srgb, var(--color-bg) 78%, transparent) 100%
+    );
   border-color: transparent;
   box-shadow: none;
 }

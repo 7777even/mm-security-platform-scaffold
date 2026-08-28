@@ -42,7 +42,7 @@ defineProps<{ alarm: AlarmItem | null }>();
 
 .monitor-box__meta {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   color: var(--color-text-muted);
   text-align: center;
 }

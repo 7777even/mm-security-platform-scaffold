@@ -273,22 +273,22 @@ onMounted(load);
 }
 
 .plan-card__category {
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-text-muted, #94a3b8);
   letter-spacing: 0.4px;
 }
 
 .plan-card__name {
   margin: 0;
-  font-size: 15px;
+  font-size: var(--font-size-subtitle);
   color: var(--color-text);
   font-weight: 600;
 }
 
 .plan-card__summary {
   margin: 0;
-  font-size: 12px;
-  color: var(--color-text-secondary);
+  font-size: var(--font-size-helper);
+  color: var(--color-text-muted);
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -305,7 +305,7 @@ onMounted(load);
 }
 
 .plan-card__owner {
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-text-muted, #94a3b8);
 }
 
@@ -320,7 +320,7 @@ onMounted(load);
   border: none;
   color: var(--color-accent);
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   transition: color 0.12s;
 }
 
@@ -341,7 +341,7 @@ onMounted(load);
 .plans-empty {
   text-align: center;
   color: var(--color-text-muted, #94a3b8);
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   padding: 32px 0;
 }
 
@@ -365,7 +365,7 @@ onMounted(load);
   min-height: 42px;
   padding: 0 14px;
   border-bottom: 1px dashed var(--glass-border);
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
 }
 
 .detail-view__row:last-child {
@@ -378,7 +378,7 @@ onMounted(load);
 
 .detail-view dt {
   color: var(--color-text-muted, #94a3b8);
-  font-size: 12px;
+  font-size: var(--font-size-helper);
 }
 
 .detail-view dd {

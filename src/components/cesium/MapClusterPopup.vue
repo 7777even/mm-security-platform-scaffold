@@ -37,7 +37,7 @@ const isCluster = props.info.kind === 'cluster';
   border: 1px solid color-mix(in srgb, var(--color-accent) 55%, transparent);
   border-radius: 8px;
   color: var(--color-text);
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
   transform: translate(-50%, calc(-100% - 16px));
 }
@@ -49,13 +49,13 @@ const isCluster = props.info.kind === 'cluster';
   border: none;
   background: transparent;
   color: var(--color-text-muted);
-  font-size: 16px;
+  font-size: var(--font-size-h2);
   line-height: 1;
   cursor: pointer;
 }
 
 .cluster-popup__title {
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   font-weight: 600;
   margin-bottom: 6px;
   padding-right: 14px;

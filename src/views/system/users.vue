@@ -42,7 +42,7 @@ import PanelCard from '@/components/common/PanelCard.vue';
 .tip {
   margin: 0;
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   line-height: 1.6;
 }
 </style>

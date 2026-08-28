@@ -149,7 +149,7 @@ function view(p: DutyPerson): void {
 .shift__chip--active {
   color: var(--color-text-strong);
   background: var(--gradient-tech-blue);
-  box-shadow: 0 0 10px rgb(0 216 255 / 45%);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 45%, transparent);
 }
 
 .list {

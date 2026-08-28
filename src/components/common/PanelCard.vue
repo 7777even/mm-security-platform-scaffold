@@ -91,7 +91,7 @@ const iconComp = computed(() => {
   align-items: center;
   gap: 2px;
   padding: 2px 4px;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--panel-more-color);
   background: transparent;
   border: none;
@@ -104,7 +104,7 @@ const iconComp = computed(() => {
 }
 
 .panel-more__arrow {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   line-height: 1;
 }
 

@@ -144,7 +144,7 @@ onMounted(async () => {
   background: var(--notice-warning-bg);
   border: 1px solid var(--color-warning);
   color: var(--color-warning);
-  font-size: 12px;
+  font-size: var(--font-size-helper);
 }
 
 /* 左侧面板区：4 个面板自然撑开，超出可滚动但隐藏滚动条 */

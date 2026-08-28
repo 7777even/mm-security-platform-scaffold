@@ -188,7 +188,7 @@ onMounted(async () => {
 .records-empty {
   text-align: center;
   color: var(--color-text-muted, #94a3b8);
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   padding: 32px 0;
 }
 
@@ -212,7 +212,7 @@ onMounted(async () => {
   min-height: 42px;
   padding: 0 14px;
   border-bottom: 1px dashed var(--glass-border);
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
 }
 
 .detail-view__row:last-child {
@@ -225,7 +225,7 @@ onMounted(async () => {
 
 .detail-view dt {
   color: var(--color-text-muted, #94a3b8);
-  font-size: 12px;
+  font-size: var(--font-size-helper);
 }
 
 .detail-view dd {

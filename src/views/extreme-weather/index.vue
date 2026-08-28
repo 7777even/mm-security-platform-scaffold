@@ -147,6 +147,6 @@ const alerts = ref<{ level: AlarmLevel; title: string; desc: string; time: strin
   position: relative;
   margin: 0;
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
 }
 </style>

@@ -562,7 +562,7 @@ onUnmounted(() => {
   border: 1px solid color-mix(in srgb, var(--color-text-muted) 25%, transparent);
   border-radius: 8px;
   backdrop-filter: blur(4px);
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text);
   min-width: 60px;
 }
@@ -576,7 +576,7 @@ onUnmounted(() => {
   background: color-mix(in srgb, var(--color-panel-soft) 90%, transparent);
   color: var(--color-text);
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   line-height: 1;
 }
 

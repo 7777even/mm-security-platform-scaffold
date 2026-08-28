@@ -156,7 +156,7 @@ function onZonePick(zone: ZonePick): void {
   background: var(--notice-warning-bg);
   border: 1px solid var(--color-warning);
   color: var(--color-warning);
-  font-size: 12px;
+  font-size: var(--font-size-helper);
 }
 
 /* 底部快捷控制（地图正下方居中） */

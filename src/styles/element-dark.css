@@ -9,7 +9,7 @@
 
 /* ---- 下拉选择 Select ---- */
 .el-select__wrapper {
-  background-color: rgb(19 35 60 / 60%) !important;
+  background-color: color-mix(in srgb, var(--color-panel) 60%, transparent) !important;
   border: 1px solid rgb(143 166 200 / 30%) !important;
   border-radius: 6px !important;
   box-shadow: none !important;
@@ -19,9 +19,9 @@
 }
 
 .el-select__wrapper.is-focused {
-  background-color: rgb(19 35 60 / 75%) !important;
+  background-color: color-mix(in srgb, var(--color-panel) 75%, transparent) !important;
   border-color: var(--color-accent) !important;
-  box-shadow: 0 0 0 2px rgb(0 216 255 / 12%) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 12%, transparent) !important;
 }
 
 .el-select__placeholder {
@@ -38,7 +38,7 @@
 
 /* 下拉面板（teleport 到 body，全局生效） */
 .el-popper.is-light {
-  background-color: rgb(19 35 60 / 96%) !important;
+  background-color: color-mix(in srgb, var(--color-panel) 96%, transparent) !important;
   border: 1px solid rgb(143 166 200 / 30%) !important;
   border-radius: 8px !important;
   box-shadow: 0 8px 24px rgb(0 0 0 / 55%) !important;
@@ -49,12 +49,12 @@
 }
 
 .el-popper.is-light .el-select-dropdown__item.is-hovering {
-  background-color: rgb(0 216 255 / 10%) !important;
+  background-color: color-mix(in srgb, var(--color-accent) 10%, transparent) !important;
 }
 
 .el-popper.is-light .el-select-dropdown__item.is-selected {
   color: var(--color-accent) !important;
-  background-color: rgb(0 216 255 / 8%) !important;
+  background-color: color-mix(in srgb, var(--color-accent) 8%, transparent) !important;
 }
 
 .el-popper.is-light .el-select-dropdown__empty {
@@ -66,8 +66,8 @@
   --el-pagination-bg-color: transparent;
   --el-pagination-text-color: var(--color-text-secondary);
   --el-pagination-button-color: var(--color-text-secondary);
-  --el-pagination-button-bg-color: rgb(19 35 60 / 55%);
-  --el-pagination-button-disabled-bg-color: rgb(19 35 60 / 35%);
+  --el-pagination-button-bg-color: color-mix(in srgb, var(--color-panel) 55%, transparent);
+  --el-pagination-button-disabled-bg-color: color-mix(in srgb, var(--color-panel) 35%, transparent);
   --el-pagination-hover-color: var(--color-accent);
   --el-pagination-button-active-color: #04111c;
   --el-pagination-button-active-bg-color: var(--color-accent);
@@ -77,7 +77,7 @@
   border: 1px solid rgb(143 166 200 / 25%);
   border-radius: 6px;
   margin-right: 4px;
-  background-color: rgb(19 35 60 / 55%) !important;
+  background-color: color-mix(in srgb, var(--color-panel) 55%, transparent) !important;
   color: var(--color-text-secondary) !important;
   transition: all 0.15s;
 }
@@ -98,7 +98,7 @@
 .el-pagination .btn-next {
   border: 1px solid rgb(143 166 200 / 25%);
   border-radius: 6px;
-  background-color: rgb(19 35 60 / 55%) !important;
+  background-color: color-mix(in srgb, var(--color-panel) 55%, transparent) !important;
   color: var(--color-text-secondary) !important;
 }
 
@@ -115,8 +115,12 @@
 
 /* ---- 抽屉 Drawer ---- */
 .el-drawer {
-  background: linear-gradient(180deg, rgb(19 35 60 / 98%), rgb(11 21 38 / 98%)) !important;
-  border-left: 1px solid rgb(0 216 255 / 25%) !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-panel) 98%, transparent),
+    rgb(11 21 38 / 98%)
+  ) !important;
+  border-left: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent) !important;
 }
 
 .el-drawer__header {
@@ -196,7 +200,7 @@
 
 /* ---- 消息提示 Message ---- */
 .el-message {
-  background-color: rgb(19 35 60 / 92%) !important;
+  background-color: color-mix(in srgb, var(--color-panel) 92%, transparent) !important;
   border: 1px solid rgb(143 166 200 / 30%) !important;
   border-radius: 8px !important;
   box-shadow: 0 8px 24px rgb(0 0 0 / 50%) !important;
@@ -227,7 +231,7 @@
 /* ---- 输入框 Input ---- */
 .el-input__wrapper,
 .el-textarea__inner {
-  background-color: rgb(19 35 60 / 60%) !important;
+  background-color: color-mix(in srgb, var(--color-panel) 60%, transparent) !important;
   box-shadow: 0 0 0 1px rgb(143 166 200 / 30%) inset !important;
   border-radius: 6px !important;
   transition: box-shadow 0.15s !important;
@@ -257,8 +261,8 @@
 .el-table {
   --el-table-bg-color: transparent !important;
   --el-table-tr-bg-color: transparent !important;
-  --el-table-header-bg-color: rgb(19 35 60 / 55%) !important;
-  --el-table-row-hover-bg-color: rgb(0 216 255 / 6%) !important;
+  --el-table-header-bg-color: color-mix(in srgb, var(--color-panel) 55%, transparent) !important;
+  --el-table-row-hover-bg-color: color-mix(in srgb, var(--color-accent) 6%, transparent) !important;
   --el-table-border-color: rgb(143 166 200 / 15%) !important;
   --el-table-header-text-color: var(--color-text-muted, #94a3b8) !important;
   --el-table-text-color: var(--color-text) !important;
@@ -268,7 +272,7 @@
 }
 
 .el-table th.el-table__cell {
-  background-color: rgb(19 35 60 / 55%) !important;
+  background-color: color-mix(in srgb, var(--color-panel) 55%, transparent) !important;
 }
 
 .el-table tr,
@@ -277,7 +281,7 @@
 }
 
 .el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
-  background-color: rgb(19 35 60 / 25%) !important;
+  background-color: color-mix(in srgb, var(--color-panel) 25%, transparent) !important;
 }
 
 .el-table .el-table__cell {
@@ -350,7 +354,7 @@
 
 .el-checkbox__inner,
 .el-radio__inner {
-  background-color: rgb(19 35 60 / 60%) !important;
+  background-color: color-mix(in srgb, var(--color-panel) 60%, transparent) !important;
   border-color: rgb(143 166 200 / 35%) !important;
 }
 
@@ -366,11 +370,15 @@
 
 /* ---- 卡片 Card ---- */
 .el-card {
-  --el-card-bg-color: rgb(19 35 60 / 65%) !important;
+  --el-card-bg-color: color-mix(in srgb, var(--color-panel) 65%, transparent) !important;
   --el-card-border-color: rgb(143 166 200 / 18%) !important;
 
   border-radius: 10px !important;
-  background: linear-gradient(180deg, rgb(19 35 60 / 65%), rgb(11 21 38 / 65%)) !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-panel) 65%, transparent),
+    rgb(11 21 38 / 65%)
+  ) !important;
 }
 
 .el-card__header {
@@ -390,8 +398,12 @@
 
 /* ---- 弹窗 Dialog ---- */
 .el-dialog {
-  background: linear-gradient(180deg, rgb(19 35 60 / 98%), rgb(11 21 38 / 98%)) !important;
-  border: 1px solid rgb(0 216 255 / 25%) !important;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-panel) 98%, transparent),
+    rgb(11 21 38 / 98%)
+  ) !important;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent) !important;
   border-radius: 10px !important;
 }
 
@@ -408,7 +420,7 @@
 }
 
 .el-tag {
-  --el-tag-bg-color: rgb(19 35 60 / 55%) !important;
+  --el-tag-bg-color: color-mix(in srgb, var(--color-panel) 55%, transparent) !important;
   --el-tag-border-color: rgb(143 166 200 / 30%) !important;
   --el-tag-text-color: var(--color-text-secondary) !important;
 }

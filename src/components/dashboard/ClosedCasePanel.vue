@@ -56,7 +56,7 @@ onMounted(async () => {
   gap: 2px 8px;
   padding: 8px 4px;
   border-bottom: 1px dashed var(--color-border);
-  font-size: 12px;
+  font-size: var(--font-size-helper);
 }
 
 .case-row__id {
@@ -64,7 +64,7 @@ onMounted(async () => {
   grid-row: 1 / 3;
   align-self: center;
   color: var(--color-text-muted);
-  font-size: 11px;
+  font-size: var(--font-size-date);
 }
 
 .case-row__title {
@@ -77,20 +77,20 @@ onMounted(async () => {
   grid-column: 3;
   grid-row: 1;
   color: var(--color-text-muted);
-  font-size: 11px;
+  font-size: var(--font-size-date);
 }
 
 .case-row__handler {
   grid-column: 2 / 4;
   grid-row: 2;
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: var(--font-size-date);
 }
 
 .case-empty {
   text-align: center;
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   padding: 16px 0;
 }
 </style>

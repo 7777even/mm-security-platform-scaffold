@@ -57,7 +57,7 @@ const rows = computed<{ label: string; value: string }[]>(() => {
   width: 248px;
   padding: var(--space-md);
   border-radius: var(--radius-md);
-  background: rgb(19 35 60 / 88%);
+  background: color-mix(in srgb, var(--color-panel) 88%, transparent);
   border: 1px solid var(--color-accent-faint);
   box-shadow: 0 6px 24px rgb(0 0 0 / 35%);
   color: var(--color-text-strong);
@@ -72,13 +72,13 @@ const rows = computed<{ label: string; value: string }[]>(() => {
   border: none;
   background: transparent;
   color: var(--color-text-muted);
-  font-size: 16px;
+  font-size: var(--font-size-h2);
   cursor: pointer;
   line-height: 1;
 }
 
 .map-detail__title {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 600;
   color: var(--color-text-strong);
   margin-bottom: 2px;
@@ -86,7 +86,7 @@ const rows = computed<{ label: string; value: string }[]>(() => {
 }
 
 .map-detail__kind {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-accent);
   margin-bottom: var(--space-sm);
 }
@@ -94,7 +94,7 @@ const rows = computed<{ label: string; value: string }[]>(() => {
 .map-detail__row {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   padding: 3px 0;
   border-top: 1px solid rgb(255 255 255 / 6%);
 }

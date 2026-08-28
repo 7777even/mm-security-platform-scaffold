@@ -47,7 +47,7 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   padding: 4px 0;
   border-bottom: 1px dashed var(--color-border-soft);
 }
@@ -65,7 +65,7 @@ onMounted(async () => {
 .phone-empty {
   text-align: center;
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   padding: 16px 0;
 }
 </style>

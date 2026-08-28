@@ -81,7 +81,7 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: var(--space-sm);
-  font-size: 15px;
+  font-size: var(--font-size-subtitle);
   font-weight: 600;
   letter-spacing: 1px;
   color: var(--color-accent);
@@ -144,7 +144,7 @@ onMounted(async () => {
 .msg-item__tag {
   padding: 1px 8px;
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   line-height: 18px;
   border: 1px solid currentcolor;
 }
@@ -173,18 +173,20 @@ onMounted(async () => {
 .msg-bar__more {
   flex-shrink: 0;
   padding: 4px 14px;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-accent);
-  background: rgba(0, 212, 255, 0.08);
-  border: 1px solid rgba(0, 212, 255, 0.4);
+  background: rgb(0 212 255 / 8%);
+  border: 1px solid rgb(0 212 255 / 40%);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
   white-space: nowrap;
 }
 
 .msg-bar__more:hover {
-  background: rgba(0, 212, 255, 0.18);
-  border-color: rgba(0, 212, 255, 0.7);
+  background: rgb(0 212 255 / 18%);
+  border-color: rgb(0 212 255 / 70%);
 }
 </style>

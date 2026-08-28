@@ -65,8 +65,8 @@ function onClick(key: string): void {
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  background: rgb(10 25 47 / 78%);
-  border: 1px solid rgb(0 225 255 / 22%);
+  background: color-mix(in srgb, var(--color-bg) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent);
   border-radius: 999px;
   backdrop-filter: blur(8px);
   box-shadow: 0 6px 22px rgb(0 0 0 / 35%);
@@ -77,7 +77,7 @@ function onClick(key: string): void {
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text);
   background: transparent;
   border: 1px solid transparent;
@@ -90,8 +90,8 @@ function onClick(key: string): void {
 }
 
 .map-bottom-tools__btn:hover {
-  background: rgb(0 225 255 / 8%);
-  border-color: rgb(0 225 255 / 40%);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
   color: var(--color-accent);
 }
 

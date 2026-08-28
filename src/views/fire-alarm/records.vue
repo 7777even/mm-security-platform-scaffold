@@ -167,23 +167,23 @@ onMounted(() => {
 }
 
 .records-status {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
 }
 
 .records-status.is-ACTIVE {
-  color: var(--color-alarm-1, #f46767);
+  color: var(--color-alarm-1);
 }
 
 .records-status.is-ACKED {
-  color: var(--color-warning, #ffb020);
+  color: var(--color-warning);
 }
 
 .records-status.is-DISPATCHED {
-  color: var(--color-accent, #00d8ff);
+  color: var(--color-accent);
 }
 
 .records-status.is-CLOSED {
-  color: var(--color-success, #2ee6a8);
+  color: var(--color-success);
 }
 
 .records-pager {
