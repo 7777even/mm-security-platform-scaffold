@@ -20,12 +20,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ---- 页面容器：单列卡片流 ---- */
+/* ---- 页面容器：单列卡片流（间距由各块 margin-bottom 自控制，避免标题行与横幅等距） ---- */
 .mb-page {
   padding: var(--mb-pad-x);
   display: flex;
   flex-direction: column;
-  gap: var(--mb-card-gap);
 }
 
 /* ---- 白卡：柔圆角 16px + 分割线描边（outdoor 皮肤下边框转纯黑硬描边） ---- */
@@ -80,6 +79,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+  margin-bottom: var(--mb-card-gap);
 }
 
 .mb-section__head {

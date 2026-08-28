@@ -235,7 +235,7 @@ const todoTasks: TodoTask[] = [
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-xs) 0;
+  margin-bottom: var(--space-sm);
 }
 
 .home-header__title {
@@ -272,6 +272,7 @@ const todoTasks: TodoTask[] = [
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: var(--space-md);
   padding: var(--space-md);
   background: var(--primary-mobile);
   border-radius: var(--mb-radius-card);
@@ -448,6 +449,7 @@ const todoTasks: TodoTask[] = [
   align-items: center;
   justify-content: space-between;
   min-height: 48px;
+  margin-bottom: var(--space-md);
   padding: 0 var(--space-md);
   background: var(--warning-mobile-soft);
   border-radius: var(--mb-radius-ctrl);
@@ -474,6 +476,14 @@ const todoTasks: TodoTask[] = [
 }
 
 /* ---- 待办任务卡 ---- */
+.todo-card {
+  margin-bottom: var(--space-sm);
+}
+
+.todo-card:last-child {
+  margin-bottom: 0;
+}
+
 .todo-card__row {
   display: flex;
   align-items: center;
