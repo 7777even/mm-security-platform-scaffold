@@ -6,8 +6,22 @@ import BottomMessageBar from './BottomMessageBar.vue';
 import * as messageApi from '@/services/message';
 
 const SAMPLE = [
-  { id: 'a', level: 'alarm' as const, text: '报警一条', time: '09:00' },
-  { id: 'b', level: 'system' as const, text: '系统一条', time: '08:00' },
+  {
+    id: 'a',
+    category: 'alarm' as const,
+    title: '报警一条',
+    summary: '',
+    time: '09:00',
+    read: false,
+  },
+  {
+    id: 'b',
+    category: 'system' as const,
+    title: '系统一条',
+    summary: '',
+    time: '08:00',
+    read: true,
+  },
 ];
 
 describe('BottomMessageBar', () => {
@@ -23,7 +37,7 @@ describe('BottomMessageBar', () => {
     expect(wrapper.findComponent(Bell).exists()).toBe(true);
   });
 
-  it('加载后渲染消息并按级别打标签', async () => {
+  it('加载后渲染消息并按分类打标签', async () => {
     vi.spyOn(messageApi, 'fetchMessages').mockResolvedValue(SAMPLE);
     const wrapper = mount(BottomMessageBar);
     await flushMessages(wrapper);
@@ -32,7 +46,7 @@ describe('BottomMessageBar', () => {
     expect(items.length).toBe(SAMPLE.length * 2);
     expect(wrapper.find('.msg-item--alarm').exists()).toBe(true);
     expect(wrapper.find('.msg-item--system').exists()).toBe(true);
-    expect(wrapper.find('.msg-item__tag').text()).toBe('报警');
+    expect(wrapper.find('.msg-item__tag').text()).toBe('报警通知');
   });
 
   it('无消息时显示占位', async () => {

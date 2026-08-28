@@ -1,11 +1,11 @@
 <!--
   BottomMessageBar — §11.2 底部消息栏（设计稿图 5-9 右）
-  56px 高；滚动消息列表；消息级 / 系统级 / 处置级三种色调
+  56px 高；滚动消息列表；报警 / 系统 / 事件 / 任务四类色调
 -->
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { Bell } from '@element-plus/icons-vue';
-import { fetchMessages, levelLabel, type MessageItem } from '@/services/message';
+import { fetchMessages, CATEGORY_LABELS, type MessageItem } from '@/services/message';
 
 const messages = ref<MessageItem[]>([]);
 const loading = ref(true);
@@ -35,10 +35,10 @@ onMounted(async () => {
             v-for="item in messages"
             :key="loop + '-' + item.id"
             class="msg-item"
-            :class="'msg-item--' + item.level"
+            :class="'msg-item--' + item.category"
           >
-            <span class="msg-item__tag">{{ levelLabel(item.level) }}</span>
-            <span class="msg-item__text">{{ item.text }}</span>
+            <span class="msg-item__tag">{{ CATEGORY_LABELS[item.category] }}</span>
+            <span class="msg-item__text">{{ item.title }}</span>
             <span v-if="item.time" class="msg-item__time font-number">{{ item.time }}</span>
           </span>
         </template>
@@ -149,7 +149,7 @@ onMounted(async () => {
   border: 1px solid currentcolor;
 }
 
-/* §13.2 报警/系统/处置三类消息色调（与 dashboard tone-* 对齐） */
+/* §13.2 报警/系统/事件/任务四类消息色调（与 dashboard tone-* 对齐） */
 .msg-item--alarm {
   color: var(--color-danger);
 }
@@ -158,7 +158,11 @@ onMounted(async () => {
   color: var(--color-accent-2);
 }
 
-.msg-item--disposition {
+.msg-item--event {
+  color: var(--color-warning);
+}
+
+.msg-item--task {
   color: var(--color-success);
 }
 
