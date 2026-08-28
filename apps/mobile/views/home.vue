@@ -231,12 +231,17 @@ const todoTasks: TodoTask[] = [
 
 <style scoped>
 /* ---- 顶部系统名：白底顶栏 + 底部分隔线（与页面灰底形成反差） ---- */
+
+/* 白底需从屏幕最顶端（含状态栏安全区）一直覆盖到 header 底部分隔线，
+   故用负 margin 抵消 .mb-page 的顶部内边距，并把安全区并入顶部内边距，
+   不能只覆盖 home-header 自身而露出上方页面灰底 */
 .home-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 0 calc(-1 * var(--mb-pad-x)) var(--space-md);
-  padding: var(--space-sm) var(--mb-pad-x);
+  margin: calc(-1 * (var(--mb-pad-x) + env(safe-area-inset-top))) calc(-1 * var(--mb-pad-x))
+    var(--space-md);
+  padding: calc(var(--space-sm) + env(safe-area-inset-top)) var(--mb-pad-x) var(--space-sm);
   background: var(--card-mobile);
   border-bottom: 1px solid var(--color-border);
 }
