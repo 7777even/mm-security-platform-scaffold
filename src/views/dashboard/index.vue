@@ -10,15 +10,10 @@ import { markOnce } from '@/utils/perf';
 import { readCssVar } from '@/utils/theme';
 import BaseMap from '@/components/cesium/BaseMap.vue';
 import type { ClusterPoint } from '@/services/cesium-cluster';
-import PanelCard from '@/components/common/PanelCard.vue';
-import AppButton from '@/components/common/AppButton.vue';
 import DutyPanel from '@/components/dashboard/DutyPanel.vue';
 import EmergencyStrengthPanel from '@/components/dashboard/EmergencyStrengthPanel.vue';
 import EmergencyKnowledgePanel from '@/components/dashboard/EmergencyKnowledgePanel.vue';
-import ClosedCasePanel from '@/components/dashboard/ClosedCasePanel.vue';
 import EmergencyEventCrudPanel from '@/components/dashboard/EmergencyEventCrudPanel.vue';
-import PlansView from './plans.vue';
-import SecondaryPageOverlay from '@/components/common/SecondaryPageOverlay.vue';
 import { fetchAlarmTrend } from '@/services/alarm';
 import {
   fetchAlarmPoints,
@@ -91,15 +86,7 @@ function onMapError(): void {
   sceneMode.value = '2d';
 }
 
-// 预案库在 dashboard 主壳内联预览，而非跳转到独立页面
-const plansOpen = ref(false);
-function openPlans(): void {
-  plansOpen.value = true;
-}
-function closePlans(): void {
-  plansOpen.value = false;
-}
-
+// 预案库改由 /dashboard/plans 路由直接访问，dashboard 主壳不再内联覆盖层
 const FALLBACK_TREND = [0, 1, 0, 2, 1, 3, 2, 1, 0, 2, 4, 3, 2, 1, 3, 5, 4, 6, 3, 2, 4, 3, 2, 1];
 const trendData = ref<number[]>(FALLBACK_TREND);
 
@@ -232,22 +219,9 @@ onUnmounted(() => {
     <!-- 地图降级提示 -->
     <p v-if="mapNotice" class="map-notice">{{ mapNotice }}</p>
 
-    <!-- 左侧面板区（419px）：应急预案入口 + 应急事件 CRUD + 趋势图 + 结案滚动 -->
+    <!-- 左侧面板区：应急事件 CRUD（按图示单一全高面板） -->
     <div v-if="!loading" class="dash-left">
-      <PanelCard title="应急预案库" icon="Document">
-        <p class="plan-entry">应急预案、现场处置卡集中管理，支撑应急指挥调度。</p>
-        <div class="plan-entry__actions">
-          <AppButton variant="primary" size="sm" @click="openPlans">进入预案库</AppButton>
-        </div>
-      </PanelCard>
-
       <EmergencyEventCrudPanel />
-
-      <PanelCard title="近 24h 应急事件 / 处置率" icon="TrendCharts">
-        <div ref="chartRef" class="chart" />
-      </PanelCard>
-
-      <ClosedCasePanel />
     </div>
 
     <!-- 右侧面板区（419px）：值班值守 + 应急力量数据 + 应急生产安全知识 -->
@@ -264,10 +238,7 @@ onUnmounted(() => {
       <span class="skeleton skeleton-line" style="width: 180px" />
     </div>
 
-    <!-- 预案库主壳内联预览（覆盖层），不跳转独立页面 -->
-    <SecondaryPageOverlay v-model:open="plansOpen">
-      <PlansView :embedded="true" @close="closePlans" />
-    </SecondaryPageOverlay>
+    <!-- 预案库由 /dashboard/plans 路由访问，此处不再内联覆盖层 -->
   </div>
 </template>
 

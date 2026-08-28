@@ -1,43 +1,101 @@
 import { request } from '@/services/http';
 
-// 应急值班值守（B3 Mock 契约 §3.6）
-export interface DutyPerson {
+// 应急值班值守（按部门 + 班次）
+export type DutyRole = '值班领导' | '值班员';
+export type DutyShift = '白班' | '夜班';
+
+export interface DutyMember {
   id: string;
-  role: '值班长' | '副员' | '应急通讯' | '智能联动' | '热成像' | '白板' | '地图详情';
   name: string;
   phone: string;
-  online: boolean;
-}
-
-export interface DutyStatus {
-  view3d: boolean;
-  heatmap: boolean;
-  labelsDefault: boolean;
+  role: DutyRole;
+  department: string;
+  shift: DutyShift;
 }
 
 export interface DutyRoster {
-  status: DutyStatus;
-  persons: DutyPerson[];
-  actions: Array<'热成像' | '白板' | '地图详情'>;
+  departments: string[];
+  shift: DutyShift;
+  members: DutyMember[];
 }
 
-// 开发期自包含 mock（无 VITE_API_BASE 时启用，便于前端脚手架独立演示）
+// 开发期自包含 mock：按白班 / 夜班各排 4 人（部门可下拉切换）
 const DEV_FIXTURE: DutyRoster = {
-  status: { view3d: true, heatmap: false, labelsDefault: true },
-  persons: [
-    { id: 'p1', role: '值班长', name: '韩俊', phone: '13792038966', online: true },
-    { id: 'p2', role: '副员', name: '王斌', phone: '13303056145', online: true },
-    { id: 'p3', role: '应急通讯', name: '高峰', phone: '13303056145', online: false },
-    { id: 'p4', role: '智能联动', name: '张林', phone: '13303056145', online: true },
+  departments: ['全部'],
+  shift: '白班',
+  members: [
+    {
+      id: 'd1',
+      name: '杨恒明',
+      phone: '13792536966',
+      role: '值班领导',
+      department: '全部',
+      shift: '白班',
+    },
+    {
+      id: 'd2',
+      name: '高颖',
+      phone: '18300556145',
+      role: '值班员',
+      department: '全部',
+      shift: '白班',
+    },
+    {
+      id: 'd3',
+      name: '高颖',
+      phone: '18300556145',
+      role: '值班员',
+      department: '全部',
+      shift: '白班',
+    },
+    {
+      id: 'd4',
+      name: '高颖',
+      phone: '18300556145',
+      role: '值班员',
+      department: '全部',
+      shift: '白班',
+    },
+    {
+      id: 'd5',
+      name: '王建国',
+      phone: '13800138001',
+      role: '值班领导',
+      department: '全部',
+      shift: '夜班',
+    },
+    {
+      id: 'd6',
+      name: '李志强',
+      phone: '13800138002',
+      role: '值班员',
+      department: '全部',
+      shift: '夜班',
+    },
+    {
+      id: 'd7',
+      name: '刘明',
+      phone: '13800138003',
+      role: '值班员',
+      department: '全部',
+      shift: '夜班',
+    },
+    {
+      id: 'd8',
+      name: '陈红',
+      phone: '13800138004',
+      role: '值班员',
+      department: '全部',
+      shift: '夜班',
+    },
   ],
-  actions: ['热成像', '白板', '地图详情'],
 };
 
 export async function fetchDutyRoster(): Promise<DutyRoster> {
   if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_FIXTURE);
   try {
     const data = await request<DutyRoster>({ url: '/emergency/duty', method: 'GET' });
-    if (!data || !Array.isArray(data.persons) || !data.status) return DEV_FIXTURE;
+    if (!data || !Array.isArray(data.members)) return DEV_FIXTURE;
     return data;
   } catch {
     return DEV_FIXTURE;

@@ -1,116 +1,92 @@
+<template>
+  <PanelCard title="应急生产安全知识" icon="Notebook">
+    <div class="knowledge" data-test="emergency-knowledge-grid">
+      <div v-for="k in items" :key="k.id" class="knowledge__card">
+        <span class="knowledge__icon">
+          <el-icon :size="18" color="#7ad7ff">
+            <component :is="ICON_MAP[k.icon]" />
+          </el-icon>
+        </span>
+        <div class="knowledge__title">{{ k.title }}</div>
+        <div class="knowledge__count">{{ k.count }}</div>
+      </div>
+    </div>
+  </PanelCard>
+</template>
+
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { fetchEmergencyKnowledge, type KnowledgeItem } from '@/services/knowledge';
+import PanelCard from '@/components/common/PanelCard.vue';
+import {
+  fetchEmergencyKnowledge,
+  type KnowledgeItem,
+  type KnowledgeList,
+} from '@/services/knowledge';
+import { Document, WarningFilled, Guide } from '@element-plus/icons-vue';
+
+const ICON_MAP: Record<string, unknown> = {
+  Document,
+  WarningFilled,
+  Guide,
+};
 
 const items = ref<KnowledgeItem[]>([]);
 
-const CATEGORY_COLOR: Record<KnowledgeItem['category'], string> = {
-  装置应急: 'var(--color-accent-fire)',
-  罐区应急: 'var(--color-accent-gas)',
-  装卸应急: 'var(--color-accent-temp)',
-  公用应急: 'var(--color-info)',
-};
-
 onMounted(async () => {
-  items.value = (await fetchEmergencyKnowledge()).items;
+  try {
+    const data: KnowledgeList = await fetchEmergencyKnowledge();
+    items.value = data.items;
+  } catch {
+    items.value = [];
+  }
 });
 </script>
 
-<template>
-  <div class="knowledge-strip" data-test="emergency-knowledge-grid">
-    <div v-for="k in items" :key="k.id" class="knowledge-card">
-      <div class="k-head">
-        <span class="k-dot" :style="{ background: CATEGORY_COLOR[k.category] }" />
-        <span class="k-category">{{ k.category }}</span>
-      </div>
-      <div class="k-title">{{ k.title }}</div>
-      <div class="k-foot">
-        <span class="k-mastered">已掌握 {{ k.mastered }}</span>
-        <span class="k-gap">未掌握 {{ k.notMastered }}</span>
-      </div>
-    </div>
-  </div>
-</template>
-
 <style scoped>
-.knowledge-strip {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border) transparent;
+.knowledge {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
 }
 
-.knowledge-strip::-webkit-scrollbar {
-  height: 6px;
-}
-
-.knowledge-strip::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 3px;
-}
-
-.knowledge-card {
-  flex: 0 0 132px;
+.knowledge__card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px;
+  gap: 8px;
+  padding: 10px 8px;
+  background: rgb(255 255 255 / 6%);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-panel-soft);
-  transition:
-    border-color var(--transition-fast),
-    transform var(--transition-fast);
+  border-radius: 4px;
+  min-height: 104px;
 }
 
-.knowledge-card:hover {
-  border-color: var(--color-accent);
-  transform: translateY(-2px);
-}
-
-.k-head {
+.knowledge__icon {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  border-radius: 6px;
+  background: rgb(122 215 255 / 14%);
+  border: 1px solid rgb(122 215 255 / 35%);
 }
 
-.k-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex: 0 0 auto;
-}
-
-.k-category {
+.knowledge__title {
+  flex: 1;
   font-size: 12px;
-  color: var(--color-text-muted);
-  white-space: nowrap;
-}
-
-.k-title {
-  font-size: 14px;
-  font-weight: 600;
   color: var(--color-text);
-  white-space: nowrap;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.k-foot {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-}
-
-.k-mastered {
-  color: var(--color-success);
-}
-
-.k-gap {
-  color: var(--color-warning);
+.knowledge__count {
+  font-size: 14px;
+  font-weight: 700;
+  color: #7ad7ff;
+  font-family: 'DIN Alternate', 'Microsoft YaHei', monospace;
 }
 </style>

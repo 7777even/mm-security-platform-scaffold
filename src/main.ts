@@ -3,7 +3,28 @@ import { createPinia } from 'pinia';
 import WujieVue from 'wujie-vue3';
 // Element Plus 组件由 unplugin-vue-components 按需自动引入（B4 性能优化），此处仅保留基础样式
 import 'element-plus/theme-chalk/base.css';
-import { Odometer, Monitor, Bell } from '@element-plus/icons-vue';
+import {
+  Odometer,
+  Monitor,
+  Bell,
+  Avatar,
+  UserFilled,
+  Box,
+  Tools,
+  OfficeBuilding,
+  FirstAidKit,
+  Van,
+  Warning,
+  WarningFilled,
+  Document,
+  Guide,
+  TrendCharts,
+  Notebook,
+  WarnTriangleFilled,
+  CaretTop,
+  CaretBottom,
+  Search,
+} from '@element-plus/icons-vue';
 import App from './App.vue';
 import router from './router';
 import { installDynamicRoutes, DEFAULT_MENUS } from './router/menu';
@@ -35,7 +56,28 @@ async function installMenus(): Promise<void> {
 async function bootstrap(): Promise<void> {
   const app = createApp(App);
   // 仅注册用到的图标（避免全量图标包 400KB+）
-  for (const icon of [Odometer, Monitor, Bell]) {
+  for (const icon of [
+    Odometer,
+    Monitor,
+    Bell,
+    Avatar,
+    UserFilled,
+    Box,
+    Tools,
+    OfficeBuilding,
+    FirstAidKit,
+    Van,
+    Warning,
+    WarningFilled,
+    Document,
+    Guide,
+    TrendCharts,
+    Notebook,
+    WarnTriangleFilled,
+    CaretTop,
+    CaretBottom,
+    Search,
+  ]) {
     app.component(icon.name!, icon);
   }
   app.directive('permission', vPermission);

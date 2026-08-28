@@ -1,30 +1,37 @@
 import { request } from '@/services/http';
 
-// 应急力量数据（B3 Mock 契约 §3.6）：车辆 / 处置力量 / 待命资源数
+// 应急力量数据（B3 Mock 契约 §3.6）：按维度统计资源数量
 export type EmergencyResourceKind =
-  '消防车' | '救护车' | '警用车' | '防化车' | '工程车' | '应急物资' | '消防站' | '医疗点';
+  | '应急专家'
+  | '应急物资'
+  | '救援队伍'
+  | '装备车辆'
+  | '应急场所'
+  | '医疗机构'
+  | '应急车辆'
+  | '消防设施';
 
 export interface EmergencyResource {
   kind: EmergencyResourceKind;
-  total: number;
-  onDuty: number;
+  count: number;
+  icon: string;
 }
 
 export interface EmergencyStrength {
   resources: EmergencyResource[];
 }
 
-// 开发期自包含 mock：8 个核心应急力量维度（2×4 救援网格）
+// 开发期自包含 mock：8 个核心应急力量维度（2 列 × 4 行网格）
 const DEV_FIXTURE: EmergencyStrength = {
   resources: [
-    { kind: '消防车', total: 47, onDuty: 32 },
-    { kind: '救护车', total: 3510, onDuty: 0 },
-    { kind: '警用车', total: 52, onDuty: 24 },
-    { kind: '防化车', total: 10, onDuty: 8 },
-    { kind: '工程车', total: 55, onDuty: 12 },
-    { kind: '应急物资', total: 80, onDuty: 60 },
-    { kind: '消防站', total: 12, onDuty: 12 },
-    { kind: '医疗点', total: 36, onDuty: 30 },
+    { kind: '应急专家', count: 47, icon: 'UserFilled' },
+    { kind: '应急物资', count: 3510, icon: 'Box' },
+    { kind: '救援队伍', count: 10, icon: 'Avatar' },
+    { kind: '装备车辆', count: 55, icon: 'Tools' },
+    { kind: '应急场所', count: 52, icon: 'OfficeBuilding' },
+    { kind: '医疗机构', count: 80, icon: 'FirstAidKit' },
+    { kind: '应急车辆', count: 33, icon: 'Van' },
+    { kind: '消防设施', count: 11, icon: 'Warning' },
   ],
 };
 
