@@ -323,7 +323,7 @@ const navGroups: NavGroup[] = [
 }
 
 .mgmt-header__pill--btn:hover {
-  background: rgb(255 255 255 / 20%);
+  background: var(--mgmt-header-pill-hover-bg);
 }
 
 .mgmt-header__user {

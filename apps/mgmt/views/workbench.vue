@@ -282,7 +282,7 @@ const modules: WorkbenchModule[] = [
 }
 
 .wb-card:hover {
-  box-shadow: 0 4px 12px rgb(26 53 80 / 8%);
+  box-shadow: var(--mgmt-card-shadow-hover);
 }
 
 /* 卡头：浅底圆形图标 + 模块名（16，档3）+ 页面数（12，档4） */
