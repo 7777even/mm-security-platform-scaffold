@@ -98,7 +98,10 @@ onUnmounted(() => {
           :key="item.path"
           :to="item.path"
           class="nav-item"
-          :class="{ active: route.path.startsWith(item.path) }"
+          :class="{
+            active: route.path.startsWith(item.path),
+            'nav-item--warning': item.meta?.title === '预警中心',
+          }"
         >
           <component :is="navIcon(item)" v-if="navIcon(item)" class="nav-item__icon" />
           <span class="nav-item__label">{{ item.meta?.title }}</span>
@@ -268,6 +271,30 @@ onUnmounted(() => {
     linear-gradient(180deg, rgb(0 14 32 / 85%) 0%, rgb(0 20 42 / 78%) 100%);
   border-color: transparent;
   box-shadow: none;
+}
+
+/* §7 预警中心：独立黄色模块，与前面五项青色 Tab 区分（黄色字体 + 黄色图标）；
+   无分隔线、无选中态背景/辉光 */
+.nav-item--warning {
+  color: #ffc93c;
+  margin-left: 22px;
+  border-radius: 6px;
+}
+
+.nav-item--warning .nav-item__icon {
+  color: #ffc93c;
+}
+
+.nav-item--warning:hover {
+  color: #ffd166;
+}
+
+/* 选中时仅保持黄色文字，不显示任何选中态背景/辉光（避免回退成青色激活态） */
+.nav-item--warning.active {
+  color: #ffc93c;
+  background: none;
+  box-shadow: none;
+  text-shadow: none;
 }
 
 .header-right {

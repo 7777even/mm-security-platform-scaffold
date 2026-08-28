@@ -1,13 +1,6 @@
 import type { Router, RouteRecordRaw, RouteComponent } from 'vue-router';
 import type { Component } from 'vue';
-import {
-  DataBoard,
-  Warning,
-  VideoCamera,
-  Cloudy,
-  Lock,
-  OfficeBuilding,
-} from '@element-plus/icons-vue';
+import { DataBoard, Warning, VideoCamera, Lock, OfficeBuilding } from '@element-plus/icons-vue';
 import { logger } from '@/utils/logger';
 
 // B3 AUTH-05 菜单契约（GET /auth/menus）返回的菜单项；id 与前端路由 name/权限码对齐
@@ -81,7 +74,7 @@ export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
   'extreme-weather': {
     title: '预警中心',
     perm: 'weather:view',
-    icon: Cloudy,
+    icon: Warning,
     component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
     subapp: true,
     subappUrl: import.meta.env.VITE_EXTREME_WEATHER_SUBAPP_URL ?? '/subapps/extreme-weather/',
