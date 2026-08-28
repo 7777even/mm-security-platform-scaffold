@@ -170,7 +170,7 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.spec.ts'],
+    include: ['src/**/*.spec.ts', 'apps/mobile/**/*.spec.ts'],
     // vitest 不读 vite resolve.alias，必须显式同步：Cesium 1.x 依赖 @zip.js/zip.js 的
     // zip-no-worker.js 子路径（KmlDataSource.js 静态导入），新版本已移除该 subpath，
     // 重定向到 zip-core.js（无 Worker 版压缩解压）。node 环境运行也会触发。
