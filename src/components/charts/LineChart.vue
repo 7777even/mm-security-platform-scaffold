@@ -28,7 +28,7 @@ const props = withDefaults(
     yMin?: number | 'dataMin';
     area?: boolean;
   }>(),
-  { smooth: true, showLegend: false, area: false },
+  { smooth: true, showLegend: false, area: false, yMin: 0 },
 );
 
 const el = ref<HTMLDivElement | null>(null);

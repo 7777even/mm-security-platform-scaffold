@@ -43,4 +43,11 @@ export default tseslint.config(
     files: ['scripts/**/*.mjs'],
     languageOptions: { globals: globals.node },
   },
+  {
+    // 测试文件中常定义多个桩组件，组件-per-文件规则在此属误报，关闭
+    files: ['**/*.spec.ts', '**/*.spec.tsx', '**/*.test.ts', '**/*.test.tsx'],
+    rules: {
+      'vue/one-component-per-file': 'off',
+    },
+  },
 );
