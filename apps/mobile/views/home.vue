@@ -230,12 +230,15 @@ const todoTasks: TodoTask[] = [
 </template>
 
 <style scoped>
-/* ---- 顶部系统名 ---- */
+/* ---- 顶部系统名：白底顶栏 + 底部分隔线（与页面灰底形成反差） ---- */
 .home-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-sm);
+  margin: 0 calc(-1 * var(--mb-pad-x)) var(--space-md);
+  padding: var(--space-sm) var(--mb-pad-x);
+  background: var(--card-mobile);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .home-header__title {
