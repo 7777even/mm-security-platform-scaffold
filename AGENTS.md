@@ -4,7 +4,7 @@
 
 ## 1. 项目概览
 
-安全管控指挥系统前端基座：Vue 3 + TypeScript + Vite + Pinia + wujie 微前端（子应用见 `subapps/`）+ Cesium GIS 一张图。三端形态：**大屏可视化端（`:root`）、后台管理端（`[data-theme='mgmt']`）、移动端（`[data-theme='mobile']`）**。
+安全管控指挥系统前端基座：Vue 3 + TypeScript + Vite + Pinia + wujie 微前端（子应用见 `subapps/`）+ Cesium GIS 一张图。三端形态：**大屏可视化端（`:root`）、后台管理端（`[data-theme='mgmt']`）、移动端（`[data-theme='mobile']`）**。后台 / 移动端为**独立应用入口** `apps/`（独立 index.html / 路由 / 布局壳，多入口构建见 `vite.config.ts`；dev 访问 `/apps/mgmt/`），与大屏壳层互不依赖，仅共享 `src/styles/tokens.css` 与公共服务。移动端按详设 V1.5 §5.3 为 Android 原生应用（hybrid 壳），本仓库 H5 规范约束内嵌业务页；集成方式待与设计方确认（详见 `docs/详细设计V1.5偏差分析.md`）。
 
 ## 2. UI 规范文档（按目标端强制阅读）
 
@@ -29,18 +29,20 @@
 - 大屏主按钮是**渐变**（`--btn-bg-primary`），后台是实色 `#0b69d7`，移动是实色胶囊 `#1677ff`——三端不要混。
 - 大屏禁止出现白底卡片 / 浅灰页面底 / `#0b69d7` / `#1677ff` / `.tag-*` 浅底标签。
 - 后台 / 移动端禁止出现玻璃质感（`--glass-*`）、科技青 `#00d8ff`、发光边框、深蓝黑底。
-- 移动端触控热区 ≥44px；底部主操作条预留 `var(--mb-bottom-safe)` 安全区；户外正文 ≥15 / 标题 ≥18。
+- 移动端触控热区严格 48–56px（详设 V1.5 §3.4）；底部主操作条预留 `var(--mb-bottom-safe)` 安全区；户外正文 ≥15 / 标题 ≥18；户外强光模式切 `data-skin="outdoor"` 纯黑白高反差皮肤。
 - 后台向导用水平步骤条、详情轨迹用垂直时间轴、页内切换用下划线页签，三者不混用。
 
 ## 5. 项目内既有能力（优先复用，不要重造）
 
 - 权限显隐：`v-permission` 指令（`src/directives/permission.ts`），数据权限由服务端过滤。
 - 离线操作缓存：`src/composables/useOfflineOutbox.ts`（移动端现场作业场景）。
+- 移动端桥接层：`apps/mobile/bridges/`（定位/离线落盘/令牌注入的接口 + H5 降级实现）。移动端页面**只允许经桥接实例访问原生能力**，禁止直调 `navigator.geolocation`、Web Storage 写死实现；hybrid 决策落地后仅在 `bridges/index.ts` 换 JSBridge 适配器，业务页零改动。
 - 告警元数据：`src/composables/useAlarmMeta.ts`。
 - 全局样式：`src/styles/tokens.css`（token 真源）、`global.css`、`element-dark.css`。
 
 ## 6. 其他工程约定
 
 - 路由与菜单：`src/router/`（含子应用路由 `shell/subappRouter.ts`）。
+- **Git 提交规范：`type(scope): 描述`（conventional commits + 端 scope）**。scope 固定枚举，禁止自造：`screen`（大屏壳 + `subapps/`）、`mgmt`（`apps/mgmt`）、`mobile`（`apps/mobile`）、`shared`（`src/` 跨端公共服务、`src/styles/tokens.css`、`vite.config.ts`）、`docs`、`chore`。跨端改动**按影响面拆成多个提交**：共享文件（token、公共服务）先行，端内跟随；确属一个原子改动且拆不开时才允许双 scope（如 `feat(mgmt,shared):`），不得常态化。禁止提交临时输出文件（如 `tsc-out.txt`、`vitest-out.txt`）。
 - 提交前钩子（husky + lint-staged）会执行 eslint / prettier / stylelint，遵循现有 `.prettierrc.json`、`.stylelintrc.json` 配置，不新增例外。
 - 性能基线与验收记录见 `docs/perf/`；架构决策与规格见 `openspec/`。
