@@ -15,7 +15,7 @@ import PanelCard from '@/components/common/PanelCard.vue';
         确认派单（v-permission）
       </el-button>
       <p class="tip">
-        切换右上角角色，按钮显隐实时刷新（commander 两者可见；值班调度仅派单可见；外操均不可见）。
+        管理员身份具备全部权限，两个按钮均可见；权限不足时按钮按 v-permission 自动隐藏。
       </p>
     </div>
   </PanelCard>

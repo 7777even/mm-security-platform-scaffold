@@ -12,11 +12,9 @@ describe('dashboard 路由 → wujie 子应用挂载映射', () => {
   });
 
   it('buildDynamicRoutes 将 subappUrl/subapp 透传到路由 meta', () => {
-    const routes = buildDynamicRoutes([
-      { id: 'dashboard', name: '应急指挥及演练', path: '/dashboard' },
-    ]);
+    const routes = buildDynamicRoutes([{ id: 'dashboard', name: '应急指挥', path: '/dashboard' }]);
     expect(routes[0].meta).toMatchObject({
-      title: '应急指挥及演练',
+      title: '应急指挥',
       perm: 'dashboard:view',
       subapp: true,
     });

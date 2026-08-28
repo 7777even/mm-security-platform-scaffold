@@ -12,18 +12,21 @@ import type { Component } from 'vue';
 import type { RouteRecordRaw } from 'vue-router';
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router';
 import { usePermission } from '@/composables/usePermission';
-import { useAuthStore, ROLE_PERMS, ROLE_NAMES, type RoleId } from '@/stores/auth';
 import { getInstalledMenuRoutes } from '@/router/menu';
 import BottomMessageBar from '@/components/common/BottomMessageBar.vue';
 import { markOnce } from '@/utils/perf';
 
 const route = useRoute();
 const router = useRouter();
-const auth = useAuthStore();
 const { filterRoutesByPerm } = usePermission();
 
-const now = ref('');
+const time = ref('');
+const dateText = ref('');
+// 天气占位数据：当前未对接气象服务，先以静态值展示，后续接入真实数据源可热替换。
+const weather = ref({ temp: 14, desc: '多云' });
 let timer: ReturnType<typeof setInterval> | null = null;
+
+const WEEK_LABELS = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
 
 // 大屏模块导航：取动态装配的菜单路由，按角色 meta.perm 过滤
 const menuRoutes = computed(() =>
@@ -34,18 +37,11 @@ const menuRoutes = computed(() =>
   }),
 );
 
-const roleOptions = computed(() =>
-  (Object.keys(ROLE_PERMS) as RoleId[]).map((id) => ({ id, label: ROLE_NAMES[id] })),
-);
-
-function onRoleChange(id: RoleId): void {
-  auth.setRole(id);
-}
-
 function tick(): void {
   const d = new Date();
   const pad = (n: number): string => String(n).padStart(2, '0');
-  now.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  time.value = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  dateText.value = `${d.getFullYear()}年${pad(d.getMonth() + 1)}月${pad(d.getDate())}日 ${WEEK_LABELS[d.getDay()]}`;
 }
 
 function goHome(): void {
@@ -109,20 +105,55 @@ onUnmounted(() => {
       </nav>
 
       <div class="header-right">
-        <span class="clock">{{ now }}</span>
-        <el-select
-          :model-value="auth.roleId"
-          class="role-select"
-          size="small"
-          @change="onRoleChange"
-        >
-          <el-option
-            v-for="role in roleOptions"
-            :key="role.id"
-            :label="role.label"
-            :value="role.id"
-          />
-        </el-select>
+        <!-- §3 天气（占位：未对接气象服务） -->
+        <div class="weather" :title="weather.desc" aria-label="天气">
+          <svg
+            class="weather__icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 5.4 10.5 4 4 0 0 0 7 18Z" />
+          </svg>
+          <span class="weather__temp">
+            <span class="weather__num">{{ weather.temp }}</span
+            ><span class="weather__deg">°C</span>
+          </span>
+        </div>
+
+        <!-- §3 时间 / 日期：顶部关键数字 + 日期 -->
+        <div class="time-stack" aria-label="当前时间">
+          <span class="time-stack__time">{{ time }}</span>
+          <span class="time-stack__date">{{ dateText }}</span>
+        </div>
+
+        <!-- §3 用户：头像 + 管理员（脚手架阶段不展开角色权限管理，单一身份展示，无下拉框） -->
+        <div class="user-chip">
+          <div class="user-chip__avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-3.3 0-9 1.7-9 5v1h18v-1c0-3.3-5.7-5-9-5Z"
+              />
+            </svg>
+          </div>
+          <span class="user-chip__name">管理员</span>
+          <svg
+            class="user-chip__caret"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </div>
       </div>
     </header>
 
@@ -304,34 +335,111 @@ onUnmounted(() => {
 .header-right {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-lg);
   flex-shrink: 0;
 }
 
-/* §7 右侧顶部时间：Poppins Bold 18px（--font-size-time） */
-.clock {
+/* §3 右侧 · 天气：图标 + 温度（数据为占位，待接气象服务） */
+.weather {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--color-text-muted);
+}
+
+.weather__icon {
+  width: var(--icon-md);
+  height: var(--icon-md);
+  color: var(--color-accent-2);
+  filter: drop-shadow(0 0 4px var(--color-accent-glow));
+  flex-shrink: 0;
+}
+
+.weather__temp {
+  display: inline-flex;
+  align-items: baseline;
   font-family: var(--font-family-num);
-  font-size: var(--font-size-stat-label);
+  font-size: var(--font-size-body);
   font-weight: 600;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   color: var(--color-text);
-  text-shadow: 0 0 8px var(--color-accent-glow);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.weather__deg {
+  font-family: var(--font-family-base);
+  font-weight: 400;
+  margin-left: 1px;
+  color: var(--color-text-muted);
+}
+
+/* §3 右侧 · 时间 / 日期竖排：顶部关键数字 + 日期（§3.1） */
+.time-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  line-height: 1;
+  min-width: 160px;
+}
+
+.time-stack__time {
+  font-family: var(--font-family-num);
+  font-size: var(--font-size-keynum);
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--color-text-strong);
+  text-shadow: 0 0 10px var(--color-accent-glow);
   font-variant-numeric: tabular-nums;
 }
 
-.role-select {
-  width: 140px;
+.time-stack__date {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-helper);
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
 }
 
-.role-select :deep(.el-select__wrapper) {
-  background: rgb(0 0 0 / 25%);
-  box-shadow: 0 0 0 1px var(--glass-border) inset;
+/* §3 右侧 · 用户：头像 + 管理员（脚手架阶段单一身份，无下拉框 / 无背景框） */
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  user-select: none;
 }
 
-.role-select :deep(.el-select__placeholder),
-.role-select :deep(.el-select__selected-item) {
+.user-chip__avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-accent-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px var(--color-accent-glow);
+  flex-shrink: 0;
+}
+
+.user-chip__avatar svg {
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-strong);
+}
+
+.user-chip__name {
+  font-size: var(--font-size-body);
   color: var(--color-text);
+  font-weight: 500;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.user-chip__caret {
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
 }
 
 /* §5.4 主路由区：大屏铺满，无内边距；视图内部自行控制布局与边距 */
