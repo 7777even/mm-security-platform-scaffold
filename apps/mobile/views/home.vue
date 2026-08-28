@@ -311,7 +311,7 @@ const todoTasks: TodoTask[] = [
   min-width: 56px;
   padding: var(--space-xs) var(--space-sm);
   font-size: var(--mb-fz-tip);
-  background: rgb(255 255 255 / 18%);
+  background: var(--mb-hero-stat-bg);
   border-radius: var(--mb-radius-ctrl);
 }
 
