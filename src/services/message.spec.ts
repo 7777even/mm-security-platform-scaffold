@@ -1,28 +1,31 @@
 import { describe, it, expect } from 'vitest';
-import { fetchMessages, levelLabel } from './message';
+import { CATEGORY_LABELS, MESSAGE_CATEGORIES, fetchMessages } from './message';
 
 describe('message service', () => {
-  it('返回演示消息且三条语义级别齐备', async () => {
-    const list = await fetchMessages();
-    expect(Array.isArray(list)).toBe(true);
-    expect(list.length).toBeGreaterThan(0);
-    const levels = new Set(list.map((m) => m.level));
-    expect(levels.has('system')).toBe(true);
-    expect(levels.has('alarm')).toBe(true);
-    expect(levels.has('disposition')).toBe(true);
+  it('exposes 4 categories with labels', () => {
+    expect(MESSAGE_CATEGORIES).toHaveLength(4);
+    expect(CATEGORY_LABELS.alarm).toBe('报警通知');
+    expect(CATEGORY_LABELS.event).toBe('事件通知');
+    expect(CATEGORY_LABELS.task).toBe('任务通知');
+    expect(CATEGORY_LABELS.system).toBe('系统通知');
   });
 
-  it('每条消息含 id 与文本', async () => {
+  it('fetchMessages returns items with required fields', async () => {
     const list = await fetchMessages();
+    expect(list.length).toBeGreaterThan(0);
     for (const m of list) {
-      expect(typeof m.id).toBe('string');
-      expect(m.text.length).toBeGreaterThan(0);
+      expect(['id', 'category', 'title', 'summary', 'time', 'read'].every((k) => k in m)).toBe(
+        true,
+      );
     }
   });
 
-  it('levelLabel 映射正确', () => {
-    expect(levelLabel('alarm')).toBe('报警');
-    expect(levelLabel('disposition')).toBe('处置');
-    expect(levelLabel('system')).toBe('系统');
+  it('includes unread items for badge demo', async () => {
+    expect((await fetchMessages()).some((m) => !m.read)).toBe(true);
+  });
+
+  it('covers all 4 categories in mock', async () => {
+    const set = new Set((await fetchMessages()).map((m) => m.category));
+    expect(MESSAGE_CATEGORIES.every((c) => set.has(c))).toBe(true);
   });
 });
