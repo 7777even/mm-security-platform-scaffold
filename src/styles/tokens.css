@@ -49,6 +49,7 @@
   --color-border-soft: rgb(42 74 120 / 40%); /* 浅边框（虚线分隔） */
   --transition-fast: 0.15s ease; /* 通用微交互过渡 */
   --radius-pill: 999px; /* 胶囊圆角（标签/按钮） */
+  --color-on-primary: #fff; /* 主色上的文字/图标（主按钮、选中标签，三端通用） */
 
   /* ---- 图表专用（ECharts canvas 需显式色值，主题切换时经 CSS 变量解析） ---- */
   --chart-accent: var(--color-accent);
@@ -296,6 +297,15 @@
   --mgmt-aside-w: 220px; /* 侧栏（折叠 64px） */
   --mgmt-content-pad: 24px; /* 主区外边距 24~32 */
 
+  /* 顶栏深蓝（蓝系）渐变品牌带 —— 禁止复用大屏 --gradient-bg（深蓝黑底，违反 §1 规则2） */
+  --mgmt-header-bg: linear-gradient(90deg, #0b69d7 0%, #084a99 100%);
+  --mgmt-header-action-bg: rgb(255 255 255 / 12%); /* 顶栏快捷半透明圆角底（白描线落底） */
+  --mgmt-header-action-h: 28px; /* 顶栏快捷项高 */
+
+  /* 筛选控件宽度（成组等高，禁止组件内硬编码尺寸） */
+  --mgmt-filter-input-w: 220px;
+  --mgmt-filter-select-w: 160px;
+
   /* 控件阈值（标准 / 适老，图 5-40） */
   --mgmt-ctrl-h: 40px; /* 筛选/输入（适老 ≥48） */
   --mgmt-ctrl-h-elder: 48px;
@@ -363,10 +373,10 @@
   --text-title-mobile: #183b5b;
   --text-muted-mobile: #8aa0b3;
 
-  /* 户外高对比阈值（相对白底）：标题 ≥7:1 / 正文 ≥4.5:1 / 辅文 ≥3:1 */
-  --text-outdoor-title: #0b1f33;
-  --text-outdoor-body: #1e3a52;
-  --text-outdoor-muted: #3d5a73;
+  /* 户外强光模式（详设 V1.5 §3.4：纯黑文字，对比度 WCAG AAA >7:1；层级靠字号/字重拉开） */
+  --text-outdoor-title: #000;
+  --text-outdoor-body: #000;
+  --text-outdoor-muted: #000;
 
   /* 字号阶梯（6 档，图 5-21；同页 ≤4 档） */
   --mb-fz-hero: 28px; /* 首页主标题（加粗） */
@@ -383,7 +393,7 @@
   --mb-card-gap: 12px; /* 卡片间距 12~16 */
   --mb-row-h: 48px; /* 列表行高 48~56 */
   --mb-row-h-elder: 56px; /* 适老行高 ≥56 */
-  --mb-btn-h: 44px; /* 主按钮高 ≥44 */
+  --mb-btn-h: 48px; /* 主按钮高 48（详设 V1.5 §3.4：热区严格 48~56） */
   --mb-btn-h-elder: 48px; /* 适老主按钮 ≥48 */
   --mb-radius-card: 16px; /* 卡片圆角（柔） */
   --mb-radius-btn: 999px; /* 主按钮胶囊形 */
@@ -393,4 +403,41 @@
   /* 布局骨架（图 5-22） */
   --mb-bottom-bar-h: 56px; /* 底部标签栏（4 入口） */
   --mb-header-h: 48px; /* 内页白底标准顶栏 */
+
+  /* 状态标签（浅底 + 同色深字，与后台同语言；outdoor 皮肤块覆写为纯色色块） */
+  --tag-success-bg: #ebf9ef;
+  --tag-success-fg: #1a7f37;
+  --tag-warning-bg: #fff7ec;
+  --tag-warning-fg: #ad5700;
+  --tag-danger-bg: #fdecec;
+  --tag-danger-fg: #b42318;
+  --tag-info-bg: #e8f3ff;
+  --tag-info-fg: #0b69d7;
+}
+
+/* =========================================================================
+ * 移动端户外强光皮肤（详设 V1.5 §3.4：高反差单色皮肤，锁死装饰）
+ * - 纯白 #FFFFFF 底 + 纯黑 #000000 文字，对比度 WCAG AAA（>7:1）
+ * - 全面停用渐变 / 软投影 / 毛玻璃 / 浅灰装饰线；状态标签改为
+ *   高饱和纯色色块填充 + 深色硬描边（描边由组件层 2px solid 黑实现）
+ * - 开关：根节点追加 data-skin="outdoor"（可与 data-theme="mobile" 叠加）
+ * ========================================================================= */
+[data-theme='mobile'][data-skin='outdoor'] {
+  --bg-mobile: #fff;
+  --card-mobile: #fff;
+  --border-mobile: #000;
+  --primary-mobile-soft: #fff;
+  --text-title-mobile: #000;
+  --color-text: #000;
+  --text-muted-mobile: #000;
+
+  /* 状态标签：浅底同色 → 高饱和纯色色块 + 白字 */
+  --tag-success-bg: var(--success-mobile);
+  --tag-success-fg: #fff;
+  --tag-warning-bg: var(--warning-mobile);
+  --tag-warning-fg: #fff;
+  --tag-danger-bg: var(--danger-mobile);
+  --tag-danger-fg: #fff;
+  --tag-info-bg: var(--primary-mobile);
+  --tag-info-fg: #fff;
 }
