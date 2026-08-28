@@ -75,6 +75,44 @@ body {
   opacity: 0.85;
 }
 
+/* ---- 通用 section：标题行（小图标 + 中粗标题）+ 右侧文字链接 ---- */
+.mb-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.mb-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mb-section__title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--mb-fz-section);
+  font-weight: 600;
+  color: var(--text-title-mobile);
+}
+
+.mb-section__title svg {
+  width: 16px;
+  height: 16px;
+  color: var(--color-text);
+}
+
+/* 链接热区 ≥48（视觉保持小字，热区纵向撑满标题行） */
+.mb-section__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  font-size: var(--mb-fz-help);
+  color: var(--primary-mobile);
+  text-decoration: none;
+}
+
 /* ---- 状态标签：浅底同色深字（全局枚举类，见 docs/UI规范-移动端.md §6 状态映射） ---- */
 .tag {
   display: inline-flex;
