@@ -1,0 +1,116 @@
+/* =========================================================================
+ * 移动端 H5 基座样式（apps/mobile 专用）
+ * - token 真源：src/styles/tokens.css 的 :root[data-theme='mobile'] 块；
+ *   此处只写布局语言与通用组件类，禁止出现任何硬编码颜色/字号/尺寸
+ * - 勿引入 src/styles/global.css（大屏深色底语言，与移动端浅底冲突）
+ * ========================================================================= */
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-zh);
+  font-size: var(--mb-fz-form-label); /* 正文 ≥15（详设 V1.5 §3.4 户外要求） */
+  color: var(--color-text);
+  background: var(--bg-mobile);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- 页面容器：单列卡片流 ---- */
+.mb-page {
+  padding: var(--mb-pad-x);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mb-card-gap);
+}
+
+/* ---- 白卡：柔圆角 16px + 分割线描边（outdoor 皮肤下边框转纯黑硬描边） ---- */
+.mb-card {
+  padding: var(--space-md);
+  background: var(--card-mobile);
+  border: 1px solid var(--color-border);
+  border-radius: var(--mb-radius-card);
+}
+
+/* ---- 内页标准顶栏：白底 48px，标题居中（图 5-22） ---- */
+.mb-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-chrome);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--mb-header-h);
+  background: var(--card-mobile);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.mb-header__title {
+  font-size: var(--mb-fz-page);
+  font-weight: 600;
+  color: var(--text-title-mobile);
+}
+
+/* ---- 实心胶囊主按钮：一屏一个，热区严格 48~56（详设 V1.5 §3.4） ---- */
+.mb-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--mb-btn-h);
+  padding: 0 var(--space-lg);
+  font-size: var(--mb-fz-section);
+  font-weight: 600;
+  color: var(--color-on-primary);
+  background: var(--primary-mobile);
+  border: none;
+  border-radius: var(--mb-radius-btn);
+  cursor: pointer;
+}
+
+.mb-btn-primary:active {
+  opacity: 0.85;
+}
+
+/* ---- 状态标签：浅底同色深字（全局枚举类，见 docs/UI规范-移动端.md §6 状态映射） ---- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-sm);
+  font-size: var(--mb-fz-tip);
+  border-radius: var(--radius-pill);
+  background: var(--tag-info-bg);
+  color: var(--tag-info-fg);
+}
+
+.tag--success {
+  background: var(--tag-success-bg);
+  color: var(--tag-success-fg);
+}
+
+.tag--warning {
+  background: var(--tag-warning-bg);
+  color: var(--tag-warning-fg);
+}
+
+.tag--danger {
+  background: var(--tag-danger-bg);
+  color: var(--tag-danger-fg);
+}
+
+.tag--info {
+  background: var(--tag-info-bg);
+  color: var(--tag-info-fg);
+}
+
+/* ---- 户外强光模式（data-skin="outdoor"）：标签改纯色色块 + 黑色硬描边 ---- */
+[data-skin='outdoor'] .tag {
+  border: 2px solid var(--border-mobile);
+}
+
+[data-skin='outdoor'] .mb-card {
+  border-color: var(--border-mobile);
+}
