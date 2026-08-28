@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import type { Plugin } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
@@ -30,11 +31,39 @@ const csp = [
 // Cesium 静态资源输出目录（供构建/开发期访问；生产由部署服务器按同路径托管）
 const CESIUM_BASE_URL = '/cesium';
 
+// dev 目录回退（仅 serve 生效）：默认 appType 'spa' 会把无扩展名请求回退到根 index.html，
+// 导致 /apps/mgmt/ 这类独立应用目录 404 / 误入主壳。此插件将 /apps/<name>[/...] 重写
+// 到 /apps/<name>/index.html；带文件扩展名的请求（静态资源）不重写。
+// 生产环境由 nginx rewrite 承担同样职责（deploy/csp.conf 同源部署）。
+function appsHtmlFallback(): Plugin {
+  return {
+    name: 'apps-html-fallback',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        const raw = req.url ?? '';
+        const entry = raw.match(/^\/apps\/[^/]+/);
+        if (entry) {
+          const queryIdx = raw.indexOf('?');
+          const pathPart = queryIdx === -1 ? raw : raw.slice(0, queryIdx);
+          const queryPart = queryIdx === -1 ? '' : raw.slice(queryIdx);
+          const rest = pathPart.slice(entry[0].length);
+          if (!/\.[^/]+$/.test(rest)) {
+            req.url = `${entry[0]}/index.html${queryPart}`;
+          }
+        }
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig({
   // 依赖缓存移到系统临时目录（项目外），规避本环境 safe-delete 对工作区大目录批量删除的拦截，
   // 避免 vite 优化/清理依赖缓存时抛异常导致 dev server 崩溃
   cacheDir: join(tmpdir(), 'mm-safety-vite-cache'),
   plugins: [
+    appsHtmlFallback(),
     vue(),
     // Element Plus 按需自动引入（B4 性能优化：组件+样式均按需，从 es/components 子路径导入实现 tree-shake）
     Components({ resolvers: [ElementPlusResolver()], dts: 'components.d.ts' }),
@@ -115,10 +144,12 @@ export default defineConfig({
     target: 'es2018',
     sourcemap: false,
     rollupOptions: {
-      // 单 dev server 多 HTML 入口：主壳(index.html) + 各 wujie 子应用，
+      // 单 dev server 多 HTML 入口：主壳(index.html) + 各 wujie 子应用 + 独立应用(apps/)，
       // 保证子应用与主壳同源（wujie 强约束），避免跨源 SecurityError
       input: {
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        mgmtApp: fileURLToPath(new URL('./apps/mgmt/index.html', import.meta.url)),
+        mobileApp: fileURLToPath(new URL('./apps/mobile/index.html', import.meta.url)),
         dashboardSubapp: fileURLToPath(new URL('./subapps/dashboard/index.html', import.meta.url)),
         fireAlarmSubapp: fileURLToPath(new URL('./subapps/fire-alarm/index.html', import.meta.url)),
         securityAntiTerrorSubapp: fileURLToPath(

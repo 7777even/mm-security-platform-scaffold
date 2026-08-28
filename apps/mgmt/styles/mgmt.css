@@ -1,0 +1,93 @@
+/* =========================================================================
+ * 管理后台浅色基座（apps/mgmt 独立入口专用）
+ * 真源：src/styles/tokens.css [data-theme='mgmt'] 块 + docs/UI规范-后台管理端.md
+ * 注意：本入口不引入 src/styles/global.css（其 body 背景与组件类为大屏深色语言）
+ * ========================================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-zh);
+  font-size: var(--mgmt-fz-body);
+  color: var(--color-text);
+  background-color: var(--bg-mgmt);
+}
+
+/* ---- Element Plus 浅色适配（控件等高 40 / 主色蓝 / 表头浅主色） ---- */
+:root[data-theme='mgmt'] {
+  --el-component-size: var(--mgmt-ctrl-h);
+  --el-color-primary: var(--primary-mgmt);
+  --el-border-radius-base: var(--mgmt-radius-md);
+  --el-font-size-base: var(--mgmt-fz-filter);
+  --el-text-color-regular: var(--color-text);
+  --el-border-color: var(--border-mgmt);
+  --el-border-color-light: var(--border-mgmt);
+  --el-fill-color-blank: var(--card-mgmt);
+}
+
+.el-table {
+  --el-table-header-bg-color: var(--primary-mgmt-soft);
+  --el-table-header-text-color: var(--text-title-mgmt);
+  --el-table-border-color: var(--border-mgmt);
+  --el-table-row-hover-bg-color: var(--primary-mgmt-soft);
+  --el-fill-color-lighter: var(--bg-mgmt); /* 斑马纹隔行底（详设 V1.5 §3.4） */
+
+  font-size: var(--mgmt-fz-filter);
+  color: var(--color-text);
+}
+
+.el-table th.el-table__cell {
+  font-weight: 600;
+}
+
+/* 表格行高 ≈ var(--mgmt-table-row-h)：默认单元格 23px 行盒 + 上下 12px 内边距 */
+.el-table td.el-table__cell {
+  padding: 12px 0;
+}
+
+.el-pagination {
+  --el-color-primary: var(--primary-mgmt);
+}
+
+/* ---- 状态标签（浅底 + 同色深字；真源 tokens.css --tag-*-bg/fg） ---- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--mgmt-radius-sm);
+  font-size: var(--mgmt-fz-caption);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.tag-success {
+  background: var(--tag-success-bg);
+  color: var(--tag-success-fg);
+}
+
+.tag-warning {
+  background: var(--tag-warning-bg);
+  color: var(--tag-warning-fg);
+}
+
+.tag-danger {
+  background: var(--tag-danger-bg);
+  color: var(--tag-danger-fg);
+}
+
+.tag-info {
+  background: var(--tag-info-bg);
+  color: var(--tag-info-fg);
+}
