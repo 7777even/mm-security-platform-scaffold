@@ -301,6 +301,8 @@
   --mgmt-header-bg: linear-gradient(90deg, #0b69d7 0%, #084a99 100%);
   --mgmt-header-action-bg: rgb(255 255 255 / 12%); /* 顶栏快捷半透明圆角底（白描线落底） */
   --mgmt-header-action-h: 28px; /* 顶栏快捷项高 */
+  --mgmt-header-pill-hover-bg: rgb(255 255 255 / 20%); /* 顶栏胶囊按钮 hover 半透明覆盖 */
+  --mgmt-card-shadow-hover: 0 4px 12px rgb(26 53 80 / 8%); /* 卡片 hover 微浮起阴影 */
 
   /* 筛选控件宽度（成组等高，禁止组件内硬编码尺寸） */
   --mgmt-filter-input-w: 220px;
