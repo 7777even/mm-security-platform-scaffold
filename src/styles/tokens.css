@@ -288,8 +288,8 @@
   --space-sm: 8px;
   --space-md: 16px;
   --space-lg: 24px;
-  --mgmt-radius-sm: 4px;
-  --mgmt-radius-md: 6px;
+  --mgmt-radius-sm: 6px;
+  --mgmt-radius-md: 8px;
   --mgmt-radius-lg: 10px;
 
   /* 布局骨架（图 5-31） */
@@ -371,9 +371,9 @@
   /* 文本（图 5-20 + 户外高对比 图 5-39） */
   --color-text-strong: #183b5b; /* 标题墨蓝 */
   --color-text: #1e3a52; /* 正文灰蓝（≥4.5:1） */
-  --color-text-muted: #8aa0b3; /* 次要灰蓝（未选中/时间戳） */
+  --color-text-muted: #3d5a73; /* 次要灰蓝（未选中/时间戳，基准下限：辅文不低于中灰蓝） */
   --text-title-mobile: #183b5b;
-  --text-muted-mobile: #8aa0b3;
+  --text-muted-mobile: #3d5a73;
 
   /* 户外强光模式（详设 V1.5 §3.4：纯黑文字，对比度 WCAG AAA >7:1；层级靠字号/字重拉开） */
   --text-outdoor-title: #000;
@@ -416,6 +416,16 @@
   --tag-danger-fg: #b42318;
   --tag-info-bg: #e8f3ff;
   --tag-info-fg: #0b69d7;
+
+  /* 消息分类图标配色（消息中心，浅底圆承载，基于语义色派生，单一真源） */
+  --mb-msg-alarm: var(--color-danger);
+  --mb-msg-alarm-soft: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  --mb-msg-event: var(--color-warning);
+  --mb-msg-event-soft: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  --mb-msg-task: var(--primary-mobile);
+  --mb-msg-task-soft: color-mix(in srgb, var(--primary-mobile) 12%, transparent);
+  --mb-msg-system: var(--color-text-muted);
+  --mb-msg-system-soft: color-mix(in srgb, var(--color-text-muted) 12%, transparent);
 }
 
 /* =========================================================================
