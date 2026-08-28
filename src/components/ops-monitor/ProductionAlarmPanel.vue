@@ -22,7 +22,7 @@ const alarms: Alarm[] = [
   {
     id: '1',
     icon: User,
-    toneColor: '#ffc24b',
+    toneColor: 'var(--color-warning)',
     title: '人员跌倒',
     unhandled: true,
     location: '炼化厂区内院',
@@ -32,7 +32,7 @@ const alarms: Alarm[] = [
   {
     id: '2',
     icon: User,
-    toneColor: '#ffc24b',
+    toneColor: 'var(--color-warning)',
     title: '人员违规进入',
     unhandled: true,
     location: '炼化厂区内院',
@@ -42,7 +42,7 @@ const alarms: Alarm[] = [
   {
     id: '3',
     icon: User,
-    toneColor: '#ff8a4c',
+    toneColor: 'var(--color-alarm-2)',
     title: '人员聚集',
     unhandled: true,
     location: '炼化厂区内院',
@@ -52,7 +52,7 @@ const alarms: Alarm[] = [
   {
     id: '4',
     icon: WarningFilled,
-    toneColor: '#a78bfa',
+    toneColor: 'var(--color-danger)',
     title: '有毒气体超标',
     unhandled: true,
     location: '炼化厂区内院',
@@ -74,9 +74,9 @@ function onAction(a: Alarm, action: string): void {
           <div
             class="alarm__icon"
             :style="{
-              background: a.toneColor + '22',
+              background: `color-mix(in srgb, ${a.toneColor} 13%, transparent)`,
               color: a.toneColor,
-              borderColor: a.toneColor + '70',
+              borderColor: `color-mix(in srgb, ${a.toneColor} 45%, transparent)`,
             }"
           >
             <component :is="a.icon" />
@@ -117,30 +117,30 @@ function onAction(a: Alarm, action: string): void {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .alarm {
   display: grid;
   grid-template-columns: 1fr auto auto;
-  gap: 12px;
+  gap: var(--space-md);
   align-items: center;
-  padding: 10px;
+  padding: var(--space-sm);
   border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
+  background: var(--color-panel-soft);
+  border: 1px solid var(--panel-border);
 }
 
 .alarm__left {
   display: flex;
-  gap: 10px;
+  gap: var(--space-sm);
   align-items: flex-start;
   min-width: 0;
 }
 
 .alarm__icon {
-  width: 44px;
-  height: 44px;
+  width: var(--icon-xxl);
+  height: var(--icon-xxl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -150,52 +150,52 @@ function onAction(a: Alarm, action: string): void {
 }
 
 .alarm__icon :deep(svg) {
-  width: 24px;
-  height: 24px;
+  width: var(--icon-lg);
+  height: var(--icon-lg);
 }
 
 .alarm__main {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-xs);
 }
 
 .alarm__head {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-xs);
 }
 
 .alarm__title {
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   font-weight: 600;
   color: var(--color-text-strong);
 }
 
 .alarm__badge {
-  font-size: 10px;
-  padding: 1px 6px;
-  border-radius: 8px;
-  color: #ff6b6b;
-  background: rgb(255 107 107 / 18%);
-  border: 1px solid rgb(255 107 107 / 45%);
+  font-size: var(--font-size-date);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-pill);
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 45%, transparent);
   white-space: nowrap;
 }
 
 .alarm__loc {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text);
 }
 
 .alarm__time {
   font-family: var(--font-number);
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-text-muted);
 }
 
 .alarm__desc {
-  font-size: 11px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
   line-height: 1.5;
 }
@@ -206,11 +206,11 @@ function onAction(a: Alarm, action: string): void {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px dashed rgb(0 216 255 / 35%);
-  border-radius: 4px;
-  background: rgb(0 0 0 / 25%);
+  border: 1px dashed var(--color-accent-glow);
+  border-radius: var(--radius-sm);
+  background: var(--color-panel-soft);
   color: var(--color-text-muted);
-  font-size: 11px;
+  font-size: var(--font-size-date);
   flex-shrink: 0;
 }
 
@@ -218,15 +218,15 @@ function onAction(a: Alarm, action: string): void {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1px;
+  gap: var(--space-xs);
   flex-shrink: 0;
 }
 
 .alarm__action {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  font-size: 11px;
+  gap: var(--space-xs);
+  font-size: var(--font-size-date);
   color: var(--color-accent);
   background: transparent;
   border: none;
@@ -240,7 +240,7 @@ function onAction(a: Alarm, action: string): void {
 }
 
 .alarm__arrow {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   line-height: 1;
 }
 </style>

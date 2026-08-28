@@ -3,7 +3,7 @@
     <div class="knowledge" data-test="emergency-knowledge-grid">
       <div v-for="k in items" :key="k.id" class="knowledge__card">
         <span class="knowledge__icon">
-          <el-icon :size="18" color="#7ad7ff">
+          <el-icon :size="18" color="var(--color-accent)">
             <component :is="ICON_MAP[k.icon]" />
           </el-icon>
         </span>
@@ -46,17 +46,17 @@ onMounted(async () => {
 .knowledge {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .knowledge__card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 8px;
-  background: rgb(255 255 255 / 6%);
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--glass-bg);
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   min-height: 104px;
 }
 
@@ -67,14 +67,14 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  background: rgb(122 215 255 / 14%);
-  border: 1px solid rgb(122 215 255 / 35%);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-faint);
+  border: 1px solid var(--color-accent-glow);
 }
 
 .knowledge__title {
   flex: 1;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text);
   line-height: 1.4;
   display: -webkit-box;
@@ -84,9 +84,9 @@ onMounted(async () => {
 }
 
 .knowledge__count {
-  font-size: 14px;
+  font-size: var(--font-size-body);
   font-weight: 700;
-  color: #7ad7ff;
-  font-family: 'DIN Alternate', 'Microsoft YaHei', monospace;
+  color: var(--stat-value-color);
+  font-family: var(--font-family-num);
 }
 </style>

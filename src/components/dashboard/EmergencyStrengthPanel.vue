@@ -3,7 +3,7 @@
     <div class="strength" data-test="emergency-strength-grid">
       <div v-for="r in resources" :key="r.kind" class="strength__cell">
         <span class="strength__icon">
-          <el-icon :size="22" color="#7ad7ff">
+          <el-icon :size="22" color="var(--color-accent)">
             <component :is="ICON_MAP[r.icon]" />
           </el-icon>
         </span>
@@ -66,17 +66,17 @@ onMounted(async () => {
 .strength {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .strength__cell {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
-  background: rgb(255 255 255 / 6%);
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--glass-bg);
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   min-height: 64px;
 }
 
@@ -86,9 +86,9 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  background: rgb(122 215 255 / 14%);
-  border: 1px solid rgb(122 215 255 / 35%);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-faint);
+  border: 1px solid var(--color-accent-glow);
 }
 
 .strength__meta {
@@ -97,19 +97,19 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
+  gap: var(--space-xs);
 }
 
 .strength__count {
-  font-size: 22px;
+  font-size: var(--font-size-metric);
   font-weight: 700;
-  color: #7ad7ff;
-  font-family: 'DIN Alternate', 'Microsoft YaHei', monospace;
+  color: var(--stat-value-color);
+  font-family: var(--font-family-num);
   line-height: 1;
 }
 
 .strength__label {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
 }
 </style>

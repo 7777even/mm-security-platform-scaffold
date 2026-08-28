@@ -9,6 +9,7 @@ import { LineChart } from 'echarts/charts';
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import type { EChartsCoreOption } from 'echarts/core';
+import { readCssVar } from '@/utils/theme';
 
 echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
 
@@ -33,11 +34,35 @@ const props = withDefaults(
 const el = ref<HTMLDivElement | null>(null);
 let chart: echarts.ECharts | null = null;
 
-const DEFAULT_COLORS = ['#00e1ff', '#2ee6a8', '#ffc24b', '#ff6b6b', '#a78bfa'];
+const SERIES_TOKENS = [
+  '--chart-accent',
+  '--chart-success',
+  '--chart-warning',
+  '--color-alarm-2',
+  '--chart-purple',
+];
+
+/**
+ * 解析序列颜色：支持直接 hex / 或 `var(--token)` 形式。
+ * canvas 无法消费 `var()`，需经 readCssVar 解析为具体色值（与 dashboard 图表策略一致）。
+ */
+function resolveColor(c?: string, idx = 0): string {
+  if (c) {
+    const trimmed = c.trim();
+    if (trimmed.startsWith('var(')) {
+      const name = trimmed.slice(4, -1).trim();
+      return readCssVar(name, '#00e1ff');
+    }
+    return trimmed;
+  }
+  return readCssVar(SERIES_TOKENS[idx % SERIES_TOKENS.length], '#00e1ff');
+}
 
 function buildOption(): EChartsCoreOption {
+  const axisText = readCssVar('--chart-text', '#9fb3c8');
+  const fontSize = Number(readCssVar('--font-size-helper', '12')) || 12;
   const series = props.series.map((s, i) => {
-    const color = s.color ?? DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+    const color = resolveColor(s.color, i);
     const base: Record<string, unknown> = {
       name: s.name,
       type: 'line',
@@ -70,9 +95,9 @@ function buildOption(): EChartsCoreOption {
     grid: { left: 30, right: 12, top: props.showLegend ? 30 : 14, bottom: 18 },
     tooltip: {
       trigger: 'axis',
-      backgroundColor: 'rgba(10, 25, 47, 0.92)',
-      borderColor: 'rgba(0, 225, 255, 0.3)',
-      textStyle: { color: '#eaf4ff', fontSize: 12 },
+      backgroundColor: readCssVar('--chart-panel-bg', 'rgba(19, 35, 60, 0.92)'),
+      borderColor: readCssVar('--chart-panel-border', 'rgba(0, 216, 255, 0.4)'),
+      textStyle: { color: readCssVar('--chart-text-strong', '#eaf4ff'), fontSize },
     },
     legend: props.showLegend
       ? {
@@ -82,23 +107,25 @@ function buildOption(): EChartsCoreOption {
           icon: 'roundRect',
           itemWidth: 10,
           itemHeight: 6,
-          textStyle: { color: '#9fb3c8', fontSize: 11 },
+          textStyle: { color: axisText, fontSize: fontSize - 1 },
         }
       : { show: false },
     xAxis: {
       type: 'category',
       data: props.categories,
       boundaryGap: false,
-      axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } },
-      axisLabel: { color: '#9fb3c8', fontSize: 11 },
+      axisLine: { lineStyle: { color: readCssVar('--chart-axis-line', 'rgba(0, 216, 255, 0.3)') } },
+      axisLabel: { color: axisText, fontSize: fontSize - 1 },
       axisTick: { show: false },
     },
     yAxis: {
       type: 'value',
       min: props.yMin,
       axisLine: { show: false },
-      axisLabel: { color: '#9fb3c8', fontSize: 11 },
-      splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } },
+      axisLabel: { color: axisText, fontSize: fontSize - 1 },
+      splitLine: {
+        lineStyle: { color: readCssVar('--chart-grid-line', 'rgba(0, 216, 255, 0.12)') },
+      },
     },
     series,
   };

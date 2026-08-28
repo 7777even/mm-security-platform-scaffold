@@ -36,9 +36,9 @@ const dataMap: Record<TabKey, TabData> = {
     inSeries: [120, 230, 380, 520, 650, 800],
     outSeries: [80, 200, 360, 480, 600, 780],
     donut: [
-      { label: '在岗人员', value: 100, color: '#00e1ff' },
-      { label: '厂家门工', value: 100, color: '#2ee6a8' },
-      { label: '其它', value: 3, color: '#ffc24b' },
+      { label: '在岗人员', value: 100, color: 'var(--color-accent)' },
+      { label: '厂家门工', value: 100, color: 'var(--color-success)' },
+      { label: '其它', value: 3, color: 'var(--color-warning)' },
     ],
   },
   警车车辆: {
@@ -49,9 +49,9 @@ const dataMap: Record<TabKey, TabData> = {
     inSeries: [10, 20, 35, 50, 70, 86],
     outSeries: [8, 18, 30, 45, 60, 78],
     donut: [
-      { label: '在岗警车', value: 24, color: '#00e1ff' },
-      { label: '厂家警车', value: 6, color: '#2ee6a8' },
-      { label: '其它', value: 2, color: '#ffc24b' },
+      { label: '在岗警车', value: 24, color: 'var(--color-accent)' },
+      { label: '厂家警车', value: 6, color: 'var(--color-success)' },
+      { label: '其它', value: 2, color: 'var(--color-warning)' },
     ],
   },
   危化车: {
@@ -62,9 +62,9 @@ const dataMap: Record<TabKey, TabData> = {
     inSeries: [2, 5, 9, 14, 20, 24],
     outSeries: [1, 3, 7, 11, 15, 18],
     donut: [
-      { label: '在岗危化车', value: 8, color: '#00e1ff' },
-      { label: '厂家危化车', value: 3, color: '#2ee6a8' },
-      { label: '其它', value: 1, color: '#ffc24b' },
+      { label: '在岗危化车', value: 8, color: 'var(--color-accent)' },
+      { label: '厂家危化车', value: 3, color: 'var(--color-success)' },
+      { label: '其它', value: 1, color: 'var(--color-warning)' },
     ],
   },
 };
@@ -114,8 +114,8 @@ const donutGradient = computed(() => {
       <LineChart
         :categories="current.categories"
         :series="[
-          { name: '进厂', data: current.inSeries, color: '#00e1ff' },
-          { name: '出厂', data: current.outSeries, color: '#2ee6a8' },
+          { name: '进厂', data: current.inSeries, color: 'var(--color-accent)' },
+          { name: '出厂', data: current.outSeries, color: 'var(--color-success)' },
         ]"
         :area="true"
       />
@@ -142,17 +142,17 @@ const donutGradient = computed(() => {
 <style scoped>
 .tabs {
   display: flex;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
 }
 
 .tabs__btn {
-  padding: 3px 12px;
-  font-size: 12px;
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
-  background: rgb(255 255 255 / 4%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
-  border-radius: 999px;
+  background: var(--color-panel-soft);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-pill);
   cursor: pointer;
   transition:
     background var(--transition-fast),
@@ -162,57 +162,57 @@ const donutGradient = computed(() => {
 
 .tabs__btn--active {
   color: var(--color-accent);
-  background: rgb(0 225 255 / 10%);
-  border-color: rgb(0 225 255 / 50%);
+  background: var(--color-accent-faint);
+  border-color: var(--color-accent-glow);
 }
 
 .nums {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-sm);
-  margin-bottom: 6px;
+  margin-bottom: var(--space-sm);
 }
 
 .nums__item {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding: 6px 10px;
+  padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 12%));
+  background: var(--color-panel-soft);
+  border: 1px solid var(--panel-border);
 }
 
 .nums__label {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
 }
 
 .nums__value {
   font-family: var(--font-number);
-  font-size: 18px;
+  font-size: var(--font-size-time);
   font-weight: 700;
 }
 
 .nums__value--cyan {
-  color: #00e1ff;
+  color: var(--color-accent);
 }
 
 .nums__value--green {
-  color: #2ee6a8;
+  color: var(--color-success);
 }
 
 .chart {
   height: 110px;
-  margin: 6px 0;
+  margin: var(--space-sm) 0;
 }
 
 .donut-row {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  padding-top: 8px;
-  border-top: 1px solid var(--panel-border, rgb(0 216 255 / 18%));
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--panel-border);
 }
 
 .donut {
@@ -240,17 +240,17 @@ const donutGradient = computed(() => {
 
 .donut__total {
   font-family: var(--font-number);
-  font-size: 22px;
+  font-size: var(--font-size-metric);
   font-weight: 700;
   color: var(--color-text-strong);
   line-height: 1.1;
 }
 
 .donut__total-label {
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-text-muted);
   letter-spacing: 1px;
-  margin-top: 2px;
+  margin-top: var(--space-xs);
 }
 
 .legend {
@@ -260,14 +260,14 @@ const donutGradient = computed(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-sm);
 }
 
 .legend li {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: var(--space-sm);
+  font-size: var(--font-size-helper);
 }
 
 .legend__dot {

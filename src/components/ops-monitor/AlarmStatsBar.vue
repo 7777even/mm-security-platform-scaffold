@@ -78,11 +78,11 @@ const stats: Stat[] = [
 .bar {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  padding: 12px 18px;
-  border-radius: 12px;
-  background: rgb(10 25 47 / 78%);
-  border: 1px solid rgb(0 225 255 / 22%);
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-md);
+  background: var(--glass-bg);
+  border: 1px solid var(--panel-border);
   backdrop-filter: blur(8px);
   box-shadow: 0 6px 22px rgb(0 0 0 / 35%);
 }
@@ -90,12 +90,12 @@ const stats: Stat[] = [
 .stat {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-sm);
 }
 
 .stat__icon {
-  width: 22px;
-  height: 22px;
+  width: var(--icon-lg);
+  height: var(--icon-lg);
   color: var(--color-accent);
   flex-shrink: 0;
 }
@@ -109,26 +109,26 @@ const stats: Stat[] = [
 }
 
 .stat__label {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
 }
 
 .stat__delta {
   font-family: var(--font-number);
-  font-size: 11px;
+  font-size: var(--font-size-date);
 }
 
 .stat__delta--up {
-  color: #ff6b6b;
+  color: var(--color-alarm-1);
 }
 
 .stat__delta--down {
-  color: #2ee6a8;
+  color: var(--color-success);
 }
 
 .stat__value {
   font-family: var(--font-number);
-  font-size: 22px;
+  font-size: var(--font-size-h1);
   font-weight: 700;
   color: var(--color-text-strong);
   line-height: 1.1;

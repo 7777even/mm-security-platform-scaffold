@@ -31,8 +31,8 @@ function viewAll(): void {
   align-items: center;
   gap: 10px;
   padding: 6px 14px;
-  background: rgb(10 25 47 / 78%);
-  border: 1px solid rgb(0 225 255 / 22%);
+  background: var(--glass-bg);
+  border: 1px solid var(--panel-border);
   border-radius: 999px;
   backdrop-filter: blur(8px);
   box-shadow: 0 6px 22px rgb(0 0 0 / 35%);
@@ -41,13 +41,13 @@ function viewAll(): void {
 
 .sys-msg__tag {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   font-weight: 600;
   padding: 2px 10px;
   border-radius: 999px;
   color: var(--color-accent);
-  background: rgb(0 216 255 / 14%);
-  border: 1px solid rgb(0 216 255 / 40%);
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
 }
 
 .sys-msg__body {
@@ -60,7 +60,7 @@ function viewAll(): void {
 
 .sys-msg__item {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text);
   display: inline-flex;
   align-items: center;
@@ -70,13 +70,13 @@ function viewAll(): void {
 .sys-msg__time {
   font-style: normal;
   font-family: var(--font-number);
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-text-muted);
 }
 
 .sys-msg__more {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-accent);
   background: transparent;
   border: none;

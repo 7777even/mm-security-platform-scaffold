@@ -8,7 +8,6 @@ import PanelCard from '@/components/common/PanelCard.vue';
 interface RiskAlert {
   key: string;
   levelLabel: string;
-  levelColor: string;
   area: string;
   warning: string;
   owner: string;
@@ -19,7 +18,6 @@ const alerts: RiskAlert[] = [
   {
     key: 'r1',
     levelLabel: '黄色',
-    levelColor: '#ffc24b',
     area: '乙烯装置区（二）',
     warning: '高温预警：2026-03-17 02:00:46',
     owner: '/A1',
@@ -28,7 +26,6 @@ const alerts: RiskAlert[] = [
   {
     key: 'r2',
     levelLabel: '黄色',
-    levelColor: '#ffc24b',
     area: '丙烯罐区',
     warning: '可燃气体浓度预警：2026-03-17 01:22:10',
     owner: '/B2',
@@ -37,7 +34,6 @@ const alerts: RiskAlert[] = [
   {
     key: 'r3',
     levelLabel: '黄色',
-    levelColor: '#ffc24b',
     area: '催化裂化装置',
     warning: '温度异常：2026-03-16 23:45:30',
     owner: '/C3',
@@ -55,14 +51,7 @@ function view(): void {
     <ul class="alerts">
       <li v-for="a in alerts" :key="a.key" class="alert">
         <div class="alert__head">
-          <span
-            class="alert__flag"
-            :style="{
-              color: a.levelColor,
-              borderColor: a.levelColor,
-              background: a.levelColor + '22',
-            }"
-          >
+          <span class="alert__flag">
             {{ a.levelLabel }}
           </span>
           <span class="alert__area">{{ a.area }}</span>
@@ -84,23 +73,23 @@ function view(): void {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-sm);
 }
 
 .alert {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 8px 10px;
+  padding: var(--space-sm);
   border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
+  background: var(--panel-inner-bg);
+  border: 1px solid var(--panel-border);
 }
 
 .alert__head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .alert__flag {
@@ -109,22 +98,24 @@ function view(): void {
   justify-content: center;
   height: 20px;
   padding: 0 8px;
-  font-size: 11px;
+  font-size: var(--font-size-date);
   font-weight: 600;
-  border: 1px solid;
-  border-radius: 2px;
+  color: var(--color-warning);
+  border: 1px solid var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 13%, transparent);
+  border-radius: var(--radius-xs);
   flex-shrink: 0;
   letter-spacing: 0.5px;
 }
 
 .alert__area {
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   font-weight: 600;
   color: var(--color-text-strong);
 }
 
 .alert__warning {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text);
   padding-left: 2px;
 }
@@ -132,7 +123,7 @@ function view(): void {
 .alert__foot {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
   padding-left: 2px;
 }

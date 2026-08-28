@@ -138,7 +138,7 @@ onMounted(async () => {
   top: var(--space-md);
   left: 50%;
   transform: translateX(-50%);
-  z-index: 20;
+  z-index: var(--z-overlay);
   padding: 6px 16px;
   border-radius: var(--radius-sm);
   background: var(--notice-warning-bg);
@@ -154,7 +154,7 @@ onMounted(async () => {
   left: var(--space-md);
   bottom: var(--space-md);
   width: var(--layout-aside-w);
-  z-index: 5;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
@@ -170,7 +170,7 @@ onMounted(async () => {
   right: var(--space-md);
   bottom: var(--space-md);
   width: var(--layout-aside-w);
-  z-index: 5;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
@@ -190,7 +190,7 @@ onMounted(async () => {
 .foot-tools {
   position: absolute;
   inset: auto 0 0;
-  z-index: 15;
+  z-index: var(--z-chrome);
   pointer-events: none;
 }
 
@@ -206,7 +206,7 @@ onMounted(async () => {
 .dashboard-skeleton {
   position: absolute;
   inset: 0;
-  z-index: 10;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);

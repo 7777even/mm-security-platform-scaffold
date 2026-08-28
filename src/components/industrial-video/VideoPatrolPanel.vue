@@ -72,7 +72,7 @@ function openLibrary(): void {
   width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 22%));
+  border: 1px solid var(--panel-border);
   overflow: hidden;
 }
 
@@ -80,26 +80,26 @@ function openLibrary(): void {
   position: absolute;
   right: 4px;
   bottom: 4px;
-  font-size: 10px;
+  font-size: var(--font-size-caption);
   padding: 1px 6px;
   border-radius: 8px;
   backdrop-filter: blur(4px);
 }
 
 .cam__status--on {
-  color: #2ee6a8;
-  background: rgb(46 230 168 / 18%);
-  border: 1px solid rgb(46 230 168 / 50%);
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-success) 50%, transparent);
 }
 
 .cam__status--off {
-  color: #ff6b6b;
-  background: rgb(255 107 107 / 18%);
-  border: 1px solid rgb(255 107 107 / 50%);
+  color: var(--color-alarm-1);
+  background: color-mix(in srgb, var(--color-alarm-1) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-alarm-1) 50%, transparent);
 }
 
 .cam__title {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text);
 }
 </style>

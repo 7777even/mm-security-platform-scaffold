@@ -56,8 +56,8 @@ function viewAll(): void {
   height: 44px;
   padding: 0 16px;
   border-radius: 999px;
-  background: rgb(10 25 47 / 78%);
-  border: 1px solid rgb(0 225 255 / 22%);
+  background: var(--glass-bg);
+  border: 1px solid var(--panel-border);
   backdrop-filter: blur(8px);
   box-shadow: 0 6px 22px rgb(0 0 0 / 35%);
 }
@@ -67,7 +67,7 @@ function viewAll(): void {
   align-items: center;
   gap: 6px;
   padding-right: 12px;
-  border-right: 1px solid rgb(0 225 255 / 22%);
+  border-right: 1px solid var(--panel-border);
   flex-shrink: 0;
 }
 
@@ -78,7 +78,7 @@ function viewAll(): void {
 }
 
 .notice__title {
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   font-weight: 600;
   color: var(--color-text-strong);
   letter-spacing: 1px;
@@ -102,7 +102,7 @@ function viewAll(): void {
 
 .notice__item {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text);
   white-space: nowrap;
 }
@@ -111,7 +111,7 @@ function viewAll(): void {
   flex-shrink: 0;
   background: transparent;
   border: none;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-accent);
   cursor: pointer;
   padding: 2px 6px;

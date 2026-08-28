@@ -8,6 +8,7 @@ import * as echarts from 'echarts/core';
 import { GaugeChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import type { EChartsCoreOption } from 'echarts/core';
+import { readCssVar } from '@/utils/theme';
 
 echarts.use([GaugeChart, CanvasRenderer]);
 
@@ -19,11 +20,18 @@ const props = withDefaults(
     min?: number;
     max?: number;
   }>(),
-  { label: '%', color: '#00e1ff', min: 0, max: 100 },
+  { label: '%', color: 'var(--color-accent)', min: 0, max: 100 },
 );
 
 const el = ref<HTMLDivElement | null>(null);
 let chart: echarts.ECharts | null = null;
+
+function resolveColor(c?: string): string {
+  if (c && c.trim().startsWith('var(')) {
+    return readCssVar(c.trim().slice(4, -1).trim(), '#00e1ff');
+  }
+  return c ?? '#00e1ff';
+}
 
 function buildOption(): EChartsCoreOption {
   return {
@@ -36,7 +44,7 @@ function buildOption(): EChartsCoreOption {
         max: props.max,
         radius: '94%',
         center: ['50%', '62%'],
-        progress: { show: true, width: 7, itemStyle: { color: props.color } },
+        progress: { show: true, width: 7, itemStyle: { color: resolveColor(props.color) } },
         axisLine: { lineStyle: { width: 7, color: [[1, 'rgba(255,255,255,0.10)']] } },
         axisTick: { show: false },
         splitLine: { show: false },
@@ -47,7 +55,7 @@ function buildOption(): EChartsCoreOption {
         detail: {
           valueAnimation: true,
           formatter: (v: number) => `${v}${props.label}`,
-          color: '#eaf4ff',
+          color: readCssVar('--chart-text-strong', '#eaf4ff'),
           fontSize: 20,
           fontWeight: 700,
           offsetCenter: [0, '20%'],

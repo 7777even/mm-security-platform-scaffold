@@ -113,8 +113,8 @@ function onAction(act: string, a: FireAlarm): void {
   gap: 12px;
   padding: 10px;
   border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
+  background: var(--panel-inner-bg);
+  border: 1px solid var(--panel-border);
 }
 
 /* 左侧告警图片占位（按告警色调区分） */
@@ -130,12 +130,12 @@ function onAction(act: string, a: FireAlarm): void {
 
 .alarm__img--fire {
   background: linear-gradient(135deg, #2a1810, #6a2a14);
-  color: #ff8a4c;
+  color: var(--tone-fire);
 }
 
 .alarm__img--dcs {
   background: linear-gradient(135deg, #0a1a2a, #1a3a5a);
-  color: #4dd6ff;
+  color: var(--tone-dcs);
 }
 
 .alarm__img-icon {
@@ -158,60 +158,60 @@ function onAction(act: string, a: FireAlarm): void {
 }
 
 .alarm__title {
-  font-size: 14px;
+  font-size: var(--font-size-biz);
   font-weight: 700;
 }
 
 .alarm__title--fire {
-  color: #ff8a4c;
+  color: var(--tone-fire);
 }
 
 .alarm__title--dcs {
-  color: #4dd6ff;
+  color: var(--tone-dcs);
 }
 
 .alarm__type {
-  font-size: 11px;
+  font-size: var(--font-size-date);
   padding: 1px 8px;
   border-radius: 4px;
 }
 
 .alarm__type--fire {
-  color: #ff8a4c;
-  border: 1px solid rgb(255 138 76 / 60%);
-  background: rgb(255 138 76 / 12%);
+  color: var(--tone-fire);
+  border: 1px solid color-mix(in srgb, var(--tone-fire) 60%, transparent);
+  background: color-mix(in srgb, var(--tone-fire) 12%, transparent);
 }
 
 .alarm__type--dcs {
-  color: #4dd6ff;
-  border: 1px solid rgb(77 214 255 / 60%);
-  background: rgb(77 214 255 / 12%);
+  color: var(--tone-dcs);
+  border: 1px solid color-mix(in srgb, var(--tone-dcs) 60%, transparent);
+  background: color-mix(in srgb, var(--tone-dcs) 12%, transparent);
 }
 
 .alarm__badge {
   margin-left: auto;
-  font-size: 10px;
+  font-size: var(--font-size-caption);
   padding: 1px 8px;
   border-radius: 4px;
-  color: #ff5b6e;
-  background: rgb(255 91 110 / 15%);
-  border: 1px solid rgb(255 91 110 / 50%);
+  color: var(--color-alarm-1);
+  background: color-mix(in srgb, var(--color-alarm-1) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-alarm-1) 50%, transparent);
   white-space: nowrap;
 }
 
 .alarm__loc {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text);
 }
 
 .alarm__time {
   font-family: var(--font-number);
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-text-muted);
 }
 
 .alarm__desc {
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-text-muted);
   line-height: 1.5;
 }
@@ -225,7 +225,7 @@ function onAction(act: string, a: FireAlarm): void {
 }
 
 .alarm__action {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-accent);
   background: transparent;
   border: none;
@@ -240,9 +240,9 @@ function onAction(act: string, a: FireAlarm): void {
 /* 一键应急：单独行，突出红色 */
 .alarm__start {
   align-self: flex-start;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   font-weight: 600;
-  color: #ff5b6e;
+  color: var(--color-alarm-1);
   background: transparent;
   border: none;
   padding: 0;

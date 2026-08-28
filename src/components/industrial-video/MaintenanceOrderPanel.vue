@@ -45,29 +45,29 @@ const stats: Stat[] = [
   gap: 4px;
   padding: 10px 4px;
   border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 18%));
+  background: var(--panel-inner-bg);
+  border: 1px solid var(--panel-border);
 }
 
 .cell--hot {
-  background: rgb(255 107 107 / 14%);
-  border-color: rgb(255 107 107 / 55%);
+  background: color-mix(in srgb, var(--color-alarm-1) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-alarm-1) 55%, transparent);
 }
 
 .cell__count {
   font-family: var(--font-number);
-  font-size: 22px;
+  font-size: var(--font-size-h1);
   font-weight: 700;
   color: var(--color-text-strong);
   line-height: 1.1;
 }
 
 .cell--hot .cell__count {
-  color: #ff6b6b;
+  color: var(--color-alarm-1);
 }
 
 .cell__label {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
 }
 </style>

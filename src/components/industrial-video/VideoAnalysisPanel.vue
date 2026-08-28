@@ -21,7 +21,7 @@ const rings: Ring[] = [
 ];
 
 function ringBg(r: Ring): string {
-  return `conic-gradient(#ff6b6b 0% ${r.percent}%, rgba(255, 107, 107, 0.18) ${r.percent}% 100%)`;
+  return `conic-gradient(var(--color-alarm-1) 0% ${r.percent}%, color-mix(in srgb, var(--color-alarm-1) 18%, transparent) ${r.percent}% 100%)`;
 }
 </script>
 
@@ -62,17 +62,17 @@ function ringBg(r: Ring): string {
   gap: 8px;
   margin-bottom: 10px;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--panel-border, rgb(0 216 255 / 18%));
+  border-bottom: 1px solid var(--panel-border);
 }
 
 .total__label {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
 }
 
 .total__value {
   font-family: var(--font-number);
-  font-size: 24px;
+  font-size: var(--font-size-highlight);
   font-weight: 700;
   color: var(--color-accent);
 }
@@ -110,14 +110,14 @@ function ringBg(r: Ring): string {
 
 .ring__count {
   font-family: var(--font-number);
-  font-size: 18px;
+  font-size: var(--font-size-time);
   font-weight: 700;
-  color: #ff6b6b;
+  color: var(--color-alarm-1);
   line-height: 1.1;
 }
 
 .ring__unit {
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-text-muted);
 }
 
@@ -132,7 +132,7 @@ function ringBg(r: Ring): string {
 .ring__row {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
 }
 
 .ring__row-label {
@@ -142,7 +142,7 @@ function ringBg(r: Ring): string {
 .ring__row-value {
   font-family: var(--font-number);
   font-weight: 600;
-  color: #ff6b6b;
+  color: var(--color-alarm-1);
 }
 
 .ring__row--muted .ring__row-value {

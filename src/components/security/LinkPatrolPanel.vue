@@ -71,7 +71,7 @@ function toggleSoundLight(): void {
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .grid__btn {
@@ -79,12 +79,12 @@ function toggleSoundLight(): void {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 10px 4px;
-  font-size: 12px;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-xs);
+  font-size: var(--font-size-helper);
   color: var(--color-text);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 18%));
+  background: var(--color-panel-soft);
+  border: 1px solid var(--panel-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition:
@@ -94,19 +94,19 @@ function toggleSoundLight(): void {
 }
 
 .grid__btn:hover {
-  background: rgb(0 225 255 / 8%);
-  border-color: rgb(0 225 255 / 50%);
+  background: var(--color-accent-faint);
+  border-color: var(--color-accent-glow);
   color: var(--color-accent);
 }
 
 .grid__icon {
-  width: 22px;
-  height: 22px;
+  width: var(--icon-lg);
+  height: var(--icon-lg);
 }
 
 .section-title {
-  margin: 12px 0 6px;
-  font-size: 12px;
+  margin: var(--space-md) 0 var(--space-sm);
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
   letter-spacing: 1px;
 }
@@ -121,30 +121,30 @@ function toggleSoundLight(): void {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 18%));
+  background: var(--color-panel-soft);
+  border: 1px solid var(--panel-border);
 }
 
 .bottom-row__label {
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   color: var(--color-text);
 }
 
 .bottom-row__toggle {
-  font-size: 12px;
-  padding: 3px 12px;
-  border-radius: 999px;
-  background: rgb(255 107 107 / 12%);
-  color: #ff6b6b;
-  border: 1px solid rgb(255 107 107 / 40%);
+  font-size: var(--font-size-helper);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  color: var(--color-danger);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 40%, transparent);
   cursor: pointer;
 }
 
 .bottom-row__toggle.is-on {
-  background: rgb(46 230 168 / 12%);
-  color: #2ee6a8;
-  border-color: rgb(46 230 168 / 40%);
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
+  border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
 }
 </style>

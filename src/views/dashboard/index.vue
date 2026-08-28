@@ -256,13 +256,13 @@ onUnmounted(() => {
   top: var(--space-md);
   left: 50%;
   transform: translateX(-50%);
-  z-index: 20;
-  padding: 6px 16px;
+  z-index: var(--z-overlay);
+  padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-sm);
   background: var(--notice-warning-bg);
   border: 1px solid var(--color-warning);
   color: var(--color-warning);
-  font-size: 12px;
+  font-size: var(--font-size-helper);
 }
 
 /* 左侧面板区：3 个面板自然撑开，超出可滚动但隐藏滚动条 */
@@ -272,7 +272,7 @@ onUnmounted(() => {
   left: var(--space-md);
   bottom: var(--space-md);
   width: var(--layout-aside-w);
-  z-index: 5;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
@@ -290,7 +290,7 @@ onUnmounted(() => {
   right: var(--space-md);
   bottom: var(--space-md);
   width: var(--layout-aside-w);
-  z-index: 5;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
@@ -316,7 +316,7 @@ onUnmounted(() => {
 .plan-entry {
   margin: 0 0 var(--space-md);
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   line-height: 1.6;
 }
 
@@ -330,7 +330,7 @@ onUnmounted(() => {
 .dashboard-skeleton {
   position: absolute;
   inset: 0;
-  z-index: 10;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);

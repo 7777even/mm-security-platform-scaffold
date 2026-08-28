@@ -1,7 +1,7 @@
 <!--
   AlarmListPanel — §安全防恐「告警列表」
   顶部筛选（危险源/告警类型）+ 告警条目（标题 + 处理状态徽标 + 告警源 + 描述 + 时间）。
-  状态徽标：未处理（红）/处理中（橙）/已处理（绿），左侧边框色同步。
+  状态徽标：未处理（红=待处置）/处理中（蓝=进行中）/已处理（绿=完成），左侧边框色同步。
 -->
 <script setup lang="ts">
 import PanelCard from '@/components/common/PanelCard.vue';
@@ -53,9 +53,9 @@ const items: AlarmListItem[] = [
 ];
 
 const statusColor: Record<Status, string> = {
-  未处理: '#ff6b6b',
-  处理中: '#ffc24b',
-  已处理: '#2ee6a8',
+  未处理: 'var(--color-danger)',
+  处理中: 'var(--color-accent-2)',
+  已处理: 'var(--color-success)',
 };
 
 function onMore(): void {
@@ -85,8 +85,8 @@ function onMore(): void {
             class="alarm-item__status"
             :style="{
               color: statusColor[i.status],
-              background: statusColor[i.status] + '22',
-              borderColor: statusColor[i.status] + '66',
+              background: `color-mix(in srgb, ${statusColor[i.status]} 13%, transparent)`,
+              borderColor: `color-mix(in srgb, ${statusColor[i.status]} 40%, transparent)`,
             }"
           >
             {{ i.status }}
@@ -104,9 +104,9 @@ function onMore(): void {
 .filter {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
-  font-size: 12px;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
 }
 
@@ -116,12 +116,12 @@ function onMore(): void {
 }
 
 .filter__btn {
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: rgb(0 225 255 / 10%);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-faint);
   color: var(--color-accent);
-  border: 1px solid rgb(0 225 255 / 40%);
-  font-size: 12px;
+  border: 1px solid var(--color-accent-glow);
+  font-size: var(--font-size-helper);
   cursor: pointer;
 }
 
@@ -131,7 +131,7 @@ function onMore(): void {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm);
   max-height: 320px;
   overflow-y: auto;
   scrollbar-width: none;
@@ -143,10 +143,10 @@ function onMore(): void {
 }
 
 .alarm-item {
-  padding: 8px 10px;
+  padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
+  background: var(--color-panel-soft);
+  border: 1px solid var(--panel-border);
   border-left-width: 3px;
   border-left-style: solid;
 }
@@ -155,37 +155,37 @@ function onMore(): void {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-xs);
 }
 
 .alarm-item__title {
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   font-weight: 600;
   color: var(--color-text-strong);
 }
 
 .alarm-item__status {
-  font-size: 12px;
-  padding: 1px 8px;
-  border-radius: 10px;
+  font-size: var(--font-size-helper);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
   border: 1px solid;
 }
 
 .alarm-item__source {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
-  margin-bottom: 2px;
+  margin-bottom: var(--space-xs);
 }
 
 .alarm-item__desc {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text);
   line-height: 1.5;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-xs);
 }
 
 .alarm-item__time {
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-text-muted);
   font-family: var(--font-number);
 }

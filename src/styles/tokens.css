@@ -9,6 +9,8 @@
   --color-panel: #13233c; /* 面板背景：信息容器、半透深蓝 */
   --color-panel-soft: #1a2f4e; /* 面板浅色：卡片内层、衬页底色 */
   --color-border: #2a4a78; /* 边框线：克制用色（设计规则 4） */
+  --panel-border: rgb(0 216 255 / 15%); /* 面板内层卡片描边（大屏默认淡青） */
+  --panel-inner-bg: rgb(255 255 255 / 3%); /* 内层卡片/条目极淡白高光底（大屏通用） */
 
   /* ---- 强调色（设计稿：青蓝强调，设计规则 2） ---- */
   --color-accent: #00d8ff; /* 主强调：科技青，选中态/链接/点光 */
@@ -40,6 +42,10 @@
   --color-accent-fire: #ff5a5a; /* 应急知识·装置应急 */
   --color-accent-gas: #f6882e; /* 应急知识·罐区应急 */
   --color-accent-temp: #f6ba2e; /* 应急知识·装卸应急 */
+  --tone-fire: #ff8a4c; /* 消防告警「火」类调性（暖橙，分类色非等级色） */
+  --tone-dcs: #4dd6ff; /* 消防告警「DCS/GDS」类调性（冷青，分类色非等级色） */
+  --font-size-subtitle: 15px; /* 次级标题 */
+  --font-size-value: 20px; /* 数据读数/大号数值 */
   --color-border-soft: rgb(42 74 120 / 40%); /* 浅边框（虚线分隔） */
   --transition-fast: 0.15s ease; /* 通用微交互过渡 */
   --radius-pill: 999px; /* 胶囊圆角（标签/按钮） */
@@ -55,6 +61,7 @@
   --chart-axis-line: color-mix(in srgb, var(--color-accent) 30%, transparent);
   --chart-area-top: color-mix(in srgb, var(--color-accent) 28%, transparent);
   --chart-line-glow: color-mix(in srgb, var(--color-accent) 60%, transparent);
+  --chart-purple: #a78bfa; /* 第 5 序列色（无语义映射，专供图表多序列轮替） */
 
   /* ---- 渐变（设计稿图 5-1 中部 / body 兜底） ---- */
   --gradient-tech-blue: linear-gradient(90deg, #00d8ff 0%, #2e7cf6 100%); /* 科技深蓝 */
@@ -79,6 +86,8 @@
   --font-size-highlight: 24px; /* 用户/高亮数据 */
   --font-size-h1: 22px; /* 页面主标题 */
   --font-size-h2: 16px; /* 面板标题 */
+  --font-size-caption: 10px; /* 极细小注/角标 */
+  --font-size-stat-big: 26px; /* 个别面板超大核心读数 */
   --font-size-alarm: 14px; /* 告警标题 */
   --font-size-body: 14px; /* 正文内容 */
   --font-size-helper: 12px; /* 辅助说明 */

@@ -85,7 +85,7 @@ const isSceneActive = computed(() => props.sceneMode === '3d');
   top: 50%;
   right: calc(var(--layout-aside-w) + 40px);
   transform: translateY(-50%);
-  z-index: 6;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);

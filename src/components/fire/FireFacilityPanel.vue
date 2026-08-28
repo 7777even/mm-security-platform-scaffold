@@ -120,7 +120,7 @@ const patrol = {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: var(--font-size-biz);
   font-weight: 500;
   color: var(--color-text-muted);
   background: transparent;
@@ -188,12 +188,12 @@ const patrol = {
 }
 
 .frow__dot--warning {
-  background: #ffb648;
+  background: var(--color-warning);
   box-shadow: 0 0 6px rgb(255 182 72 / 70%);
 }
 
 .frow__dot--danger {
-  background: #ff5b6e;
+  background: var(--color-alarm-1);
   box-shadow: 0 0 6px rgb(255 91 110 / 70%);
 }
 
@@ -205,14 +205,14 @@ const patrol = {
 }
 
 .frow__label {
-  font-size: 14px;
+  font-size: var(--font-size-biz);
   color: var(--color-text-muted);
 }
 
 .frow__value {
   margin-left: auto;
   font-family: var(--font-number);
-  font-size: 24px;
+  font-size: var(--font-size-highlight);
   font-weight: 700;
   color: var(--color-text-strong);
   line-height: 1;
@@ -242,7 +242,7 @@ const patrol = {
 }
 
 .gauge-cap {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
   margin-top: 2px;
   white-space: nowrap;
@@ -267,20 +267,20 @@ const patrol = {
 .patrol__stat {
   padding: 10px 8px;
   border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
+  background: var(--panel-inner-bg);
+  border: 1px solid var(--panel-border);
   text-align: center;
 }
 
 .patrol__label {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
   margin-bottom: 4px;
 }
 
 .patrol__value {
   font-family: var(--font-number);
-  font-size: 22px;
+  font-size: var(--font-size-h1);
   font-weight: 700;
   color: var(--color-text-strong);
 }
@@ -292,21 +292,21 @@ const patrol = {
 }
 
 .patrol__progress-label {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text);
 }
 
 .patrol__bar {
   width: 100%;
   height: 6px;
-  background: rgb(0 216 255 / 12%);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
   border-radius: 3px;
   overflow: hidden;
 }
 
 .patrol__bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-accent), #4dd6ff);
+  background: linear-gradient(90deg, var(--color-accent), var(--tone-dcs));
   border-radius: 3px;
   transition: width 0.3s;
 }

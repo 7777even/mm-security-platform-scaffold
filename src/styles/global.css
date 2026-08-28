@@ -316,7 +316,7 @@ body {
   letter-spacing: 1px;
   color: var(--color-text-strong);
   text-shadow: 0 0 8px rgb(0 0 0 / 60%);
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
 .alarm-list-item__thumb-icon {
@@ -326,7 +326,7 @@ body {
   font-size: 14px;
   color: var(--color-text-strong);
   opacity: 0.85;
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
 .alarm-list-item__body {

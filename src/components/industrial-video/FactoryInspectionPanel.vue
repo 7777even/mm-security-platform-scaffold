@@ -84,10 +84,10 @@ function setTab(k: TabKey): void {
 
 .tabs__btn {
   padding: 2px 12px;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
-  background: rgb(255 255 255 / 4%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
+  background: var(--panel-inner-bg);
+  border: 1px solid var(--panel-border);
   border-radius: 999px;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -95,8 +95,8 @@ function setTab(k: TabKey): void {
 
 .tabs__btn--active {
   color: var(--color-accent);
-  background: rgb(0 225 255 / 10%);
-  border-color: rgb(0 225 255 / 50%);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
 }
 
 .list {
@@ -121,8 +121,8 @@ function setTab(k: TabKey): void {
   gap: 8px;
   padding: 6px;
   border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
+  background: var(--panel-inner-bg);
+  border: 1px solid var(--panel-border);
 }
 
 .row__thumb {
@@ -132,19 +132,19 @@ function setTab(k: TabKey): void {
   flex-shrink: 0;
   border-radius: 4px;
   background: linear-gradient(135deg, hsl(200deg 60% 35%), hsl(220deg 50% 22%));
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 22%));
+  border: 1px solid var(--panel-border);
 }
 
 .row__live {
   position: absolute;
   right: 3px;
   bottom: 3px;
-  font-size: 10px;
+  font-size: var(--font-size-caption);
   padding: 0 5px;
   border-radius: 6px;
-  color: #2ee6a8;
-  background: rgb(46 230 168 / 18%);
-  border: 1px solid rgb(46 230 168 / 45%);
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-success) 45%, transparent);
 }
 
 .row__main {
@@ -163,19 +163,19 @@ function setTab(k: TabKey): void {
 
 .row__device {
   font-family: var(--font-number);
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   font-weight: 600;
   color: var(--color-text-strong);
 }
 
 .row__desc {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
 }
 
 .row__time {
   font-family: var(--font-number);
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-text-muted);
 }
 </style>

@@ -20,7 +20,7 @@ const data = [25, 30, 22, 40, 35, 50, 42, 38];
     <div class="chart">
       <LineChart
         :categories="categories"
-        :series="[{ name: '告警数量', data, color: '#00e1ff' }]"
+        :series="[{ name: '告警数量', data, color: 'var(--color-accent)' }]"
         :area="true"
         :y-min="0"
       />
@@ -32,9 +32,9 @@ const data = [25, 30, 22, 40, 35, 50, 42, 38];
 .filter {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-  font-size: 12px;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
 }
 
@@ -44,12 +44,12 @@ const data = [25, 30, 22, 40, 35, 50, 42, 38];
 }
 
 .filter__btn {
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: rgb(0 225 255 / 10%);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-faint);
   color: var(--color-accent);
-  border: 1px solid rgb(0 225 255 / 40%);
-  font-size: 12px;
+  border: 1px solid var(--color-accent-glow);
+  font-size: var(--font-size-helper);
   cursor: pointer;
 }
 

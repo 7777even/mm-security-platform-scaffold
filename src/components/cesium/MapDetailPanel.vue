@@ -53,7 +53,7 @@ const rows = computed<{ label: string; value: string }[]>(() => {
 
   /* 锚定在传递进来的屏幕坐标正上方居中（left/top 由父级 postRender 实时注入） */
   transform: translate(-50%, calc(-100% - 14px));
-  z-index: 30;
+  z-index: var(--z-overlay);
   width: 248px;
   padding: var(--space-md);
   border-radius: var(--radius-md);

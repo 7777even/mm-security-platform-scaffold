@@ -29,7 +29,7 @@ function close(): void {
 .secondary-overlay {
   position: absolute;
   inset: 0;
-  z-index: 30;
+  z-index: var(--z-overlay);
   display: flex;
 }
 
@@ -42,7 +42,7 @@ function close(): void {
 
 .secondary-overlay__panel {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
   flex: 1;
   margin: var(--space-md);
   display: flex;

@@ -67,16 +67,16 @@ const bottom: WorkItem[] = [
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  border: 1px solid rgb(0 216 255 / 35%);
-  background: rgb(0 216 255 / 8%);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+  background: var(--color-accent-faint);
   font-family: var(--font-number);
-  font-size: 18px;
+  font-size: var(--font-size-time);
   font-weight: 700;
   color: var(--color-text-strong);
 }
 
 .cell__type {
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-text-muted);
   text-align: center;
   white-space: nowrap;

@@ -29,7 +29,7 @@ const isCluster = props.info.kind === 'cluster';
 <style scoped>
 .cluster-popup {
   position: absolute;
-  z-index: 12;
+  z-index: var(--z-overlay);
   min-width: 180px;
   max-width: 260px;
   padding: 10px 12px;

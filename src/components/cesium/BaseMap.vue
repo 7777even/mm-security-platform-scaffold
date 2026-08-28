@@ -552,7 +552,7 @@ onUnmounted(() => {
 
   /* 与 dashboard 右侧面板对齐：面板宽 = 布局令牌 + 两侧 space-md 间距 */
   right: calc(var(--layout-aside-w) + var(--space-md, 12px) * 2);
-  z-index: 10;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   align-items: stretch;

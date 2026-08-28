@@ -16,12 +16,12 @@ const total = 450;
 const warnTotal = 110;
 
 const slices: Slice[] = [
-  { label: '人员闯入', value: 150, color: '#00e1ff' },
-  { label: '烟火检测', value: 100, color: '#ffc24b' },
-  { label: '生产安全帽', value: 100, color: '#2ee6a8' },
-  { label: '区域入侵', value: 152, color: '#ff6b6b' },
-  { label: '设备异常', value: 120, color: '#a78bfa' },
-  { label: '其他', value: 48, color: '#9fb3c8' },
+  { label: '人员闯入', value: 150, color: 'var(--color-accent)' },
+  { label: '烟火检测', value: 100, color: 'var(--color-warning)' },
+  { label: '生产安全帽', value: 100, color: 'var(--color-success)' },
+  { label: '区域入侵', value: 152, color: 'var(--color-alarm-1)' },
+  { label: '设备异常', value: 120, color: 'var(--chart-purple)' },
+  { label: '其他', value: 48, color: 'var(--color-text-muted)' },
 ];
 
 const ringBg = computed(() => {
@@ -80,19 +80,19 @@ const ringBg = computed(() => {
 }
 
 .head__label {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
 }
 
 .head__value {
   font-family: var(--font-number);
-  font-size: 18px;
+  font-size: var(--font-size-time);
   font-weight: 700;
   color: var(--color-accent);
 }
 
 .head__period {
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
 }
 
@@ -122,14 +122,14 @@ const ringBg = computed(() => {
 }
 
 .donut__label {
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-text-muted);
   letter-spacing: 1px;
 }
 
 .donut__total {
   font-family: var(--font-number);
-  font-size: 26px;
+  font-size: var(--font-size-stat-big);
   font-weight: 700;
   color: var(--color-text-strong);
   line-height: 1.1;
@@ -150,7 +150,7 @@ const ringBg = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--font-size-helper);
 }
 
 .legend__dot {

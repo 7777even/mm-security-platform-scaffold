@@ -150,7 +150,7 @@ function onZonePick(zone: ZonePick): void {
   top: var(--space-md);
   left: 50%;
   transform: translateX(-50%);
-  z-index: 20;
+  z-index: var(--z-overlay);
   padding: 6px 16px;
   border-radius: var(--radius-sm);
   background: var(--notice-warning-bg);
@@ -165,7 +165,7 @@ function onZonePick(zone: ZonePick): void {
   left: 50%;
   bottom: 24px;
   transform: translateX(-50%);
-  z-index: 6;
+  z-index: var(--z-chrome);
 }
 
 /* 左侧数据列（设计稿 419px）：超出可滚动但隐藏滚动条（与 dashboard 一致） */
@@ -175,7 +175,7 @@ function onZonePick(zone: ZonePick): void {
   left: var(--space-md);
   bottom: var(--space-md);
   width: var(--layout-aside-w);
-  z-index: 5;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
@@ -191,7 +191,7 @@ function onZonePick(zone: ZonePick): void {
   right: var(--space-md);
   bottom: var(--space-md);
   width: var(--layout-aside-w);
-  z-index: 5;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
@@ -211,7 +211,7 @@ function onZonePick(zone: ZonePick): void {
 .module-map__skeleton {
   position: absolute;
   inset: 0;
-  z-index: 10;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);

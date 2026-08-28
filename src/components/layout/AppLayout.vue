@@ -223,7 +223,7 @@ onUnmounted(() => {
   color: var(--color-text-muted);
   text-decoration: none;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   box-shadow: none;
   transition:
     color 0.25s ease,
@@ -250,7 +250,7 @@ onUnmounted(() => {
 }
 
 .nav-item.active {
-  color: #fff;
+  color: var(--color-text-strong);
   font-weight: 600;
 
   /* 原型选中态：无边框。底部一条薄而柔的光条——径向光团（中心亮青，向左右/上方渐暗、无硬边）；
@@ -258,14 +258,14 @@ onUnmounted(() => {
   background:
     radial-gradient(
       72% 48% at 50% 102%,
-      rgb(0 240 255 / 95%) 0%,
-      rgb(0 150 195 / 42%) 38%,
+      color-mix(in srgb, var(--color-accent) 95%, transparent) 0%,
+      color-mix(in srgb, var(--color-accent) 42%, transparent) 38%,
       transparent 74%
     ),
     radial-gradient(
       150% 140% at 50% 56%,
-      rgb(0 130 175 / 36%) 0%,
-      rgb(0 55 90 / 16%) 46%,
+      color-mix(in srgb, var(--color-accent) 36%, transparent) 0%,
+      color-mix(in srgb, var(--color-accent) 16%, transparent) 46%,
       transparent 76%
     ),
     linear-gradient(180deg, rgb(0 14 32 / 85%) 0%, rgb(0 20 42 / 78%) 100%);
@@ -273,25 +273,25 @@ onUnmounted(() => {
   box-shadow: none;
 }
 
-/* §7 预警中心：独立黄色模块，与前面五项青色 Tab 区分（黄色字体 + 黄色图标）；
+/* §7 预警中心：独立模块，与前面五项青色 Tab 区分（警示色字体 + 警示色图标）；
    无分隔线、无选中态背景/辉光 */
 .nav-item--warning {
-  color: #ffc93c;
+  color: var(--color-warning);
   margin-left: 22px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .nav-item--warning .nav-item__icon {
-  color: #ffc93c;
+  color: var(--color-warning);
 }
 
 .nav-item--warning:hover {
-  color: #ffd166;
+  color: var(--color-warning);
 }
 
-/* 选中时仅保持黄色文字，不显示任何选中态背景/辉光（避免回退成青色激活态） */
+/* 选中时仅保持警示色文字，不显示任何选中态背景/辉光（避免回退成青色激活态） */
 .nav-item--warning.active {
-  color: #ffc93c;
+  color: var(--color-warning);
   background: none;
   box-shadow: none;
   text-shadow: none;

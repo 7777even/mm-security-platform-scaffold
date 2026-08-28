@@ -57,8 +57,8 @@ function onItem(key: string): void {
   gap: 6px;
   padding: 8px;
   border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
+  background: var(--panel-inner-bg);
+  border: 1px solid var(--panel-border);
   cursor: pointer;
   transition:
     background var(--transition-fast),
@@ -66,8 +66,8 @@ function onItem(key: string): void {
 }
 
 .cell:hover {
-  background: rgb(0 225 255 / 8%);
-  border-color: rgb(0 225 255 / 50%);
+  background: var(--color-accent-faint);
+  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
 }
 
 .cell__icon {
@@ -84,14 +84,14 @@ function onItem(key: string): void {
 }
 
 .cell__label {
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-text-muted);
   white-space: nowrap;
 }
 
 .cell__value {
   font-family: var(--font-number);
-  font-size: 18px;
+  font-size: var(--font-size-time);
   font-weight: 700;
   color: var(--color-text-strong);
   line-height: 1.1;

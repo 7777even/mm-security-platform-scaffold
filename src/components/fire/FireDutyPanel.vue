@@ -99,7 +99,7 @@ function view(p: DutyPerson): void {
 }
 
 .tab {
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   padding: 2px 9px;
   border-radius: 4px;
   border: 1px solid transparent;
@@ -120,7 +120,7 @@ function view(p: DutyPerson): void {
 .tab--active {
   color: var(--color-accent);
   border-color: var(--color-accent);
-  background: rgb(0 216 255 / 10%);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
 /* 值班班次 chip：切换行右对齐，紧邻「查看」之前 */
@@ -132,7 +132,7 @@ function view(p: DutyPerson): void {
 }
 
 .shift__chip {
-  font-size: 11px;
+  font-size: var(--font-size-date);
   padding: 2px 10px;
   border-radius: 999px;
   border: 1px solid transparent;
@@ -147,8 +147,8 @@ function view(p: DutyPerson): void {
 }
 
 .shift__chip--active {
-  color: #fff;
-  background: linear-gradient(180deg, rgb(0 240 255), rgb(0 180 230));
+  color: var(--color-text-strong);
+  background: var(--gradient-tech-blue);
   box-shadow: 0 0 10px rgb(0 216 255 / 45%);
 }
 
@@ -167,8 +167,8 @@ function view(p: DutyPerson): void {
   gap: 10px;
   padding: 8px 10px;
   border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
+  background: var(--panel-inner-bg);
+  border: 1px solid var(--panel-border);
 }
 
 .person__avatar {
@@ -179,10 +179,10 @@ function view(p: DutyPerson): void {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgb(0 216 255 / 12%);
-  border: 1px solid rgb(0 216 255 / 35%);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
   color: var(--color-accent);
-  font-size: 14px;
+  font-size: var(--font-size-biz);
   font-weight: 600;
 }
 
@@ -192,7 +192,7 @@ function view(p: DutyPerson): void {
 }
 
 .person__name {
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   font-weight: 600;
   color: var(--color-text-strong);
   display: flex;
@@ -201,23 +201,23 @@ function view(p: DutyPerson): void {
 }
 
 .person__role {
-  font-size: 10px;
+  font-size: var(--font-size-caption);
   padding: 1px 6px;
   border-radius: 8px;
   color: var(--color-text-muted);
-  background: rgb(255 255 255 / 6%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 20%));
+  background: var(--list-divider);
+  border: 1px solid var(--panel-border);
 }
 
 .person__phone {
   margin-top: 2px;
   font-family: var(--font-number);
-  font-size: 12px;
+  font-size: var(--font-size-helper);
   color: var(--color-text-muted);
 }
 
 .person__view {
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-accent);
   background: transparent;
   border: none;

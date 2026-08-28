@@ -53,22 +53,22 @@ const items: StatItem[] = [
 .grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .cell {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
   border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
+  background: var(--panel-inner-bg);
+  border: 1px solid var(--panel-border);
 }
 
 .cell__icon {
-  width: 20px;
-  height: 20px;
+  width: var(--icon-md);
+  height: var(--icon-md);
   color: var(--color-accent);
   flex-shrink: 0;
 }
@@ -80,14 +80,14 @@ const items: StatItem[] = [
 }
 
 .cell__label {
-  font-size: 11px;
+  font-size: var(--font-size-date);
   color: var(--color-text-muted);
   white-space: nowrap;
 }
 
 .cell__value {
   font-family: var(--font-number);
-  font-size: 16px;
+  font-size: var(--font-size-h2);
   font-weight: 700;
   color: var(--color-text-strong);
   line-height: 1.1;

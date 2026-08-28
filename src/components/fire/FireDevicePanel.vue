@@ -48,8 +48,8 @@ const devices: FireDevice[] = [
   gap: 2px;
   padding: 12px 8px;
   border-radius: var(--radius-sm);
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--panel-border, rgb(0 216 255 / 15%));
+  background: var(--panel-inner-bg);
+  border: 1px solid var(--panel-border);
 }
 
 .device-card__icon {
@@ -62,13 +62,13 @@ const devices: FireDevice[] = [
 }
 
 .device-card__name {
-  font-size: 13px;
+  font-size: var(--font-size-stat-label);
   color: var(--color-text);
 }
 
 .device-card__total {
   font-family: var(--font-number);
-  font-size: 22px;
+  font-size: var(--font-size-h1);
   font-weight: 700;
   color: var(--color-text-strong);
 }
