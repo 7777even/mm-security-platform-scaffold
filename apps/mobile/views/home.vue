@@ -52,13 +52,13 @@ const todoTasks: TodoTask[] = [
 <template>
   <div class="mb-page">
     <!-- 顶部：系统名 + 单位副标题 + 导航入口 -->
-    <header class="home-header">
+    <header class="mb-brand-header">
       <div>
-        <h1 class="home-header__title">安全管控指挥系统</h1>
-        <p class="home-header__sub">茂名石化</p>
+        <h1 class="mb-brand-header__title">安全管控指挥系统</h1>
+        <p class="mb-brand-header__sub">茂名石化</p>
       </div>
       <!-- TODO: 待导航菜单页路由落地后替换 /tasks -->
-      <RouterLink to="/tasks" class="home-header__nav">
+      <RouterLink to="/tasks" class="mb-brand-header__nav">
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -230,51 +230,6 @@ const todoTasks: TodoTask[] = [
 </template>
 
 <style scoped>
-/* ---- 顶部系统名：白底顶栏 + 底部分隔线（与页面灰底形成反差） ---- */
-
-/* 白底需从屏幕最顶端（含状态栏安全区）一直覆盖到 header 底部分隔线，
-   故用负 margin 抵消 .mb-page 的顶部内边距，并把安全区并入顶部内边距，
-   不能只覆盖 home-header 自身而露出上方页面灰底 */
-.home-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: calc(-1 * (var(--mb-pad-x) + env(safe-area-inset-top))) calc(-1 * var(--mb-pad-x))
-    var(--space-md);
-  padding: calc(var(--space-sm) + env(safe-area-inset-top)) var(--mb-pad-x) var(--space-sm);
-  background: var(--card-mobile);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.home-header__title {
-  margin: 0;
-  font-size: var(--mb-fz-page);
-  font-weight: 700;
-  color: var(--text-title-mobile);
-}
-
-.home-header__sub {
-  margin: var(--space-xs) 0 0;
-  font-size: var(--mb-fz-help);
-  color: var(--text-muted-mobile);
-}
-
-/* 导航入口：图文横排，热区 ≥48 */
-.home-header__nav {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  min-height: 48px;
-  font-size: var(--mb-fz-form-label);
-  color: var(--primary-mobile);
-  text-decoration: none;
-}
-
-.home-header__nav svg {
-  width: 18px;
-  height: 18px;
-}
-
 /* ---- 问候横幅：主色实底白字 ---- */
 .home-hero {
   display: flex;

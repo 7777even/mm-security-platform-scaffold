@@ -28,6 +28,12 @@ const router = createRouter({
       meta: { title: '消息', tab: 'messages' },
     },
     {
+      path: '/messages/history',
+      name: 'mobile-message-history',
+      component: () => import('./views/messageHistory.vue'),
+      meta: { title: '通知历史' },
+    },
+    {
       path: '/profile',
       name: 'mobile-profile',
       component: () => import('./views/profile.vue'),
