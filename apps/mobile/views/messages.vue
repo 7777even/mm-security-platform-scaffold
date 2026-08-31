@@ -56,7 +56,20 @@ function onMarkAll() {
       <span class="msg-toolbar__spacer" />
       <span class="msg-toolbar__actions">
         <button type="button" class="msg-toolbar__pill" @click="onMarkAll">批量已读</button>
-        <RouterLink to="/messages/history" class="msg-toolbar__pill"> 通知历史 › </RouterLink>
+        <RouterLink to="/messages/history" class="msg-toolbar__pill">
+          <svg
+            class="msg-toolbar__pill-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 3" />
+          </svg>
+          通知历史
+        </RouterLink>
       </span>
     </div>
 
@@ -119,13 +132,18 @@ function onMarkAll() {
   gap: var(--space-xs);
   height: 32px;
   padding: 0 16px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--primary-mobile);
   border-radius: var(--mb-radius-btn);
   background: var(--card-mobile);
-  color: var(--text-muted-mobile);
+  color: var(--primary-mobile);
   font-size: var(--mb-fz-help);
   text-decoration: none;
   cursor: pointer;
+}
+
+.msg-toolbar__pill-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .msg-list {
