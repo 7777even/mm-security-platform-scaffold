@@ -107,4 +107,13 @@ describe('移动端「我的」页', () => {
     await sw.trigger('click');
     expect(document.documentElement.dataset.skin).toBeUndefined();
   });
+
+  it('顶栏使用统一 MobileHeader 组件（品牌头，导航→/tasks）', () => {
+    const w = mountProfile();
+    expect(w.find('.mb-header').exists()).toBe(true);
+    expect(w.find('.profile-header').exists()).toBe(false);
+    const nav = w.find('.mb-header__nav');
+    expect(nav.exists()).toBe(true);
+    expect(nav.attributes('to')).toBe('/tasks');
+  });
 });

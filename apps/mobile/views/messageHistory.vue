@@ -4,6 +4,7 @@ import { ElMessage } from 'element-plus';
 import { useMessageCenter } from '../composables/useMessageCenter';
 import type { MessageItem as MsgItem } from '@/services/message';
 import MessageItem from '../components/MessageItem.vue';
+import MobileHeader from '../components/MobileHeader.vue';
 
 const { messages, loading, filtered, load } = useMessageCenter();
 
@@ -20,11 +21,7 @@ function onSelect(item: MsgItem) {
 
 <template>
   <div class="mb-page hist-page">
-    <!-- 内页标准顶栏：左返回 + 居中标题 -->
-    <header class="mb-header">
-      <RouterLink to="/messages" class="mb-header__back" aria-label="返回">‹</RouterLink>
-      <h1 class="mb-header__title">通知历史</h1>
-    </header>
+    <MobileHeader variant="back" title="通知历史" back-to="/messages" />
 
     <main class="msg-list">
       <p v-if="loading" class="msg-list__loading">加载中…</p>

@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import TabBar from '../components/TabBar.vue';
+import MobileHeader from '../components/MobileHeader.vue';
 import { useAccessibilityModes } from '../composables/useAccessibilityModes';
 
 const userName = ref('张工');
@@ -63,24 +64,7 @@ function onMenu() {
 
 <template>
   <div class="mb-page profile-page">
-    <header class="profile-header">
-      <h1 class="profile-header__title">我的</h1>
-      <RouterLink to="/tasks" class="profile-header__nav" aria-label="导航">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <rect x="3" y="3" width="7" height="7" rx="1.5" />
-          <rect x="14" y="3" width="7" height="7" rx="1.5" />
-          <rect x="3" y="14" width="7" height="7" rx="1.5" />
-          <rect x="14" y="14" width="7" height="7" rx="1.5" />
-        </svg>
-        导航
-      </RouterLink>
-    </header>
+    <MobileHeader variant="brand" title="我的" />
 
     <section class="mb-user-card" aria-label="用户信息">
       <span class="mb-user-avatar">{{ avatarChar }}</span>
@@ -171,36 +155,6 @@ function onMenu() {
   flex-direction: column;
   min-height: 100vh;
   background: var(--bg-mobile);
-}
-
-.profile-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--mb-header-h);
-  padding: 0 var(--mb-pad-x);
-  background: var(--primary-mobile-soft); /* 浅蓝头，按图片偏离白底模板 */
-}
-
-.profile-header__title {
-  margin: 0;
-  font-size: var(--mb-fz-page);
-  font-weight: 600;
-  color: var(--text-title-mobile);
-}
-
-.profile-header__nav {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  color: var(--primary-mobile);
-  font-size: var(--mb-fz-help);
-  text-decoration: none;
-}
-
-.profile-header__nav svg {
-  width: 20px;
-  height: 20px;
 }
 
 .mb-user-card {

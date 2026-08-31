@@ -6,6 +6,7 @@ import type { MessageItem as MsgItem } from '@/services/message';
 import MessageItem from '../components/MessageItem.vue';
 import MessageFilterTabs from '../components/MessageFilterTabs.vue';
 import TabBar from '../components/TabBar.vue';
+import MobileHeader from '../components/MobileHeader.vue';
 
 const { messages, activeFilter, loading, filtered, unreadCount, load, markAllRead } =
   useMessageCenter();
@@ -27,27 +28,7 @@ function onMarkAll() {
 
 <template>
   <div class="mb-page msg-page">
-    <header class="mb-brand-header">
-      <div>
-        <h1 class="mb-brand-header__title">消息中心</h1>
-        <p class="mb-brand-header__sub">茂名石化</p>
-      </div>
-      <RouterLink to="/tasks" class="mb-brand-header__nav">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <rect x="3" y="3" width="7" height="7" rx="1.5" />
-          <rect x="14" y="3" width="7" height="7" rx="1.5" />
-          <rect x="3" y="14" width="7" height="7" rx="1.5" />
-          <rect x="14" y="14" width="7" height="7" rx="1.5" />
-        </svg>
-        导航
-      </RouterLink>
-    </header>
+    <MobileHeader variant="brand" title="消息中心" subtitle="茂名石化" />
 
     <MessageFilterTabs v-model="activeFilter" />
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import MobileHeader from '../components/MobileHeader.vue';
 
 // 首页：对齐移动端原型图（2026-08 原型：问候横幅 / 今日告警概览 / 报警态势地图 / 应急事件条 / 待办任务）
 // - 告警概览六类的等级着色只用规范映射（--danger/-warning/-primary-mobile），禁止自造色阶
@@ -51,29 +52,7 @@ const todoTasks: TodoTask[] = [
 
 <template>
   <div class="mb-page">
-    <!-- 顶部：系统名 + 单位副标题 + 导航入口 -->
-    <header class="mb-brand-header">
-      <div>
-        <h1 class="mb-brand-header__title">安全管控指挥系统</h1>
-        <p class="mb-brand-header__sub">茂名石化</p>
-      </div>
-      <!-- TODO: 待导航菜单页路由落地后替换 /tasks -->
-      <RouterLink to="/tasks" class="mb-brand-header__nav">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <rect x="3" y="3" width="7" height="7" rx="1.5" />
-          <rect x="14" y="3" width="7" height="7" rx="1.5" />
-          <rect x="3" y="14" width="7" height="7" rx="1.5" />
-          <rect x="14" y="14" width="7" height="7" rx="1.5" />
-        </svg>
-        导航
-      </RouterLink>
-    </header>
+    <MobileHeader variant="brand" title="安全管控指挥系统" subtitle="茂名石化" />
 
     <!-- 问候横幅：主色实底 + 待办/未读统计 -->
     <section class="home-hero">
