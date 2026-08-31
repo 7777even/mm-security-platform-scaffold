@@ -58,8 +58,8 @@ function select(key: MsgFilter) {
 }
 
 .filter-tabs__item.is-active {
-  color: var(--color-on-primary);
-  background: var(--primary-mobile);
-  font-weight: 600;
+  color: var(--primary-mobile);
+  background: var(--card-mobile);
+  border-color: var(--primary-mobile);
 }
 </style>
