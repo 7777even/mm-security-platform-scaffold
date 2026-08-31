@@ -22,7 +22,7 @@ const subTitle = computed(() => `${CATEGORY_LABELS[props.item.category]} · ${pr
   <button
     type="button"
     class="msg-card"
-    :class="{ 'is-unread': !item.read }"
+    :class="{ 'is-unread': !item.read, 'is-read': item.read }"
     @click="$emit('select', item)"
   >
     <span class="msg-card__icon" :style="{ background: meta.soft }">
@@ -51,6 +51,10 @@ const subTitle = computed(() => `${CATEGORY_LABELS[props.item.category]} · ${pr
   text-align: left;
   cursor: pointer;
   position: relative;
+}
+
+.msg-card.is-read {
+  opacity: 0.6;
 }
 
 .msg-card__icon {

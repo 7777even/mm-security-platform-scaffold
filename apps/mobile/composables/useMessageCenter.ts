@@ -12,11 +12,13 @@ export function useMessageCenter() {
   const activeFilter = ref<MsgFilter>('all');
   const loading = ref(false);
 
-  const filtered = computed(() =>
-    activeFilter.value === 'all'
-      ? messages.value
-      : messages.value.filter((m) => m.category === activeFilter.value),
-  );
+  const filtered = computed(() => {
+    const list =
+      activeFilter.value === 'all'
+        ? messages.value
+        : messages.value.filter((m) => m.category === activeFilter.value);
+    return [...list].sort((a, b) => Number(a.read) - Number(b.read));
+  });
 
   const unreadCount = computed(() => messages.value.filter((m) => !m.read).length);
 
