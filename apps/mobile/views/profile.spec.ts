@@ -66,29 +66,41 @@ describe('移动端「我的」页', () => {
     expect(ElMessage.info).toHaveBeenCalled();
   });
 
-  it('适老分段：渲染 标准/大/特大 三档', () => {
+  it('适老模式渲染为开关（默认关闭）', () => {
     const w = mountProfile();
-    const seg = w.findAll('.mb-seg__btn');
-    expect(seg.map((b) => b.text())).toEqual(['标准', '大', '特大']);
+    const item = w
+      .findAll('.mb-setting-item')
+      .find((i) => i.find('.mb-setting-label').text() === '适老模式')!;
+    const sw = item.find('.mb-switch');
+    expect(sw.exists()).toBe(true);
+    expect(sw.attributes('aria-checked')).toBe('false');
   });
 
-  it('点击「大」设置根节点 data-elder=large', async () => {
+  it('点击适老开关设置根节点 data-elder=on', async () => {
     const w = mountProfile();
-    const big = w.findAll('.mb-seg__btn').find((b) => b.text() === '大')!;
-    await big.trigger('click');
-    expect(document.documentElement.dataset.elder).toBe('large');
+    const item = w
+      .findAll('.mb-setting-item')
+      .find((i) => i.find('.mb-setting-label').text() === '适老模式')!;
+    await item.find('.mb-switch').trigger('click');
+    expect(document.documentElement.dataset.elder).toBe('on');
   });
 
-  it('点击「特大」设置根节点 data-elder=xlarge', async () => {
+  it('再次点击适老开关清空根节点 data-elder', async () => {
     const w = mountProfile();
-    const xl = w.findAll('.mb-seg__btn').find((b) => b.text() === '特大')!;
-    await xl.trigger('click');
-    expect(document.documentElement.dataset.elder).toBe('xlarge');
+    const item = w
+      .findAll('.mb-setting-item')
+      .find((i) => i.find('.mb-setting-label').text() === '适老模式')!;
+    await item.find('.mb-switch').trigger('click');
+    await item.find('.mb-switch').trigger('click');
+    expect(document.documentElement.dataset.elder).toBeUndefined();
   });
 
-  it('切换户外强光皮肤设置根节点 data-skin', async () => {
+  it('切换户外模式设置根节点 data-skin', async () => {
     const w = mountProfile();
-    const sw = w.find('.mb-switch');
+    const item = w
+      .findAll('.mb-setting-item')
+      .find((i) => i.find('.mb-setting-label').text() === '户外模式')!;
+    const sw = item.find('.mb-switch');
     expect(sw.exists()).toBe(true);
     await sw.trigger('click');
     expect(document.documentElement.dataset.skin).toBe('outdoor');

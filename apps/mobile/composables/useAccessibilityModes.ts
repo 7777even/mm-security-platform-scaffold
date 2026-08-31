@@ -1,13 +1,14 @@
 import { ref, watch } from 'vue';
 
-export type ElderTier = 'standard' | 'large' | 'xlarge';
+// 移动端无障碍模式：户外高对比皮肤 + 适老模式（开关式，开即最大字号）
+// 状态持久化到 localStorage，并在 main.ts 挂载前由 initAccessibilityModes() 注入根节点，
+// 避免刷新闪烁（详见 AGENTS.md / 详细设计 V1.5 §3.3）。
 
 const OUTDOOR_KEY = 'mm-mb-outdoor';
 const ELDER_KEY = 'mm-mb-elder';
 
-// 模块级单例：跨移动端页面共享同一份无障碍状态
 const outdoor = ref(false);
-const elderTier = ref<ElderTier>('standard');
+const elder = ref(false);
 
 /** 将状态同步到根节点（data-skin / data-elder）并持久化到 localStorage */
 function apply(): void {
@@ -19,30 +20,26 @@ function apply(): void {
     delete root.dataset.skin;
     localStorage.setItem(OUTDOOR_KEY, '0');
   }
-  if (elderTier.value !== 'standard') {
-    root.dataset.elder = elderTier.value;
-    localStorage.setItem(ELDER_KEY, elderTier.value);
+  if (elder.value) {
+    root.dataset.elder = 'on';
+    localStorage.setItem(ELDER_KEY, '1');
   } else {
     delete root.dataset.elder;
-    localStorage.setItem(ELDER_KEY, 'standard');
+    localStorage.setItem(ELDER_KEY, '0');
   }
 }
 
 watch(outdoor, apply, { flush: 'sync' });
-watch(elderTier, apply, { flush: 'sync' });
+watch(elder, apply, { flush: 'sync' });
 
-/**
- * 启动注入：在 main.ts 挂载前调用，从 localStorage 还原状态并写入根节点，
- * 避免首屏闪烁（FOUC）。
- */
 export function initAccessibilityModes(): void {
   const o = localStorage.getItem(OUTDOOR_KEY);
   outdoor.value = o === '1';
-  const e = localStorage.getItem(ELDER_KEY) as ElderTier | null;
-  elderTier.value = e === 'large' || e === 'xlarge' ? e : 'standard';
+  const e = localStorage.getItem(ELDER_KEY);
+  elder.value = e === '1';
   apply();
 }
 
 export function useAccessibilityModes() {
-  return { outdoor, elderTier, initAccessibilityModes };
+  return { outdoor, elder, initAccessibilityModes };
 }

@@ -542,24 +542,13 @@
 }
 
 /* =========================================================================
- * 移动端适老模式三档（详设 V1.5 §3.3：标准/大/特大 字号阶梯 + ≥56 热区）
- * - 通过根节点 data-elder="large|xlarge" 叠加；standard 不覆盖（等同默认）
- * - 字号阶梯对齐 15-18-13 / 17-20-15 / 19-22-17（正文·标题·辅文）
+ * 移动端适老模式（开关式：开即最大字号）
+ * - 通过根节点 data-elder="on" 叠加；关闭等同默认（不覆盖）
+ * - 开启即套用「特大」档：19-22-17（正文·标题·辅文），对齐原设计最大可读档
  * - 触控热区覆写为 --mb-row-h-elder / --mb-btn-h-elder（≥56px）
  * - 与 data-skin="outdoor" 正交，可同时开启
  * ========================================================================= */
-[data-theme='mobile'][data-elder='large'] {
-  --mb-fz-hero: 30px;
-  --mb-fz-page: 22px;
-  --mb-fz-section: 19px;
-  --mb-fz-form-label: 17px; /* 正文 17 */
-  --mb-fz-help: 15px;
-  --mb-fz-tip: 13px; /* 辅文 13 */
-  --mb-row-h: var(--mb-row-h-elder);
-  --mb-btn-h: var(--mb-btn-h-elder);
-}
-
-[data-theme='mobile'][data-elder='xlarge'] {
+[data-theme='mobile'][data-elder='on'] {
   --mb-fz-hero: 32px;
   --mb-fz-page: 24px;
   --mb-fz-section: 21px;

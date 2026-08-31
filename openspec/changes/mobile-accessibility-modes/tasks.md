@@ -1,30 +1,25 @@
-# Tasks: 移动端无障碍模式（户外高对比 + 适老三档）
+# 任务清单：移动端无障碍模式
 
-## 1. tokens.css 令牌（TDD 红 → 绿）
+## 1. 设计令牌（tokens.css）
 
-- [ ] 新增 `src/styles/tokens.mobile.spec.ts`：直读 `./tokens.css`
-  - 断言 `[data-skin='outdoor']` 块含 `--color-border: #000` 与 `--mb-border-w: 2px`；
-  - 断言 `[data-elder='large']` 含目标字号覆写 + `--mb-row-h: var(--mb-row-h-elder)`；
-  - 断言 `[data-elder='xlarge']` 同理且字号比 `large` 更大。
-- [ ] 基础块加 `--mb-border-w: 1px`；户外块加 `--color-border: #000`、`--mb-border-w: 2px`；
-      新增 `[data-elder='large']` 与 `[data-elder='xlarge']` 两块（字号阶梯 + 热区覆写）。
+- [x] 基础移动块新增 `--mb-border-w:1px`（描边宽度单源）。
+- [x] 户外块补 `--color-border:#000`、`--mb-border-w:2px`（2px 硬黑描边）。
+- [x] 新增适老块 `[data-theme='mobile'][data-elder='on']`：最大字号档（19-22-17）+ 热区覆写为 `--mb-row-h-elder`/`--mb-btn-h-elder`（≥56px）。
 
-## 2. 组合式（TDD 红 → 绿）
+## 2. 无障碍组合式
 
-- [ ] 新增 `apps/mobile/composables/useAccessibilityModes.spec.ts`（jsdom）
-  - `initAccessibilityModes()` 读 localStorage 注入 `dataset.skin` / `dataset.elder`；
-  - 切 `outdoor` 写回 `dataset` + localStorage；切 `elderTier` 同理；`standard` 清空 `dataset.elder`。
-- [ ] 实现 `useAccessibilityModes.ts`（`outdoor` / `elderTier` ref + 持久化 + `initAccessibilityModes` + `apply`）。
+- [x] 实现 `useAccessibilityModes.ts`（`outdoor` / `elder` 布尔 ref + 持久化 + `initAccessibilityModes` + `apply`）。
+- [x] [TDD] `useAccessibilityModes.spec.ts`：init 注入、切户外、开/关适老均写回 `dataset` + localStorage。
 
-## 3. Profile 页接线（TDD 红 → 绿）
+## 3. 入口注入
 
-- [ ] 改 `apps/mobile/views/profile.spec.ts`
-  - 设置项标签改为 `['适老模式', '户外模式']`；
-  - 新增三档分段切换断言（`dataset.elder` 随点击变为 `large` / `xlarge`）；
-  - 户外开关仍切 `dataset.skin`；`beforeEach/afterEach` 清理 `dataset.elder`。
-- [ ] 改 `apps/mobile/views/profile.vue`：改名 + 三档分段 + 用组合式；行分割线改用 `--mb-border-w`。
+- [x] `apps/mobile/main.ts` 在 `createApp` 前调用 `initAccessibilityModes()`。
 
-## 4. 启动注入 + 边框宽度
+## 4. 设置页交互
 
-- [ ] `apps/mobile/main.ts`：挂载前 `initAccessibilityModes()`。
-- [ ] `apps/mobile/App.vue`、`apps/mobile/components/TabBar.vue`：顶部描边改用 `var(--mb-border-w, 1px)`。
+- [x] `profile.vue`：「设置」区渲染户外模式、适老模式两个开关（data-skin=outdoor / data-elder=on，正交叠加）。
+- [x] [TDD] `profile.spec.ts`：两个开关渲染、点击切换根节点属性、标签文案正确。
+
+## 5. 守门测试
+
+- [x] [TDD] `src/styles/tokens.mobile.spec.ts`：断言户外 2px 描边、适老 `data-elder=on` 最大字号；且不存在 `large`/`xlarge` 三选一档位。

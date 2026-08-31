@@ -3,7 +3,6 @@ import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import TabBar from '../components/TabBar.vue';
 import { useAccessibilityModes } from '../composables/useAccessibilityModes';
-import type { ElderTier } from '../composables/useAccessibilityModes';
 
 const userName = ref('张工');
 const userRole = ref('消防业务管理员 · 储运部 · MM-2018');
@@ -28,12 +27,6 @@ const menuItems: ProfileMenuItem[] = [
   { key: 'settings', label: '系统设置', tone: 'blue' },
 ];
 
-const elderTiers: { value: ElderTier; label: string }[] = [
-  { value: 'standard', label: '标准' },
-  { value: 'large', label: '大' },
-  { value: 'xlarge', label: '特大' },
-];
-
 const ICON_PATHS: Record<string, string> = {
   contacts: 'M4 5h16v14H4zM9 10a2 2 0 104 0M9 14c0-1.4 2-2 4-2s4 .6 4 2',
   duty: 'M4 5h16v15H4zM4 9h16M8 3v4M16 3v4',
@@ -56,12 +49,12 @@ const TONE_COLOR: Record<Tone, string> = {
   red: 'var(--danger-mobile)',
 };
 
-const { outdoor, elderTier } = useAccessibilityModes();
+const { outdoor, elder } = useAccessibilityModes();
 function toggleOutdoor() {
   outdoor.value = !outdoor.value;
 }
-function setElder(v: ElderTier) {
-  elderTier.value = v;
+function toggleElder() {
+  elder.value = !elder.value;
 }
 function onMenu() {
   ElMessage.info('功能建设中');
@@ -126,7 +119,7 @@ function onMenu() {
     </section>
 
     <section class="mb-card mb-setting-group" aria-label="设置">
-      <div class="mb-setting-item">
+      <button class="mb-setting-item" type="button" @click="toggleElder">
         <span class="mb-setting-ico tone-blue">
           <svg
             viewBox="0 0 24 24"
@@ -139,20 +132,10 @@ function onMenu() {
           </svg>
         </span>
         <span class="mb-setting-label">适老模式</span>
-        <div class="mb-seg" role="group" aria-label="适老字号档位">
-          <button
-            v-for="t in elderTiers"
-            :key="t.value"
-            type="button"
-            class="mb-seg__btn"
-            :class="{ on: elderTier === t.value }"
-            :aria-pressed="String(elderTier === t.value)"
-            @click="setElder(t.value)"
-          >
-            {{ t.label }}
-          </button>
-        </div>
-      </div>
+        <span class="mb-switch" role="switch" :aria-checked="String(elder)" :class="{ on: elder }">
+          <span class="mb-switch__knob" />
+        </span>
+      </button>
 
       <button class="mb-setting-item" type="button" @click="toggleOutdoor">
         <span class="mb-setting-ico tone-orange">
@@ -365,29 +348,5 @@ function onMenu() {
 
 .mb-switch.on .mb-switch__knob {
   transform: translateX(18px);
-}
-
-.mb-seg {
-  display: inline-flex;
-  flex-shrink: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.mb-seg__btn {
-  appearance: none;
-  border: none;
-  background: transparent;
-  padding: 4px 12px;
-  font-size: var(--mb-fz-tip);
-  line-height: 1.4;
-  color: var(--text-muted-mobile);
-  cursor: pointer;
-}
-
-.mb-seg__btn.on {
-  background: var(--primary-mobile);
-  color: #fff;
 }
 </style>

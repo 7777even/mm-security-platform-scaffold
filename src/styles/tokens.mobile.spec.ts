@@ -1,14 +1,12 @@
 /*
  * tokens.mobile.spec.ts — 移动端无障碍模式 token 守门测试
- * 断言 tokens.css 移动端块已包含「户外高对比 + 适老三档」令牌，防止被意外回退。
- * 直读源文件（?raw 在 vitest node 环境会被 css 处理器毙掉，返回空串）。
+ * 断言 tokens.css 移动端块已包含「户外高对比 + 适老开关（开即最大字号）」令牌，防止被意外回退。
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const tokenCss: string = readFileSync(new URL('./tokens.css', import.meta.url), 'utf-8');
 
-/** 提取指定选择器块内的令牌文本 */
 function blockTokens(selector: string): string {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const re = new RegExp(`${escaped}\\s*\\{([\\s\\S]*?)\\n\\}`);
@@ -28,19 +26,19 @@ describe('tokens.css 移动端无障碍模式', () => {
     expect(blk).toContain('--mb-border-w: 2px');
   });
 
-  it('适老 large 档：放大字号 + 热区 ≥56（--mb-row-h-elder）', () => {
-    const blk = blockTokens("[data-theme='mobile'][data-elder='large']");
-    expect(blk).toMatch(/--mb-fz-form-label:\s*17px/);
-    expect(blk).toMatch(/--mb-fz-tip:\s*13px/);
+  it('适老开启（data-elder=on）即最大字号 + 热区 ≥56', () => {
+    expect(tokenCss).toContain("[data-theme='mobile'][data-elder='on']");
+    const blk = blockTokens("[data-theme='mobile'][data-elder='on']");
+    // 最大档（原“特大”19-22-17）正文 19 / 辅文 15
+    expect(blk).toMatch(/--mb-fz-form-label:\s*19px/);
+    expect(blk).toMatch(/--mb-fz-tip:\s*15px/);
+    expect(blk).toMatch(/--mb-fz-help:\s*17px/);
     expect(blk).toContain('--mb-row-h: var(--mb-row-h-elder)');
+    expect(blk).toContain('--mb-btn-h: var(--mb-btn-h-elder)');
   });
 
-  it('适老 xlarge 档：字号比 large 更大', () => {
-    const large = blockTokens("[data-theme='mobile'][data-elder='large']");
-    const xlarge = blockTokens("[data-theme='mobile'][data-elder='xlarge']");
-    const largeForm = Number(large.match(/--mb-fz-form-label:\s*(\d+)px/)?.[1] ?? '0');
-    const xlargeForm = Number(xlarge.match(/--mb-fz-form-label:\s*(\d+)px/)?.[1] ?? '0');
-    expect(xlargeForm).toBeGreaterThan(largeForm);
-    expect(xlarge).toContain('--mb-row-h: var(--mb-row-h-elder)');
+  it('适老仅为开关：不存在 large / xlarge 三选一档位', () => {
+    expect(tokenCss).not.toContain("[data-theme='mobile'][data-elder='large']");
+    expect(tokenCss).not.toContain("[data-theme='mobile'][data-elder='xlarge']");
   });
 });
