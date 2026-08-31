@@ -13,8 +13,8 @@
 - 应用根节点必须挂 `data-theme='mobile'`（已在 `apps/mobile/index.html` 挂载）。
 - 全部颜色/字号/间距/圆角引用 `var(--token)`，**禁止**组件内硬编码，新增 token 只能改 `src/styles/tokens.css` 移动端块。
 - 移动端约束（`docs/UI规范-移动端.md` §9）：同屏字号 ≤4 档；触控热区 48–56px；底部预留 `var(--mb-bottom-safe)`；状态/语义色只用规范映射。
-- 头部采用浅蓝背景 `--primary-mobile-soft`（**按图片偏离**规范模板白底顶栏，仅本页独立类 `.profile-header`，不覆写 `.mb-brand-header`）。
-- 户外强光皮肤 `[data-theme='mobile'][data-skin='outdoor']`：用户卡停用渐变 → 白底黑字（由 token 覆写自动生效）。
+- 头部采用统一 `MobileHeader variant="brand"` 白底顶栏（与 home/messages 一致，由 `apps/mobile/components/MobileHeader.vue` 承载，不另写独立类）。
+- 户外强光皮肤 `[data-theme='mobile'][data-skin='outdoor']`：用户卡 → 白底黑字（由 token 覆写自动生效）。
 - 测试环境为 `node`，组件测试须文件头 `// @vitest-environment jsdom` 覆盖；`vue/no-v-html` 为 error，**禁止** v-html，图标用内联 SVG `<path>`。
 - `eslint` 开启 `no-explicit-any`（error），测试桩用 `vi.mock` / `vi.mocked` 规避 any。
 - 提交按 scope 拆分：`test(mobile):` / `fix(shared):`（token）/ `feat(mobile):`（页面）。
@@ -24,12 +24,12 @@
 
 ## 文件结构
 
-| 文件                                                  | 动作 | 职责                                           |
-| ----------------------------------------------------- | ---- | ---------------------------------------------- |
-| `apps/mobile/views/profile.spec.ts`                   | 新增 | TDD 组件测试（jsdom）                          |
-| `src/styles/tokens.css`                               | 改   | 移动端块新增用户卡/菜单图标 token + 户外覆写   |
-| `apps/mobile/views/profile.vue`                       | 重写 | 浅蓝头部 + 渐变用户卡 + 9 菜单 + 2 设置 + 底栏 |
-| `openspec/changes/mobile-profile/{proposal,tasks}.md` | 新增 | spec-driven 门禁（本次已随计划建立）           |
+| 文件                                                  | 动作 | 职责                                                                      |
+| ----------------------------------------------------- | ---- | ------------------------------------------------------------------------- |
+| `apps/mobile/views/profile.spec.ts`                   | 新增 | TDD 组件测试（jsdom）                                                     |
+| `src/styles/tokens.css`                               | 改   | 移动端块新增用户卡/菜单图标 token + 户外覆写                              |
+| `apps/mobile/views/profile.vue`                       | 重写 | 白底统一头 + 用户卡（实色主蓝，与首页 hero 对齐）+ 9 菜单 + 2 设置 + 底栏 |
+| `openspec/changes/mobile-profile/{proposal,tasks}.md` | 新增 | spec-driven 门禁（本次已随计划建立）                                      |
 
 ---
 
@@ -155,12 +155,8 @@ git commit -m "test(mobile): 新增「我的」页组件测试（TDD 先红）"
 在 `:root[data-theme='mobile']` 块末尾（消息分类图标配色 `--mb-msg-system-soft` 之后、`}` 之前）插入：
 
 ```css
-/* 移动端「我的」页：用户卡渐变 + 菜单图标配色（浅底圆承载，基于语义色派生，单一真源） */
---mb-usercard-bg: linear-gradient(
-  135deg,
-  color-mix(in srgb, var(--primary-mobile) 66%, #fff 34%) 0%,
-  var(--primary-mobile) 100%
-);
+/* 移动端「我的」页：用户卡（实色主蓝）+ 菜单图标配色（浅底圆承载，基于语义色派生，单一真源） */
+--mb-usercard-bg: var(--primary-mobile);
 --mb-usercard-fg: var(--color-on-primary);
 --mb-menu-green-soft: color-mix(in srgb, var(--success-mobile) 12%, transparent);
 --mb-menu-blue-soft: color-mix(in srgb, var(--primary-mobile) 12%, transparent);
@@ -168,12 +164,12 @@ git commit -m "test(mobile): 新增「我的」页组件测试（TDD 先红）"
 --mb-menu-red-soft: color-mix(in srgb, var(--danger-mobile) 12%, transparent);
 ```
 
-- [ ] **Step 2: 在户外皮肤块覆写用户卡（停用渐变）**
+- [ ] **Step 2: 在户外皮肤块覆写用户卡（白底黑字）**
 
 在 `[data-theme='mobile'][data-skin='outdoor']` 块末尾（`}` 之前）插入：
 
 ```css
-/* 「我的」页用户卡：户外皮肤停用渐变（白底黑字，由组件引用 token 自动生效） */
+/* 「我的」页用户卡：户外皮肤白底黑字，由组件引用 token 自动生效 */
 --mb-usercard-bg: var(--card-mobile);
 --mb-usercard-fg: #000;
 ```
@@ -391,7 +387,9 @@ function onSetting(item: ProfileSettingItem) {
   justify-content: space-between;
   height: var(--mb-header-h);
   padding: 0 var(--mb-pad-x);
-  background: var(--primary-mobile-soft); /* 浅蓝头，按图片偏离白底模板 */
+  background: var(
+    --primary-mobile-soft
+  ); /* 废弃：头部已统一为 MobileHeader brand 白底（见 mobile-unified-header 变更），此内联 .profile-header 样式不再使用 */
 }
 .profile-header__title {
   margin: 0;

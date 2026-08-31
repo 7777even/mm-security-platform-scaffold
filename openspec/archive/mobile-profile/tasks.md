@@ -12,7 +12,7 @@
 
 ## 3. 页面实现（mobile）
 
-- [x] 3.1 重写 `apps/mobile/views/profile.vue`：浅蓝头部 + 渐变用户卡 + 9 菜单（内联 SVG 图标 + 浅底圆）+ 2 设置（户外开关实际切 `data-skin`）+ 底栏。跑绿。
+- [x] 3.1 重写 `apps/mobile/views/profile.vue`：白底统一头 + 用户卡（实色主蓝）+ 9 菜单（内联 SVG 图标 + 浅底圆）+ 2 设置（户外开关实际切 `data-skin`）+ 底栏。跑绿。
 
 ## 4. 校验与收尾
 
