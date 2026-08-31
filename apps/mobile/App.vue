@@ -82,7 +82,7 @@ const tabs: TabItem[] = [
   height: calc(var(--mb-bottom-bar-h) + var(--mb-bottom-safe));
   padding-bottom: var(--mb-bottom-safe);
   background: var(--card-mobile);
-  border-top: 1px solid var(--color-border);
+  border-top: var(--mb-border-w, 1px) solid var(--color-border);
 }
 
 /* 标签项：图标上、文字下，全高触控热区（≥48px），选中仅改主色 */

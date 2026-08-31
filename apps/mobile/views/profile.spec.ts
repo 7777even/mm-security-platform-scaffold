@@ -7,15 +7,20 @@ vi.mock('element-plus', () => ({
 }));
 
 import { ElMessage } from 'element-plus';
+import { initAccessibilityModes } from '../composables/useAccessibilityModes';
 import Profile from './profile.vue';
 
 describe('移动端「我的」页', () => {
   beforeEach(() => {
     delete document.documentElement.dataset.skin;
+    delete document.documentElement.dataset.elder;
+    localStorage.clear();
+    initAccessibilityModes();
     vi.mocked(ElMessage.info).mockClear();
   });
   afterEach(() => {
     delete document.documentElement.dataset.skin;
+    delete document.documentElement.dataset.elder;
   });
 
   const mountProfile = () =>
@@ -52,7 +57,7 @@ describe('移动端「我的」页', () => {
     const items = w.findAll('.mb-setting-item');
     expect(items.length).toBe(2);
     const labels = items.map((i) => i.find('.mb-setting-label').text());
-    expect(labels).toEqual(['适老模式', '户外强光皮肤']);
+    expect(labels).toEqual(['适老模式', '户外模式']);
   });
 
   it('点击菜单项触发占位提示', async () => {
@@ -61,10 +66,24 @@ describe('移动端「我的」页', () => {
     expect(ElMessage.info).toHaveBeenCalled();
   });
 
-  it('点击适老模式触发占位提示', async () => {
+  it('适老分段：渲染 标准/大/特大 三档', () => {
     const w = mountProfile();
-    await w.findAll('.mb-setting-item')[0].trigger('click');
-    expect(ElMessage.info).toHaveBeenCalled();
+    const seg = w.findAll('.mb-seg__btn');
+    expect(seg.map((b) => b.text())).toEqual(['标准', '大', '特大']);
+  });
+
+  it('点击「大」设置根节点 data-elder=large', async () => {
+    const w = mountProfile();
+    const big = w.findAll('.mb-seg__btn').find((b) => b.text() === '大')!;
+    await big.trigger('click');
+    expect(document.documentElement.dataset.elder).toBe('large');
+  });
+
+  it('点击「特大」设置根节点 data-elder=xlarge', async () => {
+    const w = mountProfile();
+    const xl = w.findAll('.mb-seg__btn').find((b) => b.text() === '特大')!;
+    await xl.trigger('click');
+    expect(document.documentElement.dataset.elder).toBe('xlarge');
   });
 
   it('切换户外强光皮肤设置根节点 data-skin', async () => {

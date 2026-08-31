@@ -2,6 +2,8 @@
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import TabBar from '../components/TabBar.vue';
+import { useAccessibilityModes } from '../composables/useAccessibilityModes';
+import type { ElderTier } from '../composables/useAccessibilityModes';
 
 const userName = ref('张工');
 const userRole = ref('消防业务管理员 · 储运部 · MM-2018');
@@ -26,14 +28,10 @@ const menuItems: ProfileMenuItem[] = [
   { key: 'settings', label: '系统设置', tone: 'blue' },
 ];
 
-interface ProfileSettingItem {
-  key: 'elder' | 'outdoor';
-  label: string;
-  tone: Tone;
-}
-const settingItems: ProfileSettingItem[] = [
-  { key: 'elder', label: '适老模式', tone: 'blue' },
-  { key: 'outdoor', label: '户外强光皮肤', tone: 'orange' },
+const elderTiers: { value: ElderTier; label: string }[] = [
+  { value: 'standard', label: '标准' },
+  { value: 'large', label: '大' },
+  { value: 'xlarge', label: '特大' },
 ];
 
 const ICON_PATHS: Record<string, string> = {
@@ -58,17 +56,14 @@ const TONE_COLOR: Record<Tone, string> = {
   red: 'var(--danger-mobile)',
 };
 
-const outdoor = ref(document.documentElement.dataset.skin === 'outdoor');
+const { outdoor, elderTier } = useAccessibilityModes();
 function toggleOutdoor() {
   outdoor.value = !outdoor.value;
-  if (outdoor.value) document.documentElement.dataset.skin = 'outdoor';
-  else delete document.documentElement.dataset.skin;
+}
+function setElder(v: ElderTier) {
+  elderTier.value = v;
 }
 function onMenu() {
-  ElMessage.info('功能建设中');
-}
-function onSetting(item: ProfileSettingItem) {
-  if (item.key === 'outdoor') return; // 户外强光实际切换皮肤，不弹占位
   ElMessage.info('功能建设中');
 }
 </script>
@@ -131,18 +126,8 @@ function onSetting(item: ProfileSettingItem) {
     </section>
 
     <section class="mb-card mb-setting-group" aria-label="设置">
-      <button
-        v-for="item in settingItems"
-        :key="item.key"
-        type="button"
-        class="mb-setting-item"
-        @click="item.key === 'elder' ? onSetting(item) : undefined"
-      >
-        <span
-          class="mb-setting-ico"
-          :class="`tone-${item.tone}`"
-          :style="{ color: TONE_COLOR[item.tone] }"
-        >
+      <div class="mb-setting-item">
+        <span class="mb-setting-ico tone-blue">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -150,21 +135,46 @@ function onSetting(item: ProfileSettingItem) {
             stroke-width="2"
             aria-hidden="true"
           >
-            <path :d="ICON_PATHS[item.key]" />
+            <path :d="ICON_PATHS.elder" />
           </svg>
         </span>
-        <span class="mb-setting-label">{{ item.label }}</span>
+        <span class="mb-setting-label">适老模式</span>
+        <div class="mb-seg" role="group" aria-label="适老字号档位">
+          <button
+            v-for="t in elderTiers"
+            :key="t.value"
+            type="button"
+            class="mb-seg__btn"
+            :class="{ on: elderTier === t.value }"
+            :aria-pressed="String(elderTier === t.value)"
+            @click="setElder(t.value)"
+          >
+            {{ t.label }}
+          </button>
+        </div>
+      </div>
+
+      <button class="mb-setting-item" type="button" @click="toggleOutdoor">
+        <span class="mb-setting-ico tone-orange">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path :d="ICON_PATHS.outdoor" />
+          </svg>
+        </span>
+        <span class="mb-setting-label">户外模式</span>
         <span
-          v-if="item.key === 'outdoor'"
           class="mb-switch"
           role="switch"
           :aria-checked="String(outdoor)"
           :class="{ on: outdoor }"
-          @click.stop="toggleOutdoor"
         >
           <span class="mb-switch__knob" />
         </span>
-        <span v-else class="mb-menu-arrow" aria-hidden="true">›</span>
       </button>
     </section>
 
@@ -266,7 +276,7 @@ function onSetting(item: ProfileSettingItem) {
   padding: 10px 0;
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: var(--mb-border-w, 1px) solid var(--color-border);
   text-align: left;
   cursor: pointer;
 }
@@ -355,5 +365,29 @@ function onSetting(item: ProfileSettingItem) {
 
 .mb-switch.on .mb-switch__knob {
   transform: translateX(18px);
+}
+
+.mb-seg {
+  display: inline-flex;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.mb-seg__btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 4px 12px;
+  font-size: var(--mb-fz-tip);
+  line-height: 1.4;
+  color: var(--text-muted-mobile);
+  cursor: pointer;
+}
+
+.mb-seg__btn.on {
+  background: var(--primary-mobile);
+  color: #fff;
 }
 </style>

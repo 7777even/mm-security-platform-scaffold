@@ -38,7 +38,7 @@ const TABS: { key: TabKey; to: string; label: string; icon: Component }[] = [
   padding-bottom: var(--mb-bottom-safe);
   display: flex;
   background: var(--card-mobile);
-  border-top: 1px solid var(--color-border);
+  border-top: var(--mb-border-w, 1px) solid var(--color-border);
   z-index: var(--z-chrome);
 }
 

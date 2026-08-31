@@ -54,11 +54,13 @@
     #2a1810,
     #6a2a14
   ); /* 「火」类图标底渐变（原 FireAlarmPanel 硬编码收编） */
+
   --tone-dcs-bg: linear-gradient(
     135deg,
     #0a1a2a,
     #1a3a5a
   ); /* 「DCS/GDS」类图标底渐变（原 FireAlarmPanel 硬编码收编） */
+
   --font-size-subtitle: 15px; /* 次级标题 */
   --font-size-value: 20px; /* 数据读数/大号数值 */
   --color-border-soft: rgb(42 74 120 / 40%); /* 浅边框（虚线分隔） */
@@ -85,11 +87,13 @@
     rgb(0 110 210 / 42%) 0%,
     rgb(0 55 130 / 58%) 100%
   ); /* 主按钮竖向蓝渐变（源 tv-panel-btn） */
+
   --gradient-risk: linear-gradient(
     180deg,
     #ff5a4a 0%,
     #d33232 100%
   ); /* 危险按钮竖向红渐变（源 --accent-red 系） */
+
   --gradient-bg: linear-gradient(180deg, #001630 0%, #001225 100%); /* 背景兜底 */
   --panel-head-gradient: linear-gradient(
     90deg,
@@ -111,6 +115,7 @@
     rgb(25 181 239 / 82%) 0%,
     rgb(0 91 164 / 90%) 100%
   ); /* 滚动条拇指渐变 */
+
   --scrollbar-thumb-hover: linear-gradient(
     180deg,
     rgb(77 214 255 / 96%) 0%,
@@ -174,6 +179,7 @@
     rgb(0 40 85 / 90%) 0%,
     rgb(0 25 55 / 78%) 100%
   ); /* 顶栏背景（源头部切图的 CSS 近似） */
+
   --layout-header-line: rgb(0 180 255 / 45%); /* 顶栏底部光带 */
 
   /* §5.1 Z-index 五层 */
@@ -223,6 +229,7 @@
     rgb(0 34 66 / 55%) 0%,
     rgb(0 20 42 / 42%) 100%
   ); /* 卡片竖向渐变底（源 StatCard） */
+
   --stat-card-border: rgb(0 150 240 / 22%); /* 卡片描边（源 rgba(0,150,240,0.22)） */
 
   /* §9.2 告警卡片 AlarmCard（源 AlarmCard：深蓝底 + 悬停提亮） */
@@ -400,6 +407,7 @@
   --color-panel: #fff; /* 卡片白（卡片/弹层/顶栏） */
   --color-panel-soft: #e8f2ff; /* 主色浅蓝（即时标签/信息卡底） */
   --color-border: #e6edf4; /* 分割线（列表分割/顶边） */
+  --mb-border-w: 1px; /* 边框宽度单源（户外模式覆写为 2px 硬黑描边） */
   --primary-mobile: #1677ff; /* 主色蓝（主按钮/选中态/链接） */
   --primary-mobile-soft: #e8f2ff;
   --bg-mobile: #f4f7fa;
@@ -511,6 +519,8 @@
   --bg-mobile: #fff;
   --card-mobile: #fff;
   --border-mobile: #000;
+  --color-border: #000; /* 户外硬黑描边 */
+  --mb-border-w: 2px; /* 户外 2px 硬描边 */
   --primary-mobile-soft: #fff;
   --text-title-mobile: #000;
   --color-text: #000;
@@ -529,4 +539,33 @@
   /* 「我的」页用户卡：户外皮肤停用渐变（白底黑字，由组件引用 token 自动生效） */
   --mb-usercard-bg: var(--card-mobile);
   --mb-usercard-fg: #000;
+}
+
+/* =========================================================================
+ * 移动端适老模式三档（详设 V1.5 §3.3：标准/大/特大 字号阶梯 + ≥56 热区）
+ * - 通过根节点 data-elder="large|xlarge" 叠加；standard 不覆盖（等同默认）
+ * - 字号阶梯对齐 15-18-13 / 17-20-15 / 19-22-17（正文·标题·辅文）
+ * - 触控热区覆写为 --mb-row-h-elder / --mb-btn-h-elder（≥56px）
+ * - 与 data-skin="outdoor" 正交，可同时开启
+ * ========================================================================= */
+[data-theme='mobile'][data-elder='large'] {
+  --mb-fz-hero: 30px;
+  --mb-fz-page: 22px;
+  --mb-fz-section: 19px;
+  --mb-fz-form-label: 17px; /* 正文 17 */
+  --mb-fz-help: 15px;
+  --mb-fz-tip: 13px; /* 辅文 13 */
+  --mb-row-h: var(--mb-row-h-elder);
+  --mb-btn-h: var(--mb-btn-h-elder);
+}
+
+[data-theme='mobile'][data-elder='xlarge'] {
+  --mb-fz-hero: 32px;
+  --mb-fz-page: 24px;
+  --mb-fz-section: 21px;
+  --mb-fz-form-label: 19px; /* 正文 19 */
+  --mb-fz-help: 17px;
+  --mb-fz-tip: 15px; /* 辅文 15 */
+  --mb-row-h: var(--mb-row-h-elder);
+  --mb-btn-h: var(--mb-btn-h-elder);
 }
