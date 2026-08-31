@@ -13,6 +13,8 @@ export default tseslint.config(
       '**/.verify-out/**',
       '.verify-tmp/**',
       '**/.verify-tmp/**',
+      '.migration-tmp/**',
+      '**/.migration-tmp/**',
       '*.config.ts',
       '*.config.js',
     ],

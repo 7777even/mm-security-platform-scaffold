@@ -93,17 +93,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      // Cesium 1.119 引用的 zip-no-worker.js 在 @zip.js/zip.js 新版本中已移除（2.7+ 重构 subpath），
-      // 重定向到等价的核心实现（无 Worker 版压缩解压），保持构建可解析
-      '@zip.js/zip.js/lib/zip-no-worker.js': fileURLToPath(
-        new URL('./node_modules/@zip.js/zip.js/lib/zip-core.js', import.meta.url),
-      ),
-      // lerc 为 @cesium/engine 的嵌套 CJS 依赖（无顶层安装），Cesium 用 default import 引入；
-      // 因 @cesium/engine 被 optimizeDeps.exclude，其嵌套 CJS 不被预构建、无 default interop。
-      // 显式 alias 到嵌套文件 + include 预构建，保证 default 导出（I3SDataProvider.js:62）
-      lerc: fileURLToPath(
-        new URL('./node_modules/@cesium/engine/node_modules/lerc/LercDecode.js', import.meta.url),
-      ),
+      // lerc 为 @cesium/engine 的 CJS 依赖（1.142+ 已是顶层安装），Cesium 用 default import 引入；
+      // 因 @cesium/engine 被 optimizeDeps.exclude，其依赖不被预构建、无 default interop。
+      // 显式 alias + include 预构建，保证 default 导出
+      lerc: fileURLToPath(new URL('./node_modules/lerc/LercDecode.js', import.meta.url)),
     },
     // Cesium 使用 import.meta.url 定位资源，需显式定义 CESIUM_BASE_URL 供其 Worker/Assets 加载
     conditions: [],
@@ -141,7 +134,8 @@ export default defineConfig({
     headers: { 'Content-Security-Policy': csp },
   },
   build: {
-    target: 'es2018',
+    // es2020：cesium 1.144 依赖链（lerc）含 BigInt 字面量；Chromium 86（信创下限）原生支持 BigInt
+    target: 'es2020',
     sourcemap: false,
     rollupOptions: {
       // 单 dev server 多 HTML 入口：主壳(index.html) + 各 wujie 子应用 + 独立应用(apps/)，
@@ -171,17 +165,6 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.spec.ts', 'apps/mobile/**/*.spec.ts'],
-    // vitest 不读 vite resolve.alias，必须显式同步：Cesium 1.x 依赖 @zip.js/zip.js 的
-    // zip-no-worker.js 子路径（KmlDataSource.js 静态导入），新版本已移除该 subpath，
-    // 重定向到 zip-core.js（无 Worker 版压缩解压）。node 环境运行也会触发。
-    alias: [
-      {
-        find: '@zip.js/zip.js/lib/zip-no-worker.js',
-        replacement: fileURLToPath(
-          new URL('./node_modules/@zip.js/zip.js/lib/zip-core.js', import.meta.url),
-        ),
-      },
-    ],
     // 让 vitest 也走 vite 转换 cesium 内部依赖（Cesium 内部 import 用 vite alias 重定向）
     server: {
       deps: {
