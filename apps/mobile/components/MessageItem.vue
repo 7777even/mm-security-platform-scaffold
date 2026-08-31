@@ -29,10 +29,12 @@ const subTitle = computed(() => `${CATEGORY_LABELS[props.item.category]} · ${pr
       <component :is="meta.icon" class="msg-card__icon-svg" :style="{ color: meta.color }" />
     </span>
     <span class="msg-card__body">
-      <span class="msg-card__title">{{ item.title }}</span>
+      <span class="msg-card__title-row">
+        <span v-if="!item.read" class="msg-card__dot" aria-label="未读" />
+        <span class="msg-card__title">{{ item.title }}</span>
+      </span>
       <span class="msg-card__sub">{{ subTitle }}</span>
     </span>
-    <span v-if="!item.read" class="msg-card__dot" aria-label="未读" />
     <span class="msg-card__arrow" aria-hidden="true">›</span>
   </button>
 </template>
@@ -80,6 +82,13 @@ const subTitle = computed(() => `${CATEGORY_LABELS[props.item.category]} · ${pr
   gap: 4px;
 }
 
+.msg-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
 .msg-card__title {
   font-size: var(--mb-fz-section);
   font-weight: 600;
@@ -100,8 +109,6 @@ const subTitle = computed(() => `${CATEGORY_LABELS[props.item.category]} · ${pr
 
 .msg-card__dot {
   flex-shrink: 0;
-  align-self: flex-start;
-  margin-top: 6px;
   width: 8px;
   height: 8px;
   border-radius: 50%;
