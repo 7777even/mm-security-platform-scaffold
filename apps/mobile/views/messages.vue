@@ -132,11 +132,12 @@ function onMarkAll() {
   gap: var(--space-xs);
   height: 32px;
   padding: 0 16px;
-  border: 1px solid var(--primary-mobile);
+  border: 2px solid var(--primary-mobile);
   border-radius: var(--mb-radius-btn);
   background: var(--card-mobile);
   color: var(--primary-mobile);
   font-size: var(--mb-fz-help);
+  font-weight: 600;
   text-decoration: none;
   cursor: pointer;
 }
