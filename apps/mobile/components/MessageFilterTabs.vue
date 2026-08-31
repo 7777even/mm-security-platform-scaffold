@@ -37,6 +37,11 @@ function select(key: MsgFilter) {
   overflow-x: auto;
   padding: 0 var(--mb-pad-x);
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox 隐藏滚动条 */
+}
+
+.filter-tabs::-webkit-scrollbar {
+  display: none; /* Chrome/Safari 隐藏滚动条 */
 }
 
 .filter-tabs__item {
