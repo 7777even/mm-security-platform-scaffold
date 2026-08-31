@@ -3,6 +3,7 @@ dist
 dist*
 .verify-tmp
 .verify-out
+.migration-tmp
 *.local
 .DS_Store
 logs
