@@ -25,12 +25,10 @@ const subTitle = computed(() => `${CATEGORY_LABELS[props.item.category]} · ${pr
     :class="{ 'is-unread': !item.read, 'is-read': item.read }"
     @click="$emit('select', item)"
   >
-    <span class="msg-card__icon" :style="{ background: meta.soft }">
-      <component :is="meta.icon" class="msg-card__icon-svg" :style="{ color: meta.color }" />
-    </span>
     <span class="msg-card__body">
       <span class="msg-card__title-row">
         <span v-if="!item.read" class="msg-card__dot" aria-label="未读" />
+        <component :is="meta.icon" class="msg-card__title-icon" :style="{ color: meta.color }" />
         <span class="msg-card__title">{{ item.title }}</span>
       </span>
       <span class="msg-card__sub">{{ subTitle }}</span>
@@ -59,21 +57,6 @@ const subTitle = computed(() => `${CATEGORY_LABELS[props.item.category]} · ${pr
   opacity: 0.6;
 }
 
-.msg-card__icon {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--mb-radius-card);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.msg-card__icon-svg {
-  width: 20px;
-  height: 20px;
-}
-
 .msg-card__body {
   flex: 1;
   min-width: 0;
@@ -87,6 +70,13 @@ const subTitle = computed(() => `${CATEGORY_LABELS[props.item.category]} · ${pr
   align-items: center;
   gap: 6px;
   min-width: 0;
+}
+
+.msg-card__title-icon {
+  flex-shrink: 0;
+  font-size: var(--mb-fz-section);
+  width: 1em;
+  height: 1em;
 }
 
 .msg-card__title {
