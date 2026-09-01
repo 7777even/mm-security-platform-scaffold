@@ -5,26 +5,23 @@ import { LineChart, type LineSeriesOption } from 'echarts/charts';
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import type { ComposeOption } from 'echarts/core';
-import { MAP_TILE_URL } from '@/constants/map';
 import { markOnce } from '@/utils/perf';
 import { readCssVar } from '@/utils/theme';
-import BaseMap from '@/components/cesium/BaseMap.vue';
-import type { ClusterPoint } from '@/services/cesium-cluster';
+import SharedCesiumMap from '@/components/map/SharedCesiumMap.vue';
+import AccidentRescueMarkersOverlay from '@/components/map/AccidentRescueMarkersOverlay.vue';
+import {
+  fetchAlarmPoints,
+  fetchDevicePoints,
+  FALLBACK_ALARM_POINTS,
+  FALLBACK_DEVICE_POINTS,
+  type MapPoint,
+} from '@/services/map';
+import { toMonitoringPoints } from '@/services/map-adapter';
 import DutyPanel from '@/components/dashboard/DutyPanel.vue';
 import EmergencyStrengthPanel from '@/components/dashboard/EmergencyStrengthPanel.vue';
 import EmergencyKnowledgePanel from '@/components/dashboard/EmergencyKnowledgePanel.vue';
 import EmergencyEventCrudPanel from '@/components/dashboard/EmergencyEventCrudPanel.vue';
 import { fetchAlarmTrend } from '@/services/alarm';
-import {
-  fetchAlarmPoints,
-  fetchDevicePoints,
-  fetchRiskZones,
-  FALLBACK_ALARM_POINTS,
-  FALLBACK_DEVICE_POINTS,
-  FALLBACK_RISK_ZONES,
-  type MapPoint,
-  type RiskZone,
-} from '@/services/map';
 
 // 按需注册 ECharts 模块，控制产物体积
 echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
@@ -51,40 +48,16 @@ const chartRef = ref<HTMLDivElement | null>(null);
 let chart: echarts.ECharts | null = null;
 
 const loading = ref(true);
-const mapNotice = ref('');
 
-// 地图点位/区域数据
+// 地图点位数据（报警/设备）
 const alarmPoints = ref<MapPoint[]>([]);
 const devicePoints = ref<MapPoint[]>([]);
-const riskZones = ref<RiskZone[]>([]);
 
-// 聚合打点数据：复用地图底座聚合图层，将报警/设备点位统一接入（遵循项目 UI 规范着色）
-const clusterPoints = computed<ClusterPoint[]>(() => [
-  ...alarmPoints.value.map((p) => ({
-    id: `alarm:${p.id}`,
-    name: p.name,
-    lng: p.lng,
-    lat: p.lat,
-    type: 'alarm',
-    raw: { ...p },
-  })),
-  ...devicePoints.value.map((p) => ({
-    id: `device:${p.id}`,
-    name: p.name,
-    lng: p.lng,
-    lat: p.lat,
-    type: 'device',
-    raw: { ...p },
-  })),
+// 覆盖层监测点：报警/设备点位经适配层映射为源项目 HTML 覆盖层输入
+const monitoringPoints = computed(() => [
+  ...toMonitoringPoints(alarmPoints.value, 'alarm'),
+  ...toMonitoringPoints(devicePoints.value, 'device'),
 ]);
-
-// Cesium 二三维一体化：sceneMode 切换
-const sceneMode = ref<'2d' | '3d'>('3d');
-
-function onMapError(): void {
-  mapNotice.value = '地图初始化失败：当前环境不支持 WebGL，已降级';
-  sceneMode.value = '2d';
-}
 
 // 预案库改由 /dashboard/plans 路由直接访问，dashboard 主壳不再内联覆盖层
 const FALLBACK_TREND = [0, 1, 0, 2, 1, 3, 2, 1, 0, 2, 4, 3, 2, 1, 3, 5, 4, 6, 3, 2, 4, 3, 2, 1];
@@ -169,21 +142,18 @@ function onResize(): void {
 
 async function loadData(): Promise<void> {
   try {
-    const [trend, ap, dp, zones] = await Promise.all([
+    const [trend, ap, dp] = await Promise.all([
       fetchAlarmTrend(),
       fetchAlarmPoints(),
       fetchDevicePoints(),
-      fetchRiskZones(),
     ]);
     trendData.value = Array.from({ length: 24 }, (_, i) => trend[i]?.count ?? 0);
     alarmPoints.value = ap;
     devicePoints.value = dp;
-    riskZones.value = zones;
     markOnce('dashboard:data-ready');
   } catch {
     alarmPoints.value = FALLBACK_ALARM_POINTS;
     devicePoints.value = FALLBACK_DEVICE_POINTS;
-    riskZones.value = FALLBACK_RISK_ZONES;
   } finally {
     loading.value = false;
     await nextTick();
@@ -205,19 +175,10 @@ onUnmounted(() => {
 
 <template>
   <div class="dashboard dashboard-map">
-    <!-- Cesium 二三维一体化地图（中央主视觉，底图经统一深蓝科技色调色与系统基色融合） -->
-    <BaseMap
-      :tile-url="MAP_TILE_URL"
-      :alarms="alarmPoints"
-      :devices="devicePoints"
-      :zones="riskZones"
-      :cluster-points="clusterPoints"
-      :scene-mode="sceneMode"
-      @error="onMapError"
-      @mode-change="(m) => (sceneMode = m)"
-    />
-    <!-- 地图降级提示 -->
-    <p v-if="mapNotice" class="map-notice">{{ mapNotice }}</p>
+    <!-- 源项目地图底座：Esri 影像 + 世界地形 + 茂名石化装置区立体渲染 -->
+    <SharedCesiumMap />
+    <!-- 报警/设备点位覆盖层（HTML 锚定，worldToScreen 跟随相机） -->
+    <AccidentRescueMarkersOverlay :monitoring-points="monitoringPoints" class="dash-map-overlay" />
 
     <!-- 左侧面板区：应急事件 CRUD（按图示单一全高面板） -->
     <div v-if="!loading" class="dash-left">
@@ -250,19 +211,11 @@ onUnmounted(() => {
   /* 不裁切子元素的溢出滚动：dash-left / dash-right 内部 overflow-y:auto 仍可滚 */
 }
 
-/* 地图降级提示 */
-.map-notice {
+/* 地图覆盖层铺满容器（与底座同层，世界坐标锚定由 overlay 内部处理） */
+.dash-map-overlay {
   position: absolute;
-  top: var(--space-md);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: var(--z-overlay);
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-sm);
-  background: var(--notice-warning-bg);
-  border: 1px solid var(--color-warning);
-  color: var(--color-warning);
-  font-size: var(--font-size-helper);
+  inset: 0;
+  pointer-events: none;
 }
 
 /* 左侧面板区：3 个面板自然撑开，超出可滚动但隐藏滚动条 */

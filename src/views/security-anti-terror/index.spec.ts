@@ -1,6 +1,14 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+// jsdom 无 WebGL/Cesium，mock 源项目地图底座与覆盖层
+vi.mock('@/components/map/SharedCesiumMap.vue', () => ({
+  default: { name: 'SharedCesiumMap', template: '<div class="shared-cesium-map-stub" />' },
+}));
+vi.mock('@/components/map/AccidentRescueMarkersOverlay.vue', () => ({
+  default: { name: 'AccidentRescueMarkersOverlay', template: '<div class="map-overlay-stub" />' },
+}));
+
 import SecurityAntiTerror from './index.vue';
 import StatCard from '@/components/common/StatCard.vue';
 import AlarmCard from '@/components/common/AlarmCard.vue';
@@ -14,7 +22,7 @@ vi.mock('./records.vue', () => ({
 describe('治安防恐 模块', () => {
   const mountView = () =>
     mount(SecurityAntiTerror, {
-      global: { stubs: { BaseMap: true, SecondaryPageOverlay: true } },
+      global: { stubs: { SecondaryPageOverlay: true } },
     });
 
   it('渲染双栏面板骨架与 4 张治安态势 KPI 卡', () => {

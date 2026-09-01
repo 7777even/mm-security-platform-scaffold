@@ -1,6 +1,6 @@
 <!--
-  BottomMessageBar — §11.2 底部消息栏（设计稿图 5-9 右）
-  56px 高；滚动消息列表；报警 / 系统 / 事件 / 任务四类色调
+  BottomMessageBar — §11.2 底部消息栏
+  67px 高（源 SystemMessageBar）；渐变底 + 顶亮线；滚动播报
 -->
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
@@ -58,14 +58,13 @@ onMounted(async () => {
   flex-shrink: 0;
   padding: 0 var(--space-lg);
   background: var(--message-bar-bg);
-  backdrop-filter: blur(6px);
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--message-bar-border);
   color: var(--color-text-muted);
   position: relative;
   z-index: var(--z-chrome);
 }
 
-/* §11.2 顶部 1px 青色光带（与 header 底部对称） */
+/* §11.2 顶部 1px 亮线（源 SystemMessageBar 内侧顶亮线） */
 .msg-bar::before {
   content: '';
   position: absolute;
@@ -179,8 +178,8 @@ onMounted(async () => {
   padding: 4px 14px;
   font-size: var(--font-size-helper);
   color: var(--color-accent);
-  background: rgb(0 212 255 / 8%);
-  border: 1px solid rgb(0 212 255 / 40%);
+  background: var(--color-accent-faint);
+  border: 1px solid var(--border-glow);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition:
@@ -190,7 +189,7 @@ onMounted(async () => {
 }
 
 .msg-bar__more:hover {
-  background: rgb(0 212 255 / 18%);
-  border-color: rgb(0 212 255 / 70%);
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
 }
 </style>

@@ -129,12 +129,12 @@ function onAction(act: string, a: FireAlarm): void {
 }
 
 .alarm__img--fire {
-  background: linear-gradient(135deg, #2a1810, #6a2a14);
+  background: var(--tone-fire-bg);
   color: var(--tone-fire);
 }
 
 .alarm__img--dcs {
-  background: linear-gradient(135deg, #0a1a2a, #1a3a5a);
+  background: var(--tone-dcs-bg);
   color: var(--tone-dcs);
 }
 

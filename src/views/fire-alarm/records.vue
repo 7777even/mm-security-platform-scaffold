@@ -38,6 +38,13 @@ const filtered = computed(() => {
   });
 });
 
+// 上报时间格式化：毫秒时间戳 → MM-DD HH:mm（补齐模板引用的格式化函数）
+function formatAlarmTs(ts: number): string {
+  const d = new Date(ts);
+  const pad = (n: number): string => String(n).padStart(2, '0');
+  return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 async function onAck(row: AlarmItem): Promise<void> {
   const ok = await ack(row.alarmId);
   if (ok) ElMessage.success(`已确认报警 ${row.alarmId}`);

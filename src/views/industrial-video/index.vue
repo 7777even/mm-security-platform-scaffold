@@ -17,35 +17,26 @@ import EventAnalysisPanel from '@/components/industrial-video/EventAnalysisPanel
 import VideoPatrolPanel from '@/components/industrial-video/VideoPatrolPanel.vue';
 import FactoryInspectionPanel from '@/components/industrial-video/FactoryInspectionPanel.vue';
 import SystemNoticeBar from '@/components/industrial-video/SystemNoticeBar.vue';
-import type { MapPoint, RiskZone } from '@/services/map';
+import type { MapPoint } from '@/services/map';
 import {
   fetchAlarmPoints,
   fetchDevicePoints,
-  fetchRiskZones,
   FALLBACK_ALARM_POINTS,
   FALLBACK_DEVICE_POINTS,
-  FALLBACK_RISK_ZONES,
 } from '@/services/map';
 
 const loading = ref(true);
 const alarmPoints = ref<MapPoint[]>([]);
 const devicePoints = ref<MapPoint[]>([]);
-const riskZones = ref<RiskZone[]>([]);
 
 onMounted(async () => {
   try {
-    const [ap, dp, zones] = await Promise.all([
-      fetchAlarmPoints(),
-      fetchDevicePoints(),
-      fetchRiskZones(),
-    ]);
+    const [ap, dp] = await Promise.all([fetchAlarmPoints(), fetchDevicePoints()]);
     alarmPoints.value = ap;
     devicePoints.value = dp;
-    riskZones.value = zones;
   } catch {
     alarmPoints.value = FALLBACK_ALARM_POINTS;
     devicePoints.value = FALLBACK_DEVICE_POINTS;
-    riskZones.value = FALLBACK_RISK_ZONES;
   } finally {
     loading.value = false;
   }
@@ -53,7 +44,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ModuleLayout :alarms="alarmPoints" :devices="devicePoints" :zones="riskZones" :loading="loading">
+  <ModuleLayout :alarms="alarmPoints" :devices="devicePoints" :loading="loading">
     <!-- 左列：4 块数据面板 -->
     <template #left>
       <VideoOverviewPanel />

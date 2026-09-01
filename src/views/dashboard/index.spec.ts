@@ -38,16 +38,22 @@ vi.mock('@/services/alarm', () => ({
 vi.mock('@/services/map', () => ({
   fetchAlarmPoints: vi.fn(async () => []),
   fetchDevicePoints: vi.fn(async () => []),
-  fetchRiskZones: vi.fn(async () => []),
   FALLBACK_ALARM_POINTS: [],
   FALLBACK_DEVICE_POINTS: [],
-  FALLBACK_RISK_ZONES: [],
+}));
+
+// jsdom 无 WebGL/Cesium，mock 源项目地图底座与覆盖层，仅断言挂载
+vi.mock('@/components/map/SharedCesiumMap.vue', () => ({
+  default: { name: 'SharedCesiumMap', template: '<div class="shared-cesium-map-stub" />' },
+}));
+vi.mock('@/components/map/AccidentRescueMarkersOverlay.vue', () => ({
+  default: { name: 'AccidentRescueMarkersOverlay', template: '<div class="map-overlay-stub" />' },
 }));
 
 import Dashboard from './index.vue';
 
 describe('dashboard 大屏首页', () => {
-  const mountDash = () => mount(Dashboard, { global: { stubs: { BaseMap: true } } });
+  const mountDash = () => mount(Dashboard);
 
   it('渲染左/右面板与中央地图三栏', async () => {
     const wrapper = mountDash();
@@ -55,7 +61,8 @@ describe('dashboard 大屏首页', () => {
     await wrapper.vm.$nextTick();
     expect(wrapper.find('.dash-left').exists()).toBe(true);
     expect(wrapper.find('.dash-right').exists()).toBe(true);
-    expect(wrapper.findComponent({ name: 'BaseMap' }).exists()).toBe(true);
+    expect(wrapper.findComponent({ name: 'SharedCesiumMap' }).exists()).toBe(true);
+    expect(wrapper.findComponent({ name: 'AccidentRescueMarkersOverlay' }).exists()).toBe(true);
   });
 
   it('左侧面板不含「应急态势」卡组（已下线）', async () => {

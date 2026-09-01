@@ -1,6 +1,14 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+// jsdom 无 WebGL/Cesium，mock 源项目地图底座与覆盖层
+vi.mock('@/components/map/SharedCesiumMap.vue', () => ({
+  default: { name: 'SharedCesiumMap', template: '<div class="shared-cesium-map-stub" />' },
+}));
+vi.mock('@/components/map/AccidentRescueMarkersOverlay.vue', () => ({
+  default: { name: 'AccidentRescueMarkersOverlay', template: '<div class="map-overlay-stub" />' },
+}));
+
 import FireAlarm from './index.vue';
 
 // 消防报警为自定义地图布局（非 ModuleLayout），子面板独立渲染；
@@ -10,7 +18,6 @@ describe('消防报警 模块', () => {
     mount(FireAlarm, {
       global: {
         stubs: {
-          BaseMap: true,
           FireStrengthPanel: true,
           SpecialWorkPanel: true,
           FireFacilityPanel: true,

@@ -60,13 +60,15 @@ const iconComp = computed(() => {
   border-radius: var(--panel-radius);
 }
 
-/* §8.2 标题区 — 43px 高度，右侧 more 按钮 */
+/* §8.2 标题区 — 43px 高度 + 标题栏渐变底 + 底部分隔线（源 PanelCard） */
 .panel-card__head {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
   height: var(--panel-head-h);
-  padding: 0 var(--panel-body-pad-x);
+  padding: 0 var(--panel-head-pad-x);
+  background: var(--panel-head-gradient);
+  border-bottom: 1px solid var(--panel-head-line);
   flex-shrink: 0;
 }
 
@@ -108,11 +110,11 @@ const iconComp = computed(() => {
   line-height: 1;
 }
 
-/* §8.1 内容区：垂直内边距，水平继承 head 内边距 */
+/* §8.1 内容区：垂直内边距，水平继承标题栏内边距；底部与源项目一致 16px */
 .panel-card__body {
   flex: 1;
   min-height: 0;
-  padding: var(--panel-body-pad-y) var(--panel-body-pad-x) var(--space-lg);
+  padding: var(--panel-body-pad-y) var(--panel-body-pad-x) var(--space-md);
 }
 
 /* §8.1 底部青色光带（2px，opacity 0.55） */

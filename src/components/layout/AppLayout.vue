@@ -175,7 +175,7 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-/* §7 顶部导航栏：高度 64px（--layout-header-h），深色半透明底 + 底部青色光带 */
+/* §7 顶部导航栏：高度 77px（--layout-header-h），深蓝渐变底 + 底部亮带（源 AppHeader） */
 .header {
   display: flex;
   align-items: center;
@@ -187,11 +187,9 @@ onUnmounted(() => {
   z-index: var(--z-chrome);
   flex-shrink: 0;
   background: var(--layout-header-bg);
-  border-bottom: 1px solid var(--color-border);
-  backdrop-filter: blur(var(--glass-blur));
 }
 
-/* §7 底部 1px 青色光带 */
+/* §7 底部 1px 亮带（源 AppHeader 底部亮线） */
 .header::after {
   content: '';
   position: absolute;
@@ -220,11 +218,11 @@ onUnmounted(() => {
 }
 
 .brand-title {
-  font-size: var(--font-size-time);
-  font-weight: 600;
+  font-size: var(--font-size-display);
+  font-weight: 400;
   letter-spacing: 2px;
-  color: var(--color-text);
-  text-shadow: 0 0 14px var(--color-accent-glow);
+  color: var(--color-text-strong);
+  text-shadow: var(--header-title-glow);
   white-space: nowrap;
 }
 
@@ -248,10 +246,10 @@ onUnmounted(() => {
   /* 占满整个 nav 高度，使选中/悬停背景覆盖整条导航而非仅文字行高 */
   height: 100%;
   padding: 0 22px;
-  font-size: var(--font-size-subtitle);
-  font-weight: 500;
+  font-size: var(--font-size-nav);
+  font-weight: 400;
   letter-spacing: 2px;
-  color: var(--color-text-muted);
+  color: var(--color-text);
   text-decoration: none;
   border: none;
   border-radius: var(--radius-sm);
@@ -280,53 +278,49 @@ onUnmounted(() => {
   background: var(--color-accent-soft);
 }
 
+/* §7 导航选中态（源 AppHeader）：顶部泛光渐变底 + 底部亮线 */
 .nav-item.active {
   color: var(--color-text-strong);
-  font-weight: 600;
-
-  /* 原型选中态：无边框。底部一条薄而柔的光条——径向光团（中心亮青，向左右/上方渐暗、无硬边）；
-     中部一层泛光（中间亮、四周渐暗）；底色深蓝与顶栏自然融合 */
-  background:
-    radial-gradient(
-      72% 48% at 50% 102%,
-      color-mix(in srgb, var(--color-accent) 95%, transparent) 0%,
-      color-mix(in srgb, var(--color-accent) 42%, transparent) 38%,
-      transparent 74%
-    ),
-    radial-gradient(
-      150% 140% at 50% 56%,
-      color-mix(in srgb, var(--color-accent) 36%, transparent) 0%,
-      color-mix(in srgb, var(--color-accent) 16%, transparent) 46%,
-      transparent 76%
-    ),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--color-bg) 85%, transparent) 0%,
-      color-mix(in srgb, var(--color-bg) 78%, transparent) 100%
-    );
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-accent) 18%, transparent) 0%,
+    transparent 72%
+  );
   border-color: transparent;
   box-shadow: none;
 }
 
-/* §7 预警中心：独立模块，与前面五项青色 Tab 区分（警示色字体 + 警示色图标）；
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 2px;
+  background: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent-glow);
+}
+
+/* §7 预警中心：独立模块，与前面五项亮蓝 Tab 区分（点缀金色字体 + 同色图标，源 nav-warning #eca641）；
    无分隔线、无选中态背景/辉光 */
 .nav-item--warning {
-  color: var(--color-warning);
+  color: var(--accent-gold);
   margin-left: 22px;
   border-radius: var(--radius-sm);
 }
 
 .nav-item--warning .nav-item__icon {
-  color: var(--color-warning);
+  color: var(--accent-gold);
 }
 
 .nav-item--warning:hover {
-  color: var(--color-warning);
+  color: var(--accent-gold);
 }
 
-/* 选中时仅保持警示色文字，不显示任何选中态背景/辉光（避免回退成青色激活态） */
+/* 选中时仅保持金色文字，不显示任何选中态背景/辉光（避免回退成蓝色激活态） */
 .nav-item--warning.active {
-  color: var(--color-warning);
+  color: var(--accent-gold);
   background: none;
   box-shadow: none;
   text-shadow: none;

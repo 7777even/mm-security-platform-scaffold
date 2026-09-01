@@ -5,9 +5,8 @@
 -->
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
-import { MAP_TILE_URL } from '@/constants/map';
-import BaseMap from '@/components/cesium/BaseMap.vue';
-import type { ClusterPoint } from '@/services/cesium-cluster';
+import SharedCesiumMap from '@/components/map/SharedCesiumMap.vue';
+import AccidentRescueMarkersOverlay from '@/components/map/AccidentRescueMarkersOverlay.vue';
 import FireStrengthPanel from '@/components/fire/FireStrengthPanel.vue';
 import SpecialWorkPanel from '@/components/fire/SpecialWorkPanel.vue';
 import FireFacilityPanel from '@/components/fire/FireFacilityPanel.vue';
@@ -17,63 +16,31 @@ import FireDutyPanel from '@/components/fire/FireDutyPanel.vue';
 import {
   fetchAlarmPoints,
   fetchDevicePoints,
-  fetchRiskZones,
   FALLBACK_ALARM_POINTS,
   FALLBACK_DEVICE_POINTS,
-  FALLBACK_RISK_ZONES,
   type MapPoint,
-  type RiskZone,
 } from '@/services/map';
+import { toMonitoringPoints } from '@/services/map-adapter';
 
 const loading = ref(true);
-const mapNotice = ref('');
 
 const alarmPoints = ref<MapPoint[]>([]);
 const devicePoints = ref<MapPoint[]>([]);
-const riskZones = ref<RiskZone[]>([]);
 
-// Cesium 二三维一体化：sceneMode 切换
-const sceneMode = ref<'2d' | '3d'>('3d');
-
-// 聚合打点数据：复用地图底座聚合图层
-const clusterPoints = computed<ClusterPoint[]>(() => [
-  ...alarmPoints.value.map((p) => ({
-    id: `alarm:${p.id}`,
-    name: p.name,
-    lng: p.lng,
-    lat: p.lat,
-    type: 'alarm',
-    raw: { ...p },
-  })),
-  ...devicePoints.value.map((p) => ({
-    id: `device:${p.id}`,
-    name: p.name,
-    lng: p.lng,
-    lat: p.lat,
-    type: 'device',
-    raw: { ...p },
-  })),
+// 覆盖层监测点：报警/设备点位经适配层映射为源项目 HTML 覆盖层输入
+const monitoringPoints = computed(() => [
+  ...toMonitoringPoints(alarmPoints.value, 'alarm'),
+  ...toMonitoringPoints(devicePoints.value, 'device'),
 ]);
-
-function onMapError(): void {
-  mapNotice.value = '地图初始化失败：当前环境不支持 WebGL，已降级';
-  sceneMode.value = '2d';
-}
 
 onMounted(async () => {
   try {
-    const [ap, dp, zones] = await Promise.all([
-      fetchAlarmPoints(),
-      fetchDevicePoints(),
-      fetchRiskZones(),
-    ]);
+    const [ap, dp] = await Promise.all([fetchAlarmPoints(), fetchDevicePoints()]);
     alarmPoints.value = ap;
     devicePoints.value = dp;
-    riskZones.value = zones;
   } catch {
     alarmPoints.value = FALLBACK_ALARM_POINTS;
     devicePoints.value = FALLBACK_DEVICE_POINTS;
-    riskZones.value = FALLBACK_RISK_ZONES;
   } finally {
     loading.value = false;
   }
@@ -82,19 +49,10 @@ onMounted(async () => {
 
 <template>
   <div class="dashboard dashboard-map">
-    <!-- Cesium 二三维一体化地图（中央主视觉） -->
-    <BaseMap
-      :tile-url="MAP_TILE_URL"
-      :alarms="alarmPoints"
-      :devices="devicePoints"
-      :zones="riskZones"
-      :cluster-points="clusterPoints"
-      :scene-mode="sceneMode"
-      @error="onMapError"
-      @mode-change="(m) => (sceneMode = m)"
-    />
-    <!-- 地图降级提示 -->
-    <p v-if="mapNotice" class="map-notice">{{ mapNotice }}</p>
+    <!-- 源项目地图底座：Esri 影像 + 世界地形 + 茂名石化装置区立体渲染 -->
+    <SharedCesiumMap />
+    <!-- 报警/设备点位覆盖层（HTML 锚定，worldToScreen 跟随相机） -->
+    <AccidentRescueMarkersOverlay :monitoring-points="monitoringPoints" class="dash-map-overlay" />
 
     <!-- 左侧面板区：消防数据力量 + 特殊作业 + 消防设施运行监测 + 值班信息 -->
     <div v-if="!loading" class="dash-left">

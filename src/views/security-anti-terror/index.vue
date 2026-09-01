@@ -9,41 +9,31 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import ModuleLayout from '@/components/layout/ModuleLayout.vue';
-import MapBottomTools from '@/components/map/MapBottomTools.vue';
 import AccessStatsPanel from '@/components/security/AccessStatsPanel.vue';
 import LinkPatrolPanel from '@/components/security/LinkPatrolPanel.vue';
 import AlarmTrendPanel from '@/components/security/AlarmTrendPanel.vue';
 import AlarmListPanel from '@/components/security/AlarmListPanel.vue';
-import type { MapPoint, RiskZone } from '@/services/map';
+import type { MapPoint } from '@/services/map';
 import {
   fetchAlarmPoints,
   fetchDevicePoints,
-  fetchRiskZones,
   FALLBACK_ALARM_POINTS,
   FALLBACK_DEVICE_POINTS,
-  FALLBACK_RISK_ZONES,
 } from '@/services/map';
 
 // 中央地图打点数据（与消防/应急指挥同源 mock）
 const loading = ref(true);
 const alarmPoints = ref<MapPoint[]>([]);
 const devicePoints = ref<MapPoint[]>([]);
-const riskZones = ref<RiskZone[]>([]);
 
 onMounted(async () => {
   try {
-    const [ap, dp, zones] = await Promise.all([
-      fetchAlarmPoints(),
-      fetchDevicePoints(),
-      fetchRiskZones(),
-    ]);
+    const [ap, dp] = await Promise.all([fetchAlarmPoints(), fetchDevicePoints()]);
     alarmPoints.value = ap;
     devicePoints.value = dp;
-    riskZones.value = zones;
   } catch {
     alarmPoints.value = FALLBACK_ALARM_POINTS;
     devicePoints.value = FALLBACK_DEVICE_POINTS;
-    riskZones.value = FALLBACK_RISK_ZONES;
   } finally {
     loading.value = false;
   }
@@ -51,7 +41,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ModuleLayout :alarms="alarmPoints" :devices="devicePoints" :zones="riskZones" :loading="loading">
+  <ModuleLayout :alarms="alarmPoints" :devices="devicePoints" :loading="loading">
     <!-- 左侧：出入统计 + 联动巡查 -->
     <template #left>
       <AccessStatsPanel />
@@ -62,11 +52,6 @@ onMounted(async () => {
     <template #right>
       <AlarmTrendPanel />
       <AlarmListPanel />
-    </template>
-
-    <!-- 地图底部一排快捷控制（原型中央底部 8 个图标） -->
-    <template #bottom>
-      <MapBottomTools />
     </template>
   </ModuleLayout>
 </template>
