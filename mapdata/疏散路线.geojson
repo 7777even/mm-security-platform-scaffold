@@ -1,0 +1,25 @@
+{
+"type": "FeatureCollection",
+"name": "疏散路径",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.881483203460135, 21.677595234571946 ], [ 110.891952879582561, 21.677696845294449 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.881647219274086, 21.681126165173477 ], [ 110.887333100823568, 21.681126165173477 ], [ 110.887305764854602, 21.677798455945325 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.881551543382628, 21.68091024744 ], [ 110.881619883305063, 21.670380690206287 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.88729209687007, 21.677582533226595 ], [ 110.88726476090109, 21.670456902068626 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.891734191830651, 21.675702721774787 ], [ 110.891706855861628, 21.677773053289325 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.889615654234063, 21.675690020262682 ], [ 110.891747859815126, 21.675702721774787 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.889519978342591, 21.675702721774787 ], [ 110.887360436792548, 21.675702721774787 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.887333100823568, 21.673556150342346 ], [ 110.89176152779963, 21.673568852042457 ], [ 110.891775195784106, 21.670507709954475 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.891802531753086, 21.674762806856283 ], [ 110.891747859815126, 21.675563005080075 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.891775195784106, 21.67462308925063 ], [ 110.891802531753086, 21.673619658831708 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.883027685707972, 21.673619658831708 ], [ 110.883068689661428, 21.670444200094366 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.885187227258015, 21.673568852042457 ], [ 110.88719642097864, 21.673556150342346 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.885036879428583, 21.673568852042457 ], [ 110.883068689661428, 21.673594255439319 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.882344286483246, 21.673657763911894 ], [ 110.88297301376997, 21.673645062219613 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.882180270669338, 21.673657763911894 ], [ 110.881647219274043, 21.673645062219613 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.881141503847786, 21.677722247963899 ], [ 110.869824412686782, 21.677722247963899 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.887674800435931, 21.681227773406725 ], [ 110.890900444776506, 21.681227773406725 ], [ 110.890955116714508, 21.680821340043963 ], [ 110.891720523846161, 21.680821340043963 ], [ 110.891857203691089, 21.67782385859687 ] ] ] } },
+{ "type": "Feature", "properties": { "id": null }, "geometry": { "type": "MultiLineString", "coordinates": [ [ [ 110.889724998110026, 21.679805251622483 ], [ 110.889807006016994, 21.678077884865917 ] ] ] } }
+]
+}
