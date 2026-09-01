@@ -22,7 +22,7 @@ const csp = [
   //   现代浏览器 CSP3 需要显式 wasm-unsafe-eval 才能 instantiate；
   // 这是引擎行为无法消除。生产由 deploy/csp.conf 同样放行（nonce 注入仍保留，不放行 unsafe-inline）
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'",
-  "connect-src 'self' wss: ws: https: http: ws://localhost:* http://localhost:*",
+  "connect-src 'self' blob: wss: ws: https: http: ws://localhost:* http://localhost:*",
   "font-src 'self' data:",
   // wujie 沙箱：主壳注入 blob 文档 iframe 承载子应用，需放行同源 blob 帧（否则 default-src 'self' 拦截 → 二次跨源 location 读取错误）
   "frame-src 'self' blob:",

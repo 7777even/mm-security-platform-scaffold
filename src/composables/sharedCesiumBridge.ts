@@ -1,6 +1,7 @@
 import { ref, shallowRef, type Ref, type ShallowRef } from 'vue';
 import type { CesiumMapMode } from '@/config/cesiumMapModes';
 import type { PlantAreaCode } from '@/services/map-data/plantAreas';
+import type { SceneModeName } from '@/composables/mapCameraControls';
 
 export interface WorldPosition {
   longitude: number;
@@ -135,6 +136,14 @@ export interface SharedCesiumMapExpose {
     options?: { fly?: boolean },
   ) => void | Promise<void>;
   ensureUserInputsEnabled?: () => void;
+  /** 沿当前视线放大 */
+  zoomIn?: () => void;
+  /** 沿当前视线缩小 */
+  zoomOut?: () => void;
+  /** 在 2D / 3D 场景模式间切换 */
+  toggleSceneMode?: () => void;
+  /** 当前场景模式 */
+  getSceneMode?: () => SceneModeName;
 }
 
 export const sharedMapRef: ShallowRef<SharedCesiumMapExpose | null> = shallowRef(null);
@@ -187,6 +196,22 @@ export function resumeSharedMapRendering() {
 
 export function restoreSharedMapModuleView() {
   return sharedMapRef.value?.restoreModuleDefaultView?.();
+}
+
+export function zoomInSharedMap() {
+  sharedMapRef.value?.zoomIn?.();
+}
+
+export function zoomOutSharedMap() {
+  sharedMapRef.value?.zoomOut?.();
+}
+
+export function toggleSharedMapSceneMode() {
+  sharedMapRef.value?.toggleSceneMode?.();
+}
+
+export function getSharedMapSceneMode(): SceneModeName | null {
+  return sharedMapRef.value?.getSceneMode?.() ?? null;
 }
 
 async function runAccidentRescueIncidentFly(

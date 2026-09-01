@@ -189,6 +189,10 @@ export const SECURITY_MAP_FOCUS: CesiumMapFocus = {
 };
 
 export const ROUTE_CESIUM_META: Record<string, RouteCesiumMeta> = {
+  // ⚠️ 临时 stopgap（wujie 子应用展示用）：子应用沙箱内路由名恒为 subapp-fallback，
+  // 无法命中下方真实模块名。先强制 cesium:true + fire 模式，复刻参考项目大屏展示效果。
+  // 后续离线底座改造 + 正确路由映射（openspec）落地后删除此项。
+  'subapp-fallback': { cesium: true, mapMode: 'fire', mapFocus: FIRE_MAP_FOCUS },
   emergency: { cesium: true, mapMode: 'fire-emergency', mapFocus: FIRE_MAP_FOCUS },
   fire: { cesium: true, mapMode: 'fire', mapFocus: FIRE_MAP_FOCUS },
   fireAccidentRescue: {
