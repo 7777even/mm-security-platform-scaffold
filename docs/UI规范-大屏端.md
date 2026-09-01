@@ -2,7 +2,7 @@
 
 > **本文档定位**：AI 助手 / 开发者在生成或评审**大屏可视化端**页面代码时的**权威执行规范**（CLAUDE.md 风格，规则必须逐条遵守）。
 > **数值真源**：`src/styles/tokens.css` 中 `:root` 默认块（本文只引用 token 名，不复制 hex 进代码）。
-> **设计依据**：《安全管控平台设计说明 V1.2》§5.3.1.1 / §5.3.2 / §5.3.3.1 / §5.3.4.1 / §5.3.5.1。
+> **设计依据**：视觉体系已迁移自 fire-monitoring 大屏项目（2026-08-31，见 `openspec/changes/screen-fire-monitoring-skin`）；历史依据《安全管控平台设计说明 V1.2》§5.3.1.1 / §5.3.2 / §5.3.3.1 / §5.3.4.1 / §5.3.5.1。
 > **后台管理端规范**：见 `docs/UI规范-后台管理端.md`；**移动端规范**：见 `docs/UI规范-移动端.md`。
 
 ---
@@ -20,7 +20,7 @@
 
 ## 1. 通用硬性规则
 
-1. **MUST** 深色科技风格：深蓝黑底 + 青蓝渐变强调 + 玻璃质感面板，**GIS 地图占据主视觉区**，界面元素通过半透明面板与柔和光效与地图融合。
+1. **MUST** 深色科技风格：深藏蓝底 + 亮蓝渐变强调 + 半透明深蓝面板，**GIS 地图占据主视觉区**，界面元素通过半透明面板与柔和光效与地图融合。
 2. **MUST** 三级信息层级「全局态势 — 专题分析 — 细节处置」组织内容，避免信息平铺造成认知负担。
 3. **MUST** 安全优先：风险、报警、应急资源等关键信息在首屏获得**最高视觉权重**，复杂环境下可第一时间定位。
 4. **MUST** 操作效率：地图工具、图层切换、报警处置等高频能力**常驻或半常驻**；关键操作入口始终可见，支持一键定位、一键调阅、一键处置。
@@ -28,7 +28,7 @@
 6. **MUST** 字号层级分明：数值突出、标题加粗、说明缩小（设计说明 §5.3.3.1）；大屏允许多档位，取值见 §3.1（档位为工程适配值）。
 7. **MUST** z-index 只用五层 token：`--z-base(0) 地图底图 / --z-marker(5) 地图标注 / --z-chrome(10) 顶侧栏 / --z-overlay(30) 弹层 / --z-toast(40) 浮层`，禁止随手写 `z-index:999`。
 8. **MUST NOT** 使用后台 / 移动的浅色风格：禁止白底白卡、浅灰页面底、浅色标签当主要状态语言。大屏是**深色态势端**。
-9. **MUST NOT** 硬编码科技青等颜色；玻璃 / 发光 / 渐变仅限大屏使用（后台 / 移动端反向禁止，本端反向**必须用**）。
+9. **MUST NOT** 硬编码亮蓝等颜色；渐变 / 发光 / 半透明面板仅限大屏使用（后台 / 移动端反向禁止，本端反向**必须用**）。
 10. **MUST NOT** 信息过密：面板间保持适度留白，避免信息拥挤。
 
 ---
@@ -37,91 +37,99 @@
 
 ### 2.1 语义色板（大屏取值）
 
-| 用途                                    | Token                 | 值                      |
-| --------------------------------------- | --------------------- | ----------------------- |
-| 页面背景（深蓝黑）                      | `--color-bg`          | `#0b1526`               |
-| 卡片 / 面板                             | `--color-panel`       | `#13233c`               |
-| 面板浅层 / 选中浅底                     | `--color-panel-soft`  | `#1a2f4e`               |
-| 分割线 / 边框                           | `--color-border`      | `#2a4a78`               |
-| 主强调（选中 / 链接 / 主操作 / 科技青） | `--color-accent`      | `#00d8ff`               |
-| 次强调（按钮主色 / 科技蓝）             | `--color-accent-2`    | `#2e7cf6`               |
-| 成功 / 在线 / 已闭环                    | `--color-success`     | `#2ee6a8`               |
-| 警示 / 待处置 / 已确认                  | `--color-warning`     | `#ffb020`               |
-| 危险 / 火灾 / 待处理                    | `--color-danger`      | `#ff5a5a`               |
-| 标题文字                                | `--color-text-strong` | `#ffffff`               |
-| 正文文字                                | `--color-text`        | `#eaf4ff`               |
-| 次要 / 辅助文字                         | `--color-text-muted`  | `#8fa6c8`（低饱和灰蓝） |
+| 用途                                  | Token                   | 值                                     |
+| ------------------------------------- | ----------------------- | -------------------------------------- |
+| 页面背景（深藏蓝）                    | `--color-bg`            | `#001630`                              |
+| 卡片 / 面板                           | `--color-panel`         | `#00234b`（半透 `rgb(0 35 75 / 72%)`） |
+| 面板浅层 / 选中浅底                   | `--color-panel-soft`    | `#002046`                              |
+| 分割线 / 边框                         | `--color-border`        | `rgb(0 140 220 / 25%)`                 |
+| 主强调（选中 / 链接 / 主操作 / 亮蓝） | `--color-accent`        | `#00b4ff`                              |
+| 次强调（文字链 / 操作色）             | `--color-accent-2`      | `#00aaff`                              |
+| 大号数值亮青                          | `--color-accent-bright` | `#00d4ff`                              |
+| 成功 / 在线 / 已闭环 / 同比下降       | `--color-success`       | `#3dd68c`                              |
+| 警示 / 待处置 / 已确认                | `--color-warning`       | `#f0b429`                              |
+| 危险 / 火灾 / 待处理                  | `--color-danger`        | `#ff5a4a`                              |
+| 标题文字                              | `--color-text-strong`   | `#ffffff`                              |
+| 正文文字                              | `--color-text`          | `#d8e4f4`                              |
+| 次要 / 辅助文字                       | `--color-text-muted`    | `#8795b0`（低饱和灰蓝）                |
+| 点缀金（预警入口 / 特殊标识）         | `--accent-gold`         | `#eca641`                              |
+| 点缀紫（特殊等级）                    | `--accent-purple`       | `#b07aff`                              |
 
-色彩语言：强调色用**青 → 蓝渐变**，象征科技、冷静与安全；风险与报警用高饱和红 / 橙；状态正常用青色或绿色；文字以白色为主、辅助用低饱和灰蓝。
+色彩语言：强调色用**亮蓝 / 竖向蓝色渐变**，象征科技、冷静与安全；风险与报警用高饱和红 / 橙；状态正常用蓝色或绿色；文字以白色为主、辅助用低饱和灰蓝。
 
-### 2.2 大屏专属（玻璃 / 渐变 / 光带）
+### 2.2 大屏专属（玻璃 / 渐变 / 光效）
 
-| 用途                  | Token                  | 值                                       |
-| --------------------- | ---------------------- | ---------------------------------------- |
-| 玻璃面板底            | `--glass-bg`           | `rgb(19 35 60 / 62%)`                    |
-| 玻璃面板边            | `--glass-border`       | `rgb(42 74 120 / 60%)`                   |
-| 背景模糊              | `--glass-blur`         | `12px`                                   |
-| 主按钮 / 科技条渐变   | `--gradient-tech-blue` | `linear-gradient(90deg,#00d8ff,#2e7cf6)` |
-| 危险按钮 / 风险条渐变 | `--gradient-risk`      | `linear-gradient(90deg,#ff5a5a,#f6882e)` |
-| 面板标题发光          | `--panel-title-glow`   | `0 0 8px var(--color-accent-glow)`       |
-| 发光色                | `--color-accent-glow`  | `rgb(0 216 255 / 35%)`                   |
+| 用途                  | Token                   | 值                                                                   |
+| --------------------- | ----------------------- | -------------------------------------------------------------------- |
+| 玻璃面板底            | `--glass-bg`            | `rgb(0 35 75 / 72%)`（靠透明度，不用 backdrop-blur）                 |
+| 玻璃面板边            | `--glass-border`        | `rgb(0 140 220 / 25%)`                                               |
+| 背景模糊              | `--glass-blur`          | `0px`（占位，源项目未用 blur）                                       |
+| 面板标题栏渐变        | `--panel-head-gradient` | `linear-gradient(90deg, rgba(0,80,160,.45), rgba(0,40,90,.2))`       |
+| 主按钮 / 科技条渐变   | `--gradient-tech-blue`  | `linear-gradient(180deg, rgb(0 110 210 / 42%), rgb(0 55 130 / 58%))` |
+| 危险按钮 / 风险条渐变 | `--gradient-risk`       | `linear-gradient(180deg, #ff5a4a, #d33232)`                          |
+| 悬停描边发光          | `--border-glow`         | `rgb(0 180 255 / 45%)`                                               |
+| 卡片内发光            | `--glow-inner`          | `inset 0 0 10px rgb(0 170 255 / 8%)`                                 |
+| 面板标题发光          | `--panel-title-glow`    | `0 0 8px var(--color-accent-glow)`                                   |
+| 头部大标题辉光        | `--header-title-glow`   | `0 0 20px rgb(80 170 255 / 55%)`                                     |
+| 发光色                | `--color-accent-glow`   | `rgb(0 180 255 / 35%)`                                               |
 
 ### 2.3 易错色对照（AI 生成最常犯）
 
 | 错误做法（生成时出现即重写）                           | 原因                              | 正确做法                                                             |
 | ------------------------------------------------------ | --------------------------------- | -------------------------------------------------------------------- |
-| 白底 `#ffffff` 卡片 / 浅灰底 `#eff5f9`、`#f4f7fa` 页面 | 后台 / 移动端的浅色办公语言       | 深蓝黑底 `var(--color-bg)` + 玻璃面板 `var(--glass-bg)`              |
-| 主色写 `#0b69d7`（后台）或 `#1677ff`（移动）           | 这是另外两端的品牌蓝              | `var(--color-accent)` `#00d8ff` 或 `var(--color-accent-2)` `#2e7cf6` |
+| 白底 `#ffffff` 卡片 / 浅灰底 `#eff5f9`、`#f4f7fa` 页面 | 后台 / 移动端的浅色办公语言       | 深藏蓝底 `var(--color-bg)` + 半透明面板 `var(--glass-bg)`            |
+| 主色写 `#0b69d7`（后台）或 `#1677ff`（移动）           | 这是另外两端的品牌蓝              | `var(--color-accent)` `#00b4ff` 或 `var(--color-accent-2)` `#00aaff` |
 | 状态用 `.tag-*` 浅底标签做主表达                       | 浅底标签是后台 / 移动端的状态语言 | 大屏直接用语义色（`var(--color-danger)` 等）或等级色阶               |
-| 按钮实色蓝平涂                                         | 大屏主按钮是渐变                  | `var(--gradient-tech-blue)`；危险用 `var(--gradient-risk)`           |
-| 深浅蓝黑外另造深色（纯黑 `#000`、深灰 `#333`）         | 破坏深蓝黑统一基调                | 只用 `--color-bg / --color-panel / --color-panel-soft` 三档          |
+| 按钮实色蓝平涂                                         | 大屏主按钮是竖向蓝渐变            | `var(--gradient-tech-blue)`；危险用 `var(--gradient-risk)`           |
+| 深藏蓝外另造深色（纯黑 `#000`、深灰 `#333`）           | 破坏深藏蓝统一基调                | 只用 `--color-bg / --color-panel / --color-panel-soft` 三档          |
 
 ---
 
 ## 3. 布局骨架（一图统览 · 三级视觉布局）
 
-- **顶部全局导航** `--layout-header-h: 64px`（约 8% 屏高，视觉权重 10%）：深色半通底 + 底部 `1px` 青色发光分隔线，承载系统标识、时间（`--font-size-keynum`）、全局状态、用户状态、全局搜索与一级导航。
-- **中央地图主视觉**（视觉权重 70%）：深蓝色地理底图 + 业务要素分层叠加，通过透明度和描边区分基础图层与业务标注；支持园区概览 → 装置区 → 装置 → 设备 / 点位逐级下钻。
-- **两侧专题面板**：各 `18%` 屏宽（`--layout-aside-w: 419px`，视觉权重各 10%），圆角半透明玻璃态；**左侧放统计类高优先元素，右侧放操作类低优先交互元素**，遵循「主视觉居中、辅助信息对称分布」。
-- **底部栏** `--layout-bottom-h: 56px`：底部消息栏以滚动方式播报系统消息、报警通知与处置提示（设计说明 §5.3.3.1.1）；事件处置阶段可按需承载时间轴 / 快捷工具。
+- **顶部全局导航** `--layout-header-h: 77px`：深蓝渐变底 + 底部亮线，承载系统大标题（38px + 蓝辉光 `--header-title-glow`）、时间、全局状态、用户状态与一级导航（20px，`--font-size-nav`）。
+- **中央地图主视觉**：深蓝地理底图 + 业务要素分层叠加，通过透明度和描边区分基础图层与业务标注；支持园区概览 → 装置区 → 装置 → 设备 / 点位逐级下钻。
+- **两侧专题面板**：右 `--layout-aside-w: 419px` / 窄侧 `--layout-aside-w-narrow: 338px`，半透明深蓝面板；**左侧放统计类高优先元素，右侧放操作类低优先交互元素**，遵循「主视觉居中、辅助信息对称分布」。
+- **底部栏** `--layout-bottom-h: 67px`：底部消息栏以滚动方式播报系统消息、报警通知与处置提示（设计说明 §5.3.3.1.1）；事件处置阶段可按需承载时间轴 / 快捷工具。
 - **四层信息架构**：全局控制层（顶部）→ 地图主视觉层（中央）→ 专题信息层（两侧卡片 / 列表 / 图表）→ 详情操作层（弹窗 / 抽屉 / 浮层，单点详情与处置操作）。
 - **地图工具栏**：常驻或半常驻，宽度 `320–420px` 为工程适配值（基准仅约定功能：图层、区域、搜索、测距测面、三维视角、热力模式、视图复位等，见设计说明 §5.3.3.1.1）。
 - **页面边距**：`--layout-page-pad: var(--space-md)`（16px）。
 
 ### 3.1 字号阶梯（大屏专属多档位，档位为工程适配值）
 
-| 角色                          | Token                 | 值     |
-| ----------------------------- | --------------------- | ------ |
-| 显示 / 系统大标题             | `--font-size-display` | `38px` |
-| 页面主标题                    | `--font-size-h1`      | `22px` |
-| 区块 / 面板标题               | `--font-size-h2`      | `16px` |
-| 关键数字（顶部时间 / 指标数） | `--font-size-keynum`  | `28px` |
-| 数据指标（StatCard 值）       | `--font-size-metric`  | `24px` |
-| 正文                          | `--font-size-body`    | `14px` |
-| 辅助说明                      | `--font-size-helper`  | `12px` |
+| 角色                          | Token                    | 值     |
+| ----------------------------- | ------------------------ | ------ |
+| 显示 / 系统大标题             | `--font-size-display`    | `38px` |
+| 页面主标题                    | `--font-size-h1`         | `22px` |
+| 区块 / 面板标题               | `--font-size-h2`         | `18px` |
+| 顶部导航项                    | `--font-size-nav`        | `20px` |
+| 关键数字（顶部时间 / 指标数） | `--font-size-keynum`     | `28px` |
+| 数据指标（StatCard 值）       | `--stat-card-value-size` | `18px` |
+| 正文                          | `--font-size-body`       | `14px` |
+| 辅助说明                      | `--font-size-helper`     | `12px` |
 
 ### 3.2 间距 / 圆角
 
-间距档 `--space-xs/sm/md/lg: 4/8/16/24px`；圆角 `--radius-sm/md/lg: 6/10/16px`；图形风格以扁平化为基础，结合微立体边框与光效形成「科技玻璃」质感，面板用圆角矩形或切角造型。
+间距档 `--space-xs/sm/md/lg: 4/8/16/24px`；圆角 `--radius-sm/md/lg: 2/4/10px`（源项目：卡片 / 按钮 2px、下拉 4px、弹窗 10px）；图形风格以扁平化为基础，半透明深蓝面板 + 1px 蓝描边 + 内发光形成「科技玻璃」质感。
 
 ---
 
 ## 4. 核心组件规则
 
-**PanelCard 玻璃面板（专题面板标准容器）**
+**PanelCard 半透明面板（专题面板标准容器）**
 
-- `background: var(--glass-bg)`；`backdrop-filter: blur(var(--glass-blur))`；`border: 1px solid var(--glass-border)`；`border-radius: var(--panel-radius)`。
-- 标题行高 `var(--panel-head-h)`；标题色 `var(--panel-title-color)` + `text-shadow: var(--panel-title-glow)`——**标题必须白色发光**。
+- 面板底 `var(--glass-bg)` + `border: 1px solid var(--glass-border)` + `border-radius: var(--panel-radius: 2px)` + 内发光 `var(--glow-inner)`；**不用** backdrop-blur。
+- 标题栏 `background: var(--panel-head-gradient)` 渐变底 + `border-bottom: 1px solid var(--panel-head-line)` 分隔线；标题行高 `var(--panel-head-h: 43px)`；标题色 `var(--panel-title-color)`（白）+ `text-shadow: var(--panel-title-glow)`——**标题必须白色发光**。
 - 面板内容围绕同一业务主题聚合（标题 + 统计卡 + 列表 + 趋势图）。
 
 **StatCard 统计卡**
 
-- 高 `var(--stat-card-h: 96px)`；数值 `var(--stat-value-size: 28px)` + `var(--stat-value-color)`（= accent，**用主强调色而非白色**）；标签 `var(--stat-label-size: 12px)`。
+- 高 `var(--stat-card-h: 64px)`；数值 `var(--stat-value-size: 18px)` 加粗白色（`--stat-value-color` = `--color-text-strong`，源项目数值用白而非强调色）；标签 `var(--stat-label-size: 12px)`；卡底 `var(--stat-card-bg)` 竖向渐变 + 描边 `var(--stat-card-border)` + `var(--glow-inner)` 内发光。
 - **禁止**卡内另叠一套大数字破坏字号档位。
 
 **AlarmCard 告警卡**
 
-- 左色条 `border-left: 3px solid var(--alarm-card-border-l{1..4})`（按报警等级色阶）；背景 `var(--alarm-card-bg)`（玻璃底）。
+- 左色条 `border-left: 3px solid var(--alarm-card-border-l{1..4})`（按报警等级色阶）；背景 `var(--alarm-card-bg)`（半透明深蓝底），hover 提亮为 `var(--alarm-card-bg-hover)` + `var(--border-glow)` 描边。
 - **禁止**纯色块铺满整卡。
 
 **AlarmListItem 报警列表项**
@@ -131,28 +139,28 @@
 
 **按钮**
 
-- 主按钮：`background: var(--btn-bg-primary)`（科技蓝渐变）+ `color: var(--btn-color-primary)`，高 `var(--btn-h-md: 34px)`，圆角 `var(--btn-radius)`；危险按钮用 `var(--gradient-risk)`。
-- hover 叠加 `var(--color-accent-soft)` 浅底；disabled `opacity:.5` + `cursor:not-allowed`。
+- 主按钮：`background: var(--btn-bg-primary)`（竖向蓝渐变）+ `color: var(--btn-color-primary)`，高 `var(--btn-h-md: 32px)`，圆角 `var(--btn-radius: 2px)`；危险按钮用 `var(--gradient-risk)`；默认态深蓝实底 `var(--btn-bg)` + 描边 `var(--btn-border)`。
+- hover 描边提亮为 `var(--border-glow)`；主按钮 hover `filter: brightness(1.08)`；disabled `opacity:.5` + `cursor:not-allowed`。
 - **禁止**后台 / 移动的实色平涂主按钮混入大屏。
 
 **弹层 Drawer / Dialog**
 
-- 玻璃底（如 `var(--map-tool-bg)`）+ `z-index: var(--z-overlay)`；接警 / 登记类弹窗可用居中双列表单，标题栏与操作栏固定、内容滚动。
+- 深蓝渐变底（源自 `var(--color-panel)` 派生）+ `z-index: var(--z-overlay)`；遮罩 `rgb(0 10 24 / 72%)`；接警 / 登记类弹窗可用居中双列表单，标题栏与操作栏固定、内容滚动。
 - **禁止**白底圆角办公弹窗（那是后台 / 移动的语言）。
 
 **图表与地图**
 
-- 图表统一深色主题，强调色只用 `--color-accent / --color-accent-2` 与语义色，坐标轴 / 分隔用低饱和灰蓝。
+- 图表统一深色主题，强调色只用 `--color-accent / --color-accent-2 / --color-accent-bright` 与语义色，坐标轴 / 分隔用低饱和灰蓝。
 - 地图点位标注用 `--z-marker` 层；风险区填充只用 §7 `RISK_FILL`。
 
 **字体与图标**
 
-- 中文标题用思源黑体等无衬线字体；数据指标用几何感强的西文字体，保证数字对齐与易读。
+- 中文标题用思源黑体 / Noto Sans SC 等无衬线字体；数据指标用几何感强的西文字体（`--font-family-num`），保证数字对齐（`tabular-nums`）与易读。
 - 图标线性或面性结合的矢量风格，语义明确、轮廓简洁；地图控制 / 业务功能 / 状态指示图标视觉重量一致。
 
 **多场景视觉适配**
 
-- 常态值守场景：对称平衡布局，两侧面板透明度 85%，元素完整可见，语义色用低饱和基础色调，风格平稳克制、适配远距离观看。
+- 常态值守场景：对称平衡布局，两侧面板完整可见，语义色用低饱和基础色调，风格平稳克制、适配远距离观看。
 
 ---
 
@@ -204,14 +212,14 @@ export const DEVICE_STATUS_COLOR = {
 
 // 风险区地图填充（大屏专属）
 export const RISK_FILL: Record<string, string> = {
-  high: 'rgba(255,90,90,0.22)',
-  warning: 'rgba(246,186,46,0.20)',
-  notice: 'rgba(46,124,246,0.18)',
-  normal: 'rgba(143,166,200,0.14)',
+  high: 'rgba(255,90,74,0.22)',
+  warning: 'rgba(240,180,41,0.20)',
+  notice: 'rgba(0,180,255,0.18)',
+  normal: 'rgba(135,149,176,0.14)',
 };
 ```
 
-报警等级色阶（token：`--color-alarm-1..4`）：一级 `#f46767` 红、二级 `#f6882e` 橙红、三级 `#f6ba2e` 橙黄、四级 `#2e7cf6` 蓝。
+报警等级色阶（token：`--color-alarm-1..4`）：一级 `#ff5a4a` 红、二级 `#ff9a3c` 橙、三级 `#f0c429` 黄、四级 `#b07aff` 紫。
 
 > 说明：本节枚举、色阶与填充值为工程实现约定（《详细设计 V1.5》《设计说明 V1.2》均未给出具体状态枚举文字与色值）；如与最终设计稿冲突，以设计稿为准。
 
@@ -220,11 +228,11 @@ export const RISK_FILL: Record<string, string> = {
 ## 7. 代码生成自检清单
 
 - [ ] 根节点**未挂** `data-theme`（走 `:root`），未重定义 token，无硬编码色 / 字号 / 尺寸。
-- [ ] 深蓝黑底 + 玻璃面板 + 青蓝渐变；未出现白底卡片、浅灰页面底、后台蓝 `#0b69d7`、移动蓝 `#1677ff`。
-- [ ] 主按钮是渐变（`--btn-bg-primary`）而非实色平涂；状态用语义色 / 等级色阶而非 `.tag-*` 浅底标签。
-- [ ] 布局权重正确：顶部 64（10%）+ 中央地图（70%）+ 两侧面板各 419（各 10%），左侧统计、右侧操作。
-- [ ] 面板标题白色发光；AlarmCard 用等级色左边条而非纯色铺满；StatCard 数值用 accent 色。
+- [ ] 深藏蓝底 + 半透明面板 + 竖向蓝渐变；未出现白底卡片、浅灰页面底、后台蓝 `#0b69d7`、移动蓝 `#1677ff`。
+- [ ] 主按钮是竖向渐变（`--btn-bg-primary`）而非实色平涂；状态用语义色 / 等级色阶而非 `.tag-*` 浅底标签。
+- [ ] 布局权重正确：顶部 77 + 中央地图（主视觉）+ 两侧面板 419/338，左侧统计、右侧操作。
+- [ ] 面板标题白色发光；AlarmCard 用等级色左边条而非纯色铺满；StatCard 数值用白色加粗。
 - [ ] 状态 / 等级 / 风险区只用 §6 映射表，无自造色阶。
 - [ ] 字号多档位且来自 §3.1 表；z-index 只用五层 token。
 - [ ] 高频操作常驻 / 半常驻；动效柔和过渡，报警高亮主动触达。
-- [ ] 弹层为玻璃底 + `--z-overlay`，不是白底办公弹窗。
+- [ ] 弹层为深蓝底 + `--z-overlay`，不是白底办公弹窗。
