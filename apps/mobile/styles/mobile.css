@@ -477,6 +477,25 @@ textarea {
   color: var(--danger-mobile);
 }
 
+/* 行本身是可点控件（button）时的外观重置：抹掉 UA 默认的灰底与 outset 边框，
+   再补回共享类的分隔线，使 <button> 行与 <a> 行在同一列表内视觉等价。
+   触控热区由 .mb-menu__item 的 min-height(--mb-row-h) 保证，无需额外撑高。 */
+.mb-menu__item--btn {
+  width: 100%;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-bottom: var(--mb-border-w, 1px) solid var(--color-border);
+  cursor: pointer;
+  appearance: none;
+  appearance: none;
+}
+
+.mb-menu__item--btn:last-child {
+  border-bottom: none;
+}
+
 /* 菜单图标（圆形软底，按 tone 着色）；尺寸一律走 token，禁止内联 px */
 .mb-menu__ico {
   flex-shrink: 0;
@@ -1043,7 +1062,7 @@ textarea {
 
 .mb-steps__item--on {
   font-weight: 600;
-  color: var(--primary-mobile);
+  color: var(--tag-info-fg);
   background: var(--tag-info-bg);
 }
 
@@ -1092,7 +1111,14 @@ textarea {
 }
 
 [data-skin='outdoor'] .mb-hero,
-[data-skin='outdoor'] .mb-usercard {
+[data-skin='outdoor'] .mb-usercard,
+[data-skin='outdoor'] .home-hero {
+  border: var(--mb-border-w) solid var(--border-mobile);
+}
+
+/* 户外：统计小块（首页 hero / 用户卡 pills）转白底黑字 + 黑色硬描边，与 .tag 户外处理统一 */
+[data-skin='outdoor'] .home-hero__stat,
+[data-skin='outdoor'] .mb-hero__pill {
   border: var(--mb-border-w) solid var(--border-mobile);
 }
 

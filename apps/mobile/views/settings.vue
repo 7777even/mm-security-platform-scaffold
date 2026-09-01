@@ -13,6 +13,8 @@ import Icon from '../components/Icon.vue';
  *   开关行整体作为 `role="switch"` 的按钮，热区由整行承担（≥48），可键盘聚焦。
  * - 图标色由 hex（#4A6075 / #1677FF / #FA8C16 / #7C5CFF / #22C55E / #F5222D）
  *   改为继承 `--color-text`（.mb-menu__left 内），语义危险项走 `.mb-menu__item--danger`。
+ * - 行是 button 时加 `.mb-menu__item--btn`（mobile.css 共享类）抹平 UA 灰底与 outset 边框；
+ *   原自写的 `.settings__row` 为同一 reset 的第二份定义，已删除。
  */
 const router = useRouter();
 
@@ -29,7 +31,7 @@ function logout() {
     <MobileHeader variant="back" title="系统设置" back-to="/profile" />
 
     <div class="mb-menu">
-      <button type="button" class="mb-menu__item settings__row">
+      <button type="button" class="mb-menu__item mb-menu__item--btn">
         <span class="mb-menu__left">
           <Icon name="settings" size="var(--mb-ico-md)" />
           修改密码
@@ -39,7 +41,7 @@ function logout() {
 
       <button
         type="button"
-        class="mb-menu__item settings__row"
+        class="mb-menu__item mb-menu__item--btn"
         role="switch"
         :aria-checked="String(pushEnabled)"
         @click="pushEnabled = !pushEnabled"
@@ -53,7 +55,7 @@ function logout() {
 
       <button
         type="button"
-        class="mb-menu__item settings__row"
+        class="mb-menu__item mb-menu__item--btn"
         role="switch"
         :aria-checked="String(offlineCache)"
         @click="offlineCache = !offlineCache"
@@ -65,7 +67,7 @@ function logout() {
         <span class="mb-switch" :class="{ 'mb-switch--on': offlineCache }" />
       </button>
 
-      <button type="button" class="mb-menu__item settings__row">
+      <button type="button" class="mb-menu__item mb-menu__item--btn">
         <span class="mb-menu__left">
           <Icon name="book" size="var(--mb-ico-md)" />
           清除缓存
@@ -83,7 +85,7 @@ function logout() {
 
       <button
         type="button"
-        class="mb-menu__item settings__row mb-menu__item--danger"
+        class="mb-menu__item mb-menu__item--btn mb-menu__item--danger"
         @click="logout"
       >
         <span class="mb-menu__left">
@@ -97,14 +99,6 @@ function logout() {
 </template>
 
 <style scoped>
-/* 行本身是可点控件：重置 button 默认外观，保留共享类的版式与分隔线 */
-.settings__row {
-  width: 100%;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
 .settings__version {
   font-size: var(--mb-fz-help);
   color: var(--mb-muted);
