@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import MaomingPetroCesiumMap from './MaomingPetroCesiumMap.vue';
+import MapToolBar from './MapToolBar.vue';
 import {
   bindSharedMap,
   cesiumMapModeOverride,
@@ -96,11 +97,13 @@ watch(selectedPlantArea, (code) => {
       :boundary-overview-range-multiplier="mapFocus.boundaryOverviewRangeMultiplier ?? 2.05"
       @ready="onMapReady"
     />
+    <MapToolBar />
   </div>
 </template>
 
 <style scoped>
 .shared-cesium-map {
+  position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;

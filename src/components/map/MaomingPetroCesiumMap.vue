@@ -12,6 +12,7 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import * as Cesium from 'cesium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
+import { zoomCamera, getSceneModeName } from '@/composables/mapCameraControls';
 
 import plantAreaUrl from '../../../mapdata/装置区.geojson?url';
 import boundaryUrl from '../../../mapdata/边界.geojson?url';
@@ -2418,6 +2419,34 @@ async function restoreModuleDefaultView() {
   }
 
   await flyToOverviewView();
+}
+
+/** 沿当前视线放大（地图工具栏「放大」按钮） */
+function zoomIn() {
+  if (!viewer) return;
+  zoomCamera(viewer.camera, 1);
+}
+
+/** 沿当前视线缩小（地图工具栏「缩小」按钮） */
+function zoomOut() {
+  if (!viewer) return;
+  zoomCamera(viewer.camera, -1);
+}
+
+/** 在 2D 与 3D 场景模式之间切换（地图工具栏「三维视角」按钮） */
+function toggleSceneMode() {
+  if (!viewer) return;
+  if (viewer.scene.mode === Cesium.SceneMode.SCENE3D) {
+    viewer.scene.morphTo2D(0.8);
+  } else {
+    viewer.scene.morphTo3D(0.8);
+  }
+}
+
+/** 当前场景模式（供工具栏按钮回显激活态） */
+function getSceneMode() {
+  if (!viewer) return getSceneModeName(Cesium.SceneMode.SCENE3D);
+  return getSceneModeName(viewer.scene.mode);
 }
 
 /**
@@ -6419,6 +6448,10 @@ defineExpose({
   flyToWorldPositions,
   setPlantAreaSelection,
   ensureUserInputsEnabled,
+  zoomIn,
+  zoomOut,
+  toggleSceneMode,
+  getSceneMode,
 });
 
 async function waitForContainerSize(el, timeoutMs = 5000) {

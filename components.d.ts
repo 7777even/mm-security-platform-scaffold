@@ -64,6 +64,7 @@ declare module 'vue' {
     MaomingPetroCesiumMap: typeof import('./src/components/map/MaomingPetroCesiumMap.vue')['default']
     MapMarkerIcon: typeof import('./src/components/map/MapMarkerIcon.vue')['default']
     MapPin: typeof import('./src/components/common/MapPin.vue')['default']
+    MapToolBar: typeof import('./src/components/map/MapToolBar.vue')['default']
     ModuleLayout: typeof import('./src/components/layout/ModuleLayout.vue')['default']
     MonitorDialog: typeof import('./src/components/common/MonitorDialog.vue')['default']
     PanelCard: typeof import('./src/components/common/PanelCard.vue')['default']
