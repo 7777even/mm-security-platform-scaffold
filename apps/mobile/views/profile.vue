@@ -1,47 +1,56 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { ElMessage } from 'element-plus';
-import TabBar from '../components/TabBar.vue';
+import Icon from '../components/Icon.vue';
+import IconTile from '../components/IconTile.vue';
 import MobileHeader from '../components/MobileHeader.vue';
 import { useAccessibilityModes } from '../composables/useAccessibilityModes';
+import type { ToneKey } from '../styles/iconset';
 
-const userName = ref('张工');
-const userRole = ref('消防业务管理员 · 储运部 · MM-2018');
-const avatarChar = userName.value.charAt(0);
-
-type Tone = 'green' | 'blue' | 'orange' | 'red';
+/**
+ * 我的（docs/UI规范-移动端.md §5）
+ *
+ * ui-redesign 迁移（2026-09，源 views/mobile/Mine.vue）：
+ * - 用户卡改复用共享类 `.mb-usercard`（`--mb-usercard-bg` 即主蓝实底，与参考实现的
+ *   `background: var(--m-primary)` 等价，且自带 `[data-skin='outdoor']` 反相规则），
+ *   本页自写的 `.mb-user-card` 删除；头像走 `.mb-avatar--on-primary`。
+ * - 菜单图标由内联 `ICON_PATHS` 手绘 path 改为 `IconTile`（rounded + soft，尺寸走 token 档位），
+ *   行尾由文本 `›` 改为 `Icon name="chevron"`；图标名与 tone 与参考实现逐项一致
+ *   （phone/green、calendar/teal、plan/blue、flask/orange、resource/green、
+ *   book/navy、drill/red、ops/cyan、settings/slate）。
+ * - 菜单项由 `button` + 占位提示改为 `RouterLink`，指向 /contacts … /settings 九条已注册路由
+ *   （参考实现前缀为 /m/，本仓库为根路径），点击不再弹「功能建设中」。
+ * - 保留本仓库特有增强：适老 / 户外模式开关（`useAccessibilityModes` 注入 `data-elder` /
+ *   `data-skin`），参考实现的 Mine.vue 与 Settings.vue 均无此能力，不因迁移丢失。
+ *   图标承载与功能菜单**同款**（IconTile rounded/soft/md），保证同一列表内不出现
+ *   「色块图标 + 光秃线图标」两种形态；tone 取 indigo / amber，避开菜单已用的
+ *   green/teal/blue/orange/navy/red/cyan/slate，不与相邻项撞色。
+ *   行尾仍是 `.mb-switch` 而非 chevron —— 由「开关」这一控件语义决定，不是样式降级。
+ * - 版式全部走共享类：两组菜单同处 `.mb-stack`（间距由容器 gap 统一），设置行是 button
+ *   故加 `.mb-menu__item--btn` 抹平 UA 外观，与 `<a>` 行视觉等价；底栏由 App.vue 唯一
+ *   持有，本页不再渲染第二份。
+ */
+const userName = '张工';
+const userRole = '消防业务管理员 · 储运部 · MM-2018';
+const avatarChar = userName.charAt(0);
 
 interface ProfileMenuItem {
   key: string;
   label: string;
-  tone: Tone;
+  icon: string;
+  tone: ToneKey;
+  to: string;
 }
-const menuItems: ProfileMenuItem[] = [
-  { key: 'contacts', label: '通讯录', tone: 'green' },
-  { key: 'duty', label: '今日值班', tone: 'green' },
-  { key: 'plan', label: '应急预案', tone: 'blue' },
-  { key: 'msds', label: '化学品知识（MSDS）', tone: 'orange' },
-  { key: 'resource', label: '应急资源', tone: 'green' },
-  { key: 'library', label: '辅助资料库', tone: 'blue' },
-  { key: 'drill', label: '演练信息', tone: 'red' },
-  { key: 'ops', label: '运维监测看板', tone: 'blue' },
-  { key: 'settings', label: '系统设置', tone: 'blue' },
-];
 
-const ICON_PATHS: Record<string, string> = {
-  contacts: 'M4 5h16v14H4zM9 10a2 2 0 104 0M9 14c0-1.4 2-2 4-2s4 .6 4 2',
-  duty: 'M4 5h16v15H4zM4 9h16M8 3v4M16 3v4',
-  plan: 'M7 3h7l4 4v14H7zM14 3v4h4M9 12h6M9 16h6',
-  msds: 'M9 3h6v3l3 4v11H6V10l3-4zM9 3v3h6V3',
-  resource: 'M12 3l8 3v6c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V6z',
-  library: 'M5 4h4v16H5zM11 4h4v16h-4zM17 5l3 1-2 14-3-1z',
-  drill: 'M13 2L4 14h7l-1 8 9-12h-7z',
-  ops: 'M4 20V10M9 20V4M14 20v-7M19 20V8',
-  settings:
-    'M12 9a3 3 0 100 6 3 3 0 000-6zM4 12h2M18 12h2M12 4v2M12 18v2M6.5 6.5l1.5 1.5M16 16l1.5 1.5M17.5 6.5L16 8M8 16l-1.5 1.5',
-  elder: 'M12 4a4 4 0 100 8 4 4 0 000-8zM4 20c0-4 4-6 8-6s8 2 8 6',
-  outdoor: 'M12 3a9 9 0 109 9 7 7 0 01-9-9z',
-};
+const menuItems: ProfileMenuItem[] = [
+  { key: 'contacts', label: '通讯录', icon: 'phone', tone: 'green', to: '/contacts' },
+  { key: 'duty', label: '今日值班', icon: 'calendar', tone: 'teal', to: '/duty' },
+  { key: 'plan', label: '应急预案', icon: 'plan', tone: 'blue', to: '/plans' },
+  { key: 'msds', label: '化学品知识（MSDS）', icon: 'flask', tone: 'orange', to: '/msds' },
+  { key: 'resource', label: '应急资源', icon: 'resource', tone: 'green', to: '/resources' },
+  { key: 'library', label: '辅助资料库', icon: 'book', tone: 'navy', to: '/library' },
+  { key: 'drill', label: '演练信息', icon: 'drill', tone: 'red', to: '/drills' },
+  { key: 'ops', label: '运维监测看板', icon: 'ops', tone: 'cyan', to: '/ops' },
+  { key: 'settings', label: '系统设置', icon: 'settings', tone: 'slate', to: '/settings' },
+];
 
 const { outdoor, elder } = useAccessibilityModes();
 function toggleOutdoor() {
@@ -50,152 +59,66 @@ function toggleOutdoor() {
 function toggleElder() {
   elder.value = !elder.value;
 }
-function onMenu() {
-  ElMessage.info('功能建设中');
-}
 </script>
 
 <template>
-  <div class="mb-page profile-page">
+  <div class="mb-page">
     <MobileHeader variant="brand" title="我的" />
 
-    <section class="mb-user-card" aria-label="用户信息">
-      <span class="mb-user-avatar">{{ avatarChar }}</span>
-      <div class="mb-user-meta">
-        <p class="mb-user-name">{{ userName }}</p>
-        <p class="mb-user-role">{{ userRole }}</p>
+    <section class="mb-usercard" aria-label="用户信息">
+      <span class="mb-avatar mb-avatar--on-primary">{{ avatarChar }}</span>
+      <div>
+        <p class="mb-usercard__name">{{ userName }}</p>
+        <p class="mb-usercard__meta">{{ userRole }}</p>
       </div>
     </section>
 
-    <section class="mb-card mb-menu-group" aria-label="功能菜单">
-      <button
-        v-for="item in menuItems"
-        :key="item.key"
-        type="button"
-        class="mb-menu__item"
-        @click="onMenu()"
-      >
-        <span class="mb-menu__left">
-          <span class="mb-menu__ico" :class="`mb-menu__ico--${item.tone}`">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path :d="ICON_PATHS[item.key]" />
-            </svg>
+    <div class="mb-stack">
+      <section class="mb-menu mb-menu-group" aria-label="功能菜单">
+        <RouterLink v-for="item in menuItems" :key="item.key" class="mb-menu__item" :to="item.to">
+          <span class="mb-menu__left">
+            <IconTile
+              :name="item.icon"
+              size="md"
+              shape="rounded"
+              variant="soft"
+              :tone="item.tone"
+            />
+            <span class="mb-menu__label">{{ item.label }}</span>
           </span>
-          <span class="mb-menu__label">{{ item.label }}</span>
-        </span>
-        <span class="mb-menu__chevron" aria-hidden="true">›</span>
-      </button>
-    </section>
+          <Icon name="chevron" size="var(--mb-ico-md)" />
+        </RouterLink>
+      </section>
 
-    <section class="mb-card mb-setting-group" aria-label="设置">
-      <button class="mb-menu__item" type="button" @click="toggleElder">
-        <span class="mb-menu__left">
-          <span class="mb-menu__ico mb-menu__ico--blue">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path :d="ICON_PATHS.elder" />
-            </svg>
-          </span>
-          <span class="mb-menu__label">适老模式</span>
-        </span>
-        <span
-          class="mb-switch"
+      <section class="mb-menu" aria-label="设置">
+        <button
+          type="button"
+          class="mb-menu__item mb-menu__item--btn"
           role="switch"
           :aria-checked="String(elder)"
-          :class="{ 'mb-switch--on': elder }"
-        ></span>
-      </button>
-
-      <button class="mb-menu__item" type="button" @click="toggleOutdoor">
-        <span class="mb-menu__left">
-          <span class="mb-menu__ico mb-menu__ico--orange">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path :d="ICON_PATHS.outdoor" />
-            </svg>
+          @click="toggleElder"
+        >
+          <span class="mb-menu__left">
+            <IconTile name="user" size="md" shape="rounded" variant="soft" tone="indigo" />
+            <span class="mb-menu__label">适老模式</span>
           </span>
-          <span class="mb-menu__label">户外模式</span>
-        </span>
-        <span
-          class="mb-switch"
+          <span class="mb-switch" :class="{ 'mb-switch--on': elder }"></span>
+        </button>
+
+        <button
+          type="button"
+          class="mb-menu__item mb-menu__item--btn"
           role="switch"
           :aria-checked="String(outdoor)"
-          :class="{ 'mb-switch--on': outdoor }"
-        ></span>
-      </button>
-    </section>
-
-    <TabBar active="profile" />
+          @click="toggleOutdoor"
+        >
+          <span class="mb-menu__left">
+            <IconTile name="map" size="md" shape="rounded" variant="soft" tone="amber" />
+            <span class="mb-menu__label">户外模式</span>
+          </span>
+          <span class="mb-switch" :class="{ 'mb-switch--on': outdoor }"></span>
+        </button>
+      </section>
+    </div>
   </div>
 </template>
-
-<style scoped>
-.profile-page {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: var(--bg-mobile);
-}
-
-.mb-user-card {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  margin: var(--mb-card-gap) var(--mb-pad-x);
-  padding: var(--space-lg) var(--mb-pad-x);
-  border-radius: var(--mb-radius-card);
-  background: var(--mb-usercard-bg);
-  color: var(--mb-usercard-fg);
-}
-
-.mb-user-avatar {
-  flex-shrink: 0;
-  width: var(--mb-avatar-md);
-  height: var(--mb-avatar-md);
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: var(--mb-fz-section);
-  font-weight: 700;
-  color: var(--primary-mobile);
-  background: var(--primary-mobile-soft);
-}
-
-.mb-user-meta {
-  min-width: 0;
-}
-
-.mb-user-name {
-  margin: 0;
-  font-size: var(--mb-fz-section);
-  font-weight: 700;
-}
-
-.mb-user-role {
-  margin: var(--space-xs) 0 0;
-  font-size: var(--mb-fz-tip);
-  opacity: 0.85;
-}
-
-.mb-menu-group,
-.mb-setting-group {
-  margin: 0 var(--mb-pad-x) var(--mb-card-gap);
-  padding: var(--space-xs) var(--mb-pad-x);
-}
-</style>
