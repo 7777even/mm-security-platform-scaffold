@@ -157,9 +157,12 @@ onUnmounted(() => {
       </div>
     </header>
 
-    <!-- 主路由出口（大屏视图铺满，无内边距；视图内部自行控制边距） -->
+    <!-- 主路由出口（大屏视图铺满，无内边距；视图内部自行控制边距）
+         必须按路由 fullPath 加 key：各模块路由共用同一 WujieHost 组件引用，
+         Vue Router 默认会复用实例，导致 wujie 子应用不随路径切换而重新挂载；
+         key 强制每条路由新建实例，wujie 才能干净地 startApp 对应子应用。 -->
     <main class="content">
-      <RouterView />
+      <RouterView :key="route.fullPath" />
     </main>
 
     <!-- §11.2 底部消息栏 -->
