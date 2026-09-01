@@ -1,9 +1,13 @@
 <!--
   VideoPatrolPanel — §工业电视「重要视频巡查」
-  顶部视频库链接 + 2 列 × 3 行缩略图网格，每格：摄像头实景占位 + 标题 + 在线状态点。
+  顶部视频库链接 + 2 列 × 3 行缩略图网格，每格摄像头实景（压缩包 mock-cameras 监控抓拍图占位）+ 标题 + 在线状态。
+  点击缩略图进入监控点详情；点击「视频库」打开视频库列表。
+  图标：压缩包 fire-situation 图标（PkgIcon）。
 -->
 <script setup lang="ts">
 import PanelCard from '@/components/common/PanelCard.vue';
+import { useIndustrialVideoInteraction } from '@/composables/useIndustrialVideoInteraction';
+import { cameraThumbByIndex } from '@/services/map-data/fireImages';
 
 interface Cam {
   id: string;
@@ -11,6 +15,8 @@ interface Cam {
   online: boolean;
   hue: number;
 }
+
+const ia = useIndustrialVideoInteraction();
 
 const cams: Cam[] = [
   { id: '1', title: 'A1储罐区-1', online: true, hue: 200 },
@@ -21,24 +27,20 @@ const cams: Cam[] = [
   { id: '6', title: 'A1储罐区-6', online: false, hue: 190 },
 ];
 
-function thumbBg(h: number): string {
-  return `linear-gradient(135deg, hsl(${h} 60% 35%), hsl(${h + 15} 50% 22%))`;
-}
-
 function openCam(c: Cam): void {
-  console.warn('[video-patrol]', c.id);
+  ia.openVideoMonitor({ label: c.title, id: c.id });
 }
 
 function openLibrary(): void {
-  console.warn('[video-patrol] library');
+  ia.openVideoLibrary();
 }
 </script>
 
 <template>
-  <PanelCard title="重要视频巡查" icon="VideoCamera" more="视频库" @more="openLibrary">
+  <PanelCard title="重要视频巡查" icon="ladder" more="视频库" @more="openLibrary">
     <div class="grid">
-      <button v-for="c in cams" :key="c.id" type="button" class="cam" @click="openCam(c)">
-        <div class="cam__thumb" :style="{ background: thumbBg(c.hue) }">
+      <button v-for="(c, i) in cams" :key="c.id" type="button" class="cam" @click="openCam(c)">
+        <div class="cam__thumb" :style="{ backgroundImage: `url(${cameraThumbByIndex(i)})` }">
           <span :class="['cam__status', c.online ? 'cam__status--on' : 'cam__status--off']">
             {{ c.online ? '在线' : '未连接' }}
           </span>
@@ -74,6 +76,15 @@ function openLibrary(): void {
   border-radius: var(--radius-sm);
   border: 1px solid var(--panel-border);
   overflow: hidden;
+  background-color: color-mix(in srgb, var(--color-panel) 70%, transparent);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  transition: border-color var(--transition-fast);
+}
+
+.cam:hover .cam__thumb {
+  border-color: var(--color-accent);
 }
 
 .cam__status {

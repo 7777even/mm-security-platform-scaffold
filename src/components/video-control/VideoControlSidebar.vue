@@ -5,6 +5,7 @@ import {
   videoControlTree,
   type VideoControlTreeNode,
 } from '@/services/map-data/videoControlMock';
+import { showToast } from '@/composables/useToast';
 
 const activeCategoryId = ref(videoControlCategories[0]?.id ?? '');
 const activeNodeId = ref('drill-1');
@@ -21,6 +22,11 @@ function toggleExpand(id: string) {
 
 function selectNode(id: string) {
   activeNodeId.value = id;
+}
+
+function onLeaf(node: VideoControlTreeNode): void {
+  selectNode(node.id);
+  showToast(`调出监控：${node.label}`);
 }
 
 function isNodeVisible(node: VideoControlTreeNode): boolean {
@@ -95,7 +101,7 @@ function isNodeVisible(node: VideoControlTreeNode): boolean {
                 type="button"
                 class="vc-tree__leaf"
                 :class="{ 'vc-tree__leaf--active': activeNodeId === child.id }"
-                @click="selectNode(child.id)"
+                @click="onLeaf(child)"
                 @mouseenter="pinHoverId = child.id"
                 @mouseleave="pinHoverId = null"
               >

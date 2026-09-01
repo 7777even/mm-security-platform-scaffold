@@ -1,5 +1,15 @@
+<!--
+  VideoLinkageConfigDialog — 监控联动配置（视频墙二级界面 linkageConfig）
+  组件与内部「列表 / 新增编辑」两态逻辑沿用原实现，仅把承载壳换成深蓝 Dialog 规范：
+    - 外壳复用 @/components/fire/ScreenDialog.vue（z-index 走 --z-overlay，不再自持 z-index）
+    - 显隐由 VideoWallInteractionLayer 的 v-if 控制，关闭 emit('close') 交还调度层卸载
+  编辑态状态仍复用既有 @/composables/useVideoLinkageConfig（linkageEditMode / editingRules / startLinkageEdit …）。
+  数据消费 @/services/map-data/videoLinkageMock。保存反馈走统一 showToast，零硬编码色。
+-->
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
+import ScreenDialog from '@/components/fire/ScreenDialog.vue';
+import { showToast } from '@/composables/useToast';
 import {
   businessObjectCategoryOptions,
   businessObjectOptions,
@@ -13,20 +23,23 @@ import {
   closeLinkageDialog,
   editingConfig,
   editingRules,
-  linkageDialogOpen,
   linkageEditMode,
   saveLinkageEdit,
   startLinkageEdit,
 } from '@/composables/useVideoLinkageConfig';
 
+const emit = defineEmits<{ close: [] }>();
+
 const keyword = ref('');
 const categoryFilter = ref('全部类别');
 const currentPage = ref(1);
 const PAGE_SIZE = 6;
-const savedTip = ref(false);
 
 const monitorName = ref(monitorNameOptions[0]);
 const monitorCode = ref('HKJK-5124870');
+
+// 本层由调度层 v-if 挂载，每次打开都会重新 setup：进入即回到列表态。
+cancelLinkageEdit();
 
 const categoryByMonitor = reactive<Record<string, string>>({
   'XX强3-2棚伯': '枪机',
@@ -57,13 +70,6 @@ const totalPages = computed(() => Math.max(1, Math.ceil(filteredItems.value.leng
 const pagedItems = computed(() => {
   const start = (currentPage.value - 1) * PAGE_SIZE;
   return filteredItems.value.slice(start, start + PAGE_SIZE);
-});
-
-watch(linkageDialogOpen, (open) => {
-  if (!open) return;
-  keyword.value = '';
-  categoryFilter.value = '全部类别';
-  currentPage.value = 1;
 });
 
 watch(linkageEditMode, (edit) => {
@@ -102,557 +108,458 @@ function addRule() {
 
 function removeRule(id: string) {
   editingRules.value = editingRules.value.filter((r) => r.id !== id);
+  showToast('已删除该联动行');
 }
 
 function removeConfig(config: VideoLinkageConfig) {
   const index = videoLinkageConfigs.findIndex((item) => item.id === config.id);
   if (index >= 0) videoLinkageConfigs.splice(index, 1);
+  if (currentPage.value > totalPages.value) currentPage.value = totalPages.value;
+  showToast(`已删除联动配置：${config.name}`);
 }
 
 function submitEdit() {
-  savedTip.value = true;
-  window.setTimeout(() => {
-    savedTip.value = false;
-    saveLinkageEdit();
-  }, 800);
+  showToast('监控联动配置已保存');
+  saveLinkageEdit();
 }
 
 function goToPage(page: number) {
   if (page < 1 || page > totalPages.value) return;
   currentPage.value = page;
 }
+
+function runQuery() {
+  currentPage.value = 1;
+  showToast(`已筛选出 ${filteredItems.value.length} 条联动配置`);
+}
+
+function handleClose() {
+  closeLinkageDialog();
+  emit('close');
+}
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition name="linkage-dialog-fade">
-      <div v-if="linkageDialogOpen" class="linkage-dialog" @click.self="closeLinkageDialog">
-        <section
-          class="linkage-dialog__panel"
-          role="dialog"
-          aria-modal="true"
-          aria-label="监控联动配置"
+  <ScreenDialog
+    :open="true"
+    :title="`监控联动配置${linkageEditMode ? ' · 新增/编辑' : ''}`"
+    icon="crane"
+    width="min(1100px, calc(100vw - 80px))"
+    @close="handleClose"
+  >
+    <!-- 列表模式 -->
+    <div v-if="!linkageEditMode" class="linkage">
+      <div class="linkage__toolbar">
+        <input v-model="keyword" class="linkage__input" type="text" placeholder="监控名称 / 编号" />
+        <select v-model="categoryFilter" class="linkage__input linkage__input--select">
+          <option v-for="opt in categories" :key="opt" :value="opt">{{ opt }}</option>
+        </select>
+        <button type="button" class="linkage__btn" @click="runQuery">查询</button>
+        <button
+          type="button"
+          class="linkage__btn linkage__btn--primary"
+          @click="startLinkageEdit()"
         >
-          <header class="linkage-dialog__header">
-            <h3 class="linkage-dialog__title">
-              监控联动配置{{ linkageEditMode ? ' · 新增/编辑' : '' }}
-            </h3>
-            <button type="button" class="linkage-dialog__close" @click="closeLinkageDialog">
-              ×
-            </button>
-          </header>
+          新增配置
+        </button>
+      </div>
 
-          <!-- 列表模式 -->
-          <div v-if="!linkageEditMode" class="linkage-dialog__body">
-            <div class="linkage-dialog__toolbar">
-              <input
-                v-model="keyword"
-                class="linkage-dialog__input"
-                type="text"
-                placeholder="监控名称 / 编号"
-              />
-              <select v-model="categoryFilter" class="linkage-dialog__select">
-                <option v-for="opt in categories" :key="opt" :value="opt">{{ opt }}</option>
-              </select>
-              <button type="button" class="linkage-dialog__btn" @click="currentPage = 1">
-                查询
-              </button>
-              <button
-                type="button"
-                class="linkage-dialog__btn linkage-dialog__btn--primary"
-                @click="startLinkageEdit()"
-              >
-                + 新增配置
-              </button>
-            </div>
+      <div class="linkage__table-wrap">
+        <table class="linkage__table">
+          <thead>
+            <tr>
+              <th>监控名称</th>
+              <th>监控编号</th>
+              <th>监控类别</th>
+              <th>联动控制数</th>
+              <th>联动业务对象</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in pagedItems" :key="item.id">
+              <td>{{ item.name }}</td>
+              <td class="linkage__code">{{ item.code }}</td>
+              <td>{{ item.category }}</td>
+              <td class="linkage__num">{{ item.linkageCount }}</td>
+              <td class="linkage__objects">{{ item.businessObjects }}</td>
+              <td>
+                <div class="linkage__row-actions">
+                  <button type="button" class="linkage__row-btn" @click="startLinkageEdit(item.id)">
+                    编辑
+                  </button>
+                  <button
+                    type="button"
+                    class="linkage__row-btn linkage__row-btn--danger"
+                    @click="removeConfig(item)"
+                  >
+                    删除
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr v-if="pagedItems.length === 0">
+              <td class="linkage__empty" colspan="6">无匹配的联动配置</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-            <div class="linkage-dialog__table-wrap">
-              <table class="linkage-dialog__table">
-                <thead>
-                  <tr>
-                    <th>监控名称</th>
-                    <th>监控编号</th>
-                    <th>监控类别</th>
-                    <th>联动控制数</th>
-                    <th>联动业务对象</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="item in pagedItems" :key="item.id">
-                    <td>{{ item.name }}</td>
-                    <td class="linkage-dialog__code">{{ item.code }}</td>
-                    <td>{{ item.category }}</td>
-                    <td>{{ item.linkageCount }}</td>
-                    <td class="linkage-dialog__objects">{{ item.businessObjects }}</td>
-                    <td>
-                      <div class="linkage-dialog__row-actions">
-                        <button
-                          type="button"
-                          class="linkage-dialog__row-btn"
-                          @click="startLinkageEdit(item.id)"
-                        >
-                          编辑
-                        </button>
-                        <button
-                          type="button"
-                          class="linkage-dialog__row-btn linkage-dialog__row-btn--danger"
-                          @click="removeConfig(item)"
-                        >
-                          删除
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+      <footer class="linkage__pagination">
+        <button
+          type="button"
+          class="linkage__page"
+          :disabled="currentPage <= 1"
+          aria-label="上一页"
+          @click="goToPage(currentPage - 1)"
+        >
+          上一页
+        </button>
+        <button
+          v-for="page in totalPages"
+          :key="page"
+          type="button"
+          class="linkage__page"
+          :class="{ 'linkage__page--active': currentPage === page }"
+          @click="goToPage(page)"
+        >
+          {{ page }}
+        </button>
+        <button
+          type="button"
+          class="linkage__page"
+          :disabled="currentPage >= totalPages"
+          aria-label="下一页"
+          @click="goToPage(currentPage + 1)"
+        >
+          下一页
+        </button>
+      </footer>
+    </div>
 
-            <footer class="linkage-dialog__pagination">
-              <button
-                type="button"
-                class="linkage-dialog__page"
-                :disabled="currentPage <= 1"
-                @click="goToPage(currentPage - 1)"
-              >
-                ‹
-              </button>
-              <button
-                v-for="page in totalPages"
-                :key="page"
-                type="button"
-                class="linkage-dialog__page"
-                :class="{ 'linkage-dialog__page--active': currentPage === page }"
-                @click="goToPage(page)"
-              >
-                {{ page }}
-              </button>
-              <button
-                type="button"
-                class="linkage-dialog__page"
-                :disabled="currentPage >= totalPages"
-                @click="goToPage(currentPage + 1)"
-              >
-                ›
-              </button>
-            </footer>
-          </div>
+    <!-- 编辑模式 -->
+    <div v-else class="linkage">
+      <div class="linkage__section">
+        <h4 class="linkage__section-title">基础信息</h4>
+        <div class="linkage__fields">
+          <label class="linkage__field">
+            <span>监控名称</span>
+            <select v-model="monitorName" class="linkage__input linkage__input--block">
+              <option v-for="opt in monitorNameOptions" :key="opt" :value="opt">{{ opt }}</option>
+            </select>
+          </label>
+          <label class="linkage__field">
+            <span>监控类别</span>
+            <input
+              v-model="categoryByMonitor[monitorName]"
+              class="linkage__input linkage__input--block"
+              type="text"
+              readonly
+            />
+          </label>
+          <label class="linkage__field">
+            <span>监控编号</span>
+            <input v-model="monitorCode" class="linkage__input linkage__input--block" type="text" />
+          </label>
+        </div>
+      </div>
 
-          <!-- 编辑模式 -->
-          <div v-else class="linkage-dialog__body">
-            <div class="linkage-dialog__section">
-              <h4 class="linkage-dialog__section-title">基础信息</h4>
-              <div class="linkage-dialog__fields">
-                <label class="linkage-dialog__field">
-                  <span>监控名称</span>
-                  <select v-model="monitorName" class="linkage-dialog__input">
-                    <option v-for="opt in monitorNameOptions" :key="opt" :value="opt">
+      <div class="linkage__section linkage__section--grow">
+        <h4 class="linkage__section-title">联动配置</h4>
+        <div class="linkage__table-wrap">
+          <table class="linkage__table">
+            <thead>
+              <tr>
+                <th>预设点名称</th>
+                <th>关联业务对象类别</th>
+                <th>关联业务对象</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="rule in editingRules" :key="rule.id">
+                <td>
+                  <select v-model="rule.presetPoint" class="linkage__input linkage__input--cell">
+                    <option v-for="opt in presetPointOptions" :key="opt" :value="opt">
                       {{ opt }}
                     </option>
                   </select>
-                </label>
-                <label class="linkage-dialog__field">
-                  <span>监控类别</span>
-                  <input
-                    v-model="categoryByMonitor[monitorName]"
-                    class="linkage-dialog__input"
-                    type="text"
-                    readonly
-                  />
-                </label>
-                <label class="linkage-dialog__field">
-                  <span>监控编号</span>
-                  <input v-model="monitorCode" class="linkage-dialog__input" type="text" />
-                </label>
-              </div>
-            </div>
-
-            <div class="linkage-dialog__section linkage-dialog__section--grow">
-              <h4 class="linkage-dialog__section-title">联动配置</h4>
-              <div class="linkage-dialog__table-wrap">
-                <table class="linkage-dialog__table">
-                  <thead>
-                    <tr>
-                      <th>预设点名称</th>
-                      <th>关联业务对象类别</th>
-                      <th>关联业务对象</th>
-                      <th>操作</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="rule in editingRules" :key="rule.id">
-                      <td>
-                        <select
-                          v-model="rule.presetPoint"
-                          class="linkage-dialog__input linkage-dialog__input--cell"
-                        >
-                          <option v-for="opt in presetPointOptions" :key="opt" :value="opt">
-                            {{ opt }}
-                          </option>
-                        </select>
-                      </td>
-                      <td>
-                        <select
-                          v-model="rule.objectCategory"
-                          class="linkage-dialog__input linkage-dialog__input--cell"
-                        >
-                          <option
-                            v-for="opt in businessObjectCategoryOptions"
-                            :key="opt"
-                            :value="opt"
-                          >
-                            {{ opt }}
-                          </option>
-                        </select>
-                      </td>
-                      <td>
-                        <select
-                          v-model="rule.objectName"
-                          class="linkage-dialog__input linkage-dialog__input--cell"
-                        >
-                          <option v-for="opt in businessObjectOptions" :key="opt" :value="opt">
-                            {{ opt }}
-                          </option>
-                        </select>
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          class="linkage-dialog__row-btn linkage-dialog__row-btn--danger"
-                          @click="removeRule(rule.id)"
-                        >
-                          删除
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <button type="button" class="linkage-dialog__add" @click="addRule">
-                + 添加联动行
-              </button>
-            </div>
-
-            <footer class="linkage-dialog__edit-footer">
-              <button type="button" class="linkage-dialog__btn" @click="cancelLinkageEdit">
-                取消
-              </button>
-              <button
-                type="button"
-                class="linkage-dialog__btn linkage-dialog__btn--primary"
-                @click="submitEdit"
-              >
-                提交
-              </button>
-            </footer>
-          </div>
-
-          <Transition name="linkage-dialog-tip">
-            <div v-if="savedTip" class="linkage-dialog__tip">已保存</div>
-          </Transition>
-        </section>
+                </td>
+                <td>
+                  <select v-model="rule.objectCategory" class="linkage__input linkage__input--cell">
+                    <option v-for="opt in businessObjectCategoryOptions" :key="opt" :value="opt">
+                      {{ opt }}
+                    </option>
+                  </select>
+                </td>
+                <td>
+                  <select v-model="rule.objectName" class="linkage__input linkage__input--cell">
+                    <option v-for="opt in businessObjectOptions" :key="opt" :value="opt">
+                      {{ opt }}
+                    </option>
+                  </select>
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    class="linkage__row-btn linkage__row-btn--danger"
+                    @click="removeRule(rule.id)"
+                  >
+                    删除
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="editingRules.length === 0">
+                <td class="linkage__empty" colspan="4">暂无联动行，请添加</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <button type="button" class="linkage__add" @click="addRule">添加联动行</button>
       </div>
-    </Transition>
-  </Teleport>
+
+      <footer class="linkage__edit-footer">
+        <button type="button" class="linkage__btn" @click="cancelLinkageEdit">取消</button>
+        <button type="button" class="linkage__btn linkage__btn--primary" @click="submitEdit">
+          提交
+        </button>
+      </footer>
+    </div>
+  </ScreenDialog>
 </template>
 
 <style scoped>
-.linkage-dialog {
-  position: fixed;
-  inset: 0;
-  z-index: 2200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: rgb(0 10 24 / 72%);
-}
-
-.linkage-dialog__panel {
-  position: relative;
+.linkage {
   display: flex;
   flex-direction: column;
-  width: min(1100px, 100%);
-  height: min(720px, calc(100vh - 40px));
-  border: 1px solid rgb(0 148 236 / 45%);
-  border-radius: 10px;
-  background: linear-gradient(180deg, rgb(8 28 58 / 98%), rgb(5 20 40 / 98%));
-  box-shadow: 0 14px 36px rgb(0 0 0 / 42%);
-  overflow: hidden;
-}
-
-.linkage-dialog__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
-  padding: 12px 16px;
-  border-bottom: 1px solid rgb(0 110 190 / 35%);
-}
-
-.linkage-dialog__title {
-  margin: 0;
-  font-size: 20px;
-  color: #fff;
-}
-
-.linkage-dialog__close {
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: transparent;
-  color: #c8d8ec;
-  font-size: 22px;
-  cursor: pointer;
-}
-
-.linkage-dialog__body {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+  gap: var(--space-sm);
+  height: 100%;
   min-height: 0;
-  padding: 12px 16px 14px;
-  gap: 10px;
 }
 
-.linkage-dialog__toolbar {
+.linkage__toolbar {
   display: flex;
-  gap: 8px;
   flex-shrink: 0;
+  gap: var(--space-sm);
 }
 
-.linkage-dialog__input,
-.linkage-dialog__select {
-  height: 32px;
-  padding: 0 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
-  border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #fff;
-  font-size: 12px;
-  font-family: var(--font-body);
-  outline: none;
+.linkage__input {
   min-width: 0;
-}
-
-.linkage-dialog__input {
   width: 220px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-sm);
+  background: var(--panel-inner-bg);
+  color: var(--color-text-strong);
+  font-family: inherit;
+  font-size: var(--font-size-helper);
+  outline: none;
 }
 
-.linkage-dialog__input--cell {
+.linkage__input--select {
+  width: 160px;
+}
+
+.linkage__input--block {
+  width: 100%;
+}
+
+.linkage__input--cell {
   width: 100%;
   min-width: 170px;
+}
+
+.linkage__btn {
   height: 30px;
-}
-
-.linkage-dialog__btn {
-  height: 32px;
   padding: 0 14px;
-  border: 1px solid rgb(0 120 200 / 28%);
-  border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #c8d8ec;
-  font-size: 12px;
-  font-family: var(--font-body);
-  cursor: pointer;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--font-size-helper);
   white-space: nowrap;
+  cursor: pointer;
 }
 
-.linkage-dialog__btn--primary {
-  color: #fff;
-  border-color: rgb(0 180 255 / 45%);
-  background: rgb(0 90 160 / 45%);
+.linkage__btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text-strong);
 }
 
-.linkage-dialog__table-wrap {
+.linkage__btn--primary {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 20%, transparent);
+  color: var(--color-text-strong);
+}
+
+.linkage__table-wrap {
   flex: 1;
   min-height: 0;
   overflow: auto;
-  border: 1px solid rgb(0 110 190 / 22%);
-  border-radius: 4px;
-  background: rgb(0 16 36 / 35%);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-sm);
+  background: var(--panel-inner-bg);
 }
 
-.linkage-dialog__table {
+.linkage__table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
-  color: #dbe7f8;
+  color: var(--color-text);
+  font-size: var(--font-size-helper);
 }
 
-.linkage-dialog__table th {
+.linkage__table th {
   position: sticky;
   top: 0;
-  z-index: 1;
-  padding: 10px 8px;
-  text-align: left;
-  font-weight: 500;
-  color: #8aa4c4;
-  background: rgb(0 28 58 / 95%);
-  border-bottom: 1px solid rgb(0 110 190 / 28%);
-  white-space: nowrap;
-}
-
-.linkage-dialog__table td {
+  z-index: var(--z-base);
   padding: 9px 8px;
-  border-bottom: 1px solid rgb(0 90 150 / 15%);
-}
-
-.linkage-dialog__table tbody tr:hover {
-  background: rgb(0 40 78 / 35%);
-}
-
-.linkage-dialog__code {
-  color: #6eb5ff;
+  border-bottom: 1px solid var(--panel-border);
+  background: var(--color-panel);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  text-align: left;
   white-space: nowrap;
 }
 
-.linkage-dialog__objects {
+.linkage__table td {
+  padding: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--panel-border) 42%, transparent);
+}
+
+.linkage__table tbody tr:hover {
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+
+.linkage__code {
+  color: var(--color-accent);
+  font-family: var(--font-number);
+  white-space: nowrap;
+}
+
+.linkage__num {
+  font-family: var(--font-number);
+}
+
+.linkage__objects {
   min-width: 220px;
 }
 
-.linkage-dialog__row-actions {
+.linkage__empty {
+  padding: var(--space-lg) 8px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.linkage__row-actions {
   display: flex;
-  gap: 10px;
+  gap: var(--space-sm);
   white-space: nowrap;
 }
 
-.linkage-dialog__row-btn {
+.linkage__row-btn {
   padding: 0;
-  border: none;
+  border: 0;
   background: transparent;
-  color: #0af;
-  font-size: 12px;
-  font-family: var(--font-body);
+  color: var(--color-accent);
+  font-family: inherit;
+  font-size: var(--font-size-helper);
   cursor: pointer;
 }
 
-.linkage-dialog__row-btn--danger {
-  color: #ff7a6a;
+.linkage__row-btn--danger {
+  color: var(--color-danger);
 }
 
-.linkage-dialog__pagination,
-.linkage-dialog__edit-footer {
+.linkage__pagination,
+.linkage__edit-footer {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
   flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
 }
 
-.linkage-dialog__edit-footer {
+.linkage__edit-footer {
   justify-content: flex-end;
-  padding-top: 10px;
-  border-top: 1px solid rgb(0 110 190 / 25%);
+  padding-top: var(--space-sm);
+  border-top: 1px solid color-mix(in srgb, var(--panel-border) 55%, transparent);
 }
 
-.linkage-dialog__page {
+.linkage__page {
   min-width: 28px;
   height: 28px;
   padding: 0 8px;
-  border: 1px solid rgb(0 120 200 / 28%);
-  border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #c8d8ec;
-  font-size: 12px;
-  font-family: var(--font-body);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-sm);
+  background: var(--panel-inner-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--font-size-helper);
   cursor: pointer;
 }
 
-.linkage-dialog__page:disabled {
+.linkage__page:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-.linkage-dialog__page--active {
-  color: #fff;
-  border-color: rgb(0 180 255 / 55%);
-  background: rgb(0 90 160 / 55%);
+.linkage__page--active {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 20%, transparent);
+  color: var(--color-text-strong);
 }
 
-.linkage-dialog__section {
+.linkage__section {
   flex-shrink: 0;
 }
 
-.linkage-dialog__section--grow {
-  flex: 1;
+.linkage__section--grow {
   display: flex;
+  flex: 1;
   flex-direction: column;
   min-height: 0;
 }
 
-.linkage-dialog__section-title {
-  margin: 0 0 8px;
-  padding-left: 8px;
-  border-left: 3px solid #00b4ff;
-  color: #dbe7f8;
-  font-size: 14px;
+.linkage__section-title {
+  margin: 0 0 var(--space-sm);
+  padding-left: var(--space-sm);
+  border-left: 3px solid var(--color-accent);
+  color: var(--color-text-strong);
+  font-size: var(--font-size-stat-label);
   font-weight: 500;
 }
 
-.linkage-dialog__fields {
+.linkage__fields {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-sm);
 }
 
-.linkage-dialog__field {
+.linkage__field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: var(--space-xs);
+  min-width: 0;
 }
 
-.linkage-dialog__field span {
-  color: #8aa4c4;
-  font-size: 12px;
+.linkage__field span {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-helper);
 }
 
-.linkage-dialog__add {
+.linkage__add {
   align-self: flex-start;
-  margin-top: 8px;
-  height: 30px;
+  height: 28px;
+  margin-top: var(--space-sm);
   padding: 0 12px;
-  border: 1px dashed rgb(0 150 230 / 50%);
-  border-radius: 4px;
-  background: rgb(0 60 120 / 25%);
-  color: #6eb5ff;
-  font-size: 12px;
-  font-family: var(--font-body);
+  border: 1px dashed var(--panel-border);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  color: var(--color-accent);
+  font-family: inherit;
+  font-size: var(--font-size-helper);
   cursor: pointer;
-}
-
-.linkage-dialog__tip {
-  position: absolute;
-  right: 20px;
-  bottom: 20px;
-  padding: 10px 16px;
-  border: 1px solid rgb(61 214 140 / 50%);
-  border-radius: 4px;
-  background: rgb(10 60 40 / 90%);
-  color: #9fe8c2;
-  font-size: 13px;
-}
-
-.linkage-dialog-fade-enter-active,
-.linkage-dialog-fade-leave-active {
-  transition: opacity 0.22s ease;
-}
-
-.linkage-dialog-fade-enter-from,
-.linkage-dialog-fade-leave-to {
-  opacity: 0;
-}
-
-.linkage-dialog-tip-enter-active,
-.linkage-dialog-tip-leave-active {
-  transition:
-    opacity 0.25s ease,
-    transform 0.25s ease;
-}
-
-.linkage-dialog-tip-enter-from,
-.linkage-dialog-tip-leave-to {
-  opacity: 0;
-  transform: translateY(8px);
 }
 </style>

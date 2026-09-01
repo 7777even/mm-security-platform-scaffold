@@ -4,7 +4,9 @@ import { useRouter } from 'vue-router';
 import DashboardLayout from '@/components/layout/DashboardLayout.vue';
 import MapPageShell from '@/components/map/MapPageShell.vue';
 import PanelCard from '@/components/common/PanelCard.vue';
+import MajorHazardInteractionLayer from '@/components/major-hazard/MajorHazardInteractionLayer.vue';
 import { useWorldMarkerScreenPositions } from '@/composables/useCesiumScreenAnchor';
+import { useMajorHazardInteraction } from '@/composables/useMajorHazardInteraction';
 import { getSharedMap, onSharedMapReady } from '@/composables/sharedCesiumBridge';
 import {
   levelTone,
@@ -17,6 +19,7 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
+const ia = useMajorHazardInteraction();
 const detail = computed(() => resolveMajorHazardDetail(props.hazardId));
 const activeTab = ref<'basic' | 'monitor' | 'video' | 'material' | 'evacuation' | 'operation'>(
   'basic',
@@ -100,7 +103,13 @@ onMounted(() => {
     <DashboardLayout module="production" active-nav="production" class="hazard-detail__layout">
       <div class="hazard-detail-page">
         <aside class="hazard-detail-page__left">
-          <PanelCard title="" variant="facilities" module="production" :show-more="false">
+          <PanelCard
+            title="重大危险源详情"
+            icon="helmet"
+            variant="facilities"
+            module="production"
+            :show-more="false"
+          >
             <template #title>
               <h3 class="hazard-detail__panel-title">重大危险源详情</h3>
             </template>
@@ -118,6 +127,28 @@ onMounted(() => {
                   @click="activeTab = tab.key"
                 >
                   {{ tab.label }}
+                </button>
+              </div>
+
+              <div class="hazard-detail__actions">
+                <button type="button" class="hazard-detail__act" @click="ia.openVideo(detail)">
+                  视频点位
+                </button>
+                <button type="button" class="hazard-detail__act" @click="ia.openMonitoring(detail)">
+                  监测点位
+                </button>
+                <button type="button" class="hazard-detail__act" @click="ia.openChemicals(detail)">
+                  危化品
+                </button>
+                <button type="button" class="hazard-detail__act" @click="ia.openEvacuation(detail)">
+                  疏散路线
+                </button>
+                <button
+                  type="button"
+                  class="hazard-detail__act"
+                  @click="ia.openEmergencyOp(detail)"
+                >
+                  应急操作
                 </button>
               </div>
 
@@ -224,6 +255,11 @@ onMounted(() => {
         </aside>
       </div>
     </DashboardLayout>
+
+    <!-- 重大危险源模块二级界面分发层（点击 → 二级界面，不离开模块） -->
+    <MajorHazardInteractionLayer />
+
+    <button type="button" class="hazard-detail-page__back" @click="goBack">返回</button>
   </MapPageShell>
 </template>
 
@@ -310,6 +346,32 @@ onMounted(() => {
   color: var(--color-text-strong);
   border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
   background: var(--map-tab-selected-bg);
+}
+
+.hazard-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.hazard-detail__act {
+  flex: 1 1 auto;
+  min-width: 76px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  color: var(--color-text-strong);
+  font-size: var(--font-size-helper);
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.hazard-detail__act:hover {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
 }
 
 .hazard-detail__body {
@@ -525,5 +587,27 @@ onMounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.hazard-detail-page__back {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  z-index: var(--z-chrome);
+  height: 36px;
+  padding: 0 18px;
+  border: 1px solid color-mix(in srgb, var(--map-border) 45%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--color-panel) 82%, transparent);
+  color: var(--color-text);
+  font-size: 14px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.hazard-detail-page__back:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 65%, transparent);
+  background: color-mix(in srgb, var(--color-panel) 90%, transparent);
 }
 </style>

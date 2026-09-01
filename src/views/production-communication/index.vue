@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import MapPageShell from '@/components/map/MapPageShell.vue';
 import ProductionMap from '@/components/map/ProductionMap.vue';
 import CommunicationDeviceListPanel from '@/components/panels/production/CommunicationDeviceListPanel.vue';
-import CommunicationDeviceDetailPanel from '@/components/panels/production/CommunicationDeviceDetailPanel.vue';
-import OneKeyBroadcastDialog from '@/components/panels/production/OneKeyBroadcastDialog.vue';
-import SinglePointBroadcastDialog from '@/components/panels/production/SinglePointBroadcastDialog.vue';
+import CommunicationInteractionLayer from '@/components/production-communication/CommunicationInteractionLayer.vue';
+import PkgIcon from '@/components/common/PkgIcon.vue';
+import { useCommunicationInteraction } from '@/composables/useCommunicationInteraction';
 import {
   communicationDrawerOpen,
   selectedDevice,
@@ -16,8 +16,7 @@ import type { CommunicationTab } from '@/services/map-data/communicationDeviceMo
 
 const route = useRoute();
 const router = useRouter();
-const oneKeyOpen = ref(false);
-const singleOpen = ref(false);
+const ia = useCommunicationInteraction();
 
 const tabMap: Record<string, CommunicationTab> = {
   broadcast: 'broadcast',
@@ -61,21 +60,28 @@ function goBack() {
         <CommunicationDeviceListPanel />
       </aside>
 
-      <aside v-if="selectedDevice" class="comm-view__drawer comm-view__drawer--right">
-        <CommunicationDeviceDetailPanel @broadcast="oneKeyOpen = true" @shout="singleOpen = true" />
-      </aside>
-
       <div class="comm-view__bottom">
         <div class="comm-view__pagination">1 2 3 4 5</div>
         <div class="comm-view__actions">
-          <button type="button" class="comm-view__btn" @click="oneKeyOpen = true">发送广播</button>
-          <button type="button" class="comm-view__btn" @click="singleOpen = true">单点广播</button>
+          <button type="button" class="comm-view__btn" @click="ia.openOneKeyBroadcast()">
+            <PkgIcon name="bell-ringing" size="16px" class="comm-view__btn-icon" />
+            发送广播
+          </button>
+          <button
+            type="button"
+            class="comm-view__btn"
+            @click="ia.openSingleBroadcast(selectedDevice)"
+          >
+            <PkgIcon name="bell-ringing" size="16px" class="comm-view__btn-icon" />
+            单点广播
+          </button>
           <button
             type="button"
             class="comm-view__btn comm-view__btn--primary"
             :disabled="!selectedDevice"
-            @click="singleOpen = true"
+            @click="ia.openSingleBroadcast(selectedDevice)"
           >
+            <PkgIcon name="bell-ringing" size="16px" class="comm-view__btn-icon" />
             即时喊话
           </button>
         </div>
@@ -83,12 +89,7 @@ function goBack() {
     </template>
   </MapPageShell>
 
-  <OneKeyBroadcastDialog :open="oneKeyOpen" @close="oneKeyOpen = false" />
-  <SinglePointBroadcastDialog
-    :open="singleOpen"
-    :device="selectedDevice"
-    @close="singleOpen = false"
-  />
+  <CommunicationInteractionLayer />
 </template>
 
 <style scoped>
@@ -127,11 +128,6 @@ function goBack() {
   width: 520px;
 }
 
-.comm-view__drawer--right {
-  right: 18px;
-  width: 420px;
-}
-
 .comm-view__drawer :deep(.panel-card) {
   height: 100%;
   min-height: 0;
@@ -164,6 +160,9 @@ function goBack() {
 }
 
 .comm-view__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   height: 34px;
   padding: 0 16px;
   border: 1px solid color-mix(in srgb, var(--map-border) 30%, transparent);
@@ -173,6 +172,10 @@ function goBack() {
   font-size: 13px;
   font-family: var(--font-body);
   cursor: pointer;
+}
+
+.comm-view__btn-icon {
+  color: var(--color-accent);
 }
 
 .comm-view__btn:hover:not(:disabled) {

@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import PkgIcon from '@/components/common/PkgIcon.vue';
 import VideoWallSidebar from '@/components/video-wall/VideoWallSidebar.vue';
 import VideoWallGrid from '@/components/video-wall/VideoWallGrid.vue';
-import VideoLinkageConfigDialog from '@/components/video-wall/VideoLinkageConfigDialog.vue';
+import VideoWallInteractionLayer from '@/components/video-wall/VideoWallInteractionLayer.vue';
 import {
   activeEventVideoContext,
   clearEventVideoContext,
   ensureEventVideoWall,
   prepareDefaultHighAltitudeWall,
-  showAllEventVideosOnWall,
   type EventVideoKind,
 } from '@/components/video-wall/videoWallStore';
+import { useVideoWallInteraction } from '@/composables/useVideoWallInteraction';
 
+const ia = useVideoWallInteraction();
 const router = useRouter();
 const route = useRoute();
 const eventContext = computed(() => activeEventVideoContext.value);
@@ -59,7 +61,9 @@ function goBack() {
   <div class="video-wall-page">
     <div class="video-wall-page__title-bar">
       <div class="video-wall-page__heading">
-        <h2 class="video-wall-page__title">视频墙</h2>
+        <h2 class="video-wall-page__title">
+          <PkgIcon name="crane" size="18px" class="video-wall-page__title-icon" />视频墙
+        </h2>
         <div v-if="eventContext" class="video-wall-page__event-context">
           <span>{{ eventContext.kind === 'weather' ? '极端天气' : '应急事件' }}</span>
           <strong>{{ eventContext.eventTitle }}</strong>
@@ -68,7 +72,7 @@ function goBack() {
             {{ eventContext.groups.reduce((total, group) => total + group.cameras.length, 0) }}
             路视频</em
           >
-          <button type="button" @click="showAllEventVideosOnWall">全部上墙</button>
+          <button type="button" @click="ia.openEventVideoWall()">全部上墙</button>
         </div>
       </div>
       <button type="button" class="video-wall-page__back" @click="goBack">
@@ -86,7 +90,8 @@ function goBack() {
       </main>
     </div>
 
-    <VideoLinkageConfigDialog />
+    <!-- 视频监控墙模块二级界面分发层（点击 → 二级界面，不离开模块） -->
+    <VideoWallInteractionLayer />
   </div>
 </template>
 
@@ -113,11 +118,18 @@ function goBack() {
 }
 
 .video-wall-page__title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
   margin: 0;
   font-size: 18px;
   font-weight: 600;
   color: var(--map-accent-soft-text);
   letter-spacing: 1px;
+}
+
+.video-wall-page__title-icon {
+  color: var(--color-accent);
 }
 
 .video-wall-page__heading {

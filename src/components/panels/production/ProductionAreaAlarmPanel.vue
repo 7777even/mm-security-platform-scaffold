@@ -1,15 +1,25 @@
 <script setup lang="ts">
 import PanelCard from '../../common/PanelCard.vue';
 import ProductionAlarmCard from '../../common/ProductionAlarmCard.vue';
+import { useProductionAreaInteraction } from '@/composables/useProductionAreaInteraction';
 import type { ProductionAlarmItem } from '@/services/map-data/productionMock';
 
-defineProps<{
+const props = defineProps<{
+  facilityId: string;
   alarms: ProductionAlarmItem[];
 }>();
+
+const ia = useProductionAreaInteraction();
 </script>
 
 <template>
-  <PanelCard title="" variant="alarm" module="production" :show-more="true">
+  <PanelCard
+    title=""
+    variant="alarm"
+    module="production"
+    :show-more="true"
+    @more="ia.openAlarmList(props.facilityId)"
+  >
     <template #title>
       <div class="alarm-title">
         <h3 class="alarm-title__text">生产区域安全告警</h3>

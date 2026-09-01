@@ -14,6 +14,11 @@ import {
 } from './videoWallStore';
 import { videoWallBus } from './videoWallBus';
 import VideoWallPlayer from './VideoWallPlayer.vue';
+import PkgIcon from '@/components/common/PkgIcon.vue';
+import { showToast } from '@/composables/useToast';
+import { useVideoWallInteraction } from '@/composables/useVideoWallInteraction';
+
+const ia = useVideoWallInteraction();
 
 const pages = ref<VideoPage[]>(
   currentLayout.value
@@ -275,10 +280,13 @@ const layoutLabel = computed(() => `${rows.value}×${cols.value}`);
 // Selection logic
 let isDraggingSelection = false;
 let startCell: CellConfig | null = null;
+// 框选跨过其他分屏时置位：mouseup 后的 click 不应再被当作"点击查看详情"
+let selectionMoved = false;
 
 const handleMouseDown = (cell: CellConfig) => {
   if (cell.hidden) return;
   isDraggingSelection = true;
+  selectionMoved = false;
   startCell = cell;
   // Reset previous selection
   cells.value.forEach((c) => (c.selected = false));
@@ -287,6 +295,7 @@ const handleMouseDown = (cell: CellConfig) => {
 
 const handleMouseEnter = (cell: CellConfig) => {
   if (!isDraggingSelection || !startCell || cell.hidden) return;
+  if (cell !== startCell) selectionMoved = true;
 
   // Calculate bounding box between startCell and current cell
   const minRow = Math.min(startCell.row, cell.row);
@@ -312,6 +321,25 @@ const handleMouseUp = () => {
 };
 
 const getSelectedCells = () => cells.value.filter((c) => c.selected && !c.hidden);
+
+/**
+ * 分屏点击 → 摄像头详情二级界面（不离开模块）。
+ * 框选（跨分屏拖拽）后的 click 不触发；空分屏给出可操作提示，避免空壳点击。
+ */
+const openCellDetail = (cell: CellConfig) => {
+  if (selectionMoved) return;
+  if (!cell.videoId) {
+    showToast('该分屏暂无视频，可从左侧视频目录拖入或双击目标上墙');
+    return;
+  }
+  ia.openCameraDetail({
+    id: cell.videoId,
+    name: cell.videoName || cell.videoId,
+    source: `第 ${activePageIndex.value + 1} 页 · 分屏 ${cell.id}`,
+    location: wallDisplayContext.value.name,
+    status: videoMode.value === 'playback' ? 'loading' : 'live',
+  });
+};
 
 const canMerge = computed(() => getSelectedCells().length > 1);
 const canUnmerge = computed(() => {
@@ -472,7 +500,7 @@ watch(
   <div class="video-grid-container" @mouseup="handleMouseUp" @mouseleave="handleMouseUp">
     <div class="grid-header">
       <div class="header-left">
-        <h3>实时视频监控</h3>
+        <h3><PkgIcon name="crane" size="16px" class="header-icon" />实时视频监控</h3>
         <!-- 页码控制移到顶部 -->
         <div class="header-page-control">
           <button class="page-btn mini" :disabled="activePageIndex === 0" @click="prevPage">
@@ -490,21 +518,21 @@ watch(
 
         <!-- 新建/删除页移到顶部 -->
         <div class="header-page-actions">
-          <button class="add-page-btn mini" title="新增一页" @click="addPage">➕ 新增</button>
+          <button class="add-page-btn mini" title="新增一页" @click="addPage">新增</button>
           <button
             class="remove-page-btn mini"
             :disabled="pages.length <= 1"
             title="删除当前页"
             @click="removePage"
           >
-            🗑️ 删除
+            删除
           </button>
         </div>
       </div>
 
       <div class="grid-controls">
         <span v-if="videoMode === 'playback'" class="global-playback-warning"
-          >⚠️ 历史回放模式，PTZ已锁定</span
+          >历史回放模式，PTZ 已锁定</span
         >
         <label
           >行: <input v-model="rows" type="number" min="1" max="4" @change="updateGrid"
@@ -556,6 +584,7 @@ watch(
         }"
         @mousedown="handleMouseDown(cell)"
         @mouseenter="handleMouseEnter(cell)"
+        @click="openCellDetail(cell)"
         @dragover.prevent
         @drop="handleDrop($event, cell)"
       >
@@ -575,14 +604,14 @@ watch(
           :class="{ active: videoMode === 'realtime' }"
           @click="videoMode = 'realtime'"
         >
-          ⚡ 实时模式
+          实时模式
         </button>
         <button
           class="mode-btn"
           :class="{ active: videoMode === 'playback' }"
           @click="videoMode = 'playback'"
         >
-          ⏳ 历史回放
+          历史回放
         </button>
       </div>
 
@@ -601,7 +630,7 @@ watch(
             title="拖动跳转播放进度"
             @input="onProgressChange"
           />
-          <span v-if="isControlDisabled" class="timeline-tip">⚠️ 请先选中目标分屏</span>
+          <span v-if="isControlDisabled" class="timeline-tip">请先选中目标分屏</span>
         </div>
 
         <input v-model="playbackTimeRange.end" type="datetime-local" class="time-input" />
@@ -614,12 +643,12 @@ watch(
             :disabled="isControlDisabled"
             @click="togglePlay"
           >
-            {{ isPlaying ? '⏸️ 暂停' : '▶️ 播放' }}
+            {{ isPlaying ? '暂停' : '播放' }}
           </button>
 
           <select v-model="playbackScope" class="playback-scope-select">
-            <option value="all">📺 全部摄像头</option>
-            <option value="selected">🎯 仅选中摄像头</option>
+            <option value="all">全部摄像头</option>
+            <option value="selected">仅选中摄像头</option>
           </select>
         </div>
       </div>
@@ -719,11 +748,18 @@ watch(
 }
 
 .header-left h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
   font-size: 16px;
   font-weight: bold;
-  color: #7cdbff;
-  text-shadow: 0 0 8px rgb(124 219 255 / 40%);
+  color: var(--map-accent-soft-text);
+  text-shadow: var(--panel-title-glow);
+}
+
+.header-icon {
+  color: var(--color-accent);
 }
 
 .header-page-control {

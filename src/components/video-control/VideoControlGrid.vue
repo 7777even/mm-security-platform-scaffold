@@ -1,7 +1,18 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { getVideoControlPage, type GridLayout } from '@/services/map-data/videoControlMock';
+import {
+  getVideoControlPage,
+  type GridLayout,
+  type VideoControlCell,
+} from '@/services/map-data/videoControlMock';
 import { videoControlFrameStyle } from '@/utils/tvSpriteConfig';
+import { useVideoControlInteraction } from '@/composables/useVideoControlInteraction';
+
+const ia = useVideoControlInteraction();
+
+function openCell(cell: VideoControlCell): void {
+  ia.openCameraDetail(cell);
+}
 
 const props = defineProps<{
   page: number;
@@ -52,7 +63,16 @@ function cellIndex(index: number) {
 
 <template>
   <div class="vc-grid" :class="gridClass">
-    <article v-for="(cell, index) in visibleCells" :key="cell.id" class="vc-cell">
+    <article
+      v-for="(cell, index) in visibleCells"
+      :key="cell.id"
+      class="vc-cell"
+      role="button"
+      tabindex="0"
+      @click="openCell(cell)"
+      @keyup.enter="openCell(cell)"
+      @keyup.space.prevent="openCell(cell)"
+    >
       <header class="vc-cell__header">
         <span class="vc-cell__index">{{ cellIndex(index) }}</span>
         <span class="vc-cell__name">{{ cell.name }}</span>
@@ -117,6 +137,19 @@ function cellIndex(index: number) {
   border: 1px solid rgb(0 120 200 / 35%);
   border-radius: 2px;
   overflow: hidden;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.vc-cell:hover,
+.vc-cell:focus-visible {
+  border-color: rgb(0 200 255 / 70%);
+  box-shadow:
+    0 0 0 1px rgb(0 200 255 / 50%),
+    0 0 16px rgb(0 160 255 / 25%);
+  outline: none;
 }
 
 .vc-cell__header {

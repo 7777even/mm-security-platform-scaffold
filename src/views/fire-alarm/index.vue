@@ -13,6 +13,7 @@ import FireFacilityPanel from '@/components/fire/FireFacilityPanel.vue';
 import FireDevicePanel from '@/components/fire/FireDevicePanel.vue';
 import FireAlarmPanel from '@/components/fire/FireAlarmPanel.vue';
 import FireDutyPanel from '@/components/fire/FireDutyPanel.vue';
+import FireAlarmInteractionLayer from '@/components/fire/FireAlarmInteractionLayer.vue';
 import {
   fetchAlarmPoints,
   fetchDevicePoints,
@@ -74,6 +75,9 @@ onMounted(async () => {
         <SystemMessageBar />
       </div> -->
     </div>
+
+    <!-- 消防报警模块二级界面分发层（点击 → 二级界面，不离开模块） -->
+    <FireAlarmInteractionLayer />
 
     <!-- 加载骨架屏 -->
     <div v-if="loading" class="dashboard-skeleton" data-test="firealarm-skeleton">

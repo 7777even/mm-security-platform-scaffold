@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
+import { showToast } from '@/composables/useToast';
+import { useMajorHazardInteraction } from '@/composables/useMajorHazardInteraction';
 import {
   hazardEnterpriseOptions,
   hazardLevelOptions,
@@ -12,6 +14,7 @@ import {
 import { usePlantArea } from '@/composables/usePlantArea';
 
 const router = useRouter();
+const ia = useMajorHazardInteraction();
 const { filterByPlantArea } = usePlantArea();
 
 const enterprise = ref<(typeof hazardEnterpriseOptions)[number]>('全部企业');
@@ -36,16 +39,32 @@ function levelClass(lv: HazardLevel) {
 }
 
 function openDetail(item: MajorHazardItem) {
-  void router.push({ name: 'ops-monitor-hazard-detail', params: { hazardId: String(item.id) } });
+  // inline-closed-loop：行点击打开二级界面（危险源详情），不离开当前模块
+  ia.openHazardDetail(item);
 }
 
 function closeList() {
   void router.push({ name: 'ops-monitor' });
 }
+
+// 「全部档案」链接 → 打开列表中首个危险源的详情二级界面（真实动作，非空壳）
+function onMore() {
+  const first = filtered.value[0];
+  if (first) ia.openHazardDetail(first);
+  else showToast('暂无可查看的危险源');
+}
 </script>
 
 <template>
-  <PanelCard title="" variant="facilities" module="production" :show-more="false">
+  <PanelCard
+    title="重大危险源"
+    icon="gas"
+    more="全部档案"
+    variant="facilities"
+    module="production"
+    :show-more="false"
+    @more="onMore"
+  >
     <template #title>
       <div class="hazard-list__title">
         <h3 class="hazard-list__heading">重大危险源</h3>

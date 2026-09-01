@@ -1,9 +1,13 @@
 <!--
   SpecialWorkPanel — §消防报警「特殊作业」
   两排各 4 个圆形指标（类型 + 数量）。
+  交互：点击任一指标 → 特殊作业二级界面（替代原静态展示）。
 -->
 <script setup lang="ts">
 import PanelCard from '@/components/common/PanelCard.vue';
+import { useFireAlarmInteraction } from '@/composables/useFireAlarmInteraction';
+
+const ia = useFireAlarmInteraction();
 
 interface WorkItem {
   type: string;
@@ -25,15 +29,31 @@ const bottom: WorkItem[] = [
 </script>
 
 <template>
-  <PanelCard title="特殊作业" icon="Warning">
+  <PanelCard title="特殊作业" icon="confined-space">
     <div class="cells">
-      <div v-for="c in top" :key="c.type" class="cell">
+      <div
+        v-for="c in top"
+        :key="c.type"
+        class="cell"
+        role="button"
+        tabindex="0"
+        @click="ia.openSpecialWork()"
+        @keyup.enter="ia.openSpecialWork()"
+      >
         <div class="circle">{{ c.count }}</div>
         <div class="cell__type">{{ c.type }}</div>
       </div>
     </div>
     <div class="cells">
-      <div v-for="c in bottom" :key="c.type" class="cell">
+      <div
+        v-for="c in bottom"
+        :key="c.type"
+        class="cell"
+        role="button"
+        tabindex="0"
+        @click="ia.openSpecialWork()"
+        @keyup.enter="ia.openSpecialWork()"
+      >
         <div class="circle">{{ c.count }}</div>
         <div class="cell__type">{{ c.type }}</div>
       </div>
@@ -58,6 +78,14 @@ const bottom: WorkItem[] = [
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  transition: transform 0.15s ease;
+}
+
+.cell:hover {
+  transform: translateY(-2px);
 }
 
 .circle {

@@ -6,6 +6,7 @@ import { PieChart } from 'echarts/charts';
 import { TooltipComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import PanelCard from '../../common/PanelCard.vue';
+import { useProductionAreaInteraction } from '@/composables/useProductionAreaInteraction';
 import type { ProductionAreaPersonnelSlice } from '@/services/map-data/productionAreaMock';
 
 use([PieChart, TooltipComponent, CanvasRenderer]);
@@ -14,6 +15,8 @@ const props = defineProps<{
   total: number;
   slices: ProductionAreaPersonnelSlice[];
 }>();
+
+const ia = useProductionAreaInteraction();
 
 const pieOption = computed(() => ({
   animation: false,
@@ -43,7 +46,13 @@ const pieOption = computed(() => ({
 </script>
 
 <template>
-  <PanelCard title="区域人员统计" variant="facilities" module="production" :show-more="true">
+  <PanelCard
+    title="区域人员统计"
+    variant="facilities"
+    module="production"
+    :show-more="true"
+    @more="ia.openPersonnel({ total, slices })"
+  >
     <div class="personnel">
       <div class="personnel__chart-wrap">
         <VChart class="personnel__chart" :option="pieOption" autoresize />

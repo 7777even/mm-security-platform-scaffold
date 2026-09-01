@@ -5,6 +5,7 @@
 -->
 <script setup lang="ts">
 import PanelCard from '@/components/common/PanelCard.vue';
+import { useSecurityInteraction } from '@/composables/useSecurityInteraction';
 
 type Status = '未处理' | '处理中' | '已处理';
 
@@ -58,14 +59,15 @@ const statusColor: Record<Status, string> = {
   已处理: 'var(--color-success)',
 };
 
+const ia = useSecurityInteraction();
+
 function onMore(): void {
-  // 打开告警详情（占位）
-  console.warn('[alarm-list] more');
+  ia.openHazardSource();
 }
 </script>
 
 <template>
-  <PanelCard title="告警列表" icon="List" more="危险源" @more="onMore">
+  <PanelCard title="告警列表" icon="confined-space" more="危险源" @more="onMore">
     <div class="filter">
       <span class="filter__label">危险源</span>
       <span class="filter__divider">|</span>

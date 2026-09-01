@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
+import PkgIcon from '@/components/common/PkgIcon.vue';
 import {
   activeGroups,
   allDevices,
@@ -9,7 +10,13 @@ import {
   selectCommunicationDevice,
   switchCommunicationTab,
 } from '@/composables/useCommunicationDevices';
-import type { CommunicationTab } from '@/services/map-data/communicationDeviceMock';
+import { useCommunicationInteraction } from '@/composables/useCommunicationInteraction';
+import type {
+  CommunicationDevice,
+  CommunicationTab,
+} from '@/services/map-data/communicationDeviceMock';
+
+const ia = useCommunicationInteraction();
 
 const tabOptions: { key: CommunicationTab; label: string }[] = [
   { key: 'broadcast', label: '广播' },
@@ -18,6 +25,12 @@ const tabOptions: { key: CommunicationTab; label: string }[] = [
 ];
 
 const totalCount = computed(() => allDevices.value.length);
+
+// 点击列表行：选中并保持抽屉态同步，同时打开设备详情二级界面（内联闭环，不离开模块）。
+function onRow(device: CommunicationDevice): void {
+  selectCommunicationDevice(device.id);
+  ia.openDeviceDetail(device);
+}
 
 function statusTone(status: string) {
   if (status === '离线') return 'offline';
@@ -58,8 +71,9 @@ function statusTone(status: string) {
             type="button"
             class="comm-list__row"
             :class="{ 'comm-list__row--active': selectedDeviceId === device.id }"
-            @click="selectCommunicationDevice(device.id)"
+            @click="onRow(device)"
           >
+            <PkgIcon name="bell-ringing" size="14px" class="comm-list__icon" />
             <span class="comm-list__name" :title="device.name">{{ device.name }}</span>
             <span class="comm-list__area">{{ device.area }}</span>
             <span
@@ -160,7 +174,7 @@ function statusTone(status: string) {
 
 .comm-list__row {
   display: grid;
-  grid-template-columns: 1.4fr 0.8fr 0.6fr auto;
+  grid-template-columns: auto 1.4fr 0.8fr 0.6fr auto;
   gap: 6px;
   align-items: center;
   min-height: 40px;
@@ -185,6 +199,11 @@ function statusTone(status: string) {
 .comm-list__row--active {
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 70 130 / 45%);
+}
+
+.comm-list__icon {
+  flex: none;
+  color: var(--color-accent);
 }
 
 .comm-list__name,

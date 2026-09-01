@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import VideoControlSidebar from '@/components/video-control/VideoControlSidebar.vue';
 import VideoControlGrid from '@/components/video-control/VideoControlGrid.vue';
 import VideoControlBottomBar from '@/components/video-control/VideoControlBottomBar.vue';
+import VideoControlInteractionLayer from '@/components/video-control/VideoControlInteractionLayer.vue';
 import type { GridLayout } from '@/services/map-data/videoControlMock';
 
 const page = ref(1);
@@ -25,6 +26,9 @@ const layout = ref<GridLayout>('3x3');
       @update:page="page = $event"
       @update:layout="layout = $event"
     />
+
+    <!-- 视频控制平台模块二级界面分发层（点击 → 二级界面，不离开模块） -->
+    <VideoControlInteractionLayer />
   </div>
 </template>
 

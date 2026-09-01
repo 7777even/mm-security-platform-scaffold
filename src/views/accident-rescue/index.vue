@@ -25,7 +25,9 @@ import RescueDynamicsPanel from '@/components/panels/accident-rescue/RescueDynam
 import RescueBottomToolbar from '@/components/panels/accident-rescue/RescueBottomToolbar.vue';
 import FacilityDetailPanel from '@/components/panels/accident-rescue/FacilityDetailPanel.vue';
 import CommandActionDetailPanel from '@/components/panels/accident-rescue/CommandActionDetailPanel.vue';
-import EmergencyAddressBookDialog from '@/components/panels/accident-rescue/EmergencyAddressBookDialog.vue';
+import AccidentRescueInteractionLayer from '@/components/accident-rescue/AccidentRescueInteractionLayer.vue';
+import { useAccidentRescueInteraction } from '@/composables/useAccidentRescueInteraction';
+import { showToast } from '@/composables/useToast';
 import SandboxPanel from '@/components/panels/accident-rescue/SandboxPanel.vue';
 import SandboxMapOverlay from '@/components/map/SandboxMapOverlay.vue';
 import {
@@ -65,6 +67,7 @@ import '@/styles/accidentRescueScroll.css';
 const route = useRoute();
 const router = useRouter();
 const sandbox = useSandboxScene();
+const ia = useAccidentRescueInteraction();
 
 const isDrillMode = computed(() => route.name === 'dashboard-rescue');
 const pageTheme = computed(() => (isDrillMode.value ? 'drill' : 'event'));
@@ -92,7 +95,6 @@ const { onMapControl } = useMapControls();
 const rightToolMenuOpen = ref(false);
 const rightQuickActive = ref<'toolbar' | 'layers' | null>(null);
 const activeToolItem = ref<string | null>(null);
-const addressBookOpen = ref(false);
 const sceneMode = ref<'default' | 'evacuation' | 'monitoring' | 'rescueRoute' | 'sandbox'>(
   'default',
 );
@@ -228,7 +230,7 @@ async function handleLayerQuickClick() {
 function handleBottomToolbarAction(id: string) {
   if (id === 'comm') {
     closeToolMenu();
-    addressBookOpen.value = true;
+    ia.openAddressBook();
     return;
   }
   if (id === 'points') {
@@ -261,7 +263,7 @@ function handleToolAction(item: string) {
   }
   if (item === '通讯录') {
     closeToolMenu();
-    addressBookOpen.value = true;
+    ia.openAddressBook();
     return;
   }
   if (item === '应急疏散') {
@@ -282,11 +284,11 @@ function handleToolAction(item: string) {
   if (item === '沙盘推演') {
     closeToolMenu();
     enterSandboxScene();
+    return;
   }
-}
-
-function closeAddressBook() {
-  addressBookOpen.value = false;
+  // 其余工具栏项（融合通讯会议 / 通讯设备 / 事故风险分析 / 救援力量分布）在脚手架中暂无独立悬浮二级界面，
+  // 给出占位反馈以避免死点击（与消防模块 mock 单元格的 showToast 一致）。
+  showToast(`「${item}」能力建设中，暂未接入`);
 }
 
 function closeToolMenu() {
@@ -747,7 +749,7 @@ onUnmounted(() => {
         />
       </div>
 
-      <EmergencyAddressBookDialog :open="addressBookOpen" @close="closeAddressBook" />
+      <AccidentRescueInteractionLayer />
 
       <EvacuationPeoplePanel
         :open="sceneMode === 'evacuation'"

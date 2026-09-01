@@ -4,6 +4,7 @@
 -->
 <script setup lang="ts">
 import PanelCard from '@/components/common/PanelCard.vue';
+import { useOpsMonitorInteraction } from '@/composables/useOpsMonitorInteraction';
 
 interface RiskAlert {
   key: string;
@@ -13,6 +14,8 @@ interface RiskAlert {
   owner: string;
   contact: string;
 }
+
+const ia = useOpsMonitorInteraction();
 
 const alerts: RiskAlert[] = [
   {
@@ -42,12 +45,12 @@ const alerts: RiskAlert[] = [
 ];
 
 function view(): void {
-  console.warn('[major-risk] view');
+  ia.openMajorRisk();
 }
 </script>
 
 <template>
-  <PanelCard title="重大风险管控" icon="WarningFilled" more="查看详情" @more="view">
+  <PanelCard title="重大风险管控" icon="confined-space" more="查看详情" @more="view">
     <ul class="alerts">
       <li v-for="a in alerts" :key="a.key" class="alert">
         <div class="alert__head">

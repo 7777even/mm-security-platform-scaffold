@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { ref, onErrorCaptured } from 'vue'
-import { logger } from '@/utils/logger'
+import { ref, onErrorCaptured } from 'vue';
+import { logger } from '@/utils/logger';
 
 // 视图级错误边界（S1 §5.3）：捕获后代组件渲染/生命周期异常，降级显示而非整页白屏。
 // 返回 false 阻止错误继续向父链/全局冒泡（避免未捕获异常），由本边界统一记录并呈现。
-const hasError = ref(false)
+const hasError = ref(false);
 
 onErrorCaptured((err) => {
-  hasError.value = true
-  logger.error('[error-boundary] 视图渲染异常已降级', err instanceof Error ? err.message : err)
-  return false
-})
+  hasError.value = true;
+  logger.error('[error-boundary] 视图渲染异常已降级', err instanceof Error ? err.message : err);
+  return false;
+});
 
 function reload(): void {
-  window.location.reload()
+  window.location.reload();
 }
 </script>
 

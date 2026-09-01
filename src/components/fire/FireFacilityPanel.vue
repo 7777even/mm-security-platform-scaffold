@@ -3,13 +3,17 @@
   标题区 tab 切换：消防设施运行监测 / 消防巡检。
     - 设施 tab：左 1fr = 3 行（设备总数/离线/故障 + 数字，每行前置语义图标），右 auto = 2 个仪表盘（完好率/在线率）
     - 巡检 tab：今日任务/已完成/巡检点位 + 完成率进度条（mock）
-  选中态：青色文字 + 底部一条发光横线（中心亮、向两端透明，"亮度中间由外递减"）
-  顶部光带：贯穿面板顶部的青色发光横线（中心亮两端透明）
+  交互：面板「更多」→ 设施监测二级界面；巡检 tab「查看巡检记录」→ 巡检二级界面（替代原静态展示）。
+  选中态：青色文字 + 底部一条发光横线（中心亮、向两端透明）。
+  顶部光带：贯穿面板顶部的青色发光横线（中心亮两端透明）。
 -->
 <script setup lang="ts">
 import { ref } from 'vue';
 import PanelCard from '@/components/common/PanelCard.vue';
 import GaugeChart from '@/components/charts/GaugeChart.vue';
+import { useFireAlarmInteraction } from '@/composables/useFireAlarmInteraction';
+
+const ia = useFireAlarmInteraction();
 
 type TabKey = 'facility' | 'patrol';
 const tab = ref<TabKey>('facility');
@@ -35,7 +39,7 @@ const patrol = {
 </script>
 
 <template>
-  <PanelCard more="更多">
+  <PanelCard title="消防设施运行监测" icon="crane" more="更多" @more="ia.openFacility()">
     <!-- 面板顶部发光横线：中心亮、两端透明 -->
     <span class="top-shine" aria-hidden="true" />
 
@@ -72,6 +76,9 @@ const patrol = {
           <div class="gauge-cap">{{ g.label }}</div>
         </div>
       </div>
+      <button type="button" class="facility__more" @click="ia.openFacility()">
+        查看设施监测详情
+      </button>
     </div>
 
     <!-- 巡检 tab -->
@@ -96,6 +103,7 @@ const patrol = {
           <div class="patrol__bar-fill" :style="{ width: patrol.rate + '%' }" />
         </div>
       </div>
+      <button type="button" class="patrol__more" @click="ia.openPatrol()">查看巡检记录</button>
     </div>
   </PanelCard>
 </template>
@@ -309,5 +317,23 @@ const patrol = {
   background: linear-gradient(90deg, var(--color-accent), var(--tone-dcs));
   border-radius: 3px;
   transition: width 0.3s;
+}
+
+.facility__more,
+.patrol__more {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  color: var(--color-accent);
+  font-size: var(--font-size-helper);
+  cursor: pointer;
+}
+
+.facility__more:hover,
+.patrol__more:hover {
+  background: color-mix(in srgb, var(--color-accent) 16%, transparent);
 }
 </style>

@@ -13,6 +13,7 @@ import AccessStatsPanel from '@/components/security/AccessStatsPanel.vue';
 import LinkPatrolPanel from '@/components/security/LinkPatrolPanel.vue';
 import AlarmTrendPanel from '@/components/security/AlarmTrendPanel.vue';
 import AlarmListPanel from '@/components/security/AlarmListPanel.vue';
+import SecurityInteractionLayer from '@/components/security/SecurityInteractionLayer.vue';
 import type { MapPoint } from '@/services/map';
 import {
   fetchAlarmPoints,
@@ -54,4 +55,7 @@ onMounted(async () => {
       <AlarmListPanel />
     </template>
   </ModuleLayout>
+
+  <!-- 二级界面分发层（点击 → 弹窗/抽屉，不离开模块） -->
+  <SecurityInteractionLayer />
 </template>

@@ -4,12 +4,15 @@
   配合 ModuleLayout 的 #bottom 插槽使用；默认贴底部全宽（宿主视图覆盖定位）。
 -->
 <script setup lang="ts">
-import { BellFilled } from '@element-plus/icons-vue';
+import PkgIcon from '@/components/common/PkgIcon.vue';
+import { useIndustrialVideoInteraction } from '@/composables/useIndustrialVideoInteraction';
 
 interface Notice {
   id: string;
   text: string;
 }
+
+const ia = useIndustrialVideoInteraction();
 
 const notices: Notice[] = [
   { id: '1', text: '单人登陆：通知系统' },
@@ -28,15 +31,14 @@ const notices: Notice[] = [
 ];
 
 function viewAll(): void {
-  // 跳转通知中心（占位）
-  console.warn('[notice] view-all');
+  ia.openNoticeList();
 }
 </script>
 
 <template>
   <div class="notice">
     <div class="notice__head">
-      <BellFilled class="notice__icon" />
+      <PkgIcon name="bell-ringing" size="16px" class="notice__icon" />
       <span class="notice__title">系统消息</span>
     </div>
     <ul class="notice__list">

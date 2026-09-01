@@ -8,6 +8,7 @@ import ProductionAreaTopBar from '@/components/panels/production/ProductionAreaT
 import ProductionAreaPersonnelPanel from '@/components/panels/production/ProductionAreaPersonnelPanel.vue';
 import ProductionAreaAlarmPanel from '@/components/panels/production/ProductionAreaAlarmPanel.vue';
 import ProductionAreaFacilityListPanel from '@/components/panels/production/ProductionAreaFacilityListPanel.vue';
+import ProductionAreaInteractionLayer from '@/components/production-area/ProductionAreaInteractionLayer.vue';
 import { getSharedMap, onSharedMapReady } from '@/composables/sharedCesiumBridge';
 import { resolveProductionAreaDetail } from '@/services/map-data/productionAreaMock';
 
@@ -87,7 +88,7 @@ onMounted(() => {
         />
 
         <aside class="production-area__left">
-          <ProductionAreaFacilityListPanel :metrics="detail.metrics" />
+          <ProductionAreaFacilityListPanel :facility-id="facilityId" :metrics="detail.metrics" />
         </aside>
 
         <aside class="production-area__right">
@@ -95,10 +96,12 @@ onMounted(() => {
             :total="detail.personnelTotal"
             :slices="detail.personnelSlices"
           />
-          <ProductionAreaAlarmPanel :alarms="detail.alarms" />
+          <ProductionAreaAlarmPanel :facility-id="facilityId" :alarms="detail.alarms" />
         </aside>
 
         <button type="button" class="production-area__back" @click="goBack">返回</button>
+
+        <ProductionAreaInteractionLayer />
       </div>
     </DashboardLayout>
   </MapPageShell>

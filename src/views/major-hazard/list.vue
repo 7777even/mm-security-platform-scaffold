@@ -6,6 +6,7 @@ import MapPageShell from '@/components/map/MapPageShell.vue';
 import MajorHazardMapOverlay from '@/components/map/MajorHazardMapOverlay.vue';
 import MajorHazardStatsBar from '@/components/panels/production/MajorHazardStatsBar.vue';
 import MajorHazardListPanel from '@/components/panels/production/MajorHazardListPanel.vue';
+import MajorHazardInteractionLayer from '@/components/major-hazard/MajorHazardInteractionLayer.vue';
 import { getSharedMap, onSharedMapReady } from '@/composables/sharedCesiumBridge';
 import { majorHazards } from '@/services/map-data/majorHazardMock';
 import { usePlantArea } from '@/composables/usePlantArea';
@@ -61,6 +62,9 @@ watch(selectedPlantArea, () => void flyToHazards());
         <button type="button" class="hazard-list-page__back" @click="goBack">返回</button>
       </div>
     </DashboardLayout>
+
+    <!-- 重大危险源模块二级界面分发层（点击 → 二级界面，不离开模块） -->
+    <MajorHazardInteractionLayer />
   </MapPageShell>
 </template>
 

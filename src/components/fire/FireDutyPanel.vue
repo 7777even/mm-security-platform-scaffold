@@ -8,6 +8,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import PanelCard from '@/components/common/PanelCard.vue';
+import { useFireAlarmInteraction } from '@/composables/useFireAlarmInteraction';
+
+const ia = useFireAlarmInteraction();
 
 type TabKey = 'dept' | 'all';
 type Shift = '白班' | '夜班';
@@ -32,12 +35,12 @@ function list(): DutyPerson[] {
 }
 
 function view(p: DutyPerson): void {
-  console.warn('[fire-duty] view', p.name);
+  ia.openOneKeyBroadcast({ name: p.name, phone: p.phone });
 }
 </script>
 
 <template>
-  <PanelCard title="值班信息" icon="User">
+  <PanelCard title="值班信息" icon="helmet">
     <template #tabs>
       <div class="tabs">
         <button

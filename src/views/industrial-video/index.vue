@@ -17,6 +17,7 @@ import EventAnalysisPanel from '@/components/industrial-video/EventAnalysisPanel
 import VideoPatrolPanel from '@/components/industrial-video/VideoPatrolPanel.vue';
 import FactoryInspectionPanel from '@/components/industrial-video/FactoryInspectionPanel.vue';
 import SystemNoticeBar from '@/components/industrial-video/SystemNoticeBar.vue';
+import IndustrialVideoInteractionLayer from '@/components/industrial-video/IndustrialVideoInteractionLayer.vue';
 import type { MapPoint } from '@/services/map';
 import {
   fetchAlarmPoints,
@@ -64,6 +65,9 @@ onMounted(async () => {
       <SystemNoticeBar />
     </template>
   </ModuleLayout>
+
+  <!-- 二级界面分发层（点击 → 弹窗/抽屉，不离开模块） -->
+  <IndustrialVideoInteractionLayer />
 </template>
 
 <style scoped>

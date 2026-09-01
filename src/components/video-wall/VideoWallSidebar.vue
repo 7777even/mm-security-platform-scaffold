@@ -25,10 +25,19 @@ import {
   removeTemporaryEventGroup,
   type EventVideoCamera,
 } from './videoWallStore';
-import { openLinkageDialog } from '@/composables/useVideoLinkageConfig';
+import PkgIcon from '@/components/common/PkgIcon.vue';
+import { useVideoWallInteraction } from '@/composables/useVideoWallInteraction';
 
+const ia = useVideoWallInteraction();
+
+// 「管理绑定」→ 监控联动配置二级界面（由 VideoWallInteractionLayer 分发渲染）
 const goLinkageConfig = () => {
-  openLinkageDialog();
+  ia.openLinkageConfig();
+};
+
+/** 目录树 / 事件分组里的通道点击 → 摄像头详情二级界面（拖拽上墙行为不变） */
+const openCameraDetail = (item: { id: string; name: string }, source: string) => {
+  ia.openCameraDetail({ id: item.id, name: item.name, source });
 };
 
 const activeTab = ref(activeEventVideoContext.value ? 'event' : 'video'); // 'event', 'video', 'target', 'mode', 'plan'
@@ -594,12 +603,13 @@ const saveBind = () => {
                   class="event-video-camera"
                   draggable="true"
                   @dragstart="handleDragStart($event, cameraItem)"
+                  @click="openCameraDetail(cameraItem, `事件分组 · ${group.name}`)"
                 >
                   <span>▣ {{ cameraItem.name }}</span>
                   <button
                     type="button"
                     :aria-label="`将${cameraItem.name}移出${group.name}`"
-                    @click="removeCameraFromEventGroup(group.id, cameraItem.id)"
+                    @click.stop="removeCameraFromEventGroup(group.id, cameraItem.id)"
                   >
                     移出
                   </button>
@@ -649,9 +659,10 @@ const saveBind = () => {
               class="tree-node"
               draggable="true"
               @dragstart="handleDragStart($event, child)"
+              @click="openCameraDetail(child, `视频目录 · ${group.name}`)"
               @contextmenu.prevent="openBindMenu($event, child)"
             >
-              📹 {{ child.name }}
+              <PkgIcon name="crane" size="12px" class="tree-node__icon" />{{ child.name }}
             </div>
           </div>
           <div v-if="filteredVideoTree.length === 0" class="empty-state">无搜索结果</div>

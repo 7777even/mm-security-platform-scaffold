@@ -15,6 +15,7 @@ import EquipmentOverviewPanel from '@/components/ops-monitor/EquipmentOverviewPa
 import ProductionAlarmPanel from '@/components/ops-monitor/ProductionAlarmPanel.vue';
 import MajorRiskPanel from '@/components/ops-monitor/MajorRiskPanel.vue';
 import AlarmStatsBar from '@/components/ops-monitor/AlarmStatsBar.vue';
+import OpsMonitorInteractionLayer from '@/components/ops-monitor/OpsMonitorInteractionLayer.vue';
 import type { MapPoint } from '@/services/map';
 import {
   fetchAlarmPoints,
@@ -60,6 +61,9 @@ onMounted(async () => {
       <AlarmStatsBar />
     </template>
   </ModuleLayout>
+
+  <!-- 二级界面分发层（点击 → 弹窗/抽屉，不离开模块） -->
+  <OpsMonitorInteractionLayer />
 </template>
 
 <style scoped>

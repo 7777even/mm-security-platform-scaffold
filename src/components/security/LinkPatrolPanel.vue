@@ -1,33 +1,36 @@
 <!--
   LinkPatrolPanel — §安全防恐「联动巡查」
-  6 格联动按钮 + 5G 联动展示 + 声光报警开关（仿原型）。
+  6 格联动按钮 + 5G 联动展示 + 声光报警开关。
+  点击联动按钮进入对应详情；「更多」打开联动巡查清单；声光报警为本地开关（保留真实交互）。
+  图标：压缩包 fire-situation 图标（PkgIcon，helmet=人员/防暴，confined-space=周界，ladder=设备）。
 -->
 <script setup lang="ts">
 import { ref } from 'vue';
 import PanelCard from '@/components/common/PanelCard.vue';
-import type { Component } from 'vue';
-import { Monitor, Camera, Warning, Lock, Promotion, Position } from '@element-plus/icons-vue';
+import PkgIcon from '@/components/common/PkgIcon.vue';
+import { useSecurityInteraction } from '@/composables/useSecurityInteraction';
 
 interface GridItem {
   key: string;
   label: string;
-  icon: Component;
+  icon: string;
 }
 
+const ia = useSecurityInteraction();
+
 const grid: GridItem[] = [
-  { key: 'center-monitor', label: '中心监控室', icon: Monitor },
-  { key: 'monitor-check', label: '监控勘验', icon: Camera },
-  { key: 'perimeter', label: '周界防恐', icon: Warning },
-  { key: 'anti-riot', label: '反恐防暴', icon: Lock },
-  { key: 'drone-patrol', label: '无人机巡查', icon: Promotion },
-  { key: 'outer-defense', label: '外围防暴', icon: Position },
+  { key: 'center-monitor', label: '中心监控室', icon: 'helmet' },
+  { key: 'monitor-check', label: '监控勘验', icon: 'helmet' },
+  { key: 'perimeter', label: '周界防恐', icon: 'confined-space' },
+  { key: 'anti-riot', label: '反恐防暴', icon: 'helmet' },
+  { key: 'drone-patrol', label: '无人机巡查', icon: 'ladder' },
+  { key: 'outer-defense', label: '外围防暴', icon: 'confined-space' },
 ];
 
 const soundLightOn = ref(true);
 
-function onGridClick(key: string): void {
-  // 锁定巡查子模块入口（占位）
-  console.warn('[patrol]', key);
+function onGridClick(g: GridItem): void {
+  ia.openPatrolDetail({ key: g.key, label: g.label });
 }
 
 function toggleSoundLight(): void {
@@ -36,16 +39,16 @@ function toggleSoundLight(): void {
 </script>
 
 <template>
-  <PanelCard title="联动巡查" icon="Aim" more="更多">
+  <PanelCard title="联动巡查" icon="helmet" more="更多" @more="ia.openPatrolList()">
     <div class="grid">
       <button
         v-for="g in grid"
         :key="g.key"
         type="button"
         class="grid__btn"
-        @click="onGridClick(g.key)"
+        @click="onGridClick(g)"
       >
-        <component :is="g.icon" class="grid__icon" />
+        <PkgIcon :name="g.icon" size="22px" class="grid__icon" />
         <span class="grid__label">{{ g.label }}</span>
       </button>
     </div>
@@ -102,6 +105,7 @@ function toggleSoundLight(): void {
 .grid__icon {
   width: var(--icon-lg);
   height: var(--icon-lg);
+  color: var(--color-accent);
 }
 
 .section-title {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AppErrorBoundary from '@/components/AppErrorBoundary.vue'
+import AppErrorBoundary from '@/components/AppErrorBoundary.vue';
 </script>
 
 <template>

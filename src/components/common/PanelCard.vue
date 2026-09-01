@@ -11,6 +11,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import * as ElementPlusIcons from '@element-plus/icons-vue';
+import PkgIcon from './PkgIcon.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -23,8 +24,20 @@ const props = withDefaults(
 
 const emit = defineEmits<{ (e: 'more'): void }>();
 
+// 压缩包（fire-monitoring）图标名集合；命中时改走 PkgIcon（mask + currentColor），
+// 否则回退到 Element Plus 图标库（保持其他模块既有行为不变）。
+const PKG_ICON_NAMES = [
+  'flame',
+  'bell-ringing',
+  'gas',
+  'helmet',
+  'ladder',
+  'crane',
+  'confined-space',
+];
+const pkgIconName = computed(() => (PKG_ICON_NAMES.includes(props.icon) ? props.icon : ''));
 const iconComp = computed(() => {
-  if (!props.icon) return null;
+  if (!props.icon || pkgIconName.value) return null;
   return (ElementPlusIcons as Record<string, unknown>)[props.icon] ?? null;
 });
 </script>
@@ -33,6 +46,12 @@ const iconComp = computed(() => {
   <section class="panel-card glass-panel">
     <header v-if="title || $slots.tabs" class="panel-card__head">
       <component :is="iconComp" v-if="iconComp" class="panel-card__icon" />
+      <PkgIcon
+        v-else-if="pkgIconName"
+        :name="pkgIconName"
+        :size="'var(--icon-sm)'"
+        class="panel-card__icon"
+      />
       <h2 class="panel-title panel-card__title">
         <template v-if="$slots.tabs">
           <span v-if="title" class="panel-card__title-text">{{ title }}</span>

@@ -1,5 +1,8 @@
 ﻿<script setup lang="ts">
+import { ref } from 'vue';
 import { videoControlPages, type GridLayout } from '@/services/map-data/videoControlMock';
+import { showToast } from '@/composables/useToast';
+import { useVideoControlInteraction } from '@/composables/useVideoControlInteraction';
 
 defineProps<{
   page: number;
@@ -11,11 +14,42 @@ const emit = defineEmits<{
   'update:layout': [layout: GridLayout];
 }>();
 
+const ia = useVideoControlInteraction();
+const muted = ref(false);
+
 const layouts: { key: GridLayout; label: string; cols: number }[] = [
   { key: '1x1', label: '1×1', cols: 1 },
   { key: '2x2', label: '2×2', cols: 2 },
   { key: '3x3', label: '3×3', cols: 3 },
 ];
+
+function toggleFullscreen(): void {
+  if (document.fullscreenElement) {
+    void document.exitFullscreen();
+    showToast('已退出全屏');
+  } else {
+    const el = document.documentElement;
+    const p = el.requestFullscreen?.();
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => showToast('当前环境不支持全屏'));
+    } else {
+      showToast('已请求全屏（前端 mock）');
+    }
+  }
+}
+
+function openControlPage(): void {
+  ia.openControlPage();
+}
+
+function toggleVolume(): void {
+  muted.value = !muted.value;
+  showToast(muted.value ? '已静音' : '已取消静音');
+}
+
+function openDeviceList(): void {
+  ia.openDeviceList();
+}
 </script>
 
 <template>
@@ -69,16 +103,16 @@ const layouts: { key: GridLayout; label: string; cols: number }[] = [
     </div>
 
     <div class="vc-bottom__actions">
-      <button type="button" class="vc-action-btn" aria-label="全屏">
+      <button type="button" class="vc-action-btn" aria-label="全屏" @click="toggleFullscreen">
         <i class="vc-action-btn__icon vc-action-btn__icon--fullscreen" aria-hidden="true" />
       </button>
-      <button type="button" class="vc-action-btn" aria-label="布局">
+      <button type="button" class="vc-action-btn" aria-label="布局" @click="openControlPage">
         <i class="vc-action-btn__icon vc-action-btn__icon--layout" aria-hidden="true" />
       </button>
-      <button type="button" class="vc-action-btn" aria-label="音量">
+      <button type="button" class="vc-action-btn" aria-label="音量" @click="toggleVolume">
         <i class="vc-action-btn__icon vc-action-btn__icon--volume" aria-hidden="true" />
       </button>
-      <button type="button" class="vc-action-btn" aria-label="菜单">
+      <button type="button" class="vc-action-btn" aria-label="菜单" @click="openDeviceList">
         <i class="vc-action-btn__icon vc-action-btn__icon--menu" aria-hidden="true" />
       </button>
     </div>

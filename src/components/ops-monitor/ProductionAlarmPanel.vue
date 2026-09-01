@@ -1,15 +1,17 @@
 <!--
   ProductionAlarmPanel — §生产应急「生产区域安全告警」
-  4 条告警事件卡：三列布局 = [左侧彩色类型图标+主信息] | [告警图片] | [三个操作链接]
+  4 条告警事件卡：三列布局 = [左侧彩色类型图标+主信息] | [告警图片] | [三个操作链接]。
+  操作：现场监控 → 视频墙；一键广播 / 一键控制 → 共享调度弹窗（经调度层）。「查看全部」→ 告警列表。
+  图标：压缩包 fire-situation 图标（PkgIcon，helmet=人员，gas=气体）。
 -->
 <script setup lang="ts">
-import type { Component } from 'vue';
 import PanelCard from '@/components/common/PanelCard.vue';
-import { User, WarningFilled } from '@element-plus/icons-vue';
+import PkgIcon from '@/components/common/PkgIcon.vue';
+import { useOpsMonitorInteraction } from '@/composables/useOpsMonitorInteraction';
 
 interface Alarm {
   id: string;
-  icon: Component;
+  icon: string;
   toneColor: string;
   title: string;
   unhandled: boolean;
@@ -18,10 +20,12 @@ interface Alarm {
   desc: string;
 }
 
+const ia = useOpsMonitorInteraction();
+
 const alarms: Alarm[] = [
   {
     id: '1',
-    icon: User,
+    icon: 'helmet',
     toneColor: 'var(--color-warning)',
     title: '人员跌倒',
     unhandled: true,
@@ -31,7 +35,7 @@ const alarms: Alarm[] = [
   },
   {
     id: '2',
-    icon: User,
+    icon: 'helmet',
     toneColor: 'var(--color-warning)',
     title: '人员违规进入',
     unhandled: true,
@@ -41,7 +45,7 @@ const alarms: Alarm[] = [
   },
   {
     id: '3',
-    icon: User,
+    icon: 'helmet',
     toneColor: 'var(--color-alarm-2)',
     title: '人员聚集',
     unhandled: true,
@@ -51,7 +55,7 @@ const alarms: Alarm[] = [
   },
   {
     id: '4',
-    icon: WarningFilled,
+    icon: 'gas',
     toneColor: 'var(--color-danger)',
     title: '有毒气体超标',
     unhandled: true,
@@ -62,12 +66,14 @@ const alarms: Alarm[] = [
 ];
 
 function onAction(a: Alarm, action: string): void {
-  console.warn('[prod-alarm]', a.id, action);
+  if (action === 'monitor') ia.openVideo(`关联告警：${a.title} · ${a.location}`);
+  else if (action === 'broadcast') ia.openBroadcast();
+  else ia.openControl();
 }
 </script>
 
 <template>
-  <PanelCard title="生产区域安全告警" icon="Warning" more="查看全部">
+  <PanelCard title="生产区域安全告警" icon="gas" more="查看全部" @more="ia.openProdAlarmList()">
     <ul class="list">
       <li v-for="a in alarms" :key="a.id" class="alarm">
         <div class="alarm__left">
@@ -79,7 +85,7 @@ function onAction(a: Alarm, action: string): void {
               borderColor: `color-mix(in srgb, ${a.toneColor} 45%, transparent)`,
             }"
           >
-            <component :is="a.icon" />
+            <PkgIcon :name="a.icon" size="22px" />
           </div>
           <div class="alarm__main">
             <div class="alarm__head">
@@ -147,11 +153,6 @@ function onAction(a: Alarm, action: string): void {
   border-radius: 50%;
   border: 1px solid;
   flex-shrink: 0;
-}
-
-.alarm__icon :deep(svg) {
-  width: var(--icon-lg);
-  height: var(--icon-lg);
 }
 
 .alarm__main {

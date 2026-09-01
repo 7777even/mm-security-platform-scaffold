@@ -959,9 +959,6 @@ export const fireFacilityWorkOrders: FacilityWorkOrderItem[] = fireFacilityFault
   .map(buildWorkOrder)
   .filter((item): item is FacilityWorkOrderItem => item !== null);
 
-export function resolveFacilityLedgerByType(facilityType: string): FacilityLedgerItem {
-  return (
-    fireFacilityLedgerItems.find((item) => item.facilityType === facilityType) ??
-    fireFacilityLedgerItems[0]!
-  );
+export function resolveFacilityLedgerByType(facilityType: string): FacilityLedgerItem[] {
+  return fireFacilityLedgerItems.filter((item) => item.facilityType === facilityType);
 }
