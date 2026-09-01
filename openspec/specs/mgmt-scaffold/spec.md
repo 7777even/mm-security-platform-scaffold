@@ -25,6 +25,20 @@
 - **WHEN** 检视 `apps/mgmt/**` 任意 `.vue` 的 `<style>`
 - **THEN** 不存在裸 `rgb()/rgba()/#hex` 颜色字面量，所有颜色经 `var(--mgmt-*)` 取自 `tokens.css`；悬浮 / 阴影等装饰态亦须走 token（如 `--mgmt-header-pill-hover-bg`、`--mgmt-card-shadow-hover`），不在组件内写死。
 
+### Requirement: 后台端适老模式（字号 / 密度放大）
+
+后台端须提供适老模式开关（顶栏「适老」按钮），点击后在根节点写入 `data-elder="on"`（与移动端约定一致），并由 `src/styles/tokens.css` 的 `[data-theme='mgmt'][data-elder='on']` 块承接字号 / 密度放大，组件内不写端特异硬编码分支。
+
+#### Scenario: 适老档放大
+
+- **WHEN** 点击顶栏「适老」按钮
+- **THEN** 根节点 `data-elder` 置为 `on`；正文升至 16、页标题 30、区块 24、小标题 18、辅助 14、筛选 15（各档位不低于标准档并同步放大）；筛选控件高 48、主按钮高 40、表格行高 56、侧栏菜单项 ≥48；正文对比加深（`--color-text` 加深至 `#1a3550`）；状态标签保持「浅底 + 深字 + 描边」（沿用全局 `.tag-*` 类，不重定义）。
+
+#### Scenario: 偏好记忆
+
+- **WHEN** 适老开关状态变更
+- **THEN** 经 `localStorage`（键 `mm-mgmt-elder`）持久化，刷新后恢复；账号级记忆由后端承接（不在前端范围）。
+
 ### Requirement: 工作台卡片网格
 
 工作台（`apps/mgmt/views/workbench.vue`）以模块卡片网格呈现各业务域入口：每张卡片含浅底圆形图标 + 模块名（16 档3）+ 页面数（12 档4）+ 子页面直达入口（浅底标签复用全局 `.tag-info`）+ 余量胶囊（+N）。

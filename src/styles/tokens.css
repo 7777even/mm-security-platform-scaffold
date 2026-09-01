@@ -353,6 +353,322 @@
   --map-status-fg: #9ed4ff; /* 地图加载状态条文字（源 MaomingPetroCesiumMap） */
   --map-error-bg: rgb(120 20 30 / 85%); /* 地图加载错误条底（源 MaomingPetroCesiumMap） */
   --map-error-fg: #fecaca; /* 地图加载错误条文字（源 MaomingPetroCesiumMap） */
+
+  /* =========================================================================
+   * 二级页/弹窗 DOM 颜色收编（源：迁移完成的二级页面/面板残留硬编码；
+   * 近似同族色按 --map-marker-cyan 先例合并为单一 token，透明度派生用 color-mix）
+   * ========================================================================= */
+  --map-mask-bg: rgb(
+    0 8 20 / 76%
+  ); /* 二级弹窗遮罩底（源 WeatherDetailsDialog rgb(0,8,20,.76) / SurveillanceVideoDialog rgb(0,7,18,.78)） */
+  --map-dialog-border: rgb(
+    32 198 255 / 66%
+  ); /* 二级弹窗外框亮青描边（源 WeatherDetailsDialog rgb(32,198,255,.66) / SurveillanceVideoDialog rgb(26,177,255,.72)） */
+  --map-dialog-bg: linear-gradient(
+    145deg,
+    rgb(4 27 53 / 98%),
+    rgb(1 15 34 / 99%)
+  ); /* 二级弹窗面板深蓝渐变底（源 WeatherDetailsDialog / SurveillanceVideoDialog 同构渐变） */
+
+  --map-dialog-glow: rgb(
+    0 157 255 / 30%
+  ); /* 二级弹窗外辉光（源 WeatherDetailsDialog rgb(0,157,255,.3)） */
+  --map-dialog-ring: rgb(
+    0 93 165 / 35%
+  ); /* 二级弹窗外圈投影（源 SurveillanceVideoDialog rgb(0,93,165,.35)） */
+  --map-dialog-inner-glow: rgb(
+    0 111 190 / 8%
+  ); /* 二级弹窗内发光投影（源 SurveillanceVideoDialog rgb(0,111,190,.8%)） */
+  --map-head-line: rgb(
+    54 169 225 / 28%
+  ); /* 弹窗头部/指标列分隔线（源 WeatherDetailsDialog rgb(54,169,225,.28)） */
+  --map-ctrl-border: rgb(
+    76 188 241 / 35%
+  ); /* 弹窗控件按钮描边（源 rgb(76,188,241,.35)，同族 rgb(26,152,221,.42)/rgb(36,170,236,.42)/rgb(27,143,207,.36)） */
+  --map-ctrl-bg: #061e38; /* 弹窗控件深蓝底（源 WeatherDetailsDialog #061e38，同族 #082442） */
+  --map-ctrl-line: #155e8e; /* 弹窗页签深蓝实色描边（源 WeatherDetailsDialog #155e8e） */
+  --map-ctrl-active-bg: linear-gradient(
+    #087fd1,
+    #0964aa
+  ); /* 弹窗页签/按钮激活渐变底（源 WeatherDetailsDialog 指标页签） */
+
+  --map-ctrl-veil: rgb(
+    0 75 124 / 24%
+  ); /* 深蓝控件半透底（源 SurveillanceVideoDialog rgb(0,75,124,.24)，同族 rgb(1,54,88,.55)） */
+  --map-ctrl-veil-strong: rgb(
+    0 72 120 / 42%
+  ); /* 深蓝控件半透底·加浓（源 VideoWallPage rgb(0,72,120,.42)） */
+  --map-tab-selected-bg: rgb(
+    0 90 160 / 50%
+  ); /* 页签/主按钮选中中蓝底（源 major-hazard/detail 与 production-communication 同值 rgb(0,90,160,.5)） */
+  --map-tab-active-bg: linear-gradient(
+    180deg,
+    rgb(0 130 220 / 96%),
+    rgb(0 82 166 / 96%)
+  ); /* 左栏页签激活渐变底（源 accident-rescue/index） */
+
+  --map-accent-soft-text: #bfeaff; /* 浅青强调文字/图标（源 WeatherDetailsDialog #bfeaff，同族 #aee7ff/#8bd9ff/#dff6ff/#d9f3ff/#a8d6ff/#83dfff/#7dd3fc/#7cdbff/#9fe8ff/#8ad7ff） */
+  --map-chart-cyan: #14c8ff; /* 天气图表青线/青点（源 WeatherDetailsDialog #14c8ff，同族 #28cfff/#49d5ff/#25bfff/#22b8ff/#52c8f2/#72d5ff/#39d4ff） */
+  --map-chart-line-blue: #159bff; /* 7 天低温折线蓝（源 WeatherDetailsDialog #159bff） */
+  --map-chart-line-gold: #ffb21a; /* 7 天高温折线金（源 WeatherDetailsDialog #ffb21a） */
+  --map-chart-dot-bg: #071a33; /* 天气图表数据点深底（源 WeatherDetailsDialog #071a33） */
+  --map-chart-grid: rgb(
+    95 157 194 / 18%
+  ); /* 天气图表网格线（源 WeatherDetailsDialog rgb(95,157,194,.18)） */
+  --map-timeline-track: rgb(
+    120 160 186 / 28%
+  ); /* 视频时间轴轨道（源 SurveillanceVideoDialog rgb(120,160,186,.28)） */
+  --map-air-green-bg: rgb(
+    65 183 99 / 10%
+  ); /* 空气质量浅绿底（源 WeatherDetailsDialog rgb(65,183,99,.1)） */
+  --map-air-green-text: #9ec5ad; /* 空气质量灰绿次字（源 WeatherDetailsDialog #9ec5ad） */
+  --map-tip-warning-border: rgb(
+    255 166 48 / 32%
+  ); /* 安全提示橙描边（源 rgb(255,166,48,.32)，同族 rgb(255,169,48,.28)） */
+  --map-tip-warning-bg: rgb(
+    255 143 21 / 8%
+  ); /* 安全提示浅橙底（源 WeatherDetailsDialog rgb(255,143,21,.8%)） */
+  --map-week-item-bg: linear-gradient(
+    180deg,
+    rgb(16 113 127 / 38%),
+    rgb(5 59 78 / 22%)
+  ); /* 7 天预报卡底（源 WeatherDetailsDialog） */
+
+  --map-week-item-alert-bg: linear-gradient(
+    180deg,
+    rgb(18 116 128 / 42%),
+    rgb(98 68 22 / 18%)
+  ); /* 7 天预警日卡底（源 WeatherDetailsDialog） */
+
+  --map-week-teal: #36e6c7; /* 7 天预报天气青绿字（源 WeatherDetailsDialog #36e6c7，同族 #3fe6d0/#45dec9） */
+  --map-card-bg: rgb(
+    4 25 49 / 72%
+  ); /* 弹窗内信息卡深蓝底（源 WeatherDetailsDialog rgb(4,25,49,.72)） */
+  --map-tab-bg: rgb(
+    3 24 49 / 94%
+  ); /* 事件处置左栏页签条底（源 accident-rescue/index rgb(3,24,49,.94)） */
+  --map-tab-panel-bg: linear-gradient(
+    180deg,
+    rgb(3 30 59 / 96%),
+    rgb(2 18 38 / 96%)
+  ); /* 事件处置左栏 Tab 面板底（源 accident-rescue/index） */
+
+  --map-quick-btn-bg: linear-gradient(
+    180deg,
+    rgb(8 40 74 / 92%),
+    rgb(4 24 46 / 95%)
+  ); /* 地图快捷按钮渐变底（源 accident-rescue/index） */
+
+  --map-menu-bg: linear-gradient(
+    180deg,
+    rgb(8 32 62 / 97%),
+    rgb(4 18 40 / 97%)
+  ); /* 地图工具菜单渐变底（源 accident-rescue/index） */
+
+  --map-rescue-red: #fe0404; /* 应急事件标题红/返回钮红（源 AccidentRescueHeader #fe0404） */
+  --map-rescue-weather-blue: #00a6f4; /* 极端天气主题蓝（源 AccidentRescueHeader #00a6f4） */
+  --map-rescue-weather-text: #5ad8ff; /* 极端天气标题浅青（源 AccidentRescueHeader #5ad8ff） */
+  --map-sky: #38bdf8; /* 场景栏亮天蓝（源 accident-rescue/index #38bdf8，同族 rgb(56,189,248,.5)） */
+  --map-sky-soft: #7dd3fc; /* 场景栏浅天蓝文字（源 accident-rescue/index #7dd3fc） */
+  --map-scene-toggle-bg: rgb(
+    15 23 42 / 92%
+  ); /* 场景栏收起/展开钮底（源 accident-rescue/index rgb(15,23,42,.92)） */
+  --map-scene-toggle-bg-hover: rgb(
+    30 41 59 / 95%
+  ); /* 场景栏收起/展开钮 hover 底（源 accident-rescue/index rgb(30,41,59,.95)） */
+  --map-ptz-bg: radial-gradient(
+    circle,
+    rgb(13 100 155 / 50%),
+    rgb(0 27 55 / 85%)
+  ); /* PTZ 云台圆钮底（源 SurveillanceVideoDialog） */
+
+  --map-offline-veil: rgb(
+    40 8 12 / 88%
+  ); /* 视频离线提示暗红底（源 SurveillanceVideoDialog rgb(40,8,12,.88)） */
+  --map-video-page-bg: #000a18; /* 视频墙/视频控制页近黑蓝底（源 video-wall、video-control #000a18，同族 #020b14） */
+  --map-video-main-bg: linear-gradient(
+    180deg,
+    rgb(0 20 44 / 65%) 0%,
+    rgb(0 8 20 / 55%) 100%
+  ); /* 视频墙/控制主区渐变底（源 video-wall、video-control 同构渐变） */
+
+  --map-event-badge-border: rgb(
+    255 163 57 / 52%
+  ); /* 视频墙事件徽标橙描边（源 video-wall rgb(255,163,57,.52)） */
+  --map-event-badge-bg: rgb(
+    112 56 8 / 44%
+  ); /* 视频墙事件徽标暗橙底（源 video-wall rgb(112,56,8,.44)） */
+  --map-event-badge-fg: #ffba67; /* 视频墙事件徽标橙字（源 video-wall #ffba67） */
+
+  /* 图层控制面板（MapLayerPanel 浅色浮层，独立浅色小体系） */
+  --map-layer-border: #4a90e2; /* 图层面板描边蓝 */
+  --map-layer-divider: #dbe7f8; /* 图层面板分隔线浅蓝 */
+  --map-layer-bg: #fff; /* 图层面板白底 */
+  --map-layer-text: #1f2d3d; /* 图层面板主深字（同族 #2c3e50/#333） */
+  --map-layer-text-muted: #8a99a8; /* 图层面板次灰字（同族 #6b7a8d） */
+  --map-layer-hover-bg: #eef4fc; /* 图层面板行 hover 浅蓝底（同族 #f4f8fd） */
+  --map-layer-active-bg: #e6f0ff; /* 图层面板选中行浅蓝底 */
+  --map-layer-active-fg: #1a73e8; /* 图层面板选中文字/复选框蓝 */
+  --map-layer-action-fg: #2c5f9e; /* 图层面板操作按钮字色 */
+  --map-layer-shadow: rgb(0 40 90 / 28%); /* 图层面板投影 */
+
+  /* =========================================================================
+   * 地图组件 DOM 颜色收编（第二轮：AccidentRescueMap / ProductionMap /
+   * PlantAreaSelector / MapCleanModeButton 残留 DOM 硬编码；基色单源，
+   * 同 token 多透明度场景用 color-mix 派生，渐变底整条收编为组合 token）
+   * ========================================================================= */
+
+  /* ---- 应急指挥地图晕影 / 路线橙系 / 事件标记（源 AccidentRescueMap） ---- */
+  --map-vignette-rescue-bg:
+    radial-gradient(
+      ellipse 90% 80% at 50% 42%,
+      rgb(0 14 32 / 4%) 0%,
+      rgb(0 14 32 / 28%) 50%,
+      rgb(0 8 20 / 80%) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgb(0 16 36 / 94%) 0%,
+      rgb(0 14 32 / 10%) 14%,
+      rgb(0 14 32 / 10%) 78%,
+      rgb(0 12 28 / 95%) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgb(0 16 36 / 95%) 0%,
+      rgb(0 14 32 / 8%) 22%,
+      rgb(0 14 32 / 8%) 78%,
+      rgb(0 16 36 / 95%) 100%
+    ); /* 应急指挥地图晕影深蓝渐变底（源 AccidentRescueMap __depth） */
+
+  --map-route-orange-mid: #ff8c28; /* 疏散路线虚线主橙 / 门标描边（源 #ff8c28） */
+  --map-route-orange-deep: #ff5c00; /* 疏散路线渐变深端橙（源 #ff5c00） */
+  --map-route-orange-pale: #ffe0a8; /* 疏散路线渐变浅端橙（源 #ffe0a8） */
+  --map-route-orange-glow: rgb(
+    255 120 30
+  ); /* 疏散路线辉光橙基色（源 rgb(255,120,30,x)，透明度 color-mix 派生） */
+
+  --map-route-orange-text: #ffb86a; /* 起点徽标文字橙（源 #ffb86a） */
+  --map-route-orange-text-soft: #ffd9a0; /* 演练弹窗正文浅橙（源 #ffd9a0） */
+  --map-hazardb-l1: #d9481e; /* 应急事件危险源等级徽标一级底（源 AccidentRescueMap，与 MajorHazardMapOverlay --map-hazard-l* 异套勿混用） */
+  --map-hazardb-l2: #e08030; /* 应急事件危险源等级徽标二级底（源 AccidentRescueMap） */
+  --map-hazardb-l3: #d9b020; /* 应急事件危险源等级徽标三级底（源 AccidentRescueMap） */
+  --map-hazardb-l4: #3a8ad8; /* 应急事件危险源等级徽标四级底（源 AccidentRescueMap） */
+  --map-hazardb-l3-fg: #3a2a08; /* 三级徽标深棕字（源 AccidentRescueMap #3a2a08） */
+  --map-event-label-bg: rgb(10 32 58 / 88%); /* 事件指挥标签底（源 rgb(10,32,58,.88)） */
+  --map-facility-btn-bg: rgb(0 22 48 / 82%); /* 设施详情按钮底（源 rgb(0,22,48,.82)） */
+  --map-facility-btn-border: rgb(0 110 190 / 38%); /* 设施详情按钮描边（源 rgb(0,110,190,.38)） */
+  --map-facility-btn-fg: #4f8dd3; /* 设施详情/操作入口文字蓝（源 AccidentRescueMap #4f8dd3） */
+  --map-popup-red-bg: linear-gradient(
+    155deg,
+    rgb(72 18 18 / 94%) 0%,
+    rgb(32 8 12 / 92%) 100%
+  ); /* 应急事件弹窗红调渐变底（源 AccidentRescueMap） */
+
+  --map-popup-red-border: rgb(
+    200 70 70
+  ); /* 红调弹窗描边基色（源 rgb(200,70,70,x)，42%/50% 用 color-mix 派生） */
+
+  --map-popup-red-glow: rgb(255 110 110 / 6%); /* 红调弹窗内发光（源 rgb(255,110,110,.6%)） */
+  --map-popup-red-text: #ffc4c4; /* 红调弹窗正文字（源 AccidentRescueMap #ffc4c4） */
+  --map-popup-drill-bg: linear-gradient(
+    155deg,
+    rgb(72 48 18 / 94%) 0%,
+    rgb(32 24 8 / 92%) 100%
+  ); /* 演练弹窗橙棕调渐变底（源 AccidentRescueMap） */
+
+  --map-popup-drill-border: rgb(
+    236 166 65
+  ); /* 演练弹窗描边基色（源 rgb(236,166,65,x)，42%/8% 用 color-mix 派生） */
+
+  --map-info-panel-bg: linear-gradient(
+    155deg,
+    rgb(10 28 52 / 96%),
+    rgb(6 16 34 / 94%)
+  ); /* 地图信息面板默认渐变底（源 AccidentRescueMap map-info-panel） */
+
+  --map-info-panel-alarm-bg: linear-gradient(
+    155deg,
+    rgb(52 12 16 / 96%),
+    rgb(24 6 10 / 94%)
+  ); /* 地图信息面板告警红调渐变底（源 map-info-panel--alarm） */
+
+  --map-info-panel-vehicle-bg: linear-gradient(
+    155deg,
+    var(--map-vehicle-veil),
+    rgb(6 28 52 / 94%)
+  ); /* 车辆信息面板蓝调渐变底（源 map-info-panel--vehicle） */
+
+  --map-vehicle-veil: rgb(
+    18 72 120 / 95%
+  ); /* 车辆面板蓝基色（源 rgb(18,72,120,.95)，渐变端/气泡尖角共用） */
+  --map-info-panel-glow: rgb(0 120 220 / 8%); /* 信息面板内发光（源 rgb(0,120,220,.8%)） */
+  --map-info-panel-alarm-glow: rgb(255 90 90 / 6%); /* 告警面板内发光（源 rgb(255,90,90,.6%)） */
+  --map-popup-text-blue: #c4dcff; /* 地图气泡正文字浅蓝（源 AccidentRescueMap 车辆行 / ProductionMap 人员气泡同值） */
+
+  /* ---- 生产地图（源 ProductionMap） ---- */
+  --map-vignette-production-bg:
+    radial-gradient(
+      ellipse 90% 80% at 50% 42%,
+      transparent 0%,
+      rgb(0 18 40 / 20%) 50%,
+      rgb(0 12 28 / 65%) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgb(0 22 48 / 90%) 0%,
+      transparent 14%,
+      transparent 78%,
+      rgb(0 18 40 / 92%) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgb(0 22 48 / 92%) 0%,
+      transparent 22%,
+      transparent 78%,
+      rgb(0 22 48 / 92%) 100%
+    ); /* 生产地图晕影深蓝渐变底（源 ProductionMap __depth） */
+
+  --map-marker-ink: #071426; /* 设备标记青底上的深字/图标（源 ProductionMap #071426） */
+  --map-device-label-bg: rgb(0 16 36 / 78%); /* 设备标记标签底（源 rgb(0,16,36,.78)） */
+  --map-device-label-fg: #dbe7f8; /* 设备标记标签文字（源 ProductionMap #dbe7f8） */
+  --map-device-offline: #8aa4c4; /* 设备离线灰蓝基色（源 ProductionMap #8aa4c4，渐变 alpha 用 color-mix 派生） */
+  --map-personnel-count: #4388ff; /* 人员数量强调蓝（源 ProductionMap #4388ff） */
+
+  /* ---- 厂区范围选择器（源 PlantAreaSelector） ---- */
+  --map-area-select-border: rgb(0 155 235 / 72%); /* 选择器描边亮蓝（源 rgb(0,155,235,.72)） */
+  --map-area-select-bg: linear-gradient(
+    180deg,
+    rgb(4 48 83 / 95%),
+    rgb(2 28 55 / 96%)
+  ); /* 选择器渐变底（源 PlantAreaSelector） */
+
+  --map-area-select-glow-in: rgb(0 132 220 / 18%); /* 选择器内发光（源 rgb(0,132,220,.18)） */
+  --map-area-select-glow-out: rgb(0 70 130 / 28%); /* 选择器外辉光（源 rgb(0,70,130,.28)） */
+  --map-area-select-fg: #d7efff; /* 选择器图标位文字亮蓝（源 #d7efff） */
+  --map-area-select-icon: #37c7ff; /* 选择器准星图标青（源 #37c7ff） */
+  --map-area-select-label: #9fc9e8; /* 选择器标签灰蓝字（源 #9fc9e8） */
+  --map-area-select-field-bg: rgb(0 31 62 / 72%); /* select 控件半透底（源 rgb(0,31,62,.72)） */
+  --map-area-select-option-bg: #062846; /* option 下拉项深蓝底（源 #062846） */
+
+  /* ---- 地图纯净模式按钮（源 MapCleanModeButton） ---- */
+  --map-clean-btn-border: rgb(44 163 255 / 58%); /* 纯净模式按钮描边（源 rgb(44,163,255,.58)） */
+  --map-clean-btn-bg: linear-gradient(
+    180deg,
+    rgb(8 52 99 / 92%),
+    rgb(4 28 61 / 94%)
+  ); /* 纯净模式按钮渐变底（源 MapCleanModeButton） */
+
+  --map-clean-btn-glow: rgb(0 144 255 / 16%); /* 纯净模式按钮外辉光（源 rgb(0,144,255,.16)） */
+  --map-clean-btn-fg: #ccecff; /* 纯净模式按钮文字（源 #ccecff） */
+  --map-clean-btn-border-hover: #55c9ff; /* 纯净模式按钮 hover 描边（源 #55c9ff） */
+  --map-clean-btn-bg-hover: linear-gradient(
+    180deg,
+    rgb(12 91 160 / 95%),
+    rgb(5 53 112 / 96%)
+  ); /* 纯净模式按钮 hover 渐变底（源 MapCleanModeButton） */
+
+  --map-clean-btn-icon: #63d8ff; /* 纯净模式按钮图标青（源 #63d8ff） */
 }
 
 /* =========================================================================
@@ -395,12 +711,12 @@
   --color-alarm-3: #fa8c16; /* 三级 → 警示橙 */
   --color-alarm-4: #0b69d7; /* 四级 → 主蓝 */
 
-  /* 文本（图 5-29 + 适老加深） */
-  --color-text-strong: #1a3550; /* 标题墨蓝（页标题/表头） */
-  --color-text: #1a3550; /* 正文加深（浅底可读） */
-  --color-text-muted: #94a4b1; /* 次要灰（辅助/未选中） */
+  /* 文本（图 5-29 + 适老加深；标题 > 正文 > 辅文三档对比拉开） */
+  --color-text-strong: #1a3550; /* 标题墨蓝（页标题/表头/重要正文） */
+  --color-text: #2a4a66; /* 正文灰蓝（比标题浅一档，与标题形成对比） */
+  --color-text-muted: #8a9bab; /* 次要灰（辅助/未选中，避免过浅） */
   --text-title-mgmt: #1a3550;
-  --text-muted-mgmt: #94a4b1;
+  --text-muted-mgmt: #8a9bab;
 
   /* 字体栈（系统无衬线） */
   --font-family-zh: 'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', sans-serif;
@@ -423,6 +739,7 @@
   --mgmt-radius-sm: 6px;
   --mgmt-radius-md: 8px;
   --mgmt-radius-lg: 10px;
+  --mgmt-radius-card: 12px; /* 卡片圆角（规范 10–12，取 12） */
 
   /* 布局骨架（图 5-31） */
   --mgmt-header-h: 56px; /* 顶栏（品牌带） */
@@ -447,7 +764,8 @@
   --mgmt-btn-h-elder: 40px;
   --mgmt-table-row-h: 48px; /* 表格行高（适老 ≥56） */
   --mgmt-table-row-h-elder: 56px;
-  --mgmt-sidebar-item-h: 40px; /* 侧栏菜单项（适老 ≥48） */
+  --mgmt-sidebar-item-h: 40px; /* 侧栏菜单项标准高（规范 §3：基准 40，适老档 ≥48） */
+  --mgmt-sidebar-item-h-elder: 48px; /* 适老档侧栏菜单项 ≥48（规范 §6） */
 
   /* 状态标签（浅底 + 同色深字，禁止灰蓝底） */
   --tag-success-bg: #ebf9ef;
@@ -458,6 +776,95 @@
   --tag-danger-fg: #f5222d;
   --tag-info-bg: #e8f3ff;
   --tag-info-fg: #0b69d7;
+
+  /* =====================================================================
+   * mgmt-redesign-migration：PC 端缺位 token（单一真源）
+   * ===================================================================== */
+
+  /* ---- 顶栏多 tab 页签（浏览器标签样式，深蓝顶栏上的标签条） ---- */
+  --mgmt-tab-item-bg: rgb(255 255 255 / 55%);
+  --mgmt-tab-bg: rgb(255 255 255 / 10%);
+  --mgmt-tab-fg: rgb(255 255 255 / 92%);
+  --mgmt-tab-hover-bg: rgb(255 255 255 / 16%);
+  --mgmt-tab-item-hover-bg: rgb(255 255 255 / 75%);
+  --mgmt-tab-on-bg: var(--bg-mgmt);
+  --mgmt-tab-on-fg: var(--primary-mgmt);
+  --mgmt-tab-height: 34px;
+  --mgmt-tab-radius: 8px 8px 0 0;
+  --mgmt-tab-close-bg: transparent;
+  --mgmt-tab-close-hover-bg: rgb(0 0 0 / 8%);
+  --mgmt-tab-on-close-hover-bg: rgb(11 105 215 / 12%);
+  --mgmt-active-bar: var(--primary-mgmt); /* 侧栏选中态左竖线色 */
+
+  /* ---- 侧栏菜单 token 补充（分组折叠 / 子菜单选中左竖线） ---- */
+  --mgmt-nav-group-hover-bg: #f3f8fc;
+  --mgmt-nav-leaf-hover-bg: #f3f8fc;
+  --mgmt-nav-active-bar-width: 3px;
+
+  /* ---- IconTile 瓦片（尺寸档 + 圆角） ---- */
+  --mgmt-tile-sm: 32px;
+  --mgmt-tile-md: 40px;
+  --mgmt-tile-lg: 48px;
+  --mgmt-tile-radius: 10px;
+
+  /* ---- 业务域 tone 色板（8 色，浅底 soft + 同色深字 fg，IconTile / 侧栏分组 / 工作台卡片复用） ---- */
+  --mgmt-tone-red-soft: #ffecec;
+  --mgmt-tone-red-fg: #e11d48;
+  --mgmt-tone-orange-soft: #fff7ec;
+  --mgmt-tone-orange-fg: #ea580c;
+  --mgmt-tone-amber-soft: #fffbeb;
+  --mgmt-tone-amber-fg: #d97706;
+  --mgmt-tone-navy-soft: #e8eef6;
+  --mgmt-tone-navy-fg: #1a3550;
+  --mgmt-tone-indigo-soft: #eef2ff;
+  --mgmt-tone-indigo-fg: #4f46e5;
+  --mgmt-tone-cyan-soft: #e6f9fb;
+  --mgmt-tone-cyan-fg: #0891b2;
+  --mgmt-tone-purple-soft: #f3efff;
+  --mgmt-tone-purple-fg: #6d3ef0;
+  --mgmt-tone-slate-soft: #f0f4f8;
+  --mgmt-tone-slate-fg: #4a6075;
+
+  /* ---- 表格组件 token 补充（表头 / 行 / 分页） ---- */
+  --mgmt-table-header-bg: #f7fbfe;
+  --mgmt-table-row-hover-bg: #f5faff;
+  --mgmt-table-page-bg: #fafcfe;
+  --mgmt-pager-on-bg: var(--primary-mgmt);
+
+  /* ---- 详情 / 表单 token 补充 ---- */
+  --mgmt-divider: var(--border-mgmt);
+  --mgmt-detail-field-label-fg: var(--text-muted-mgmt);
+  --mgmt-detail-field-value-fg: var(--text-title-mgmt);
+  --mgmt-form-input-bg: #f7fbfe;
+  --mgmt-form-input-border: var(--border-mgmt);
+
+  /* ---- 多 tab 页签下划线（规范 §4：同级内容切换用页签下划线） ---- */
+  --mgmt-tabs-underline-bg: #fff;
+  --mgmt-tabs-underline-border: var(--border-mgmt);
+  --mgmt-tab-item-padding: 8px 14px;
+  --mgtab-active-bg: var(--primary-mgmt-soft);
+}
+
+/* 后台端适老模式：data-elder='on' 由下列档位承接字号/密度放大（UI 规范-后台管理端 §6） */
+
+/* 适老各档位须不低于标准档并同步放大；正文对比加深；状态标签保持浅底深字描边（沿用全局 .tag-*） */
+[data-theme='mgmt'][data-elder='on'] {
+  /* 字号：正文 16、页标题 30、区块 24、小标题 18、辅助 14、筛选 15（均 ≥ 标准档并逐级递减，满足 §6/§1 绑定规则；§6 字面 22–24 为基准 16px 旧值，被"不低于标准档"覆盖） */
+  --mgmt-fz-page-title: 30px;
+  --mgmt-fz-section: 24px;
+  --mgmt-fz-header: 18px;
+  --mgmt-fz-body: 16px;
+  --mgmt-fz-caption: 14px;
+  --mgmt-fz-filter: 15px;
+
+  /* 密度：筛选控件 48、主按钮 40、表格行高 56、侧栏菜单项 48（规范 §6，均 ≥ 标准档并同步放大） */
+  --mgmt-ctrl-h: var(--mgmt-ctrl-h-elder);
+  --mgmt-btn-h: var(--mgmt-btn-h-elder);
+  --mgmt-table-row-h: var(--mgmt-table-row-h-elder);
+  --mgmt-sidebar-item-h: var(--mgmt-sidebar-item-h-elder);
+
+  /* 正文对比加深（复用规范墨蓝标题 token，不重造色） */
+  --color-text: var(--text-title-mgmt);
 }
 
 /* =========================================================================

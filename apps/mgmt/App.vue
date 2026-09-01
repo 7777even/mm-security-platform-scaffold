@@ -112,11 +112,22 @@ onMounted(() => {
 onUnmounted(() => window.clearInterval(clockTimer));
 
 /* ---- 适老模式开关（全局同步生效由各端 token 适老档承接，此处先挂开关位） ---- */
-const elderMode = ref(false);
+const ELDER_KEY = 'mm-mgmt-elder';
+const elderMode = ref(localStorage.getItem(ELDER_KEY) === '1');
+function applyElder(): void {
+  const root = document.documentElement;
+  if (elderMode.value) {
+    root.setAttribute('data-elder', 'on');
+  } else {
+    root.removeAttribute('data-elder');
+  }
+  localStorage.setItem(ELDER_KEY, elderMode.value ? '1' : '0');
+}
 const toggleElder = () => {
   elderMode.value = !elderMode.value;
-  document.documentElement.toggleAttribute('data-elder', elderMode.value);
+  applyElder();
 };
+applyElder();
 
 /* ---- 消息气泡 ---- */
 const msgCount = ref(3);
@@ -295,6 +306,7 @@ function resolveIcon(name: string): Component {
           <button
             type="button"
             class="mgmt-header__pill mgmt-header__pill--btn"
+            :class="{ active: elderMode }"
             :aria-pressed="elderMode"
             title="适老模式"
             @click="toggleElder"
@@ -472,6 +484,12 @@ function resolveIcon(name: string): Component {
 
 .mgmt-header__pill--btn:hover {
   background: var(--mgmt-header-pill-hover-bg);
+}
+
+.mgmt-header__pill--btn.active {
+  background: var(--mgmt-header-pill-hover-bg);
+  color: var(--color-on-primary);
+  box-shadow: inset 0 0 0 1px var(--color-on-primary);
 }
 
 /* 消息铃铛：红色气泡 */
