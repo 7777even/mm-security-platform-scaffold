@@ -268,11 +268,19 @@
   --btn-border: rgb(0 120 200 / 28%); /* 默认态描边（源 rgba(0,120,200,0.28)） */
   --btn-bg: rgb(0 22 48 / 65%); /* 默认态实底（源 rgba(0,22,48,0.65)） */
 
-  /* §10.1 地图工具栏 */
+  /* §10.1 地图工具栏（去硬编码：按钮/图标/标签尺寸与描边统一收归 token；
+   * 视觉对齐参考项目 fire-monitoring 工具栏——常驻青色发丝描边 + 辉光 + 强调青，
+   * 背板模糊沿用 --glass-blur 置 0 与参考项目（源项目未用 backdrop-filter）保持一致） */
   --map-tool-w-min: 320px;
   --map-tool-w-max: 420px;
   --map-tool-gap: var(--space-sm);
   --map-tool-bg: var(--glass-bg);
+  --map-tool-blur: var(--glass-blur);
+  --map-tool-btn-size: 40px; /* 工具栏按钮方尺寸（原写死 40px） */
+  --map-tool-btn-gap: 2px; /* 按钮内图标与文字间距（原写死 2px） */
+  --map-tool-icon-size: 20px; /* 按钮图标尺寸（原写死 20px） */
+  --map-tool-icon-stroke: 2; /* 图标描边宽度（原写死 2） */
+  --map-tool-label-size: 11px; /* 按钮文字字号（原写死 11px） */
 
   /* §11 列表与消息栏（源 SystemMessageBar：67px 渐变底 + 顶亮线） */
   --list-row-h: 56px;
@@ -296,6 +304,7 @@
   --map-border: rgb(
     0 150 236
   ); /* 地图标记描边基蓝（源 rgba(0,150,236,x)，涵盖同族 rgba(0,140,220,x)/rgba(0,148,236,x)/rgba(0,150,240,x)，透明度用 color-mix 表达） */
+
   --map-marker-cyan: #37cfff; /* 监测点/资源点标记青（源 AccidentRescue 标记色系 #37cfff/#33d6ff/#16c7ff） */
   --map-route-green: #47c78e; /* 疏散路线起点绿（源 #47c78e/rgba(71,199,142,x)） */
   --map-route-green-light: #7ff0b8; /* 疏散路线起点徽标文字浅绿 */
@@ -542,6 +551,23 @@
   --mb-radius-card: 16px; /* 卡片圆角（柔） */
   --mb-radius-btn: 999px; /* 主按钮胶囊形 */
   --mb-radius-ctrl: 8px; /* 控件圆角 */
+
+  /* 移动端图标尺寸刻度（Icon size 一律引用，禁止内联 px） */
+  --mb-ico-xs: 14px; /* 辅助图标 */
+  --mb-ico-sm: 16px; /* 常规图标（默认档） */
+  --mb-ico-md: 18px; /* 列表/菜单图标 */
+  --mb-ico-lg: 20px; /* 强调图标 */
+  --mb-ico-xl: 22px; /* 列表箭头/大图标 */
+  --mb-ico-play: 28px; /* 视频播放键 */
+  --mb-chevron: 22px; /* 列表右箭头字形 */
+  --mb-empty-pad: 56px; /* 空态纵向内边距 */
+
+  /* 布局尺寸（一次性布局常量，仍走 token 单一真源，禁止组件内重定义） */
+  --mb-hero-stat-w: 56px; /* 问候横幅统计小块最小宽 */
+  --mb-tile-h: 84px; /* 快捷宫格磁贴最小高 */
+  --mb-map-h: 300px; /* 态势地图高度 */
+  --mb-map-h-sm: 150px; /* 首页缩略地图高度 */
+  --mb-map-h-md: 240px; /* 路径规划地图高度 */
   --mb-bottom-safe: env(safe-area-inset-bottom); /* 安全区（刘海/手势） */
 
   /* 布局骨架（图 5-22） */
@@ -640,6 +666,9 @@
   --mb-avatar-md: 48px;
   --mb-dot-size: 8px;
   --mb-cell-h: 40px; /* 值班日历单元格（7 列栅格下的触控高度） */
+
+  /* 现场取证照片占位（工单处置 / 操作票执行），点击热区 64 */
+  --mb-photo-size: 64px;
 
   /* 空状态插画位 */
   --mb-empty-art-h: 120px;
