@@ -701,10 +701,10 @@
   --mb-muted: #000;
   --mb-primary-dark: #000;
 
-  /* 提示条：取消浅底细描边，转纯黑硬描边 + 纯黑字 */
-  --mb-banner-warning-bg: #fff;
+  /* 户外（§6 警情通知）：高饱和纯色块 + 白字 + 2px 黑硬边，与状态标签口径一致 */
+  --mb-banner-warning-bg: var(--warning-mobile);
   --mb-banner-warning-border: #000;
-  --mb-banner-warning-fg: #000;
+  --mb-banner-warning-fg: #fff;
 
   /* 图标 Tone 色板：高反差下取消彩色，统一白底黑图（实色瓦片同步收口为白底黑图，与 soft 一致） */
   --mb-tone-blue-soft: #fff;

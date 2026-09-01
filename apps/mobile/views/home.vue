@@ -316,6 +316,13 @@ const todoTasks: TodoTask[] = [
   color: var(--tag-warning-fg);
 }
 
+/* 户外（§6 警示条/通知）：转高饱和纯色块 + 白字 + 2px 黑硬边，与状态标签/提示条统一；
+   背景由浅黄 --warning-mobile-soft 换纯橙 --warning-mobile（规范 #fa8c16），文字沿用 --tag-warning-fg 白字。 */
+[data-theme='mobile'][data-skin='outdoor'] .event-strip {
+  background: var(--warning-mobile);
+  border: 2px solid var(--border-mobile);
+}
+
 /* ---- 待办任务卡 ---- */
 .todo-card {
   margin-bottom: var(--space-sm);

@@ -219,6 +219,11 @@ textarea {
   margin-bottom: var(--mb-card-gap);
   padding-bottom: var(--space-xs);
   overflow-x: auto;
+  scrollbar-width: none; /* Firefox 隐藏滚动条 */
+}
+
+.mb-chips::-webkit-scrollbar {
+  display: none; /* Chrome/Safari 隐藏滚动条 */
 }
 
 .mb-chip {
@@ -488,7 +493,6 @@ textarea {
   border: 0;
   border-bottom: var(--mb-border-w, 1px) solid var(--color-border);
   cursor: pointer;
-  appearance: none;
   appearance: none;
 }
 
