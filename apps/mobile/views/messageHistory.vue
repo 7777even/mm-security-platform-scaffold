@@ -69,12 +69,12 @@ function onSelect(item: MsgItem) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 56px 0;
+  padding: var(--mb-empty-pad) 0;
 }
 
 .msg-empty__icon {
-  width: 48px;
-  height: 48px;
+  width: var(--mb-avatar-md);
+  height: var(--mb-avatar-md);
   color: var(--text-muted-mobile);
 }
 

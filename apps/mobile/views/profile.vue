@@ -43,13 +43,6 @@ const ICON_PATHS: Record<string, string> = {
   outdoor: 'M12 3a9 9 0 109 9 7 7 0 01-9-9z',
 };
 
-const TONE_COLOR: Record<Tone, string> = {
-  green: 'var(--success-mobile)',
-  blue: 'var(--primary-mobile)',
-  orange: 'var(--warning-mobile)',
-  red: 'var(--danger-mobile)',
-};
-
 const { outdoor, elder } = useAccessibilityModes();
 function toggleOutdoor() {
   outdoor.value = !outdoor.value;
@@ -79,69 +72,72 @@ function onMenu() {
         v-for="item in menuItems"
         :key="item.key"
         type="button"
-        class="mb-menu-item"
+        class="mb-menu__item"
         @click="onMenu()"
       >
-        <span
-          class="mb-menu-ico"
-          :class="`tone-${item.tone}`"
-          :style="{ color: TONE_COLOR[item.tone] }"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path :d="ICON_PATHS[item.key]" />
-          </svg>
+        <span class="mb-menu__left">
+          <span class="mb-menu__ico" :class="`mb-menu__ico--${item.tone}`">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path :d="ICON_PATHS[item.key]" />
+            </svg>
+          </span>
+          <span class="mb-menu__label">{{ item.label }}</span>
         </span>
-        <span class="mb-menu-label">{{ item.label }}</span>
-        <span class="mb-menu-arrow" aria-hidden="true">›</span>
+        <span class="mb-menu__chevron" aria-hidden="true">›</span>
       </button>
     </section>
 
     <section class="mb-card mb-setting-group" aria-label="设置">
-      <button class="mb-setting-item" type="button" @click="toggleElder">
-        <span class="mb-setting-ico tone-blue">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path :d="ICON_PATHS.elder" />
-          </svg>
+      <button class="mb-menu__item" type="button" @click="toggleElder">
+        <span class="mb-menu__left">
+          <span class="mb-menu__ico mb-menu__ico--blue">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path :d="ICON_PATHS.elder" />
+            </svg>
+          </span>
+          <span class="mb-menu__label">适老模式</span>
         </span>
-        <span class="mb-setting-label">适老模式</span>
-        <span class="mb-switch" role="switch" :aria-checked="String(elder)" :class="{ on: elder }">
-          <span class="mb-switch__knob" />
-        </span>
+        <span
+          class="mb-switch"
+          role="switch"
+          :aria-checked="String(elder)"
+          :class="{ 'mb-switch--on': elder }"
+        ></span>
       </button>
 
-      <button class="mb-setting-item" type="button" @click="toggleOutdoor">
-        <span class="mb-setting-ico tone-orange">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path :d="ICON_PATHS.outdoor" />
-          </svg>
+      <button class="mb-menu__item" type="button" @click="toggleOutdoor">
+        <span class="mb-menu__left">
+          <span class="mb-menu__ico mb-menu__ico--orange">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path :d="ICON_PATHS.outdoor" />
+            </svg>
+          </span>
+          <span class="mb-menu__label">户外模式</span>
         </span>
-        <span class="mb-setting-label">户外模式</span>
         <span
           class="mb-switch"
           role="switch"
           :aria-checked="String(outdoor)"
-          :class="{ on: outdoor }"
-        >
-          <span class="mb-switch__knob" />
-        </span>
+          :class="{ 'mb-switch--on': outdoor }"
+        ></span>
       </button>
     </section>
 
@@ -170,8 +166,8 @@ function onMenu() {
 
 .mb-user-avatar {
   flex-shrink: 0;
-  width: 56px;
-  height: 56px;
+  width: var(--mb-avatar-md);
+  height: var(--mb-avatar-md);
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -192,7 +188,7 @@ function onMenu() {
 }
 
 .mb-user-role {
-  margin: 4px 0 0;
+  margin: var(--space-xs) 0 0;
   font-size: var(--mb-fz-tip);
   opacity: 0.85;
 }
@@ -200,107 +196,6 @@ function onMenu() {
 .mb-menu-group,
 .mb-setting-group {
   margin: 0 var(--mb-pad-x) var(--mb-card-gap);
-  padding: 4px var(--mb-pad-x);
-}
-
-.mb-menu-item,
-.mb-setting-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  width: 100%;
-  min-height: var(--mb-row-h); /* 触控热区 48 */
-  padding: 10px 0;
-  background: transparent;
-  border: none;
-  border-bottom: var(--mb-border-w, 1px) solid var(--color-border);
-  text-align: left;
-  cursor: pointer;
-}
-
-.mb-menu-group .mb-menu-item:last-child,
-.mb-setting-group .mb-setting-item:last-child {
-  border-bottom: none;
-}
-
-.mb-menu-ico,
-.mb-setting-ico {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-}
-
-.mb-menu-ico svg,
-.mb-setting-ico svg {
-  width: 20px;
-  height: 20px;
-}
-
-.tone-green {
-  background: var(--mb-menu-green-soft);
-  color: var(--success-mobile);
-}
-
-.tone-blue {
-  background: var(--mb-menu-blue-soft);
-  color: var(--primary-mobile);
-}
-
-.tone-orange {
-  background: var(--mb-menu-orange-soft);
-  color: var(--warning-mobile);
-}
-
-.tone-red {
-  background: var(--mb-menu-red-soft);
-  color: var(--danger-mobile);
-}
-
-.mb-menu-label,
-.mb-setting-label {
-  flex: 1;
-  min-width: 0;
-  font-size: var(--mb-fz-help);
-  color: var(--text-title-mobile);
-}
-
-.mb-menu-arrow {
-  flex-shrink: 0;
-  color: var(--text-muted-mobile);
-  font-size: 22px;
-  line-height: 1;
-}
-
-.mb-switch {
-  flex-shrink: 0;
-  width: 44px;
-  height: 26px;
-  border-radius: 999px;
-  background: var(--color-border);
-  position: relative;
-  cursor: pointer;
-  transition: background var(--transition-fast);
-}
-
-.mb-switch.on {
-  background: var(--primary-mobile);
-}
-
-.mb-switch__knob {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #fff;
-  transition: transform var(--transition-fast);
-}
-
-.mb-switch.on .mb-switch__knob {
-  transform: translateX(18px);
+  padding: var(--space-xs) var(--mb-pad-x);
 }
 </style>

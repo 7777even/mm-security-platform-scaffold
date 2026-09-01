@@ -44,9 +44,9 @@ const subTitle = computed(() => `${CATEGORY_LABELS[props.item.category]} · ${pr
   gap: var(--mb-pad-x);
   width: 100%;
   min-height: var(--mb-row-h); /* 触控热区 48 */
-  padding: 12px var(--mb-pad-x);
+  padding: var(--space-md) var(--mb-pad-x);
   background: var(--card-mobile);
-  border: 1px solid var(--color-border);
+  border: var(--mb-border-w) solid var(--mb-stroke);
   border-radius: var(--mb-radius-card);
   text-align: left;
   cursor: pointer;
@@ -62,13 +62,13 @@ const subTitle = computed(() => `${CATEGORY_LABELS[props.item.category]} · ${pr
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-xs);
 }
 
 .msg-card__title-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-sm);
   min-width: 0;
 }
 
@@ -99,16 +99,16 @@ const subTitle = computed(() => `${CATEGORY_LABELS[props.item.category]} · ${pr
 
 .msg-card__dot {
   flex-shrink: 0;
-  width: 8px;
-  height: 8px;
+  width: var(--mb-dot-size);
+  height: var(--mb-dot-size);
   border-radius: 50%;
-  background: var(--color-danger);
+  background: var(--danger-mobile);
 }
 
 .msg-card__arrow {
   flex-shrink: 0;
   color: var(--text-muted-mobile);
-  font-size: 22px;
+  font-size: var(--mb-chevron);
   line-height: 1;
 }
 </style>

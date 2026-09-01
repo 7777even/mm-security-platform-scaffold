@@ -3,6 +3,8 @@
  * - token 真源：src/styles/tokens.css 的 :root[data-theme='mobile'] 块；
  *   此处只写布局语言与通用组件类，禁止出现任何硬编码颜色/字号/尺寸
  * - 勿引入 src/styles/global.css（大屏深色底语言，与移动端浅底冲突）
+ * - ui-redesign 迁移（2026-08）：参考项目各页面重复内联的样式统一上提为本文件的
+ *   共享组件类，页面层只保留自身特有的版式。新增页面优先复用，不得重复定义。
  * ========================================================================= */
 
 html,
@@ -20,6 +22,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* 表单控件默认不继承字体，统一接管（源 ui-redesign app.css 的表单基线） */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
 /* ---- 页面容器：单列卡片流（间距由各块 margin-bottom 自控制，避免标题行与横幅等距） ---- */
 .mb-page {
   padding: var(--mb-pad-x);
@@ -33,6 +43,37 @@ body {
   background: var(--card-mobile);
   border: 1px solid var(--color-border);
   border-radius: var(--mb-radius-card);
+}
+
+/* 卡片标题行（左标题右标签）与摘要行 */
+.mb-card__title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  font-size: var(--mb-fz-form-label);
+  font-weight: 600;
+  color: var(--text-title-mobile);
+}
+
+.mb-card__desc {
+  margin-top: var(--space-sm);
+  font-size: var(--mb-fz-help);
+  color: var(--mb-body);
+  line-height: 1.5;
+}
+
+/* 卡片流：相邻卡片间距统一由容器控制，卡片自身不带外边距 */
+.mb-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mb-card-gap);
+}
+
+/* 卡片作为列表项跳详情时的链接修饰：去掉下划线、继承正文色 */
+.mb-card--link {
+  color: inherit;
+  text-decoration: none;
 }
 
 /* ---- 实心胶囊主按钮：一屏一个，热区严格 48~56（详设 V1.5 §3.4） ---- */
@@ -94,6 +135,209 @@ body {
   text-decoration: none;
 }
 
+/* =========================================================================
+ * 以下为 ui-redesign 迁移上提的共享组件类
+ * ========================================================================= */
+
+/* ---- 首页 hero（沉浸头图）：实色主蓝，禁用渐变 ---- */
+.mb-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--mb-hero-pad);
+  margin-bottom: var(--mb-card-gap);
+  color: var(--mb-hero-fg);
+  background: var(--mb-hero-bg);
+  border-radius: var(--mb-hero-radius);
+}
+
+.mb-hero__title {
+  font-size: var(--mb-fz-page);
+  font-weight: 700;
+}
+
+.mb-hero__sub {
+  margin-top: var(--space-xs);
+  font-size: var(--mb-fz-tip);
+  opacity: 0.9;
+}
+
+.mb-hero__pills {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.mb-hero__pill {
+  padding: var(--space-xs) var(--space-sm);
+  text-align: center;
+  background: var(--mb-hero-pill-bg);
+  border-radius: var(--mb-hero-pill-radius);
+}
+
+.mb-hero__pill b {
+  display: block;
+  font-size: var(--mb-fz-form-label);
+}
+
+.mb-hero__pill span {
+  font-size: var(--mb-fz-tip);
+  opacity: 0.9;
+}
+
+/* ---- 按钮变体：次按钮（白底深描边）/ 小按钮 / 通栏 ---- */
+.mb-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  min-height: var(--mb-btn-h);
+  padding: 0 var(--space-md);
+  font-size: var(--mb-fz-form-label);
+  font-weight: 600;
+  color: var(--primary-mobile);
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-btn);
+  cursor: pointer;
+}
+
+.mb-btn-sm {
+  min-height: var(--mb-btn-h);
+  padding: 0 var(--space-md);
+  font-size: var(--mb-fz-help);
+}
+
+.mb-btn-block {
+  width: 100%;
+}
+
+/* ---- 筛选 chip：横向滚动，热区 48（参考项目 30px 未达标，按 §1.4 提升） ---- */
+.mb-chips {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--mb-card-gap);
+  padding-bottom: var(--space-xs);
+  overflow-x: auto;
+}
+
+.mb-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--mb-row-h);
+  padding: 0 var(--space-md);
+  font-size: var(--mb-fz-help);
+  color: var(--mb-body);
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-btn);
+  cursor: pointer;
+}
+
+.mb-chip--on {
+  font-weight: 600;
+  color: var(--color-on-primary);
+  background: var(--primary-mobile);
+  border-color: var(--primary-mobile);
+}
+
+/* ---- 提示条（banner）：警示软底 + 同色描边 + 深字 ---- */
+.mb-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-radius: var(--mb-radius-card);
+  font-size: var(--mb-fz-help);
+  cursor: pointer;
+}
+
+.mb-banner--warning {
+  color: var(--mb-banner-warning-fg);
+  background: var(--mb-banner-warning-bg);
+  border: var(--mb-border-w, 1px) solid var(--mb-banner-warning-border);
+}
+
+/* ---- 统计宫格（首页告警概览 / 应急资源）---- */
+.mb-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+.mb-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-xs);
+  text-align: center;
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-ctrl);
+  cursor: pointer;
+}
+
+.mb-stat__num {
+  font-size: var(--mb-fz-page);
+  font-weight: 800;
+  color: var(--text-title-mobile);
+}
+
+.mb-stat__num--danger {
+  color: var(--danger-mobile);
+}
+
+.mb-stat__num--warning {
+  color: var(--warning-mobile);
+}
+
+.mb-stat__num--success {
+  color: var(--success-mobile);
+}
+
+.mb-stat__num--primary {
+  color: var(--primary-mobile);
+}
+
+.mb-stat__label {
+  font-size: var(--mb-fz-tip);
+  color: var(--mb-body);
+}
+
+/* ---- 快捷功能宫格（4 列）---- */
+.mb-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-sm);
+}
+
+.mb-quick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-sm);
+  min-height: 96px;
+  padding: var(--space-sm) var(--space-xs);
+  text-align: center;
+  text-decoration: none;
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-ctrl);
+}
+
+.mb-quick__label {
+  display: block;
+  width: 100%;
+  font-size: var(--mb-fz-tip);
+  line-height: 1.3;
+  color: var(--mb-body);
+  word-break: keep-all;
+}
+
 /* ---- 状态标签：浅底同色深字（全局枚举类，见 docs/UI规范-移动端.md §6 状态映射） ---- */
 .tag {
   display: inline-flex;
@@ -125,6 +369,719 @@ body {
   color: var(--tag-info-fg);
 }
 
+/* ---- 消息条目（消息中心 / 通知历史）：未读小红点 + 标题 + 摘要 ---- */
+.mb-msg {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-ctrl);
+}
+
+.mb-msg__dot {
+  flex-shrink: 0;
+  width: var(--mb-dot-size);
+  height: var(--mb-dot-size);
+  margin-top: var(--space-xs);
+  background: var(--danger-mobile);
+  border-radius: 50%;
+}
+
+.mb-msg--read .mb-msg__dot {
+  background: transparent;
+}
+
+.mb-msg__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--mb-fz-form-label);
+  font-weight: 600;
+  color: var(--text-title-mobile);
+}
+
+.mb-msg--read .mb-msg__title {
+  font-weight: 500;
+  color: var(--mb-muted);
+}
+
+.mb-msg__desc {
+  margin-top: var(--space-xs);
+  font-size: var(--mb-fz-help);
+  color: var(--mb-body);
+}
+
+/* ---- 列表行（左图标/头像 + 主文 + 副文 + 右侧动作/箭头），行高 48~56 ---- */
+.mb-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: var(--mb-row-h);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-ctrl);
+  text-decoration: none;
+}
+
+.mb-row__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.mb-row__title {
+  font-size: var(--mb-fz-form-label);
+  font-weight: 600;
+  color: var(--text-title-mobile);
+}
+
+.mb-row__desc {
+  margin-top: 2px;
+  font-size: var(--mb-fz-help);
+  color: var(--mb-body);
+}
+
+/* ---- 分组菜单（我的 / 设置）：白卡容器 + 分隔线 + 行尾箭头 ---- */
+.mb-menu {
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-card);
+  overflow: hidden;
+}
+
+.mb-menu__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-height: var(--mb-row-h);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--mb-fz-form-label);
+  color: var(--text-title-mobile);
+  text-decoration: none;
+  border-bottom: var(--mb-border-w, 1px) solid var(--color-border);
+}
+
+.mb-menu__item:last-child {
+  border-bottom: none;
+}
+
+.mb-menu__left {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.mb-menu__item--danger {
+  color: var(--danger-mobile);
+}
+
+/* 菜单图标（圆形软底，按 tone 着色）；尺寸一律走 token，禁止内联 px */
+.mb-menu__ico {
+  flex-shrink: 0;
+  width: var(--mb-avatar-sm);
+  height: var(--mb-avatar-sm);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.mb-menu__ico svg {
+  width: var(--mb-ico-lg);
+  height: var(--mb-ico-lg);
+}
+
+.mb-menu__ico--green {
+  background: var(--mb-menu-green-soft);
+  color: var(--success-mobile);
+}
+
+.mb-menu__ico--blue {
+  background: var(--mb-menu-blue-soft);
+  color: var(--primary-mobile);
+}
+
+.mb-menu__ico--orange {
+  background: var(--mb-menu-orange-soft);
+  color: var(--warning-mobile);
+}
+
+.mb-menu__ico--red {
+  background: var(--mb-menu-red-soft);
+  color: var(--danger-mobile);
+}
+
+.mb-menu__label {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--mb-fz-help);
+  color: var(--text-title-mobile);
+}
+
+.mb-menu__chevron {
+  flex-shrink: 0;
+  color: var(--text-muted-mobile);
+  font-size: var(--mb-chevron);
+  line-height: 1;
+}
+
+/* ---- 头像（圆形，字符/图片承载）---- */
+.mb-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--mb-avatar-md);
+  height: var(--mb-avatar-md);
+  font-size: var(--mb-fz-section);
+  font-weight: 700;
+  color: var(--primary-mobile);
+  background: var(--primary-mobile-soft);
+  border-radius: 50%;
+}
+
+.mb-avatar--sm {
+  width: var(--mb-avatar-sm);
+  height: var(--mb-avatar-sm);
+  font-size: var(--mb-fz-form-label);
+}
+
+/* 实色主蓝底上的头像（首页 hero / 用户卡） */
+.mb-avatar--on-primary {
+  color: var(--color-on-primary);
+  background: var(--mb-hero-pill-bg);
+}
+
+/* ---- 用户卡（我的页）：实色主蓝底白字，与首页 hero 对齐 ---- */
+.mb-usercard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--mb-hero-pad);
+  margin-bottom: var(--mb-card-gap);
+  color: var(--mb-usercard-fg);
+  background: var(--mb-usercard-bg);
+  border-radius: var(--mb-radius-card);
+}
+
+.mb-usercard__name {
+  font-size: var(--mb-fz-section);
+  font-weight: 700;
+}
+
+.mb-usercard__meta {
+  margin-top: var(--space-xs);
+  font-size: var(--mb-fz-help);
+  opacity: 0.9;
+}
+
+/* ---- 详情分组（详情页只读）：标签左、值右 ---- */
+.mb-detail {
+  padding: var(--space-md);
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-card);
+}
+
+.mb-detail__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  min-height: var(--mb-row-h);
+  padding: var(--space-sm) 0;
+  border-bottom: var(--mb-border-w, 1px) solid var(--color-border);
+}
+
+.mb-detail__row:last-child {
+  border-bottom: none;
+}
+
+.mb-detail__label {
+  flex-shrink: 0;
+  font-size: var(--mb-fz-form-label);
+  color: var(--text-muted-mobile);
+}
+
+.mb-detail__value {
+  font-size: var(--mb-fz-form-label);
+  color: var(--text-title-mobile);
+  text-align: right;
+  word-break: break-word;
+}
+
+/* ---- 进度条（任务/演练/工单进度）---- */
+.mb-progress {
+  height: var(--mb-progress-h);
+  overflow: hidden;
+  background: var(--mb-progress-bg);
+  border-radius: var(--mb-radius-btn);
+}
+
+.mb-progress__bar {
+  display: block;
+  height: 100%;
+  background: var(--primary-mobile);
+  border-radius: var(--mb-radius-btn);
+}
+
+/* ---- 分段选项（现场执行：正常 / 异常 / 不适用），热区 48 ---- */
+.mb-seg {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.mb-seg__opt {
+  flex: 1;
+  min-height: var(--mb-row-h);
+  font-size: var(--mb-fz-help);
+  color: var(--mb-body);
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-ctrl);
+  cursor: pointer;
+}
+
+.mb-seg__opt--on {
+  font-weight: 600;
+  color: var(--color-on-primary);
+  background: var(--primary-mobile);
+  border-color: var(--primary-mobile);
+}
+
+/* ---- 表单（登录 / 流程页）---- */
+.mb-label {
+  display: block;
+  margin: var(--space-md) 0 var(--space-sm);
+  font-size: var(--mb-fz-help);
+  color: var(--mb-muted);
+}
+
+.mb-input {
+  width: 100%;
+  min-height: var(--mb-btn-h);
+  padding: 0 var(--space-md);
+  font-size: var(--mb-fz-form-label);
+  color: var(--text-title-mobile);
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-ctrl);
+}
+
+/* ---- 底部主操作条（流程 / 执行页）：贴边固定 + 安全区 ---- */
+.mb-safe-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--z-chrome);
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--mb-pad-x);
+  padding-bottom: calc(var(--space-sm) + var(--mb-bottom-safe));
+  background: var(--card-mobile);
+  border-top: var(--mb-border-w, 1px) solid var(--color-border);
+}
+
+/* 带固定操作条的页面：底部预留操作条高度 + 安全区，避免末条内容被遮挡 */
+.mb-page--bar {
+  padding-bottom: calc(var(--mb-btn-h) + var(--space-md) + var(--mb-bottom-safe));
+}
+
+/* ---- 开关（设置项），行内控件，热区由所在行承担 ---- */
+.mb-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: var(--mb-switch-w);
+  height: var(--mb-switch-h);
+  background: var(--mb-switch-bg);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-btn);
+}
+
+.mb-switch::after {
+  position: absolute;
+  top: 50%;
+  left: 1px;
+  width: var(--mb-switch-knob);
+  height: var(--mb-switch-knob);
+  content: '';
+  background: var(--card-mobile);
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+
+.mb-switch--on {
+  background: var(--primary-mobile);
+  border-color: var(--primary-mobile);
+}
+
+.mb-switch--on::after {
+  left: calc(100% - var(--mb-switch-knob) - 1px);
+}
+
+/* ---- 值班日历（7 列栅格）---- */
+.mb-calendar__head {
+  margin-bottom: var(--space-sm);
+  font-size: var(--mb-fz-form-label);
+  font-weight: 700;
+  color: var(--text-title-mobile);
+  text-align: center;
+}
+
+.mb-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-xs);
+  text-align: center;
+  font-size: var(--mb-fz-help);
+  color: var(--mb-body);
+}
+
+.mb-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--mb-cell-h);
+  border-radius: var(--mb-radius-ctrl);
+}
+
+.mb-cell--today {
+  font-weight: 700;
+  color: var(--color-on-primary);
+  background: var(--primary-mobile);
+}
+
+.mb-cell--duty {
+  color: var(--primary-mobile);
+  background: var(--primary-mobile-soft);
+}
+
+/* ---- 空状态：插画位 + 说明 + 引导按钮 ---- */
+.mb-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-lg) var(--space-md);
+  text-align: center;
+}
+
+.mb-empty__art {
+  width: 100%;
+  height: var(--mb-empty-art-h);
+  background: var(--primary-mobile-soft);
+  border-radius: var(--mb-radius-card);
+}
+
+.mb-empty__text {
+  font-size: var(--mb-fz-help);
+  color: var(--mb-body);
+}
+
+/* ---- 时间轴（详情轨迹 / 处置记录）---- */
+.mb-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.mb-timeline__item {
+  position: relative;
+  padding-left: var(--space-lg);
+  border-left: var(--mb-border-w, 1px) solid var(--color-border);
+}
+
+.mb-timeline__item::before {
+  position: absolute;
+  top: var(--space-xs);
+  left: calc(-1 * var(--space-xs) / 2);
+  width: var(--space-xs);
+  height: var(--space-xs);
+  content: '';
+  background: var(--primary-mobile);
+  border-radius: 50%;
+}
+
+.mb-timeline__time {
+  font-size: var(--mb-fz-tip);
+  color: var(--mb-muted);
+}
+
+.mb-timeline__body {
+  margin-top: 2px;
+  font-size: var(--mb-fz-form-label);
+  color: var(--text-title-mobile);
+}
+
+/* ---- 视频宫格（2 列）---- */
+.mb-video-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+}
+
+.mb-video {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  text-decoration: none;
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-ctrl);
+}
+
+.mb-video__thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 16 / 9;
+  background: var(--mb-progress-bg);
+  border-radius: var(--mb-radius-ctrl);
+}
+
+.mb-video__name {
+  font-size: var(--mb-fz-help);
+  color: var(--text-title-mobile);
+}
+
+/* ---- 地图容器（leaflet 宿主）---- */
+.mb-map {
+  position: relative;
+  overflow: hidden;
+  background: var(--primary-mobile-soft);
+  border-radius: var(--mb-radius-card);
+}
+
+/* ---- 登录外框：整屏居中（移动端禁渐变，取主色软底纯色） ---- */
+.mb-auth {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-lg) var(--mb-pad-x);
+  text-align: center;
+  background: var(--primary-mobile-soft);
+}
+
+.mb-auth__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-xs) var(--space-sm);
+  margin-bottom: var(--space-md);
+  font-size: var(--mb-fz-tip);
+  font-weight: 600;
+  color: var(--primary-mobile);
+  background: var(--card-mobile);
+  border-radius: var(--radius-pill);
+}
+
+.mb-auth__title {
+  margin: 0;
+  font-size: var(--mb-fz-hero);
+  font-weight: 700;
+  color: var(--text-title-mobile);
+}
+
+.mb-auth__sub {
+  margin: var(--space-sm) 0 var(--space-lg);
+  font-size: var(--mb-fz-help);
+  color: var(--mb-muted);
+}
+
+.mb-auth__card {
+  width: 360px;
+  max-width: 100%;
+  padding: var(--space-lg);
+  text-align: left;
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-card);
+}
+
+.mb-auth__back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  margin-top: var(--space-lg);
+  font-size: var(--mb-fz-help);
+  color: var(--primary-mobile);
+  text-decoration: none;
+}
+
+/* ---- 地图图例：语义色圆点 + 说明（态势地图 / 路径规划） ---- */
+.mb-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin: var(--space-md) 0 var(--mb-card-gap);
+  font-size: var(--mb-fz-help);
+  color: var(--mb-body);
+}
+
+.mb-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.mb-legend__dot {
+  flex-shrink: 0;
+  width: var(--space-sm);
+  height: var(--space-sm);
+  border-radius: 50%;
+  background: var(--mb-muted);
+}
+
+.mb-legend__dot--danger {
+  background: var(--danger-mobile);
+}
+
+.mb-legend__dot--warning {
+  background: var(--warning-mobile);
+}
+
+.mb-legend__dot--success {
+  background: var(--success-mobile);
+}
+
+.mb-legend__dot--primary {
+  background: var(--primary-mobile);
+}
+
+/* ---- 搜索框（通讯录 / 资源检索）：图标 + 无边框输入，热区 48 ---- */
+.mb-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: var(--mb-btn-h);
+  padding: 0 var(--space-md);
+  margin-bottom: var(--mb-card-gap);
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-ctrl);
+}
+
+.mb-search__input {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--mb-fz-form-label);
+  color: var(--text-title-mobile);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.mb-search__input::placeholder {
+  color: var(--mb-muted);
+}
+
+/* ---- 下拉筛选（列表页筛选条）---- */
+.mb-select {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--mb-btn-h);
+  padding: 0 var(--space-sm);
+  font-size: var(--mb-fz-help);
+  color: var(--text-title-mobile);
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-ctrl);
+}
+
+/* ---- 多行输入（处置结果 / 反馈录入）---- */
+.mb-textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: var(--space-sm) var(--space-md);
+  font-family: inherit;
+  font-size: var(--mb-fz-form-label);
+  color: var(--text-title-mobile);
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) solid var(--mb-stroke);
+  border-radius: var(--mb-radius-ctrl);
+  resize: vertical;
+}
+
+/* ---- 照片占位（现场取证），点击热区 64 ---- */
+.mb-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: var(--mb-photo-size);
+  height: var(--mb-photo-size);
+  color: var(--mb-muted);
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) dashed var(--mb-stroke);
+  border-radius: var(--mb-radius-ctrl);
+}
+
+/* ---- 流程节点（工单进度胶囊）：已完成 / 当前 / 未开始 ---- */
+.mb-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-bottom: var(--mb-card-gap);
+}
+
+.mb-steps__item {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--mb-fz-tip);
+  color: var(--mb-muted);
+  background: var(--mb-progress-bg);
+  border-radius: var(--radius-pill);
+}
+
+.mb-steps__item--done {
+  color: var(--success-mobile);
+  background: var(--tag-success-bg);
+}
+
+.mb-steps__item--on {
+  font-weight: 600;
+  color: var(--primary-mobile);
+  background: var(--tag-info-bg);
+}
+
+/* ---- 步骤序号圆点（操作票 / 巡查项）---- */
+.mb-stepno {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--mb-step-dot);
+  height: var(--mb-step-dot);
+  font-size: var(--mb-fz-tip);
+  font-weight: 700;
+  color: var(--primary-mobile);
+  background: var(--primary-mobile-soft);
+  border-radius: 50%;
+}
+
+.mb-stepno--done {
+  color: var(--color-on-primary);
+  background: var(--success-mobile);
+}
+
+/* ---- 附件上传区（虚线描边占位，热区 ≥72）---- */
+.mb-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  min-height: 72px;
+  margin: var(--mb-card-gap) 0;
+  font-size: var(--mb-fz-help);
+  color: var(--mb-muted);
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 1px) dashed var(--mb-stroke);
+  border-radius: var(--mb-radius-card);
+}
+
 /* ---- 户外强光模式（data-skin="outdoor"）：标签改纯色色块 + 黑色硬描边 ---- */
 [data-skin='outdoor'] .tag {
   border: 2px solid var(--border-mobile);
@@ -132,4 +1089,14 @@ body {
 
 [data-skin='outdoor'] .mb-card {
   border-color: var(--border-mobile);
+}
+
+[data-skin='outdoor'] .mb-hero,
+[data-skin='outdoor'] .mb-usercard {
+  border: var(--mb-border-w) solid var(--border-mobile);
+}
+
+/* 户外：消息未读红点改为黑色实心，保证纯黑白皮肤下仍可辨 */
+[data-skin='outdoor'] .mb-msg__dot {
+  background: var(--danger-mobile);
 }

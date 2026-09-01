@@ -36,8 +36,8 @@ function onMarkAll() {
       <span v-if="unreadCount > 0" class="msg-toolbar__count">{{ unreadCount }} 条未读</span>
       <span class="msg-toolbar__spacer" />
       <span class="msg-toolbar__actions">
-        <button type="button" class="msg-toolbar__pill" @click="onMarkAll">批量已读</button>
-        <RouterLink to="/messages/history" class="msg-toolbar__pill">
+        <button type="button" class="mb-btn-ghost mb-btn-sm" @click="onMarkAll">批量已读</button>
+        <RouterLink to="/messages/history" class="mb-btn-ghost mb-btn-sm">
           <svg
             class="msg-toolbar__pill-icon"
             viewBox="0 0 24 24"
@@ -93,7 +93,7 @@ function onMarkAll() {
 
 .msg-toolbar__count {
   font-size: var(--mb-fz-tip);
-  color: var(--color-danger);
+  color: var(--danger-mobile);
 }
 
 .msg-toolbar__spacer {
@@ -106,26 +106,9 @@ function onMarkAll() {
   align-items: center;
 }
 
-.msg-toolbar__pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-xs);
-  height: 32px;
-  padding: 0 16px;
-  border: 2px solid var(--primary-mobile);
-  border-radius: var(--mb-radius-btn);
-  background: var(--card-mobile);
-  color: var(--primary-mobile);
-  font-size: var(--mb-fz-help);
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-}
-
 .msg-toolbar__pill-icon {
-  width: 16px;
-  height: 16px;
+  width: var(--mb-ico-sm);
+  height: var(--mb-ico-sm);
 }
 
 .msg-list {
@@ -149,12 +132,12 @@ function onMarkAll() {
   flex-direction: column;
   align-items: center;
   gap: var(--space-sm);
-  padding: 56px 0;
+  padding: var(--mb-empty-pad) 0;
 }
 
 .msg-empty__icon {
-  width: 48px;
-  height: 48px;
+  width: var(--mb-avatar-md);
+  height: var(--mb-avatar-md);
   color: var(--text-muted-mobile);
 }
 

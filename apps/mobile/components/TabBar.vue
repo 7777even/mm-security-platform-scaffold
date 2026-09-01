@@ -1,20 +1,27 @@
 <script setup lang="ts">
-import type { Component } from 'vue';
 import { RouterLink } from 'vue-router';
-import { HomeFilled, Bell, User } from '@element-plus/icons-vue';
+import Icon from './Icon.vue';
 
-type TabKey = 'home' | 'messages' | 'profile';
+/**
+ * 底部标签栏：3 入口（首页 / 消息 / 我的），单手可达。
+ *
+ * ui-redesign 迁移（2026-08）：图标由 Element Plus 图标换成与参考项目同源的
+ * 双色图标集（Icon.vue），保证三端导航图标视觉重量一致；选中态仅改主色。
+ * 底栏由布局壳 App.vue 唯一持有，页面内不得再单独渲染一份。
+ */
+export type TabKey = 'home' | 'messages' | 'profile';
+
 defineProps<{ active: TabKey }>();
 
-const TABS: { key: TabKey; to: string; label: string; icon: Component }[] = [
-  { key: 'home', to: '/home', label: '首页', icon: HomeFilled },
-  { key: 'messages', to: '/messages', label: '消息', icon: Bell },
-  { key: 'profile', to: '/profile', label: '我的', icon: User },
+const TABS: { key: TabKey; to: string; label: string; icon: string }[] = [
+  { key: 'home', to: '/home', label: '首页', icon: 'home' },
+  { key: 'messages', to: '/messages', label: '消息', icon: 'message' },
+  { key: 'profile', to: '/profile', label: '我的', icon: 'user' },
 ];
 </script>
 
 <template>
-  <nav class="tab-bar">
+  <nav class="tab-bar" aria-label="主导航">
     <RouterLink
       v-for="t in TABS"
       :key="t.key"
@@ -22,7 +29,7 @@ const TABS: { key: TabKey; to: string; label: string; icon: Component }[] = [
       class="tab-bar__item"
       :class="{ 'is-active': active === t.key }"
     >
-      <component :is="t.icon" class="tab-bar__icon" />
+      <Icon :name="t.icon" size="var(--mb-ico-xl)" mono />
       <span class="tab-bar__label">{{ t.label }}</span>
     </RouterLink>
   </nav>
@@ -31,35 +38,32 @@ const TABS: { key: TabKey; to: string; label: string; icon: Component }[] = [
 <style scoped>
 .tab-bar {
   position: fixed;
-  left: 0;
   right: 0;
   bottom: 0;
+  left: 0;
+  z-index: var(--z-chrome);
+  display: flex;
   height: calc(var(--mb-bottom-bar-h) + var(--mb-bottom-safe));
   padding-bottom: var(--mb-bottom-safe);
-  display: flex;
   background: var(--card-mobile);
-  border-top: var(--mb-border-w, 1px) solid var(--color-border);
-  z-index: var(--z-chrome);
+  border-top: var(--mb-border-w) solid var(--mb-stroke);
 }
 
+/* 标签项：图标上、文字下，全高触控热区（56px ≥ 48 下限） */
 .tab-bar__item {
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  color: var(--text-muted-mobile);
-  text-decoration: none;
+  gap: var(--space-xs);
   font-size: var(--mb-fz-tip);
+  color: var(--mb-muted);
+  text-decoration: none;
 }
 
 .tab-bar__item.is-active {
+  font-weight: 700;
   color: var(--primary-mobile);
-}
-
-.tab-bar__icon {
-  width: 24px;
-  height: 24px;
 }
 </style>

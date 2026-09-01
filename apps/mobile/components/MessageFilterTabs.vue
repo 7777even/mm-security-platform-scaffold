@@ -21,8 +21,8 @@ function select(key: MsgFilter) {
       v-for="t in TABS"
       :key="t.key"
       type="button"
-      class="filter-tabs__item"
-      :class="{ 'is-active': modelValue === t.key }"
+      class="mb-chip"
+      :class="{ 'mb-chip--on': modelValue === t.key }"
       @click="select(t.key)"
     >
       {{ t.label }}
@@ -42,24 +42,5 @@ function select(key: MsgFilter) {
 
 .filter-tabs::-webkit-scrollbar {
   display: none; /* Chrome/Safari 隐藏滚动条 */
-}
-
-.filter-tabs__item {
-  flex-shrink: 0;
-  height: 32px;
-  padding: 0 16px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--mb-radius-btn);
-  background: var(--card-mobile);
-  color: var(--text-muted-mobile);
-  font-size: var(--mb-fz-help);
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.filter-tabs__item.is-active {
-  color: var(--primary-mobile);
-  background: var(--card-mobile);
-  border-color: var(--primary-mobile);
 }
 </style>
