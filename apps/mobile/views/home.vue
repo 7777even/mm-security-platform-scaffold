@@ -195,16 +195,16 @@ const todoTasks: TodoTask[] = [
 </template>
 
 <style scoped>
-/* ---- 问候横幅：主色实底白字 ---- */
+/* ---- 问候横幅：复用 hero token（普通=主蓝白字，户外=白底黑字，与「我的」用户卡对齐） ---- */
 .home-hero {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-md);
   padding: var(--space-md);
-  background: var(--primary-mobile);
+  background: var(--mb-hero-bg);
   border-radius: var(--mb-radius-card);
-  color: var(--color-on-primary);
+  color: var(--mb-hero-fg);
 }
 
 .home-hero__greeting {
