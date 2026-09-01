@@ -1,5 +1,5 @@
 import lineGeoJsonText from '../../../../mapdata/line.geojson?raw';
-import evacuationGeoJsonText from '../../../../mapdata/疏散路径.geojson?raw';
+import evacuationGeoJsonText from '../../../../mapdata/疏散路线.geojson?raw';
 import {
   buildEvacuationRouteFromGeoJson,
   extractEvacuationLinesFromGeoJson,

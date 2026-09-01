@@ -20,7 +20,7 @@ const { styleFor } = useWorldMarkerScreenPositions(() => {
 });
 
 function openDetail(item: MajorHazardItem) {
-  void router.push({ name: 'majorHazardDetail', params: { hazardId: String(item.id) } });
+  void router.push({ name: 'ops-monitor-hazard-detail', params: { hazardId: String(item.id) } });
 }
 </script>
 

@@ -45,6 +45,63 @@ const SECONDARY_ROUTES: RouteRecordRaw[] = [
     component: () => import('@/views/mobile/fieldReport.vue'),
     meta: { title: '现场采集回传', perm: 'mobile:field-report:view', hidden: true },
   },
+  // —— fire-monitoring 迁移二级页（hidden，由一级页跳转进入）——
+  {
+    path: '/dashboard/rescue',
+    name: 'dashboard-rescue',
+    component: () => import('@/views/accident-rescue/index.vue'),
+    meta: { title: '应急演练详情', perm: 'dashboard:view', hidden: true },
+  },
+  {
+    path: '/fire-alarm/rescue',
+    name: 'fire-alarm-rescue',
+    component: () => import('@/views/accident-rescue/index.vue'),
+    meta: { title: '事故应急救援', perm: 'fire-alarm:view', hidden: true },
+  },
+  {
+    path: '/extreme-weather/typhoon',
+    name: 'extreme-weather-typhoon',
+    component: () => import('@/views/typhoon-emergency/index.vue'),
+    meta: { title: '台风应急详情', perm: 'weather:view', hidden: true },
+  },
+  {
+    path: '/ops-monitor/area/:facilityId',
+    name: 'ops-monitor-area',
+    component: () => import('@/views/production-area/index.vue'),
+    meta: { title: '生产区域详情', perm: 'ops:view', hidden: true },
+    props: true,
+  },
+  {
+    path: '/ops-monitor/hazards',
+    name: 'ops-monitor-hazards',
+    component: () => import('@/views/major-hazard/list.vue'),
+    meta: { title: '重大危险源', perm: 'ops:view', hidden: true },
+  },
+  {
+    path: '/ops-monitor/hazards/:hazardId',
+    name: 'ops-monitor-hazard-detail',
+    component: () => import('@/views/major-hazard/detail.vue'),
+    meta: { title: '重大危险源详情', perm: 'ops:view', hidden: true },
+    props: true,
+  },
+  {
+    path: '/ops-monitor/communication',
+    name: 'ops-monitor-communication',
+    component: () => import('@/views/production-communication/index.vue'),
+    meta: { title: '生产通信', perm: 'ops:view', hidden: true },
+  },
+  {
+    path: '/industrial-video/video-control',
+    name: 'industrial-video-control',
+    component: () => import('@/views/video-control/index.vue'),
+    meta: { title: '视频控制平台', perm: 'video:view', hidden: true },
+  },
+  {
+    path: '/industrial-video/video-wall',
+    name: 'industrial-video-wall',
+    component: () => import('@/views/video-wall/index.vue'),
+    meta: { title: '视频墙', perm: 'video:view', hidden: true },
+  },
 ];
 
 const routes: RouteRecordRaw[] = [

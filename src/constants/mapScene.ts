@@ -220,3 +220,16 @@ export const ALARM_TAG_TEXT_SOFT = '#ffc4c4';
 
 /** AI 诊断告警状态点 / 状态文字色（警示红） */
 export const ALARM_TAG_STATUS_RED = '#ff2121';
+
+// ============================================================
+// 十一、台风路径（leaflet 轨迹，useTyphoonTrackMap.ts）
+// ============================================================
+
+/**
+ * 台风详情弹窗正文文字色（浅蓝白）；
+ * leaflet popup 为 JS 字符串拼接的 HTML/SVG，var() 不适用，按引擎级收编
+ */
+export const TYPHOON_POPUP_TEXT = '#eaf2ff';
+
+/** 台风详情弹窗标签文字色（灰蓝，次要文字，与 --color-text-muted 弱化语义同向；保留源值） */
+export const TYPHOON_POPUP_LABEL = '#9eb0c8';
