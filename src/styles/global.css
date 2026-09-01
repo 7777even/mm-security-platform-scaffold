@@ -24,37 +24,47 @@ body {
   background-attachment: fixed;
 }
 
-/* 细窄青色滚动条 */
+/* 源项目全局：细滚动条 + 深色 color-scheme */
+html {
+  color-scheme: dark;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent) var(--scrollbar-track);
+}
+
+/* 源项目滚动条：8px 胶囊 + 渐变拇指 + 发光 */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgb(255 255 255 / 4%);
+  background: var(--scrollbar-track);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--glass-border);
-  border-radius: 3px;
+  min-height: 30px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--scrollbar-thumb) padding-box;
+  box-shadow: 0 0 7px color-mix(in srgb, var(--color-accent) 34%, transparent);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
+  background: var(--scrollbar-thumb-hover) padding-box;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 58%, transparent);
 }
 
 /* =========================================================================
- * §4 / §8 玻璃面板公共样式 — 设计稿图 5-6 信息面板容器
+ * §4 / §8 玻璃面板公共样式 — 源项目：半透明深蓝底 + 蓝描边 + 内发光
  * ========================================================================= */
 .glass-panel {
   position: relative;
   background: var(--glass-bg);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--panel-radius);
-  backdrop-filter: blur(var(--glass-blur));
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 6%),
-    inset 0 0 24px color-mix(in srgb, var(--color-accent) 4%, transparent);
+  box-shadow: var(--glow-inner);
 }
 
 .glass-panel::before {
@@ -64,30 +74,25 @@ body {
   left: 16px;
   right: 16px;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--color-accent) 60%, transparent),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, var(--border-glow), transparent);
   pointer-events: none;
 }
 
 .glass-panel:hover {
-  border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  border-color: var(--border-glow);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 8%),
-    0 0 16px color-mix(in srgb, var(--color-accent) 12%, transparent);
+    var(--glow-inner),
+    0 0 10px color-mix(in srgb, var(--color-accent) 12%, transparent);
 }
 
-/* §8.2 面板标题：青色竖条 + 发光 */
+/* §8.2 面板标题：青色竖条 + 发光（源项目标题 500 字重白字） */
 .panel-title {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
   margin: 0;
   font-size: var(--font-size-h2);
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 1px;
   color: var(--panel-title-color);
 }
@@ -173,21 +178,27 @@ body {
   box-shadow: 0 0 6px var(--color-danger);
 }
 
-/* §9.1 统计卡片 StatCard */
+/* §9.1 统计卡片 StatCard（源 StatCard：竖向渐变底 + 内发光 + 悬停描边提亮） */
 .stat-card {
   display: flex;
   align-items: center;
   gap: var(--stat-card-gap);
   height: var(--stat-card-h);
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-sm) 10px;
   border-radius: var(--stat-card-radius);
-  background: var(--glass-bg);
-  border: 1px solid var(--color-border);
-  transition: border-color 0.2s ease;
+  background: var(--stat-card-bg);
+  border: 1px solid var(--stat-card-border);
+  box-shadow: var(--glow-inner);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .stat-card:hover {
-  border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  border-color: var(--border-glow);
+  box-shadow:
+    var(--glow-inner),
+    0 0 10px color-mix(in srgb, var(--color-accent) 12%, transparent);
 }
 
 .stat-card__icon {
@@ -225,7 +236,7 @@ body {
   line-height: 1.1;
 }
 
-/* §9.2 告警卡片 AlarmCard */
+/* §9.2 告警卡片 AlarmCard（源 AlarmCard：深蓝底 + 悬停提亮，左色条保留等级语言） */
 .alarm-card {
   position: relative;
   display: flex;
@@ -234,9 +245,17 @@ body {
   padding: var(--space-md);
   border-radius: var(--alarm-card-radius);
   background: var(--alarm-card-bg);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--alarm-card-border);
   border-left-width: 3px;
   overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.alarm-card:hover {
+  border-color: var(--border-glow);
+  background: var(--alarm-card-bg-hover);
 }
 
 .alarm-card--l1 {
@@ -270,18 +289,19 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* §12.1 报警列表卡片 AlarmListItem（设计稿图 5-10 右上消防告警列表） */
+/* §12.1 报警列表卡片 AlarmListItem（源 AlarmCard 同族：深蓝底 + 悬停提亮） */
 .alarm-list-item {
   display: flex;
   gap: var(--alarm-list-gap);
   padding: var(--alarm-list-padding);
   background: var(--alarm-card-bg);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--alarm-card-border);
   border-left-width: 3px;
   border-radius: var(--alarm-list-radius);
   transition:
     border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    background 0.2s ease;
   position: relative;
 }
 
@@ -302,15 +322,16 @@ body {
 }
 
 .alarm-list-item:hover {
-  border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border-color: var(--border-glow);
+  background: var(--alarm-card-bg-hover);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-accent) 12%, transparent);
 }
 
 .alarm-list-item__thumb {
   flex-shrink: 0;
   width: var(--alarm-list-thumb-w);
   height: var(--alarm-list-thumb-h);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   position: relative;
   background: var(--color-panel-soft);
@@ -423,17 +444,17 @@ body {
   gap: 4px;
   height: 22px;
   padding: 0 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   font-size: var(--font-size-helper);
-  color: var(--color-accent);
+  color: var(--color-accent-2);
   background: transparent;
-  border: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+  border: 1px solid var(--border-glow);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .alarm-list-item__action:hover {
-  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  background: var(--color-accent-faint);
   border-color: var(--color-accent);
   color: var(--color-text-strong);
 }
@@ -445,7 +466,7 @@ body {
   background: transparent;
 }
 
-/* §9.3 按钮组件 */
+/* §9.3 按钮组件（源项目：深蓝实底描边默认态 + 竖向渐变主按钮 + 2px 圆角） */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -454,7 +475,7 @@ body {
   padding: 0 var(--btn-pad-x);
   border-radius: var(--btn-radius);
   border: 1px solid var(--btn-border);
-  background: var(--glass-bg);
+  background: var(--btn-bg);
   color: var(--btn-color-default);
   font-family: var(--font-family-base);
   font-size: var(--font-size-body);
@@ -464,25 +485,25 @@ body {
 }
 
 .btn:hover {
-  border-color: var(--color-accent);
-  color: var(--color-text);
+  border-color: var(--border-glow);
+  color: var(--color-text-strong);
 }
 
 .btn--primary {
   background: var(--btn-bg-primary);
-  border-color: transparent;
+  border-color: var(--border-glow);
   color: var(--btn-color-primary);
   font-weight: 600;
 }
 
 .btn--primary:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.08);
   color: var(--btn-color-primary);
 }
 
 .btn--danger {
   background: var(--btn-bg-danger);
-  border-color: transparent;
+  border-color: color-mix(in srgb, var(--color-danger) 45%, transparent);
   color: var(--btn-color-primary);
   font-weight: 600;
 }

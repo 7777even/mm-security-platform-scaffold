@@ -288,6 +288,62 @@
 
   /* §5.6 瞬态提示条底色（警示/降级，warning 15% 透明） */
   --notice-warning-bg: color-mix(in srgb, var(--color-warning) 15%, transparent);
+
+  /* =========================================================================
+   * 地图覆盖层专用（源地图 HTML 组件迁移收编，仅大屏地图层引用；
+   * 为真实地图场景专用色，无通用语义 token 对应，故单列本节）
+   * ========================================================================= */
+  --map-border: rgb(
+    0 150 236
+  ); /* 地图标记描边基蓝（源 rgba(0,150,236,x)，涵盖同族 rgba(0,140,220,x)/rgba(0,148,236,x)/rgba(0,150,240,x)，透明度用 color-mix 表达） */
+  --map-marker-cyan: #37cfff; /* 监测点/资源点标记青（源 AccidentRescue 标记色系 #37cfff/#33d6ff/#16c7ff） */
+  --map-route-green: #47c78e; /* 疏散路线起点绿（源 #47c78e/rgba(71,199,142,x)） */
+  --map-route-green-light: #7ff0b8; /* 疏散路线起点徽标文字浅绿 */
+  --map-route-orange: #ffaa3c; /* 疏散路线终点橙（源 #ffaa3c/rgba(255,170,60,x)） */
+  --map-route-orange-light: #ffc46a; /* 疏散路线终点徽标文字浅橙 */
+  --map-plume: #ff7a45; /* 泄漏扩散烟羽主色（源 SandboxMapOverlay #ff7a45） */
+  --map-danger-deep: #d33232; /* 隔离警戒圈深红（源 SandboxMapOverlay #d33232，与 --gradient-risk 深端同源） */
+  --map-track-blue: #0094ec; /* 安保轨迹路线深蓝（源 SecurityTrackMapOverlay 渐变端点） */
+  --map-track-start-badge-bg: linear-gradient(
+    180deg,
+    #3dd68c,
+    #1a9e5c
+  ); /* 轨迹起点徽标底（源 SecurityTrackMapOverlay） */
+
+  --map-track-end-badge-bg: linear-gradient(
+    180deg,
+    #ff6b5a,
+    #d42e1e
+  ); /* 轨迹终点徽标底（源 SecurityTrackMapOverlay） */
+
+  --map-vehicle-dot-bg: radial-gradient(
+    circle at 35% 30%,
+    #ffe08a,
+    #f0b429 55%,
+    #c88600
+  ); /* 轨迹车辆实体点底（源 SecurityTrackMapOverlay） */
+
+  --map-person-dot-bg: radial-gradient(
+    circle at 35% 30%,
+    #6df,
+    #0094ec 60%,
+    #005a9e
+  ); /* 轨迹人员实体点底（源 SecurityTrackMapOverlay） */
+
+  --map-alarm-dot-bg: radial-gradient(
+    circle at 35% 30%,
+    #ff8a75,
+    #e6332a
+  ); /* 告警定位点底（源 AlarmDetailMapOverlay） */
+
+  --map-hazard-l1: #e04838; /* 重大危险源一级徽标底（源 MajorHazardMapOverlay） */
+  --map-hazard-l2: #e07a28; /* 重大危险源二级徽标底（源 MajorHazardMapOverlay） */
+  --map-hazard-l3: #d4a820; /* 重大危险源三级徽标底（源 MajorHazardMapOverlay） */
+  --map-hazard-l4: #2a8fd4; /* 重大危险源四级徽标底（源 MajorHazardMapOverlay） */
+  --map-status-bg: rgb(8 32 64 / 88%); /* 地图加载状态条底（源 MaomingPetroCesiumMap） */
+  --map-status-fg: #9ed4ff; /* 地图加载状态条文字（源 MaomingPetroCesiumMap） */
+  --map-error-bg: rgb(120 20 30 / 85%); /* 地图加载错误条底（源 MaomingPetroCesiumMap） */
+  --map-error-fg: #fecaca; /* 地图加载错误条文字（源 MaomingPetroCesiumMap） */
 }
 
 /* =========================================================================
@@ -428,7 +484,25 @@
   --success-mobile: #22c55e;
   --warning-mobile: #fa8c16;
   --danger-mobile: #f5222d;
+
+  /* 语义色浅底（同色深字标签底 / 信息卡底，三档补齐，禁止组件内联 hex） */
+  --success-mobile-soft: #e8f9ef;
   --warning-mobile-soft: #fff7ec;
+  --danger-mobile-soft: #ffecec;
+  --info-mobile-soft: #e8f2ff;
+
+  /* ---- ui-redesign 迁移补齐的语义层（2026-08）----
+   * 来源：参考项目 ui-redesign 移动端色板（--m-stroke / --m-body / --m-muted / --m-primary-dark）。
+   * 组件只引用本组 token；outdoor 皮肤块在下方整体覆写，禁止在组件内写 hex。 */
+  --mb-stroke: #d7e3ef; /* 卡片描边（比分割线 --border-mobile 略深，用于白卡外轮廓） */
+  --mb-body: #4a6075; /* 卡片摘要正文（次级灰蓝，白底对比约 5.9:1） */
+  --mb-muted: var(--text-muted-mobile); /* 弱提示 / 未选中（别名，随 outdoor 加深联动） */
+  --mb-primary-dark: #0b5ed7; /* 主色深压（按压态 / 实色瓦片；移动端禁渐变，故非渐变） */
+
+  /* 提示条（banner）：警示软底 + 同色描边 + 深字（outdoor 转纯色硬描边） */
+  --mb-banner-warning-bg: #fff7ec;
+  --mb-banner-warning-border: #ffd9a3;
+  --mb-banner-warning-fg: #8a4b00;
 
   /* 报警等级（移动端浅底标签，色阶同 §4.1） */
   --color-alarm-1: #f5222d;
@@ -502,6 +576,73 @@
   --mb-menu-blue-soft: color-mix(in srgb, var(--primary-mobile) 12%, transparent);
   --mb-menu-orange-soft: color-mix(in srgb, var(--warning-mobile) 12%, transparent);
   --mb-menu-red-soft: color-mix(in srgb, var(--danger-mobile) 12%, transparent);
+
+  /* =======================================================================
+   * ui-redesign 迁移：图标 Tone 色板（12 色，浅底 soft + 同色深字 fg）
+   * - 用于服务图标瓦片（IconTile）、快捷宫格、菜单图标、分类图标
+   * - 取代参考项目 iconset.ts 中硬编码的 toneMap，取值收敛到此处单一真源
+   * - outdoor 皮肤整体覆写为纯黑/纯白，见下方皮肤块
+   * ======================================================================= */
+  --mb-tone-blue-soft: #e8f2ff;
+  --mb-tone-blue-fg: #1677ff;
+  --mb-tone-cyan-soft: #e6f9fb;
+  --mb-tone-cyan-fg: #0891b2;
+  --mb-tone-teal-soft: #e6f7f2;
+  --mb-tone-teal-fg: #0d9488;
+  --mb-tone-green-soft: #e8f9ef;
+  --mb-tone-green-fg: #16a34a;
+  --mb-tone-orange-soft: #fff7ec;
+  --mb-tone-orange-fg: #ea580c;
+  --mb-tone-amber-soft: #fffbeb;
+  --mb-tone-amber-fg: #d97706;
+  --mb-tone-red-soft: #ffecec;
+  --mb-tone-red-fg: #e11d48;
+  --mb-tone-rose-soft: #fff1f2;
+  --mb-tone-rose-fg: #e11d48;
+  --mb-tone-purple-soft: #f3efff;
+  --mb-tone-purple-fg: #6d3ef0;
+  --mb-tone-indigo-soft: #eef2ff;
+  --mb-tone-indigo-fg: #4f46e5;
+  --mb-tone-slate-soft: #f0f4f8;
+  --mb-tone-slate-fg: #4a6075;
+  --mb-tone-navy-soft: #e8eef6;
+  --mb-tone-navy-fg: #1a3550;
+
+  /* 图标瓦片（IconTile）：尺寸档位 + 圆角；瓦片本身为装饰，触控热区由外层容器 ≥48 承担 */
+  --mb-tile-sm: 32px;
+  --mb-tile-md: 40px;
+  --mb-tile-lg: 48px;
+  --mb-tile-radius: 12px;
+  --mb-icon-soft-opacity: 0.22; /* 双色图标浅底填充层不透明度 */
+  --mb-icon-glyph-ratio: 0.6; /* 字形相对瓦片边长占比（组件内 calc 换算） */
+
+  /* 首页 hero（沉浸头图）：实色主蓝，禁止渐变（渐变属大屏视觉语言） */
+  --mb-hero-bg: var(--primary-mobile);
+  --mb-hero-fg: var(--color-on-primary);
+  --mb-hero-radius: var(--mb-radius-card);
+  --mb-hero-pad: var(--space-md);
+  --mb-hero-pill-bg: var(--mb-hero-stat-bg);
+  --mb-hero-pill-radius: 10px;
+
+  /* 进度条 / 步骤条 */
+  --mb-progress-h: 6px;
+  --mb-progress-bg: #e8eef4;
+  --mb-step-dot: 24px;
+
+  /* 开关（设置项）：整体落在 ≥48 的列表行内，热区由行承担 */
+  --mb-switch-w: 48px;
+  --mb-switch-h: 28px;
+  --mb-switch-knob: 24px;
+  --mb-switch-bg: #d7e3ef;
+
+  /* 头像 / 未读红点 / 日历格 */
+  --mb-avatar-sm: 36px;
+  --mb-avatar-md: 48px;
+  --mb-dot-size: 8px;
+  --mb-cell-h: 40px; /* 值班日历单元格（7 列栅格下的触控高度） */
+
+  /* 空状态插画位 */
+  --mb-empty-art-h: 120px;
 }
 
 /* =========================================================================
@@ -521,6 +662,53 @@
   --text-title-mobile: #000;
   --color-text: #000;
   --text-muted-mobile: #000;
+
+  /* ui-redesign 迁移层：卡片描边转纯黑硬描边，摘要正文/弱提示转纯黑，主色停用深浅差 */
+  --mb-stroke: #000;
+  --mb-body: #000;
+  --mb-muted: #000;
+  --mb-primary-dark: #000;
+
+  /* 提示条：取消浅底细描边，转纯黑硬描边 + 纯黑字 */
+  --mb-banner-warning-bg: #fff;
+  --mb-banner-warning-border: #000;
+  --mb-banner-warning-fg: #000;
+
+  /* 图标 Tone 色板：高反差下取消彩色，统一白底黑图（实色瓦片反相为黑底白图） */
+  --mb-tone-blue-soft: #fff;
+  --mb-tone-blue-fg: #000;
+  --mb-tone-cyan-soft: #fff;
+  --mb-tone-cyan-fg: #000;
+  --mb-tone-teal-soft: #fff;
+  --mb-tone-teal-fg: #000;
+  --mb-tone-green-soft: #fff;
+  --mb-tone-green-fg: #000;
+  --mb-tone-orange-soft: #fff;
+  --mb-tone-orange-fg: #000;
+  --mb-tone-amber-soft: #fff;
+  --mb-tone-amber-fg: #000;
+  --mb-tone-red-soft: #fff;
+  --mb-tone-red-fg: #000;
+  --mb-tone-rose-soft: #fff;
+  --mb-tone-rose-fg: #000;
+  --mb-tone-purple-soft: #fff;
+  --mb-tone-purple-fg: #000;
+  --mb-tone-indigo-soft: #fff;
+  --mb-tone-indigo-fg: #000;
+  --mb-tone-slate-soft: #fff;
+  --mb-tone-slate-fg: #000;
+  --mb-tone-navy-soft: #fff;
+  --mb-tone-navy-fg: #000;
+
+  /* hero：户外白底黑字（实色主蓝底在强光下反光，转反相） */
+  --mb-hero-bg: #fff;
+  --mb-hero-fg: #000;
+  --mb-hero-pill-bg: #fff;
+
+  /* 进度条 / 开关 / 头像：转纯黑白高反差 */
+  --mb-progress-bg: #fff;
+  --mb-switch-bg: #fff;
+  --mb-icon-soft-opacity: 0.12;
 
   /* 状态标签：浅底同色 → 高饱和纯色色块 + 白字 */
   --tag-success-bg: var(--success-mobile);

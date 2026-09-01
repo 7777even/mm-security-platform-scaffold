@@ -1,5 +1,5 @@
 /* =========================================================================
- * Element Plus 深色科技风主题覆盖（对齐 §4/§8 玻璃面板 + §5-1 色彩规范）
+ * Element Plus 深色主题覆盖（对齐 fire-monitoring 大屏视觉体系 + tokens.css）
  * 说明：
  * - 项目基于 unplugin-vue-components 按需自动引入 EP 组件（B4），仅引入 base.css。
  * - 此处对实际用到的 EP 组件（select/pagination/drawer/descriptions/message/popper
@@ -10,8 +10,8 @@
 /* ---- 下拉选择 Select ---- */
 .el-select__wrapper {
   background-color: color-mix(in srgb, var(--color-panel) 60%, transparent) !important;
-  border: 1px solid rgb(143 166 200 / 30%) !important;
-  border-radius: 6px !important;
+  border: 1px solid color-mix(in srgb, var(--color-text-muted) 30%, transparent) !important;
+  border-radius: var(--radius-sm) !important;
   box-shadow: none !important;
   transition:
     border-color 0.15s,
@@ -25,7 +25,7 @@
 }
 
 .el-select__placeholder {
-  color: rgb(143 166 200 / 65%) !important;
+  color: color-mix(in srgb, var(--color-text-muted) 65%, transparent) !important;
 }
 
 .el-select__selected-item {
@@ -33,14 +33,14 @@
 }
 
 .el-select__caret {
-  color: var(--color-text-muted, #94a3b8) !important;
+  color: var(--color-text-muted) !important;
 }
 
 /* 下拉面板（teleport 到 body，全局生效） */
 .el-popper.is-light {
   background-color: color-mix(in srgb, var(--color-panel) 96%, transparent) !important;
-  border: 1px solid rgb(143 166 200 / 30%) !important;
-  border-radius: 8px !important;
+  border: 1px solid color-mix(in srgb, var(--color-text-muted) 30%, transparent) !important;
+  border-radius: var(--radius-md) !important;
   box-shadow: 0 8px 24px rgb(0 0 0 / 55%) !important;
 }
 
@@ -58,7 +58,7 @@
 }
 
 .el-popper.is-light .el-select-dropdown__empty {
-  color: var(--color-text-muted, #94a3b8) !important;
+  color: var(--color-text-muted) !important;
 }
 
 /* ---- 分页 Pagination ---- */
@@ -69,13 +69,13 @@
   --el-pagination-button-bg-color: color-mix(in srgb, var(--color-panel) 55%, transparent);
   --el-pagination-button-disabled-bg-color: color-mix(in srgb, var(--color-panel) 35%, transparent);
   --el-pagination-hover-color: var(--color-accent);
-  --el-pagination-button-active-color: #04111c;
+  --el-pagination-button-active-color: var(--color-text-strong);
   --el-pagination-button-active-bg-color: var(--color-accent);
 }
 
 .el-pagination .el-pager li {
-  border: 1px solid rgb(143 166 200 / 25%);
-  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--color-text-muted) 25%, transparent);
+  border-radius: var(--radius-sm);
   margin-right: 4px;
   background-color: color-mix(in srgb, var(--color-panel) 55%, transparent) !important;
   color: var(--color-text-secondary) !important;
@@ -90,14 +90,14 @@
 .el-pagination .el-pager li.is-active {
   background-color: var(--color-accent) !important;
   border-color: var(--color-accent) !important;
-  color: #04111c !important;
+  color: var(--color-text-strong) !important;
   font-weight: 700;
 }
 
 .el-pagination .btn-prev,
 .el-pagination .btn-next {
-  border: 1px solid rgb(143 166 200 / 25%);
-  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--color-text-muted) 25%, transparent);
+  border-radius: var(--radius-sm);
   background-color: color-mix(in srgb, var(--color-panel) 55%, transparent) !important;
   color: var(--color-text-secondary) !important;
 }
@@ -109,7 +109,7 @@
 }
 
 .el-pagination .el-pagination__total {
-  color: var(--color-text-muted, #94a3b8) !important;
+  color: var(--color-text-muted) !important;
   font-family: var(--font-family-num);
 }
 
@@ -118,7 +118,7 @@
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--color-panel) 98%, transparent),
-    rgb(11 21 38 / 98%)
+    rgb(0 22 48 / 98%)
   ) !important;
   border-left: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent) !important;
 }
@@ -128,7 +128,7 @@
   font-weight: 600;
   letter-spacing: 0.5px;
   margin-bottom: 0 !important;
-  border-bottom: 1px solid rgb(143 166 200 / 15%);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-muted) 15%, transparent);
   padding-bottom: 14px !important;
 }
 
@@ -137,7 +137,7 @@
 }
 
 .el-overlay {
-  background-color: rgb(2 8 20 / 60%) !important;
+  background-color: rgb(0 10 24 / 72%) !important; /* 源弹窗遮罩 rgba(0,10,24,0.72) */
   backdrop-filter: blur(2px);
 }
 
@@ -149,7 +149,7 @@
   gap: 0;
   margin: 0;
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md, 10px);
+  border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--glass-bg);
 }
@@ -174,7 +174,7 @@
 }
 
 .detail-view dt {
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 
@@ -191,7 +191,7 @@
 }
 
 .el-descriptions__body .el-descriptions__table td.el-descriptions__cell .el-descriptions__label {
-  color: var(--color-text-muted, #94a3b8) !important;
+  color: var(--color-text-muted) !important;
 }
 
 .el-descriptions__body .el-descriptions__table td.el-descriptions__cell .el-descriptions__content {
@@ -201,27 +201,27 @@
 /* ---- 消息提示 Message ---- */
 .el-message {
   background-color: color-mix(in srgb, var(--color-panel) 92%, transparent) !important;
-  border: 1px solid rgb(143 166 200 / 30%) !important;
-  border-radius: 8px !important;
+  border: 1px solid color-mix(in srgb, var(--color-text-muted) 30%, transparent) !important;
+  border-radius: var(--radius-md) !important;
   box-shadow: 0 8px 24px rgb(0 0 0 / 50%) !important;
   color: var(--color-text) !important;
 }
 
 .el-message--success .el-message__content {
-  color: var(--color-success, #2ee6a8) !important;
+  color: var(--color-success) !important;
 }
 
 .el-message--warning .el-message__content {
-  color: var(--color-warning, #ffb020) !important;
+  color: var(--color-warning) !important;
 }
 
 .el-message--error .el-message__content {
-  color: var(--color-danger, #ff5a5a) !important;
+  color: var(--color-danger) !important;
 }
 
 /* ---- 关闭按钮 / 图标统一 ---- */
 .el-drawer__close-btn {
-  color: var(--color-text-muted, #94a3b8) !important;
+  color: var(--color-text-muted) !important;
 }
 
 .el-drawer__close-btn:hover {
@@ -232,14 +232,14 @@
 .el-input__wrapper,
 .el-textarea__inner {
   background-color: color-mix(in srgb, var(--color-panel) 60%, transparent) !important;
-  box-shadow: 0 0 0 1px rgb(143 166 200 / 30%) inset !important;
-  border-radius: 6px !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text-muted) 30%, transparent) inset !important;
+  border-radius: var(--radius-sm) !important;
   transition: box-shadow 0.15s !important;
 }
 
 .el-input__wrapper:hover,
 .el-textarea__inner:hover {
-  box-shadow: 0 0 0 1px rgb(143 166 200 / 50%) inset !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text-muted) 50%, transparent) inset !important;
 }
 
 .el-input__wrapper.is-focus {
@@ -254,7 +254,7 @@
 
 .el-input__inner::placeholder,
 .el-textarea__inner::placeholder {
-  color: rgb(143 166 200 / 55%) !important;
+  color: color-mix(in srgb, var(--color-text-muted) 55%, transparent) !important;
 }
 
 /* ---- 表格 Table ---- */
@@ -263,8 +263,8 @@
   --el-table-tr-bg-color: transparent !important;
   --el-table-header-bg-color: color-mix(in srgb, var(--color-panel) 55%, transparent) !important;
   --el-table-row-hover-bg-color: color-mix(in srgb, var(--color-accent) 6%, transparent) !important;
-  --el-table-border-color: rgb(143 166 200 / 15%) !important;
-  --el-table-header-text-color: var(--color-text-muted, #94a3b8) !important;
+  --el-table-border-color: color-mix(in srgb, var(--color-text-muted) 15%, transparent) !important;
+  --el-table-header-text-color: var(--color-text-muted) !important;
   --el-table-text-color: var(--color-text) !important;
 
   background-color: transparent !important;
@@ -289,44 +289,44 @@
 }
 
 .el-table__empty-text {
-  color: var(--color-text-muted, #94a3b8) !important;
+  color: var(--color-text-muted) !important;
 }
 
 /* ---- 按钮 Button（统一深色玻璃） ---- */
 .el-button {
-  --el-button-bg-color: rgb(30 41 59 / 90%) !important;
-  --el-button-border-color: rgb(143 166 200 / 30%) !important;
+  --el-button-bg-color: var(--btn-bg) !important;
+  --el-button-border-color: color-mix(in srgb, var(--color-text-muted) 30%, transparent) !important;
   --el-button-text-color: var(--color-text) !important;
-  --el-button-hover-bg-color: rgb(51 65 85 / 95%) !important;
+  --el-button-hover-bg-color: color-mix(in srgb, var(--color-panel) 80%, transparent) !important;
   --el-button-hover-border-color: var(--color-accent) !important;
   --el-button-hover-text-color: var(--color-accent) !important;
-  --el-button-active-bg-color: rgb(51 65 85 / 95%) !important;
+  --el-button-active-bg-color: color-mix(in srgb, var(--color-panel) 80%, transparent) !important;
   --el-button-active-border-color: var(--color-accent) !important;
   --el-button-active-text-color: var(--color-accent) !important;
 
-  border-radius: 6px !important;
+  border-radius: var(--radius-sm) !important;
 }
 
 .el-button--primary {
   --el-button-bg-color: var(--color-accent) !important;
   --el-button-border-color: var(--color-accent) !important;
-  --el-button-text-color: #04111c !important;
-  --el-button-hover-bg-color: #33deff !important;
-  --el-button-hover-border-color: #33deff !important;
-  --el-button-hover-text-color: #04111c !important;
+  --el-button-text-color: var(--color-text-strong) !important;
+  --el-button-hover-bg-color: var(--color-accent) !important;
+  --el-button-hover-border-color: var(--color-accent) !important;
+  --el-button-hover-text-color: var(--color-text-strong) !important;
 }
 
 .el-button--danger {
-  --el-button-bg-color: rgb(239 68 68 / 15%) !important;
-  --el-button-border-color: var(--color-danger, #ff5a5a) !important;
-  --el-button-text-color: var(--color-danger, #ff5a5a) !important;
-  --el-button-hover-bg-color: rgb(239 68 68 / 25%) !important;
+  --el-button-bg-color: color-mix(in srgb, var(--color-danger) 15%, transparent) !important;
+  --el-button-border-color: var(--color-danger) !important;
+  --el-button-text-color: var(--color-danger) !important;
+  --el-button-hover-bg-color: color-mix(in srgb, var(--color-danger) 25%, transparent) !important;
 }
 
 .el-button--warning {
-  --el-button-bg-color: rgb(251 191 36 / 15%) !important;
-  --el-button-border-color: var(--color-warning, #ffb020) !important;
-  --el-button-text-color: var(--color-warning, #ffb020) !important;
+  --el-button-bg-color: color-mix(in srgb, var(--color-warning) 15%, transparent) !important;
+  --el-button-border-color: var(--color-warning) !important;
+  --el-button-text-color: var(--color-warning) !important;
 }
 
 .el-button.is-disabled {
@@ -335,7 +335,7 @@
 
 /* ---- 空状态 Empty ---- */
 .el-empty__description p {
-  color: var(--color-text-muted, #94a3b8) !important;
+  color: var(--color-text-muted) !important;
 }
 
 /* ---- 复选 Checkbox / 单选 Radio ---- */
@@ -355,7 +355,7 @@
 .el-checkbox__inner,
 .el-radio__inner {
   background-color: color-mix(in srgb, var(--color-panel) 60%, transparent) !important;
-  border-color: rgb(143 166 200 / 35%) !important;
+  border-color: color-mix(in srgb, var(--color-text-muted) 35%, transparent) !important;
 }
 
 .el-checkbox__input.is-checked .el-checkbox__inner,
@@ -365,26 +365,26 @@
 }
 
 .el-checkbox__input.is-checked .el-checkbox__inner::after {
-  border-color: #04111c !important;
+  border-color: var(--color-text-strong) !important;
 }
 
 /* ---- 卡片 Card ---- */
 .el-card {
   --el-card-bg-color: color-mix(in srgb, var(--color-panel) 65%, transparent) !important;
-  --el-card-border-color: rgb(143 166 200 / 18%) !important;
+  --el-card-border-color: color-mix(in srgb, var(--color-text-muted) 18%, transparent) !important;
 
-  border-radius: 10px !important;
+  border-radius: var(--radius-lg) !important;
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--color-panel) 65%, transparent),
-    rgb(11 21 38 / 65%)
+    rgb(0 22 48 / 65%)
   ) !important;
 }
 
 .el-card__header {
   color: var(--color-text) !important;
   font-weight: 600;
-  border-bottom: 1px solid rgb(143 166 200 / 15%) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-muted) 15%, transparent) !important;
 }
 
 .el-card__body {
@@ -401,10 +401,10 @@
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--color-panel) 98%, transparent),
-    rgb(11 21 38 / 98%)
+    rgb(0 22 48 / 98%)
   ) !important;
   border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent) !important;
-  border-radius: 10px !important;
+  border-radius: var(--radius-lg) !important;
 }
 
 .el-dialog__title {
@@ -421,30 +421,30 @@
 
 .el-tag {
   --el-tag-bg-color: color-mix(in srgb, var(--color-panel) 55%, transparent) !important;
-  --el-tag-border-color: rgb(143 166 200 / 30%) !important;
+  --el-tag-border-color: color-mix(in srgb, var(--color-text-muted) 30%, transparent) !important;
   --el-tag-text-color: var(--color-text-secondary) !important;
 }
 
 .el-tag--success {
-  --el-tag-bg-color: rgb(46 230 168 / 12%) !important;
-  --el-tag-border-color: rgb(46 230 168 / 40%) !important;
-  --el-tag-text-color: var(--color-success, #2ee6a8) !important;
+  --el-tag-bg-color: color-mix(in srgb, var(--color-success) 12%, transparent) !important;
+  --el-tag-border-color: color-mix(in srgb, var(--color-success) 40%, transparent) !important;
+  --el-tag-text-color: var(--color-success) !important;
 }
 
 .el-tag--warning {
-  --el-tag-bg-color: rgb(251 191 36 / 12%) !important;
-  --el-tag-border-color: rgb(251 191 36 / 40%) !important;
-  --el-tag-text-color: var(--color-warning, #ffb020) !important;
+  --el-tag-bg-color: color-mix(in srgb, var(--color-warning) 12%, transparent) !important;
+  --el-tag-border-color: color-mix(in srgb, var(--color-warning) 40%, transparent) !important;
+  --el-tag-text-color: var(--color-warning) !important;
 }
 
 .el-tag--danger {
-  --el-tag-bg-color: rgb(239 68 68 / 12%) !important;
-  --el-tag-border-color: rgb(239 68 68 / 40%) !important;
-  --el-tag-text-color: var(--color-danger, #ff5a5a) !important;
+  --el-tag-bg-color: color-mix(in srgb, var(--color-danger) 12%, transparent) !important;
+  --el-tag-border-color: color-mix(in srgb, var(--color-danger) 40%, transparent) !important;
+  --el-tag-text-color: var(--color-danger) !important;
 }
 
 .el-tag--info {
-  --el-tag-bg-color: rgb(143 166 200 / 12%) !important;
-  --el-tag-border-color: rgb(143 166 200 / 40%) !important;
-  --el-tag-text-color: var(--color-text-muted, #94a3b8) !important;
+  --el-tag-bg-color: color-mix(in srgb, var(--color-text-muted) 12%, transparent) !important;
+  --el-tag-border-color: color-mix(in srgb, var(--color-text-muted) 40%, transparent) !important;
+  --el-tag-text-color: var(--color-text-muted) !important;
 }
