@@ -10,6 +10,7 @@
     "selector-class-pattern": null,
     "no-descending-specificity": null,
     "custom-property-pattern": null,
-    "selector-pseudo-class-no-unknown": [true, { "ignorePseudoClasses": ["deep"] }]
+    "selector-pseudo-class-no-unknown": [true, { "ignorePseudoClasses": ["deep", "global"] }],
+    "no-duplicate-selectors": null
   }
 }

@@ -26,6 +26,7 @@
     "leaflet": "^1.9.4",
     "pinia": "^2.2.4",
     "vue": "^3.5.12",
+    "vue-echarts": "^7.0.3",
     "vue-router": "^4.4.5",
     "wujie-vue3": "^1.0.27"
   },
