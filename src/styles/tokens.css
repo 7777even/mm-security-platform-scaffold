@@ -703,7 +703,7 @@
   --mb-banner-warning-border: #000;
   --mb-banner-warning-fg: #000;
 
-  /* 图标 Tone 色板：高反差下取消彩色，统一白底黑图（实色瓦片反相为黑底白图） */
+  /* 图标 Tone 色板：高反差下取消彩色，统一白底黑图（实色瓦片同步收口为白底黑图，与 soft 一致） */
   --mb-tone-blue-soft: #fff;
   --mb-tone-blue-fg: #000;
   --mb-tone-cyan-soft: #fff;
@@ -752,6 +752,13 @@
   /* 「我的」页用户卡：户外皮肤白底黑字，由组件引用 token 自动生效 */
   --mb-usercard-bg: var(--card-mobile);
   --mb-usercard-fg: #000;
+}
+
+/* 户外（§6 不靠颜色区分层级）：实色瓦片同步收口为白底黑图，与 soft 一致。
+   显式声明，防止组件内 .mb-tile--solid（默认实色底白字）在户外下仍显示反相/彩色底。 */
+[data-theme='mobile'][data-skin='outdoor'] .mb-tile--solid {
+  background: var(--tile-bg);
+  color: var(--tile-fg);
 }
 
 /* =========================================================================
