@@ -688,6 +688,9 @@
   --color-border: #000; /* 户外硬黑描边 */
   --mb-border-w: 2px; /* 户外 2px 硬描边 */
   --primary-mobile-soft: #fff;
+
+  /* 主色蓝在户外收口为纯黑：所有绑定 --primary-mobile 的前景（链接/数值/激活文字）与控件（主按钮/激活标签/开关/步骤/图例点）统一翻成高对比 */
+  --primary-mobile: #000;
   --text-title-mobile: #000;
   --color-text: #000;
   --text-muted-mobile: #000;
