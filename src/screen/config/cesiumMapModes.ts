@@ -208,6 +208,10 @@ export const ROUTE_CESIUM_META: Record<string, RouteCesiumMeta> = {
   },
   production: { cesium: true, mapMode: 'production', mapFocus: PRODUCTION_MAP_FOCUS },
   productionArea: { cesium: true, mapMode: 'production', mapFocus: PRODUCTION_AREA_MAP_FOCUS },
+  // 生产通信：fm-communication 共享地图与生产总览一致（生产大图 + 左右面板布局）。
+  // 迁移后 resolveRouteCesiumMeta 收到的已是 useShellRoute 解析出的「源路由名」（productionCommunication），
+  // 必须作为正式 key 收录；仅靠 ROUTE_NAME_ALIAS 的 fm-* 映射会让 'productionCommunication' 落回 {cesium:false}。
+  productionCommunication: { cesium: true, mapMode: 'production', mapFocus: PRODUCTION_MAP_FOCUS },
   majorHazardList: { cesium: true, mapMode: 'production', mapFocus: MAJOR_HAZARD_LIST_MAP_FOCUS },
   majorHazardDetail: {
     cesium: true,

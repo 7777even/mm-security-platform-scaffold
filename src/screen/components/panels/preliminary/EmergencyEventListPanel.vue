@@ -63,19 +63,46 @@ const activeListTab = fireEmergencyListTab;
 const createModalOpen = ref(false);
 const router = useRouter();
 const shellRoute = useShellRoute();
+// 提交即触发导航（可能 replace），随后弹窗内部会补发一次 close；此时不能再做参数清理，
+// 否则会发出第二次 replace 覆盖刚发起的跳转（两次导航在 shell 侧竞争，目标页会丢失）。
+let createSubmitInFlight = false;
 
 function openCreateModal() {
   createModalOpen.value = true;
 }
 
+/**
+ * 消费型参数清理：剥掉主壳 URL 里的 ?create=event，避免 re-nav / 后退重放再次弹窗。
+ * 子应用沙箱无独立路由树，不带 path 的 router.replace({ query }) 只会落到本地
+ * catch-all（无操作）；必须携带主壳当前 path 经 route-navigate 委托主壳执行
+ * router.replace（见 subappRouter.ts / main.ts 注释）才能真正移除该参数。
+ * 仅在 query.create === 'event' 时动作，按钮手动开窗（无该参数）不会触发多余导航。
+ */
+function clearCreateParamIntent() {
+  if (shellRoute.query.value.create !== 'event') return;
+  const query = { ...shellRoute.query.value };
+  delete query.create;
+  const currentPath = shellRoute.path.value;
+  if (currentPath) {
+    void router.replace({ path: currentPath, query });
+  }
+}
+
 function closeCreateModal() {
   createModalOpen.value = false;
+  if (createSubmitInFlight) return;
+  clearCreateParamIntent();
 }
 
 function handleCreateSubmit(payload: EmergencyEventCreatePayload) {
   if (!isFireEmergency.value) return;
   const createdEvent = createFireEmergencyEventFromForm(payload);
-  goToEventDispose(createdEvent);
+  // 带 ?create=event 进入（跨页 intent）时用 replace 直达处置页：把 /emergency?create=event
+  // 这条历史记录整体换成处置页，后退不会重放参数再次弹窗；且避免「先清参数再 push」
+  // 两次导航在 shell 侧竞争丢失目标页（见 useAccidentRescueNavigation.goToEventDispose 注释）。
+  const viaIntent = shellRoute.query.value.create === 'event';
+  createSubmitInFlight = true;
+  goToEventDispose(createdEvent, viaIntent ? 'replace' : 'push');
 }
 
 const isFireEmergency = computed(() => props.module === 'fireEmergency');
@@ -171,9 +198,10 @@ onMounted(() => {
   if (isFireEmergency.value && shellRoute.query.value.create === 'event') {
     setFireEmergencyListTab('event');
     openCreateModal();
-    const query = { ...shellRoute.query.value };
-    delete query.create;
-    void router.replace({ query });
+    // 刻意不在此刻清理 ?create=event：主壳 AppLayout 的 <RouterView :key="route.fullPath">
+    // 会让任何 shell query 变化重建 WujieHost → wujie 实例重 boot，刚打开的弹窗随之销毁
+    //（openCreateModal 只在首次 boot 消费该参数）。参数延后到弹窗关闭 / 提交时经
+    // clearCreateParamIntent 委托主壳 replace 清理（见 closeCreateModal / handleCreateSubmit）。
   }
   updatePageSize();
   resizeObserver = new ResizeObserver(updatePageSize);
