@@ -1,0 +1,92 @@
+@import url('./styles/variables.css');
+
+:root {
+  --scrollbar-track: rgb(0 21 44 / 72%);
+  --scrollbar-thumb-start: rgb(25 181 239 / 82%);
+  --scrollbar-thumb-end: rgb(0 91 164 / 90%);
+  --scrollbar-thumb-hover-start: rgb(77 214 255 / 96%);
+  --scrollbar-thumb-hover-end: rgb(0 132 207 / 98%);
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* 全系统统一滚动条：用于侧栏、抽屉、表格与弹窗，避免出现浏览器原生白色滚动条。 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-start) var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track) !important;
+  border: 1px solid rgb(0 124 192 / 20%);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  min-height: 30px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--scrollbar-thumb-start), var(--scrollbar-thumb-end))
+    padding-box !important;
+  box-shadow: 0 0 7px rgb(0 181 239 / 34%);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+      180deg,
+      var(--scrollbar-thumb-hover-start),
+      var(--scrollbar-thumb-hover-end)
+    )
+    padding-box !important;
+  box-shadow: 0 0 10px rgb(54 204 255 / 58%);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden auto;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+body.viewport-sim-active {
+  overflow: hidden;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+}
+
+button {
+  font-family: inherit;
+}
+
+select {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}

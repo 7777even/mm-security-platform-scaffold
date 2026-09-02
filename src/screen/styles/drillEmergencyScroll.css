@@ -1,0 +1,24 @@
+/* 演练应急处置界面滚动条（琥珀演练风） */
+.dr-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(236 166 65 / 45%) rgb(52 36 10 / 55%);
+}
+
+.dr-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.dr-scroll::-webkit-scrollbar-track {
+  background: rgb(52 36 10 / 55%);
+  border-radius: 3px;
+}
+
+.dr-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgb(236 166 65 / 55%), rgb(180 120 40 / 45%));
+  border-radius: 3px;
+}
+
+.dr-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgb(245 190 90 / 65%), rgb(210 145 45 / 55%));
+}
