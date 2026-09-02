@@ -1,0 +1,262 @@
+<script setup lang="ts">
+import { computed, watch } from 'vue';
+import { useAccidentRescueRoute } from '../../lib/composables/useAccidentRescueRoute';
+import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
+import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
+import { forwardWheelToCesiumMap } from '../../lib/composables/useMapOverlayWheelPassthrough';
+import {
+  resolveSecurityTrackWaypoints,
+  type SecurityTrackMode,
+} from '../../lib/data/securityTrackMock';
+
+const props = defineProps<{
+  mode: SecurityTrackMode;
+  playback: {
+    playing: boolean | { value: boolean };
+    speed: number | { value: number };
+    progress?: { value: number };
+  };
+}>();
+
+const routeGradientId = 'security-track-route-gradient';
+const waypoints = resolveSecurityTrackWaypoints(props.mode);
+
+function readBoolean(value: boolean | { value: boolean }) {
+  return typeof value === 'object' && value != null ? value.value : value;
+}
+
+function readNumber(value: number | { value: number }) {
+  return typeof value === 'object' && value != null ? value.value : value;
+}
+
+function overlayHeight() {
+  return getSharedMap()?.getBoundaryModelTopHeight?.() ?? 72;
+}
+
+const {
+  routeProgress,
+  routeBasePathD,
+  routeRemainingPathD,
+  routeTraveledPathD,
+  routeGradient,
+  vehicleMarkerStyle,
+} = useAccidentRescueRoute(overlayHeight, {
+  enabled: true,
+  waypoints,
+  playback: {
+    playing: computed(() => readBoolean(props.playback.playing) ?? true),
+    speed: computed(() => readNumber(props.playback.speed) ?? 1),
+    progress: props.playback.progress,
+  },
+});
+
+watch(
+  routeProgress,
+  (value) => {
+    const external = props.playback.progress;
+    if (!external) return;
+    const { initialProgress, endProgress } = waypoints;
+    const span = endProgress - initialProgress;
+    external.value = span > 0 ? Math.max(0, Math.min(1, (value - initialProgress) / span)) : 0;
+  },
+  { immediate: true },
+);
+
+const markerTargets = () => {
+  const height = overlayHeight();
+  const start = waypoints.points[0];
+  const end = waypoints.points[waypoints.points.length - 1];
+  if (!start || !end) return [];
+  return [
+    { key: 'start', longitude: start.longitude, latitude: start.latitude, height },
+    { key: 'end', longitude: end.longitude, latitude: end.latitude, height },
+  ];
+};
+
+const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(markerTargets, {
+  scaleWithZoom: false,
+});
+
+const isVehicle = computed(() => props.mode === 'vehicle');
+</script>
+
+<template>
+  <div class="security-track-map">
+    <div class="security-track-map__depth" aria-hidden="true" />
+
+    <svg class="security-track-map__route" aria-hidden="true">
+      <defs>
+        <linearGradient
+          v-if="routeGradient"
+          :id="routeGradientId"
+          gradientUnits="userSpaceOnUse"
+          :x1="routeGradient.x1"
+          :y1="routeGradient.y1"
+          :x2="routeGradient.x2"
+          :y2="routeGradient.y2"
+        >
+          <stop offset="0%" stop-color="#6acab2" />
+          <stop offset="55%" stop-color="#37cfff" />
+          <stop offset="100%" stop-color="#0094ec" />
+        </linearGradient>
+      </defs>
+      <path
+        v-if="routeBasePathD"
+        class="security-track-map__route-line security-track-map__route-line--base"
+        :d="routeBasePathD"
+      />
+      <path
+        v-if="routeRemainingPathD"
+        class="security-track-map__route-line security-track-map__route-line--remaining"
+        :d="routeRemainingPathD"
+      />
+      <path
+        v-if="routeTraveledPathD"
+        class="security-track-map__route-line security-track-map__route-line--traveled"
+        :d="routeTraveledPathD"
+        :stroke="`url(#${routeGradientId})`"
+      />
+    </svg>
+
+    <div class="track-end-marker track-end-marker--start" :style="markerStyleFor('start')">
+      <span class="track-end-marker__badge track-end-marker__badge--start">始</span>
+    </div>
+
+    <div class="track-end-marker track-end-marker--end" :style="markerStyleFor('end')">
+      <span class="track-end-marker__badge track-end-marker__badge--end">终</span>
+    </div>
+
+    <div
+      class="track-entity-marker"
+      :class="isVehicle ? 'track-entity-marker--vehicle' : 'track-entity-marker--person'"
+      :style="vehicleMarkerStyle()"
+      @wheel="forwardWheelToCesiumMap"
+    >
+      <span v-if="isVehicle" class="track-entity-marker__vehicle-icon" aria-hidden="true" />
+      <span v-else class="track-entity-marker__person-icon" aria-hidden="true" />
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.security-track-map {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.security-track-map__depth {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 90% 80% at 50% 42%,
+      transparent 0%,
+      rgb(0 18 40 / 12%) 50%,
+      rgb(0 12 28 / 45%) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgb(0 22 48 / 55%) 0%,
+      transparent 14%,
+      transparent 78%,
+      rgb(0 18 40 / 65%) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgb(0 22 48 / 60%) 0%,
+      transparent 22%,
+      transparent 78%,
+      rgb(0 22 48 / 60%) 100%
+    );
+}
+
+.security-track-map__route {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.security-track-map__route-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.security-track-map__route-line--base,
+.security-track-map__route-line--remaining {
+  stroke: rgb(0 150 236 / 22%);
+  stroke-width: 3;
+  stroke-dasharray: 6 8;
+}
+
+.security-track-map__route-line--traveled {
+  stroke-width: 4;
+  filter: drop-shadow(0 0 6px rgb(55 207 255 / 35%));
+}
+
+.track-end-marker {
+  position: absolute;
+  z-index: 4;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.track-end-marker__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 35%);
+}
+
+.track-end-marker__badge--start {
+  background: linear-gradient(180deg, #3dd68c, #1a9e5c);
+  border: 1px solid rgb(61 214 140 / 60%);
+}
+
+.track-end-marker__badge--end {
+  background: linear-gradient(180deg, #ff6b5a, #d42e1e);
+  border: 1px solid rgb(255 90 74 / 55%);
+}
+
+.track-entity-marker {
+  position: absolute;
+  z-index: 5;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.track-entity-marker--vehicle .track-entity-marker__vehicle-icon {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffe08a, #f0b429 55%, #c88600);
+  border: 2px solid rgb(255 255 255 / 85%);
+  box-shadow: 0 0 12px rgb(240 180 41 / 45%);
+  transform: rotate(var(--vehicle-heading, 0deg));
+}
+
+.track-entity-marker--person .track-entity-marker__person-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #6df, #0094ec 60%, #005a9e);
+  border: 2px solid rgb(255 255 255 / 85%);
+  box-shadow: 0 0 12px rgb(0 148 236 / 45%);
+}
+</style>
