@@ -54,3 +54,15 @@
 1. **superpowers 纪律先于一切动作**：动手前先按 `using-superpowers` 规则核查并调用相关 skill——创意 / UI / 行为类改动先走 `brainstorming` 澄清意图与方案；多步任务先 `writing-plans` 写计划；关键逻辑走 `test-driven-development`（先红后绿）；完成前必须 `verification-before-completion`（跑通验证再声称完成）。即"先想清 / 先规划 / 先测试 / 后动手 / 验完再交付"。
 2. **openspec spec-driven 流程**：改动若对应既有 capability，按 `openspec/specs/` 实现；若是新能力或破坏性变更，先在 `openspec/changes/<name>/` 建 `proposal.md`（含 Why / What Changes / Capabilities / Impact，≤500 字、聚焦单一变更），并拆可勾选任务清单（单条 ≤2h，[TDD] 任务先写失败测试）；实现完成并验证后归档至 `openspec/archive/`。`openspec/config.yaml` 的 proposal / tasks 规则为强制门禁，不得跳过。
 3. **三端一致适用**：大屏、后台、移动端任一端的改动都适用上述 1–2，不因为任何端"体量小"或"只是页面"而豁免。
+
+## 8. 品牌规范对齐（中石化 / 《石化智云 UI 规范》）
+
+中石化品牌方对三端 UI 与前端代码的硬性要求，AI 生成 / 修改代码时必须对齐。各条已分别落到三端 UI 规范（见 §2），此处汇总为红线清单；偏离需回规范文档确认，不得擅自降级：
+
+1. **Logo 回主页**：品牌 Logo 置页面左上角，点击返回主页。落点：大屏（`docs/UI规范-大屏端.md` 顶栏 `.brand`）、后台（顶栏）、移动端（`apps/mobile/components/MobileHeader.vue` brand 变体）。
+2. **弹性间距**：推荐外边距 16 / 内边距 24、标题 16 / 正文 14 为基线，可按分辨率与视距动态适配（不刚性硬卡）。落点：后台间距基线段、大屏间距档 `4/8/16/24`、移动端页边距 `16px`，均经 token 承载。
+3. **隔行变色**：表格 / 数据列表开斑马纹，提升高压阅读舒适度。落点：后台数据表格、大屏数据列表（复用 `--row-alt-bg`）；移动端由 `--row-alt-bg-mobile` 承载。
+4. **字体与配色**：中文默认 Microsoft YaHei（微软雅黑）优先；大屏深蓝科技、移动 / 后台白底，配色少即是多、高对比高易读。落点：三端规范字体段 + `--font-family-zh` 首位。
+5. **移动端户外高反差皮肤**：强光 / 户外锁死 `data-skin="outdoor"` 纯黑白高反差皮肤（WCAG AAA，对比 >7:1），停用渐变 / 投影 / 毛玻璃 / 浅灰线；状态标签 / 警情通知改为**高饱和纯色色块 + 白字 + 2px 黑硬描边**（`.tag` 类 `border: var(--mb-border-w) solid var(--tag-stroke)`，户外 `--tag-stroke:#000; --mb-border-w:2px`）。落点：移动端 §6 + `src/styles/tokens.css` 户外块。
+6. **适老 / 高易用性**：移动端「我的 → 适老与无障碍」一键适老 + 细项调节，与户外高对比可叠加；适老行高弹升至 `1.8` 倍字号（`--mb-line-height` 覆写），只放大字号 / 控件 / 间距，不改变流程与字段；后台适老同步放大侧栏 / 筛选 / 行高 / 主按钮。落点：移动端 §7、后台 §6。
+7. **代码基线（HTML5 / 缩进）**：前端代码（Vue / HTML / TS / CSS）统一 **2 空格缩进**；根 HTML 必须 `<!DOCTYPE html>` + `UTF-8` 字符集。由 `.prettierrc.json`（`tabWidth:2`）+ `index.html` 实际保证，提交前 prettier / stylelint 钩子兜底，禁止新增例外（见 §6）。
