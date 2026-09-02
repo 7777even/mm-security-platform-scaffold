@@ -8,6 +8,7 @@ export default tseslint.config(
   {
     ignores: [
       'dist*',
+      'public/**',
       'node_modules',
       '.verify-out/**',
       '**/.verify-out/**',

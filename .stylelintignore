@@ -1,0 +1,6 @@
+# 静态资源（含 pc-admin 原型包）不参与 stylelint 校验
+public
+# 构建产物与依赖
+dist
+node_modules
+coverage

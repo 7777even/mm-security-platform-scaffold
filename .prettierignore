@@ -4,3 +4,5 @@ components.d.ts
 dist
 node_modules
 coverage
+# 静态资源（含 pc-admin 原型包）不参与 prettier 格式化
+public
