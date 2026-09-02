@@ -23,6 +23,7 @@
 3. **z-index 只用五层 token**：`--z-base(0) / --z-marker(5) / --z-chrome(10) / --z-overlay(30) / --z-toast(40)`。
 4. **主题挂载正确**：大屏 `:root` 不挂属性，后台 / 移动按上表挂 `data-theme`；组件内不写端特异硬编码分支，用 token 自然区分。
 5. 状态标签用全局 `.tag-success / -warning / -danger / -info` 类（后台 / 移动端浅底同色深字；大屏直接用语义色）。
+6. **存量补位例外（src/screen）**：`src/screen/**` 为 fire-monitoring 迁入存量，规范/token 已覆盖项必须用 `var(--token)`；未覆盖项可沿用 `src/screen/styles/variables.css` 源体系，新增页面不得新增未入 token 的硬编码值。
 
 ## 4. 高频踩坑速查
 
