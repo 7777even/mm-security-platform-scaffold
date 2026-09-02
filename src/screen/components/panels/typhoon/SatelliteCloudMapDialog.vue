@@ -991,7 +991,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
   border-radius: 13px;
   background: rgb(0 18 40 / 90%);
   box-shadow: 0 4px 14px rgb(0 0 0 / 38%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
@@ -1137,7 +1137,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
   border-radius: 6px;
   background: rgb(0 93 151 / 92%);
   border: 1px solid rgb(0 174 239 / 72%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   z-index: 2;
@@ -1210,7 +1210,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
 
 .scm-float--clarity input {
   width: 100px;
-  accent-color: #00a6f4;
+  accent-color: var(--map-rescue-weather-blue);
 }
 
 .scm-float--clarity strong {
@@ -1244,7 +1244,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
 .scm-seg--active {
   border-color: rgb(0 166 244 / 50%);
   background: rgb(0 150 236 / 28%);
-  color: #fff;
+  color: var(--color-text-strong);
   box-shadow:
     inset 0 0 0 1px rgb(0 166 244 / 22%),
     0 6px 16px rgb(0 0 0 / 18%);
@@ -1417,7 +1417,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
   padding: 2px 8px;
   border-radius: 999px;
   background: rgb(0 150 236 / 92%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 10px;
   white-space: nowrap;
   pointer-events: none;

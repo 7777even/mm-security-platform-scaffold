@@ -225,7 +225,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
   flex-shrink: 0;
   min-height: 42px;
   padding: 0 14px;
-  border-bottom: 1px solid rgb(0 110 190 / 35%);
+  border-bottom: 1px solid var(--panel-head-line);
   background: rgb(2 28 52 / 84%);
 }
 
@@ -248,7 +248,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
 }
 
 .plan-switch__close:hover {
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .plan-switch__body {
@@ -301,12 +301,12 @@ function handleSelect(plan: SelectableEmergencyPlan) {
 }
 
 .plan-switch__incident-label {
-  color: #4f8dd3;
+  color: var(--map-facility-btn-fg);
   white-space: nowrap;
 }
 
 .plan-switch__incident-value {
-  color: #fff;
+  color: var(--color-text-strong);
   word-break: break-all;
 }
 
@@ -314,7 +314,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
   display: flex;
   flex-wrap: wrap;
   gap: 0;
-  border: 1px solid rgb(0 110 190 / 35%);
+  border: 1px solid var(--panel-head-line);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -326,7 +326,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
   padding: 0 8px;
   border: none;
   border-right: 1px solid rgb(0 110 190 / 28%);
-  background: rgb(0 22 48 / 82%);
+  background: var(--map-facility-btn-bg);
   color: #a8b8cc;
   font-size: 12px;
   font-family: var(--font-body);
@@ -338,7 +338,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
 }
 
 .plan-switch__tab--active {
-  color: #fff;
+  color: var(--color-text-strong);
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
 }
 
@@ -353,10 +353,10 @@ function handleSelect(plan: SelectableEmergencyPlan) {
 .plan-switch__select {
   height: 30px;
   padding: 0 8px;
-  border: 1px solid rgb(0 110 190 / 35%);
+  border: 1px solid var(--panel-head-line);
   border-radius: 4px;
   background: rgb(0 20 45 / 82%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   outline: none;
@@ -366,9 +366,9 @@ function handleSelect(plan: SelectableEmergencyPlan) {
   min-width: 56px;
   height: 30px;
   padding: 0 10px;
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 4px;
-  background: rgb(0 22 48 / 82%);
+  background: var(--map-facility-btn-bg);
   color: #d8e8f8;
   font-size: 12px;
   font-family: var(--font-body);
@@ -378,7 +378,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
 .plan-switch__btn--primary {
   border-color: rgb(0 160 240 / 55%);
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .plan-switch__table-wrap {
@@ -433,7 +433,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
 }
 
 .plan-switch__pick-btn:hover {
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .plan-switch__empty {

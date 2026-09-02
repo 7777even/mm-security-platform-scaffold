@@ -39,7 +39,7 @@ const layout = ref<GridLayout>('3x3');
   min-width: 1920px;
   height: 100%;
   min-height: 1080px;
-  background: #000a18;
+  background: var(--map-video-page-bg);
   pointer-events: auto;
 }
 

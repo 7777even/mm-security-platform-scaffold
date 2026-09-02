@@ -101,7 +101,7 @@ function goBack() {
   min-width: 1920px;
   height: 100%;
   min-height: 1080px;
-  background: #000a18;
+  background: var(--map-video-page-bg);
   font-family: var(--font-body);
   pointer-events: auto;
 }
@@ -142,7 +142,7 @@ function goBack() {
   padding: 0 8px;
   border: 1px solid rgb(255 163 57 / 52%);
   background: rgb(112 56 8 / 44%);
-  color: #ffba67;
+  color: var(--map-event-badge-fg);
   font-size: 11px;
   line-height: 20px;
 }
@@ -188,8 +188,8 @@ function goBack() {
 
 .video-wall-page__back:hover {
   background: rgb(0 180 255 / 15%);
-  border-color: #00b4ff;
-  color: #fff;
+  border-color: var(--color-accent);
+  color: var(--color-text-strong);
 }
 
 .video-wall-page__body {

@@ -412,7 +412,7 @@ function callPersonnel(area: FireAreaSummary) {
 .fire-status--alarm .fire-status__icon {
   border-color: #ff7179;
   background: rgb(180 43 53 / 50%);
-  color: #fff;
+  color: var(--color-text-strong);
   box-shadow: 0 0 13px rgb(255 78 88 / 36%);
 }
 
@@ -423,7 +423,7 @@ function callPersonnel(area: FireAreaSummary) {
 
 .fire-status__heading strong {
   display: block;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 17px;
   line-height: 1.3;
 }
@@ -703,7 +703,7 @@ function callPersonnel(area: FireAreaSummary) {
 
 .area-card__head strong {
   overflow: hidden;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 14px;
   text-overflow: ellipsis;
   white-space: nowrap;

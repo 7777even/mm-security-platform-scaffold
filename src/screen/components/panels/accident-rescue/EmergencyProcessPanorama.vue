@@ -178,7 +178,7 @@ function toggleTasksDropdown() {
   margin: 0 0 12px;
   font-size: 14px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   text-align: center;
 }
 
@@ -300,7 +300,7 @@ function toggleTasksDropdown() {
 
 .process-panorama__step--done .process-panorama__label,
 .process-panorama__step--active .process-panorama__label {
-  color: #fff;
+  color: var(--color-text-strong);
   font-weight: 500;
 }
 
@@ -309,10 +309,10 @@ function toggleTasksDropdown() {
   width: 20px;
   height: 20px;
   padding: 0;
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 50%;
-  background: rgb(0 22 48 / 82%);
-  color: #4f8dd3;
+  background: var(--map-facility-btn-bg);
+  color: var(--map-facility-btn-fg);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -367,7 +367,7 @@ function toggleTasksDropdown() {
 }
 
 .process-panorama__task-label {
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 

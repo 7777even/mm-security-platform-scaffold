@@ -845,7 +845,7 @@ onUnmounted(() => {
   border: 1px solid rgb(56 189 248 / 50%);
   border-radius: 6px;
   background: rgb(15 23 42 / 92%);
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
@@ -853,9 +853,9 @@ onUnmounted(() => {
 }
 
 .accident-rescue-page__side-toggle:hover {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
   background: rgb(30 41 59 / 95%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .accident-rescue-page__side-toggle--left {
@@ -917,7 +917,7 @@ onUnmounted(() => {
 }
 
 .accident-rescue-page__left-tabs button.is-active {
-  color: #fff;
+  color: var(--color-text-strong);
   background: linear-gradient(180deg, rgb(0 130 220 / 96%), rgb(0 82 166 / 96%));
   box-shadow: inset 0 -2px #39d4ff;
 }
@@ -1140,7 +1140,7 @@ onUnmounted(() => {
 
 .accident-rescue-page__map-menu-close:hover {
   border-color: rgb(0 166 244 / 66%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .accident-rescue-page__map-menu-section + .accident-rescue-page__map-menu-section {
@@ -1176,7 +1176,7 @@ onUnmounted(() => {
 .accident-rescue-page__map-menu-item:hover,
 .accident-rescue-page__map-menu-item--active {
   border-color: rgb(0 166 244 / 58%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .accident-rescue-page__right--duty-collapsed {

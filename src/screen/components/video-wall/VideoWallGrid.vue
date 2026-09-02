@@ -738,7 +738,7 @@ watch(
 
 .header-page-control .page-info {
   font-size: 13px;
-  color: #00b4ff;
+  color: var(--color-accent);
 }
 
 .header-page-actions {
@@ -763,8 +763,8 @@ watch(
 .page-btn.mini:hover:not(:disabled),
 .add-page-btn.mini:hover {
   background: rgb(0 180 255 / 20%);
-  border-color: #00b4ff;
-  color: #fff;
+  border-color: var(--color-accent);
+  color: var(--color-text-strong);
 }
 
 .remove-page-btn.mini {
@@ -775,7 +775,7 @@ watch(
 .remove-page-btn.mini:hover:not(:disabled) {
   background: rgb(255 107 107 / 20%);
   border-color: #ff6b6b;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .page-btn.mini:disabled,
@@ -807,7 +807,7 @@ watch(
 .grid-controls button {
   background: rgb(0 0 0 / 40%);
   border: 1px solid rgb(0 130 210 / 35%);
-  color: #fff;
+  color: var(--color-text-strong);
   padding: 4px 12px;
   border-radius: 2px;
   cursor: pointer;
@@ -859,8 +859,8 @@ watch(
 
 .mode-btn.active {
   background: rgb(0 180 255 / 20%);
-  border-color: #00b4ff;
-  color: #00b4ff;
+  border-color: var(--color-accent);
+  color: var(--color-accent);
   font-weight: bold;
 }
 
@@ -869,7 +869,7 @@ watch(
   align-items: center;
   gap: 12px;
   margin-left: 15px;
-  background: rgb(255 255 255 / 3%);
+  background: var(--panel-inner-bg);
   padding: 4px 12px;
   border-radius: 2px;
   border: 1px solid rgb(0 130 210 / 35%);
@@ -902,7 +902,7 @@ watch(
   appearance: none;
   width: 14px;
   height: 14px;
-  background: #00b4ff;
+  background: var(--color-accent);
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 0 8px rgb(0 180 255 / 80%);
@@ -950,7 +950,7 @@ watch(
 .play-control-btn {
   background: rgb(0 180 255 / 15%);
   border: 1px solid rgb(0 180 255 / 40%);
-  color: #00b4ff;
+  color: var(--color-accent);
   padding: 4px 10px;
   border-radius: 2px;
   cursor: pointer;
@@ -1018,7 +1018,7 @@ watch(
 }
 
 .video-cell.selected {
-  border-color: #00b4ff;
+  border-color: var(--color-accent);
   background: rgb(0 180 255 / 15%);
   box-shadow: inset 0 0 10px rgb(0 180 255 / 30%);
 }

@@ -121,13 +121,13 @@ function handleRowClick(item: GateControlItem) {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
 .gate-list__count {
   font-size: 13px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   white-space: nowrap;
 }
 
@@ -155,10 +155,10 @@ function handleRowClick(item: GateControlItem) {
   min-width: 0;
   height: 30px;
   padding: 0 10px;
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 2px;
   background: rgb(0 22 48 / 75%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 13px;
   font-family: var(--font-body);
   outline: none;
@@ -215,7 +215,7 @@ function handleRowClick(item: GateControlItem) {
 .gate-table__head {
   padding: 0 10px 4px;
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .gate-table__row {
@@ -227,7 +227,7 @@ function handleRowClick(item: GateControlItem) {
   background: rgb(0 24 50 / 45%);
   border-radius: 2px;
   padding: 10px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .gate-table__name {
@@ -246,15 +246,15 @@ function handleRowClick(item: GateControlItem) {
 }
 
 .gate-table__status--normal {
-  color: #3dd68c;
+  color: var(--color-success);
 }
 
 .gate-table__status--offline {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .gate-table__status--fault {
-  color: #f0b429;
+  color: var(--color-warning);
 }
 
 .gate-list__pagination {
@@ -269,9 +269,9 @@ function handleRowClick(item: GateControlItem) {
   min-width: 28px;
   height: 28px;
   padding: 0 8px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -284,7 +284,7 @@ function handleRowClick(item: GateControlItem) {
 }
 
 .page-btn--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 55%);
 }

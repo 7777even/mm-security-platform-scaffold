@@ -57,7 +57,7 @@ const steps = computed(() => (props.theme === 'drill' ? drillGuidanceSteps : gui
   border-radius: 2px;
   border: 1px solid rgb(90 140 200 / 28%);
   background: rgb(10 29 55 / 92%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 14px;
   font-family: var(--font-body);
   line-height: 1.35;
@@ -96,14 +96,14 @@ const steps = computed(() => (props.theme === 'drill' ? drillGuidanceSteps : gui
 }
 
 .guidance-step--done {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(120 200 90 / 45%);
   background: linear-gradient(180deg, rgb(72 118 32 / 98%), rgb(48 88 24 / 96%));
   box-shadow: inset 0 0 12px rgb(140 200 80 / 12%);
 }
 
 .guidance-step--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(60 140 240 / 55%);
   background: linear-gradient(180deg, rgb(11 72 160 / 98%), rgb(8 52 125 / 96%));
   box-shadow: inset 0 0 14px rgb(80 160 255 / 18%);

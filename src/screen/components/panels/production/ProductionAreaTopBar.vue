@@ -121,7 +121,7 @@ onUnmounted(() => {
   height: 18px;
   padding: 0 5px;
   border-radius: 9px;
-  background: #f0c429;
+  background: var(--color-alarm-3);
   color: #1a1200;
   font-size: 11px;
   font-weight: 700;
@@ -175,7 +175,7 @@ onUnmounted(() => {
 .area-top__menu-item:hover,
 .area-top__menu-item--active {
   background: rgb(0 90 160 / 35%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .area-top__metrics {
@@ -200,7 +200,7 @@ onUnmounted(() => {
 
 .area-metric__label {
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

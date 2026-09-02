@@ -160,7 +160,7 @@ const isVehicle = computed(() => props.mode === 'vehicle');
     ),
     linear-gradient(
       180deg,
-      rgb(0 22 48 / 55%) 0%,
+      var(--stat-card-icon-bg) 0%,
       transparent 14%,
       transparent 78%,
       rgb(0 18 40 / 65%) 100%
@@ -218,12 +218,12 @@ const isVehicle = computed(() => props.mode === 'vehicle');
   border-radius: 3px;
   font-size: 12px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-strong);
   box-shadow: 0 2px 8px rgb(0 0 0 / 35%);
 }
 
 .track-end-marker__badge--start {
-  background: linear-gradient(180deg, #3dd68c, #1a9e5c);
+  background: linear-gradient(180deg, var(--color-success), #1a9e5c);
   border: 1px solid rgb(61 214 140 / 60%);
 }
 
@@ -244,7 +244,7 @@ const isVehicle = computed(() => props.mode === 'vehicle');
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ffe08a, #f0b429 55%, #c88600);
+  background: radial-gradient(circle at 35% 30%, #ffe08a, var(--color-warning) 55%, #c88600);
   border: 2px solid rgb(255 255 255 / 85%);
   box-shadow: 0 0 12px rgb(240 180 41 / 45%);
   transform: rotate(var(--vehicle-heading, 0deg));
@@ -255,7 +255,7 @@ const isVehicle = computed(() => props.mode === 'vehicle');
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #6df, #0094ec 60%, #005a9e);
+  background: radial-gradient(circle at 35% 30%, #6df, var(--map-track-blue) 60%, #005a9e);
   border: 2px solid rgb(255 255 255 / 85%);
   box-shadow: 0 0 12px rgb(0 148 236 / 45%);
 }

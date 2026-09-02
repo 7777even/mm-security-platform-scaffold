@@ -1,18 +1,18 @@
 :root {
-  --bg-primary: #001630;
-  --bg-panel: rgb(0 35 75 / 72%);
+  --bg-primary: var(--color-bg);
+  --bg-panel: var(--glass-bg);
   --bg-panel-header: linear-gradient(90deg, rgb(0 80 160 / 45%) 0%, rgb(0 40 90 / 20%) 100%);
   --border-glow: rgb(0 180 255 / 45%);
-  --border-panel: rgb(0 140 220 / 25%);
-  --text-primary: #fff;
-  --text-secondary: #8795b0;
-  --text-muted: #d8e4f4;
-  --accent-blue: #00b4ff;
+  --border-panel: var(--color-border);
+  --text-primary: var(--color-text-strong);
+  --text-secondary: var(--color-text-muted);
+  --text-muted: var(--color-text);
+  --accent-blue: var(--color-accent);
   --accent-cyan: #6acab2;
   --accent-gold: #eca641;
-  --accent-red: #ff5a4a;
-  --accent-red-light: #ffc4c4;
-  --accent-green: #3dd68c;
+  --accent-red: var(--color-danger);
+  --accent-red-light: var(--map-popup-red-text);
+  --accent-green: var(--color-success);
   --accent-purple: #b07aff;
   --header-height: 77px;
   --footer-height: 67px;

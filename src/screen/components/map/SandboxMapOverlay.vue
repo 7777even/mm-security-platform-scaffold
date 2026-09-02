@@ -429,7 +429,7 @@ function handleOverlayClick(event: MouseEvent) {
   border: 1px solid rgb(0 148 236 / 50%);
   border-radius: 4px;
   background: linear-gradient(180deg, rgb(6 40 76 / 94%), rgb(3 24 50 / 94%));
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   font-size: 11px;
   font-family: var(--font-body);
   white-space: nowrap;
@@ -460,7 +460,7 @@ function handleOverlayClick(event: MouseEvent) {
 }
 
 .sandbox-marker--medical-point .sandbox-marker__icon {
-  color: #3dd68c;
+  color: var(--color-success);
 }
 
 .sandbox-hint {
@@ -487,7 +487,7 @@ function handleOverlayClick(event: MouseEvent) {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #00b4ff;
+  background: var(--color-accent);
   box-shadow: 0 0 8px rgb(0 180 255 / 85%);
   animation: sandbox-circle-pulse 1.5s ease-in-out infinite;
 }

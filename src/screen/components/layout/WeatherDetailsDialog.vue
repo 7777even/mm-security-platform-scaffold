@@ -288,8 +288,8 @@ p {
   width: 40px;
   height: 40px;
   border: 1px solid rgb(76 188 241 / 35%);
-  background: #061e38;
-  color: #bfeaff;
+  background: var(--map-ctrl-bg);
+  color: var(--map-accent-soft-text);
   font-size: 32px;
   line-height: 32px;
   cursor: pointer;
@@ -356,7 +356,7 @@ p {
 
 .air-quality span {
   font-size: 12px;
-  color: #9ec5ad;
+  color: var(--map-air-green-text);
 }
 
 .weather-current__metrics {
@@ -379,7 +379,7 @@ dt {
 dd {
   margin: 7px 0 0;
   font-size: 16px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .forecast-card {
@@ -413,7 +413,7 @@ dd {
 .metric-tabs button {
   height: 32px;
   padding: 0 16px;
-  border: 1px solid #155e8e;
+  border: 1px solid var(--map-ctrl-line);
   border-right: 0;
   background: #082442;
   color: #80bada;
@@ -421,12 +421,12 @@ dd {
 }
 
 .metric-tabs button:last-child {
-  border-right: 1px solid #155e8e;
+  border-right: 1px solid var(--map-ctrl-line);
 }
 
 .metric-tabs button.active {
   background: linear-gradient(#087fd1, #0964aa);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .hourly-chart {
@@ -445,7 +445,7 @@ dd {
 }
 
 .hourly-chart circle {
-  fill: #071a33;
+  fill: var(--map-chart-dot-bg);
   stroke: #49d5ff;
   stroke-width: 3;
 }
@@ -499,7 +499,7 @@ dd {
 
 .daily-item__day {
   font-size: 15px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .daily-item time {
@@ -581,12 +581,12 @@ dd {
 
 .weekly-forecast .daily-item time {
   font-size: 16px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .weekly-forecast .daily-item b {
   font-size: 16px;
-  color: #36e6c7;
+  color: var(--map-week-teal);
 }
 
 .weekly-forecast .daily-item__icon {
@@ -600,7 +600,7 @@ dd {
 
 .daily-item__wind {
   font-size: 14px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .humidity {
@@ -642,14 +642,14 @@ dd {
 }
 
 .weekly-temperature-chart .high-dot {
-  fill: #fff;
-  stroke: #ffb21a;
+  fill: var(--color-text-strong);
+  stroke: var(--map-chart-line-gold);
   stroke-width: 3;
 }
 
 .weekly-temperature-chart .low-dot {
-  fill: #fff;
-  stroke: #159bff;
+  fill: var(--color-text-strong);
+  stroke: var(--map-chart-line-blue);
   stroke-width: 3;
 }
 

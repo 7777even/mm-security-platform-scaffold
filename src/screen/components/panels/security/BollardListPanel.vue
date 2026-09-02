@@ -121,13 +121,13 @@ function handleRowClick(item: BollardItem) {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
 .bollard-list__count {
   font-size: 13px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   white-space: nowrap;
 }
 
@@ -155,10 +155,10 @@ function handleRowClick(item: BollardItem) {
   min-width: 0;
   height: 30px;
   padding: 0 10px;
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 2px;
   background: rgb(0 22 48 / 75%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 13px;
   font-family: var(--font-body);
   outline: none;
@@ -222,12 +222,12 @@ function handleRowClick(item: BollardItem) {
 .bollard-table__head {
   padding: 0 10px 4px;
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .bollard-table__row {
   padding: 10px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .bollard-table__name {
@@ -246,15 +246,15 @@ function handleRowClick(item: BollardItem) {
 }
 
 .bollard-table__status--normal {
-  color: #3dd68c;
+  color: var(--color-success);
 }
 
 .bollard-table__status--offline {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .bollard-table__status--fault {
-  color: #f0b429;
+  color: var(--color-warning);
 }
 
 .bollard-list__pagination {
@@ -269,9 +269,9 @@ function handleRowClick(item: BollardItem) {
   min-width: 28px;
   height: 28px;
   padding: 0 8px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -284,7 +284,7 @@ function handleRowClick(item: BollardItem) {
 }
 
 .page-btn--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 55%);
 }

@@ -217,7 +217,7 @@ function handleExit() {
 }
 
 .sandbox-panel__close:hover {
-  color: #fff;
+  color: var(--color-text-strong);
   background: rgb(0 120 210 / 25%);
 }
 
@@ -262,7 +262,7 @@ function handleExit() {
   padding: 0 10px;
   border: 1px solid rgb(0 110 190 / 40%);
   border-radius: 5px;
-  background: rgb(0 22 48 / 82%);
+  background: var(--map-facility-btn-bg);
   color: #cfe3f7;
   font-size: 12px;
   font-family: var(--font-body);
@@ -281,7 +281,7 @@ function handleExit() {
 .sandbox-tool--active {
   border-color: rgb(0 180 255 / 90%);
   background: linear-gradient(180deg, rgb(0 90 160 / 82%), rgb(0 52 110 / 82%));
-  color: #fff;
+  color: var(--color-text-strong);
   box-shadow: inset 0 0 12px rgb(0 150 235 / 28%);
 }
 
@@ -305,7 +305,7 @@ function handleExit() {
 }
 
 .sandbox-tool-hint__active {
-  color: #eca641;
+  color: var(--accent-gold);
 }
 
 .sandbox-tool-hint__idle {
@@ -340,7 +340,7 @@ function handleExit() {
   border: 1px solid rgb(0 120 210 / 45%);
   border-radius: 4px;
   background: rgb(0 22 48 / 90%);
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   font-size: 12px;
   font-family: var(--font-body);
   box-sizing: border-box;
@@ -349,8 +349,8 @@ function handleExit() {
 
 .sandbox-field__select:focus,
 .sandbox-field__input:focus {
-  border-color: #00b4ff;
-  box-shadow: 0 0 8px rgb(0 180 255 / 35%);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 8px var(--panel-border);
 }
 
 .sandbox-run-btn {
@@ -359,7 +359,7 @@ function handleExit() {
   border: 1px solid rgb(0 180 255 / 65%);
   border-radius: 5px;
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -388,7 +388,7 @@ function handleExit() {
 
 .sandbox-layer input {
   flex-shrink: 0;
-  accent-color: #00b4ff;
+  accent-color: var(--color-accent);
 }
 
 .sandbox-panel__footer {
@@ -422,7 +422,7 @@ function handleExit() {
 .sandbox-panel__btn--primary {
   border: 1px solid rgb(255 120 90 / 65%);
   background: linear-gradient(180deg, rgb(200 60 45 / 92%), rgb(150 36 30 / 92%));
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .sandbox-panel__btn:hover {

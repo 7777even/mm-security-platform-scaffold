@@ -120,7 +120,7 @@ function handleItemClick(label: string) {
   font-size: 18px;
   font-weight: 700;
   line-height: 1;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .special-ops__item--zero .special-ops__count {

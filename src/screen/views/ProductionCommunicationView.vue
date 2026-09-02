@@ -110,7 +110,7 @@ function goBack() {
 }
 
 .comm-view__back:hover {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
 }
 
@@ -147,14 +147,14 @@ function goBack() {
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  border: 1px solid rgb(0 140 220 / 25%);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   background: rgb(0 35 75 / 82%);
   pointer-events: auto;
 }
 
 .comm-view__pagination {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-size: 13px;
 }
 
@@ -168,7 +168,7 @@ function goBack() {
   padding: 0 16px;
   border: 1px solid rgb(0 120 200 / 30%);
   border-radius: 3px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 13px;
   font-family: var(--font-body);
@@ -176,7 +176,7 @@ function goBack() {
 }
 
 .comm-view__btn:hover:not(:disabled) {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 50%);
 }
 
@@ -186,7 +186,7 @@ function goBack() {
 }
 
 .comm-view__btn--primary {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 50%);
   background: rgb(0 90 160 / 50%);
 }

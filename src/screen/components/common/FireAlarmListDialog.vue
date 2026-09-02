@@ -334,13 +334,13 @@ const dialogActions: DialogAction[] = [
   justify-content: space-between;
   flex-shrink: 0;
   padding: 12px 16px;
-  border-bottom: 1px solid rgb(0 110 190 / 35%);
+  border-bottom: 1px solid var(--panel-head-line);
 }
 
 .fire-alarm-list__title {
   margin: 0;
   font-size: 20px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .fire-alarm-list__close {
@@ -373,10 +373,10 @@ const dialogActions: DialogAction[] = [
 .fire-alarm-list__input {
   height: 32px;
   padding: 0 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #fff;
+  background: var(--btn-bg);
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   outline: none;
@@ -394,9 +394,9 @@ const dialogActions: DialogAction[] = [
 .fire-alarm-list__btn {
   height: 32px;
   padding: 0 12px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -405,8 +405,8 @@ const dialogActions: DialogAction[] = [
 }
 
 .fire-alarm-list__btn--primary {
-  color: #fff;
-  border-color: rgb(0 180 255 / 45%);
+  color: var(--color-text-strong);
+  border-color: var(--border-glow);
   background: rgb(0 90 160 / 45%);
 }
 
@@ -428,7 +428,7 @@ const dialogActions: DialogAction[] = [
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
 }
 
 .fire-alarm-list__table th {
@@ -438,7 +438,7 @@ const dialogActions: DialogAction[] = [
   padding: 10px 8px;
   text-align: left;
   font-weight: 500;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   background: rgb(0 28 58 / 95%);
   border-bottom: 1px solid rgb(0 110 190 / 28%);
   white-space: nowrap;
@@ -446,7 +446,7 @@ const dialogActions: DialogAction[] = [
 
 .fire-alarm-list__table td {
   padding: 10px 8px;
-  border-bottom: 1px solid rgb(0 90 150 / 15%);
+  border-bottom: 1px solid var(--list-divider);
   vertical-align: top;
   line-height: 1.45;
 }
@@ -465,11 +465,11 @@ const dialogActions: DialogAction[] = [
 }
 
 .type-label--fire {
-  color: #ff5a4a;
+  color: var(--color-danger);
 }
 
 .type-label--smoke {
-  color: #f0b429;
+  color: var(--color-warning);
 }
 
 .type-label--gds {
@@ -485,7 +485,7 @@ const dialogActions: DialogAction[] = [
 }
 
 .status-label--closed {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .row-actions {
@@ -499,7 +499,7 @@ const dialogActions: DialogAction[] = [
   padding: 0;
   border: none;
   background: transparent;
-  color: #0af;
+  color: var(--color-accent-2);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -530,9 +530,9 @@ const dialogActions: DialogAction[] = [
   min-width: 28px;
   height: 28px;
   padding: 0 8px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -545,7 +545,7 @@ const dialogActions: DialogAction[] = [
 }
 
 .page-btn--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 55%);
 }

@@ -692,7 +692,7 @@ onUnmounted(() => {
   padding: 5px 12px;
   border: 1px solid rgb(255 255 255 / 20%);
   border-radius: 6px;
-  background: rgb(255 255 255 / 8%);
+  background: var(--alarm-list-divider);
   color: #e2e8f0;
   font-size: 12px;
   font-weight: 700;
@@ -714,7 +714,7 @@ onUnmounted(() => {
 :global(.pano-switch-btn:hover) {
   background: rgb(255 255 255 / 16%);
   border-color: rgb(255 255 255 / 40%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 :global(.pano-toolbar__actions) {
@@ -770,7 +770,7 @@ onUnmounted(() => {
 
 :global(.pano-close-btn:hover) {
   background: #334155;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 :global(.pano-legend) {
@@ -795,7 +795,7 @@ onUnmounted(() => {
 }
 
 :global(.pano-legend__item--in-progress) {
-  color: #38bdf8;
+  color: var(--map-sky);
 }
 
 :global(.pano-legend__item--completed) {
@@ -887,7 +887,7 @@ onUnmounted(() => {
   top: 50%;
   transform: translateY(-50%);
   z-index: 3;
-  color: #38bdf8;
+  color: var(--map-sky);
   font-size: 15px;
   text-shadow: 0 0 8px rgb(56 189 248 / 60%);
   pointer-events: none;
@@ -906,7 +906,7 @@ onUnmounted(() => {
 }
 
 .pano-phase__pct {
-  color: #38bdf8;
+  color: var(--map-sky);
   font-size: 11px;
   font-weight: 800;
 }
@@ -922,7 +922,7 @@ onUnmounted(() => {
   display: block;
   height: 100%;
   border-radius: 3px;
-  background: linear-gradient(90deg, #0284c7, #38bdf8);
+  background: linear-gradient(90deg, #0284c7, var(--map-sky));
   transition: width 0.5s ease;
 }
 
@@ -987,8 +987,8 @@ onUnmounted(() => {
 }
 
 .pano-add-card:hover {
-  border-color: #38bdf8;
-  color: #7dd3fc;
+  border-color: var(--map-sky);
+  color: var(--map-sky-soft);
 }
 
 :global(.pano-ctx) {
@@ -1020,7 +1020,7 @@ onUnmounted(() => {
 
 :global(.pano-ctx button:hover) {
   background: #334155;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 :global(.pano-ctx button.is-danger:hover) {
@@ -1080,7 +1080,7 @@ onUnmounted(() => {
 
 .pano-upgrade__icon {
   flex-shrink: 0;
-  color: #38bdf8;
+  color: var(--map-sky);
   font-size: 13px;
   line-height: 1.3;
 }
@@ -1173,7 +1173,7 @@ onUnmounted(() => {
 }
 
 .pano-resource__duty-tag {
-  color: #38bdf8;
+  color: var(--map-sky);
 }
 
 .pano-empty {
@@ -1207,7 +1207,7 @@ onUnmounted(() => {
 
 .pano-card--pending:hover {
   background: #334155;
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
   transform: translateY(-1px);
 }
 
@@ -1219,7 +1219,7 @@ onUnmounted(() => {
 
 .pano-card--in-progress:hover {
   background: rgb(2 132 199 / 28%);
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
   transform: translateY(-1px);
 }
 
@@ -1252,7 +1252,7 @@ onUnmounted(() => {
 }
 
 .pano-card--in-progress .pano-card__status {
-  color: #38bdf8;
+  color: var(--map-sky);
 }
 
 .pano-card--completed .pano-card__status {
@@ -1359,7 +1359,7 @@ onUnmounted(() => {
 }
 
 :global(.pano-process__step--active .pano-process__dot) {
-  background: #38bdf8;
+  background: var(--map-sky);
   box-shadow: 0 0 8px rgb(56 189 248 / 90%);
   animation: pano-dot-pulse 1.5s ease-in-out infinite;
 }
@@ -1386,7 +1386,7 @@ onUnmounted(() => {
 }
 
 :global(.pano-process__step--active .pano-process__status) {
-  color: #38bdf8;
+  color: var(--map-sky);
 }
 
 :global(.pano-process__connector) {
@@ -1398,7 +1398,7 @@ onUnmounted(() => {
 }
 
 :global(.pano-process__connector.is-done) {
-  background: linear-gradient(90deg, #059669, #38bdf8);
+  background: linear-gradient(90deg, #059669, var(--map-sky));
   box-shadow: 0 0 6px rgb(56 189 248 / 40%);
 }
 
@@ -1469,7 +1469,7 @@ onUnmounted(() => {
 
 :global(.pano-plan-selector__close:hover) {
   background: #334155;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 :global(.pano-plan-selector__body) {
@@ -1499,12 +1499,12 @@ onUnmounted(() => {
 }
 
 .pano-plan-card:hover {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
   background: #263449;
 }
 
 .pano-plan-card.is-active {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
   box-shadow:
     0 0 18px rgb(56 189 248 / 22%),
     inset 0 0 16px rgb(56 189 248 / 8%);
@@ -1531,7 +1531,7 @@ onUnmounted(() => {
   border-radius: 4px;
   background: rgb(56 189 248 / 18%);
   border: 1px solid rgb(56 189 248 / 50%);
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 10px;
   font-weight: 700;
   line-height: 1;

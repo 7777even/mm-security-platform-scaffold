@@ -1214,8 +1214,8 @@ const saveBind = () => {
 }
 
 .tab.active {
-  color: #00b4ff;
-  border-bottom: 2px solid #00b4ff;
+  color: var(--color-accent);
+  border-bottom: 2px solid var(--color-accent);
   font-weight: bold;
 }
 
@@ -1286,7 +1286,7 @@ const saveBind = () => {
   padding: 8px 15px;
   cursor: pointer;
   font-size: 13px;
-  color: #fff;
+  color: var(--color-text-strong);
   transition: background 0.2s;
 }
 
@@ -1311,7 +1311,7 @@ const saveBind = () => {
   padding: 20px;
   border-radius: 2px;
   width: 400px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .modal-content h3 {
@@ -1334,7 +1334,7 @@ const saveBind = () => {
 
 .group-title-chk {
   font-weight: bold;
-  color: #00b4ff;
+  color: var(--color-accent);
   margin-bottom: 5px;
   font-size: 14px;
 }
@@ -1447,13 +1447,13 @@ const saveBind = () => {
 }
 
 .map-marker.camera {
-  background: #00b4ff;
-  border: 2px solid #fff;
+  background: var(--color-accent);
+  border: 2px solid var(--color-text-strong);
 }
 
 .map-marker.alarm {
   background: #ff4d4f;
-  border: 2px solid #fff;
+  border: 2px solid var(--color-text-strong);
   animation: pulse 1.5s infinite;
 }
 
@@ -1524,8 +1524,8 @@ const saveBind = () => {
 
 .save-btn {
   background: rgb(0 180 255 / 20%);
-  border: 1px solid #00b4ff;
-  color: #00b4ff;
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
   padding: 8px;
   border-radius: 2px;
   cursor: pointer;
@@ -1622,7 +1622,7 @@ const saveBind = () => {
 }
 
 .search-bar input:focus {
-  border-color: #00b4ff;
+  border-color: var(--color-accent);
   box-shadow: 0 0 5px rgb(0 180 255 / 30%);
 }
 
@@ -1653,7 +1653,7 @@ const saveBind = () => {
 }
 
 .step-page {
-  color: #00b4ff;
+  color: var(--color-accent);
   opacity: 0.8;
 }
 
@@ -1680,7 +1680,7 @@ const saveBind = () => {
   margin-top: 10px;
   background: rgb(0 180 255 / 10%);
   border: 1px dashed rgb(0 180 255 / 40%);
-  color: #00b4ff;
+  color: var(--color-accent);
   padding: 10px;
   border-radius: 2px;
   cursor: pointer;
@@ -1690,7 +1690,7 @@ const saveBind = () => {
 
 .add-plan-btn:hover {
   background: rgb(0 180 255 / 20%);
-  border-color: #00b4ff;
+  border-color: var(--color-accent);
 }
 
 .add-plan-form {
@@ -1731,7 +1731,7 @@ const saveBind = () => {
 }
 
 .add-plan-form input:focus {
-  border-color: #00b4ff;
+  border-color: var(--color-accent);
 }
 
 .steps-builder {
@@ -1788,8 +1788,8 @@ const saveBind = () => {
 
 .add-step-btn {
   background: rgb(0 180 255 / 20%);
-  border: 1px solid #00b4ff;
-  color: #00b4ff;
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
   border-radius: 2px;
   cursor: pointer;
 }
@@ -1822,8 +1822,8 @@ const saveBind = () => {
 
 .confirm-btn {
   background: rgb(0 180 255 / 20%);
-  border-color: #00b4ff;
-  color: #00b4ff;
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .confirm-btn:disabled {
@@ -1856,7 +1856,7 @@ const saveBind = () => {
 }
 
 .target-tree-toolbar strong {
-  color: #d7efff;
+  color: var(--map-area-select-fg);
   font-size: 12px;
 }
 
@@ -1921,7 +1921,7 @@ const saveBind = () => {
 .target-category-shortcuts > button.active {
   border-color: rgb(0 190 255 / 70%);
   background: linear-gradient(135deg, rgb(0 105 173 / 55%), rgb(0 56 101 / 64%));
-  color: #fff;
+  color: var(--color-text-strong);
   box-shadow: inset 2px 0 #21c9ff;
 }
 
@@ -2072,7 +2072,7 @@ const saveBind = () => {
   width: 100%;
   height: 30px;
   margin-bottom: 8px;
-  border: 1px solid rgb(0 180 255 / 45%);
+  border: 1px solid var(--border-glow);
   border-radius: 3px;
   background: rgb(0 90 160 / 35%);
   color: #d8ecff;
@@ -2115,7 +2115,7 @@ const saveBind = () => {
 
 .event-video-summary > strong {
   display: block;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 14px;
   line-height: 1.4;
 }
@@ -2136,7 +2136,7 @@ const saveBind = () => {
   height: 28px;
   border: 1px solid rgb(0 183 255 / 56%);
   background: rgb(0 100 174 / 48%);
-  color: #fff;
+  color: var(--color-text-strong);
   cursor: pointer;
 }
 
@@ -2418,7 +2418,7 @@ const saveBind = () => {
   height: 32px;
   border: 1px solid rgb(0 130 210 / 35%);
   background: #061e37;
-  color: #fff;
+  color: var(--color-text-strong);
   padding: 0 8px;
   outline: 0;
 }
@@ -2519,7 +2519,7 @@ const saveBind = () => {
   height: 32px;
   border: 1px solid rgb(0 130 210 / 35%);
   background: #061e37;
-  color: #fff;
+  color: var(--color-text-strong);
   padding: 0 9px;
   outline: 0;
   box-sizing: border-box;
@@ -2569,7 +2569,7 @@ const saveBind = () => {
 .event-group-create-modal__list label:has(input:checked) {
   border-color: rgb(0 190 255 / 70%);
   background: rgb(0 103 168 / 42%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .event-group-create-modal__list label span {
@@ -2600,6 +2600,6 @@ const saveBind = () => {
 
 .linkage-config-btn:hover {
   background: rgb(0 120 210 / 45%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 </style>

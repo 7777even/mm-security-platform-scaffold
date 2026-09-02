@@ -176,7 +176,7 @@ function connectorDone(index: number) {
 
 .rescue-stage-progress__step--done .rescue-stage-progress__label,
 .rescue-stage-progress__step--active .rescue-stage-progress__label {
-  color: #fff;
+  color: var(--color-text-strong);
   font-weight: 500;
 }
 </style>

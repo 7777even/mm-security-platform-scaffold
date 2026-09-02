@@ -144,7 +144,7 @@ defineProps<{
 .security-toolbar-icon {
   width: 22px;
   height: 22px;
-  color: #37cfff;
+  color: var(--map-marker-cyan);
   flex-shrink: 0;
 }
 </style>

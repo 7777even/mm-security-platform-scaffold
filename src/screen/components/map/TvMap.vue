@@ -230,7 +230,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
   padding-top: 1px;
   font-size: 11px;
   line-height: 16px;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
   pointer-events: none;
 }
@@ -393,7 +393,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
   inset: 0;
   padding: 11px;
   font-size: 12px;
-  color: #ffc4c4;
+  color: var(--map-popup-red-text);
   line-height: 1.4;
 }
 
@@ -410,7 +410,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
 }
 
 .alarm-marker__status-text {
-  color: #d33232;
+  color: var(--map-danger-deep);
 }
 
 .map-controls {
@@ -453,11 +453,11 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
   width: 104px;
   min-height: 39px;
   margin-top: 1px;
-  border: 1px solid rgb(44 163 255 / 58%);
+  border: 1px solid var(--map-clean-btn-border);
   border-radius: 2px;
   background: linear-gradient(180deg, rgb(8 52 99 / 92%), rgb(4 28 61 / 94%));
-  box-shadow: 0 0 12px rgb(0 144 255 / 16%);
-  color: #ccecff;
+  box-shadow: 0 0 12px var(--map-clean-btn-glow);
+  color: var(--map-clean-btn-fg);
   font-family: var(--font-body);
   font-size: 13px;
   cursor: pointer;
@@ -469,14 +469,14 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
 
 .video-wall-trigger:hover,
 .video-wall-trigger:focus-visible {
-  border-color: #55c9ff;
+  border-color: var(--map-clean-btn-border-hover);
   outline: none;
   background: linear-gradient(180deg, rgb(12 91 160 / 95%), rgb(5 53 112 / 96%));
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .video-wall-trigger span {
-  color: #63d8ff;
+  color: var(--map-clean-btn-icon);
   font-size: 16px;
   line-height: 1;
 }
@@ -532,7 +532,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
   top: 8px;
   width: 12px;
   height: 8px;
-  border: 2px solid #fff;
+  border: 2px solid var(--color-text-strong);
   border-radius: 2px;
 }
 
@@ -545,7 +545,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
   height: 0;
   border-top: 4px solid transparent;
   border-bottom: 4px solid transparent;
-  border-left: 5px solid #fff;
+  border-left: 5px solid var(--color-text-strong);
 }
 
 .video-map-point__marker i {
@@ -590,25 +590,25 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
   height: 34px;
   padding: 0 8px;
   box-sizing: border-box;
-  border: 1px solid rgb(0 155 235 / 72%);
+  border: 1px solid var(--map-area-select-border);
   border-radius: 2px;
   background: linear-gradient(180deg, rgb(4 48 83 / 95%), rgb(2 28 55 / 96%));
   box-shadow:
-    inset 0 0 13px rgb(0 132 220 / 18%),
-    0 0 10px rgb(0 70 130 / 28%);
-  color: #d7efff;
+    inset 0 0 13px var(--map-area-select-glow-in),
+    0 0 10px var(--map-area-select-glow-out);
+  color: var(--map-area-select-fg);
 }
 
 .video-point-selector__icon {
   margin-right: 5px;
-  color: #37c7ff;
+  color: var(--map-area-select-icon);
   font-size: 13px;
 }
 
 .video-point-selector__label {
   flex-shrink: 0;
   font-size: 12px;
-  color: #9fc9e8;
+  color: var(--map-area-select-label);
 }
 
 .video-point-selector select {
@@ -619,8 +619,8 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
   padding: 0 20px 0 5px;
   border: 0;
   outline: 0;
-  background: rgb(0 31 62 / 72%);
-  color: #fff;
+  background: var(--map-area-select-field-bg);
+  color: var(--color-text-strong);
   font: inherit;
   font-size: 12px;
   cursor: pointer;
@@ -638,8 +638,8 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
 }
 
 .video-point-selector select option {
-  background: #062846;
-  color: #fff;
+  background: var(--map-area-select-option-bg);
+  color: var(--color-text-strong);
 }
 
 :global(.map-page-shell--clean) .video-point-selector {

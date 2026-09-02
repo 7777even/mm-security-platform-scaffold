@@ -223,7 +223,7 @@ onBeforeUnmount(stopAlarmSound);
   height: 32px;
   border-radius: 50%;
   background: #e9433c;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 21px;
   font-weight: 800;
   box-shadow: 0 0 14px rgb(255 45 45 / 78%);
@@ -326,7 +326,7 @@ onBeforeUnmount(stopAlarmSound);
   padding: 4px 9px;
   border-radius: 2px;
   background: rgb(186 28 28 / 88%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
 }
 
@@ -377,7 +377,7 @@ onBeforeUnmount(stopAlarmSound);
 }
 
 .sound-light-alarm__details dt {
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 20px;
   font-weight: 700;
   line-height: 1.45;
@@ -468,7 +468,7 @@ onBeforeUnmount(stopAlarmSound);
 
 .sound-light-alarm__btn--primary {
   background: linear-gradient(180deg, #3e8bff, #2366e9);
-  color: #fff;
+  color: var(--color-text-strong);
   box-shadow: 0 0 16px rgb(40 104 255 / 34%);
 }
 

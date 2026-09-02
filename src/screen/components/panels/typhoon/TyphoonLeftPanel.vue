@@ -666,7 +666,7 @@ const waterChartOption = computed(() => ({
   min-height: 28px;
   padding: 0 10px;
   border-bottom: 1px solid rgb(0 110 190 / 16%);
-  background: rgb(0 22 48 / 55%);
+  background: var(--stat-card-icon-bg);
   flex-shrink: 0;
 }
 
@@ -737,7 +737,7 @@ const waterChartOption = computed(() => ({
   margin-top: 2px;
   font-size: 18px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1.15;
 }
 
@@ -851,7 +851,7 @@ const waterChartOption = computed(() => ({
 .tw-toggle--active {
   border-color: rgb(0 166 244 / 55%);
   background: rgb(0 150 236 / 16%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .tw-select-label {
@@ -914,12 +914,12 @@ const waterChartOption = computed(() => ({
 .tw-weather-summary span {
   padding: 2px 6px;
   background: #d86b14;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 10px;
 }
 
 .tw-weather-summary strong {
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 13px;
 }
 
@@ -948,7 +948,7 @@ const waterChartOption = computed(() => ({
 
 .tw-response__tabs button.active {
   background: #0878c7;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .tw-response__filter {
@@ -989,7 +989,7 @@ const waterChartOption = computed(() => ({
 }
 
 .tw-command__head strong {
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
 }
 
@@ -1109,7 +1109,7 @@ const waterChartOption = computed(() => ({
 .tw-edit textarea {
   border: 1px solid rgb(14 165 233 / 34%);
   background: #041b36;
-  color: #fff;
+  color: var(--color-text-strong);
   padding: 7px;
 }
 
@@ -1128,7 +1128,7 @@ const waterChartOption = computed(() => ({
 
 .tw-edit footer .primary {
   background: #087bd4;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .tw-command__logs {
@@ -1346,7 +1346,7 @@ const waterChartOption = computed(() => ({
 }
 
 .tw-attention-card header strong {
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 20px;
   font-weight: 600;
   line-height: 1;
@@ -1595,13 +1595,13 @@ const waterChartOption = computed(() => ({
 }
 
 .tw-tab:hover {
-  color: #fff;
+  color: var(--color-text-strong);
   background: rgb(0 91 158 / 30%);
 }
 
 .tw-tab--active {
   border: 0;
-  color: #fff;
+  color: var(--color-text-strong);
   background: linear-gradient(180deg, rgb(0 130 220 / 96%), rgb(0 82 166 / 96%));
   box-shadow: inset 0 -2px #39d4ff;
 }
@@ -1890,7 +1890,7 @@ const waterChartOption = computed(() => ({
 .tw-weather-banner__level {
   padding: 5px 9px;
   background: var(--banner-accent);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
   font-weight: 700;
   line-height: 1;
@@ -1911,7 +1911,7 @@ const waterChartOption = computed(() => ({
 
 .tw-weather-banner p {
   margin: 8px 0 0;
-  color: color-mix(in srgb, var(--banner-accent) 75%, #fff);
+  color: color-mix(in srgb, var(--banner-accent) 75%, var(--color-text-strong));
   font-size: 11px;
   font-weight: 600;
 }

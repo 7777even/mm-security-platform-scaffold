@@ -192,13 +192,13 @@ const alarmHistory = computed(() => [
   gap: 10px;
   flex-shrink: 0;
   padding: 12px 16px;
-  border-bottom: 1px solid rgb(0 110 190 / 35%);
+  border-bottom: 1px solid var(--panel-head-line);
 }
 
 .object-dialog__title {
   margin: 0;
   font-size: 20px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .object-dialog__type {
@@ -242,15 +242,15 @@ const alarmHistory = computed(() => [
   border: none;
   border-bottom: 2px solid transparent;
   background: transparent;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-size: 13px;
   font-family: var(--font-body);
   cursor: pointer;
 }
 
 .object-dialog__tab--active {
-  color: #fff;
-  border-bottom-color: #00b4ff;
+  color: var(--color-text-strong);
+  border-bottom-color: var(--color-accent);
 }
 
 .object-dialog__content {
@@ -274,7 +274,7 @@ const alarmHistory = computed(() => [
 
 .object-dialog__row span {
   flex-shrink: 0;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .object-dialog__row em {
@@ -286,24 +286,24 @@ const alarmHistory = computed(() => [
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
 }
 
 .object-dialog__table th {
   padding: 10px 8px;
   text-align: left;
   font-weight: 500;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   border-bottom: 1px solid rgb(0 110 190 / 28%);
 }
 
 .object-dialog__table td {
   padding: 10px 8px;
-  border-bottom: 1px solid rgb(0 90 150 / 15%);
+  border-bottom: 1px solid var(--list-divider);
 }
 
 .object-dialog__ok {
-  color: #3dd68c;
+  color: var(--color-success);
 }
 
 .object-dialog__video-grid {
@@ -327,7 +327,7 @@ const alarmHistory = computed(() => [
 .object-dialog__video-label {
   width: 100%;
   padding: 6px 8px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-size: 11px;
   background: rgb(0 10 24 / 55%);
 }

@@ -98,11 +98,11 @@ function handleLogout() {
 
 .user-menu__item:hover {
   background: rgb(0 70 120 / 45%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .user-menu__item--danger:hover {
   background: rgb(180 40 40 / 35%);
-  color: #ffc4c4;
+  color: var(--map-popup-red-text);
 }
 </style>

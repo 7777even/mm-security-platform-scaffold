@@ -100,7 +100,7 @@ defineProps<{
 
 .stat-card__label {
   font-size: 13px;
-  color: #d8e4f4;
+  color: var(--color-text);
   line-height: 1.2;
 }
 
@@ -114,14 +114,14 @@ defineProps<{
 .stat-card__value {
   font-size: 32px;
   font-weight: 700;
-  color: #00d4ff;
+  color: var(--color-accent-bright);
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
 .stat-card__suffix {
   font-size: 16px;
-  color: #00d4ff;
+  color: var(--color-accent-bright);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -140,14 +140,14 @@ defineProps<{
 }
 
 .stat-card__trend-label {
-  color: #8795b0;
+  color: var(--color-text-muted);
 }
 
 .stat-card__trend-value--up {
-  color: #ff5a4a;
+  color: var(--color-danger);
 }
 
 .stat-card__trend-value--down {
-  color: #3dd68c;
+  color: var(--color-success);
 }
 </style>

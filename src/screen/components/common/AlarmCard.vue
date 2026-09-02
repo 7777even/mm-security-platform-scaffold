@@ -87,15 +87,15 @@ function alarmThumbnail() {
   gap: 10px;
   padding: 8px 10px;
   flex-shrink: 0;
-  background: rgb(0 25 55 / 65%);
-  border: 1px solid rgb(0 100 180 / 25%);
+  background: var(--alarm-card-bg);
+  border: 1px solid var(--alarm-card-border);
   border-radius: 2px;
   cursor: pointer;
 }
 
 .alarm-card:hover {
-  border-color: rgb(0 180 255 / 45%);
-  background: rgb(0 35 70 / 60%);
+  border-color: var(--border-glow);
+  background: var(--alarm-card-bg-hover);
 }
 
 .alarm-card__thumb {
@@ -148,17 +148,17 @@ function alarmThumbnail() {
 }
 
 .alarm-card__title--danger {
-  color: #ff5a4a;
+  color: var(--color-danger);
 }
 
 .alarm-card__title--warning {
-  color: #f0b429;
+  color: var(--color-warning);
 }
 
 .alarm-card__tag,
 .alarm-card__status {
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .alarm-card__meta {
@@ -169,7 +169,7 @@ function alarmThumbnail() {
 .alarm-card__desc {
   margin: 4px 0 0;
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   line-height: 1.5;
 }
 
@@ -184,7 +184,7 @@ function alarmThumbnail() {
   padding: 0;
   border: none;
   background: transparent;
-  color: #0af;
+  color: var(--color-accent-2);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;

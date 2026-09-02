@@ -334,7 +334,7 @@ watch([communicationDrawerOpen, selectedDeviceId], ([open, id]) => {
   position: relative;
   padding: 11px;
   font-size: 12px;
-  color: #c4dcff;
+  color: var(--map-popup-text-blue);
   line-height: 1.4;
 }
 
@@ -345,7 +345,7 @@ watch([communicationDrawerOpen, selectedDeviceId], ([open, id]) => {
 }
 
 .personnel-marker__count-value {
-  color: #4388ff;
+  color: var(--map-personnel-count);
 }
 
 .device-marker {
@@ -366,9 +366,9 @@ watch([communicationDrawerOpen, selectedDeviceId], ([open, id]) => {
   max-width: 140px;
   padding: 2px 6px;
   border-radius: 2px;
-  background: rgb(0 16 36 / 78%);
+  background: var(--map-device-label-bg);
   border: 1px solid rgb(0 140 220 / 28%);
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   font-size: 11px;
   white-space: nowrap;
   overflow: hidden;
@@ -382,8 +382,8 @@ watch([communicationDrawerOpen, selectedDeviceId], ([open, id]) => {
   font-size: 10px;
   line-height: 15px;
   font-weight: 700;
-  color: #071426;
-  background: #37cfff;
+  color: var(--map-marker-ink);
+  background: var(--map-marker-cyan);
 }
 
 .device-marker__name {
@@ -399,14 +399,14 @@ watch([communicationDrawerOpen, selectedDeviceId], ([open, id]) => {
   height: 26px;
   border-radius: 50%;
   border: 2px solid rgb(255 255 255 / 90%);
-  background: #37cfff;
+  background: var(--map-marker-cyan);
   box-shadow: 0 0 10px rgb(55 207 255 / 45%);
 }
 
 .device-marker__pin :deep(.map-marker-icon) {
   width: 15px;
   height: 15px;
-  color: #071426;
+  color: var(--map-marker-ink);
 }
 
 .device-marker__stem {
@@ -433,13 +433,13 @@ watch([communicationDrawerOpen, selectedDeviceId], ([open, id]) => {
 
 .device-marker--offline .device-marker__pin,
 .device-marker--offline .device-marker__breath {
-  background: #8aa4c4;
+  background: var(--map-device-offline);
   box-shadow: none;
   filter: grayscale(0.4);
 }
 
 .device-marker--offline .device-marker__status {
-  background: #8aa4c4;
+  background: var(--map-device-offline);
 }
 
 .device-marker--offline .device-marker__stem {
@@ -448,12 +448,12 @@ watch([communicationDrawerOpen, selectedDeviceId], ([open, id]) => {
 
 .device-marker--fault .device-marker__pin,
 .device-marker--fault .device-marker__breath {
-  background: #f0b429;
+  background: var(--color-warning);
   box-shadow: 0 0 10px rgb(240 180 41 / 40%);
 }
 
 .device-marker--fault .device-marker__status {
-  background: #f0b429;
+  background: var(--color-warning);
 }
 
 .device-marker--fault .device-marker__stem {

@@ -128,12 +128,12 @@ const leader = computed(
 .duty-watch__summary-shift {
   padding: 2px 7px;
   background: rgb(0 121 204 / 72%);
-  color: #fff;
+  color: var(--color-text-strong);
   border-radius: 2px;
 }
 
 .duty-watch__summary strong {
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 14px;
 }
 
@@ -160,9 +160,9 @@ const leader = computed(
   height: 32px;
   padding: 0 10px;
   background: rgb(0 22 48 / 75%);
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 2px;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 14px;
   font-family: var(--font-body);
   outline: none;
@@ -196,7 +196,7 @@ const leader = computed(
 .duty-card__name {
   font-size: 14px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .duty-card__role {
@@ -213,7 +213,7 @@ const leader = computed(
 .duty-watch__shift {
   display: flex;
   height: 32px;
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -230,7 +230,7 @@ const leader = computed(
 
 .shift-btn--active {
   background: linear-gradient(180deg, rgb(0 130 220 / 88%), rgb(0 90 180 / 88%));
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .duty-watch--drill .duty-watch__select {

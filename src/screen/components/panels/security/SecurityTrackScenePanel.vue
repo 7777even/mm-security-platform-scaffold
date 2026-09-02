@@ -322,7 +322,7 @@ function handleMonitorPlayback() {
 
 .st-card__title {
   font-size: 14px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .st-card__close {
@@ -346,7 +346,7 @@ function handleMonitorPlayback() {
 .st-profile__id {
   font-size: 20px;
   font-weight: 600;
-  color: #f0b429;
+  color: var(--color-warning);
   margin-bottom: 8px;
 }
 
@@ -359,7 +359,7 @@ function handleMonitorPlayback() {
 }
 
 .st-k {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .st-v {
@@ -381,7 +381,7 @@ function handleMonitorPlayback() {
   border: none;
   border-right: 1px solid rgb(0 110 190 / 16%);
   background: rgb(0 22 48 / 62%);
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -393,7 +393,7 @@ function handleMonitorPlayback() {
 
 .st-tab--active {
   background: rgb(0 148 236 / 16%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .st-body {
@@ -424,7 +424,7 @@ function handleMonitorPlayback() {
 }
 
 .st-timeline__filter-label {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .st-timeline__filter-value {
@@ -449,17 +449,17 @@ function handleMonitorPlayback() {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #37cfff;
+  background: var(--map-marker-cyan);
   box-shadow: 0 0 8px rgb(55 207 255 / 40%);
 }
 
 .st-timeline__dot--enter {
-  background: #3dd68c;
+  background: var(--color-success);
   box-shadow: 0 0 8px rgb(61 214 140 / 40%);
 }
 
 .st-timeline__dot--exit {
-  background: #ff5a4a;
+  background: var(--color-danger);
 }
 
 .st-timeline__head {
@@ -471,13 +471,13 @@ function handleMonitorPlayback() {
 
 .st-timeline__location {
   font-size: 13px;
-  color: #fff;
+  color: var(--color-text-strong);
   font-weight: 500;
 }
 
 .st-timeline__status {
   font-size: 11px;
-  color: #6acab2;
+  color: var(--accent-cyan);
   padding: 1px 6px;
   border: 1px solid rgb(106 202 178 / 40%);
   border-radius: 2px;
@@ -485,7 +485,7 @@ function handleMonitorPlayback() {
 
 .st-timeline__time {
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   margin-bottom: 6px;
 }
 
@@ -506,7 +506,7 @@ function handleMonitorPlayback() {
 
 .st-timeline__hint {
   font-size: 11px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   margin-bottom: 6px;
 }
 
@@ -516,7 +516,7 @@ function handleMonitorPlayback() {
   border: 1px solid rgb(0 130 210 / 35%);
   border-radius: 2px;
   background: rgb(0 28 58 / 65%);
-  color: #0af;
+  color: var(--color-accent-2);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -566,15 +566,15 @@ function handleMonitorPlayback() {
   height: 24px;
   padding: 0 10px;
   border-radius: 2px;
-  border: 1px solid rgb(0 180 255 / 35%);
+  border: 1px solid var(--panel-border);
   background: rgb(0 55 100 / 50%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
 }
 
 .st-entity-type {
   font-size: 12px;
-  color: #6acab2;
+  color: var(--accent-cyan);
 }
 
 .st-range {
@@ -654,7 +654,7 @@ function handleMonitorPlayback() {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #f0b429;
+  background: var(--color-warning);
   box-shadow: 0 0 14px rgb(240 180 41 / 35%);
   transition: left 0.12s linear;
 }
@@ -681,7 +681,7 @@ function handleMonitorPlayback() {
 .st-speed-btn--active {
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 45%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .st-exit {
@@ -690,7 +690,7 @@ function handleMonitorPlayback() {
   border-radius: 2px;
   border: 1px solid rgb(0 148 236 / 35%);
   background: rgb(0 28 58 / 65%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;

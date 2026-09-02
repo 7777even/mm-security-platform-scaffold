@@ -25,11 +25,11 @@ const { cleanMode, toggleCleanMode } = useMapCleanMode();
   width: 104px;
   min-height: 39px;
   margin-top: 1px;
-  border: 1px solid rgb(44 163 255 / 58%);
+  border: 1px solid var(--map-clean-btn-border);
   border-radius: 2px;
   background: linear-gradient(180deg, rgb(8 52 99 / 92%), rgb(4 28 61 / 94%));
-  box-shadow: 0 0 12px rgb(0 144 255 / 16%);
-  color: #ccecff;
+  box-shadow: 0 0 12px var(--map-clean-btn-glow);
+  color: var(--map-clean-btn-fg);
   font-family: var(--font-body);
   font-size: 13px;
   cursor: pointer;
@@ -40,13 +40,13 @@ const { cleanMode, toggleCleanMode } = useMapCleanMode();
 }
 
 .map-clean-mode-trigger:hover {
-  border-color: #55c9ff;
+  border-color: var(--map-clean-btn-border-hover);
   background: linear-gradient(180deg, rgb(12 91 160 / 95%), rgb(5 53 112 / 96%));
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .map-clean-mode-trigger span {
-  color: #63d8ff;
+  color: var(--map-clean-btn-icon);
   font-size: 15px;
   line-height: 1;
 }

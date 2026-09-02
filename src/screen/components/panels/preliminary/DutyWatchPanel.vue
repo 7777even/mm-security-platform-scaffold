@@ -99,9 +99,9 @@ const avatarClips = computed(() =>
   height: 32px;
   padding: 0 28px 0 10px;
   background: rgb(0 22 48 / 75%);
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 2px;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 14px;
   font-family: var(--font-body);
   outline: none;
@@ -146,7 +146,7 @@ const avatarClips = computed(() =>
 .duty-card__name {
   font-size: 14px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
@@ -166,7 +166,7 @@ const avatarClips = computed(() =>
 .duty-watch__shift {
   display: flex;
   height: 32px;
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -183,6 +183,6 @@ const avatarClips = computed(() =>
 
 .shift-btn--active {
   background: linear-gradient(180deg, rgb(0 130 220 / 88%), rgb(0 90 180 / 88%));
-  color: #fff;
+  color: var(--color-text-strong);
 }
 </style>

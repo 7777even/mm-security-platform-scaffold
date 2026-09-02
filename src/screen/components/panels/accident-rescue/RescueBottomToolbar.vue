@@ -109,10 +109,10 @@ function handleItemClick(id: string) {
   height: 28px;
   margin-bottom: 28px;
   padding: 0;
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 2px;
   background: rgb(0 22 48 / 88%);
-  color: #4f8dd3;
+  color: var(--map-facility-btn-fg);
   font-size: 16px;
   cursor: pointer;
 }
@@ -120,7 +120,7 @@ function handleItemClick(id: string) {
 .rescue-bottom-toolbar--drill .rescue-bottom-toolbar__collapse {
   border-color: rgb(236 166 65 / 42%);
   background: rgb(52 36 10 / 88%);
-  color: #eca641;
+  color: var(--accent-gold);
 }
 
 .rescue-bottom-toolbar__collapse-icon--open {
@@ -135,7 +135,7 @@ function handleItemClick(id: string) {
   gap: 6px;
   width: 98px;
   padding: 8px 4px 6px;
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 2px;
   background: linear-gradient(180deg, rgb(0 28 58 / 92%), rgb(0 14 32 / 95%));
   cursor: pointer;
@@ -179,6 +179,6 @@ function handleItemClick(id: string) {
 }
 
 .rescue-bottom-toolbar--drill .rescue-bottom-toolbar__label {
-  color: #ffd9a0;
+  color: var(--map-route-orange-text-soft);
 }
 </style>

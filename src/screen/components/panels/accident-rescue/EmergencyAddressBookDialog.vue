@@ -198,13 +198,13 @@ function isChildVisible(label: string): boolean {
   justify-content: space-between;
   flex-shrink: 0;
   padding: 12px 14px;
-  border-bottom: 1px solid rgb(0 110 190 / 35%);
+  border-bottom: 1px solid var(--panel-head-line);
 }
 
 .address-book__title {
   margin: 0;
   font-size: 20px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .address-book__close {
@@ -219,7 +219,7 @@ function isChildVisible(label: string): boolean {
 }
 
 .address-book__close:hover {
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .address-book__body {
@@ -244,10 +244,10 @@ function isChildVisible(label: string): boolean {
   height: 32px;
   padding: 0 10px;
   box-sizing: border-box;
-  border: 1px solid rgb(0 110 190 / 35%);
+  border: 1px solid var(--panel-head-line);
   border-radius: 4px;
   background: rgb(0 20 45 / 82%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   outline: none;
@@ -299,7 +299,7 @@ function isChildVisible(label: string): boolean {
 
 .address-book__tree-leaf--active {
   background: linear-gradient(90deg, rgb(0 90 170 / 55%), rgb(0 50 100 / 35%));
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .address-book__chevron {
@@ -407,7 +407,7 @@ function isChildVisible(label: string): boolean {
 .address-book__name {
   font-size: 14px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .address-book__role {
@@ -443,7 +443,7 @@ function isChildVisible(label: string): boolean {
 
 .address-book__action:hover {
   border-color: rgb(0 166 244 / 58%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .address-book__empty {

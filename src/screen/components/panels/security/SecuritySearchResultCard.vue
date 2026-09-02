@@ -145,8 +145,8 @@ function handleActionClick(event: Event, label: string) {
   gap: 10px;
   padding: 8px 10px;
   flex-shrink: 0;
-  background: rgb(0 25 55 / 65%);
-  border: 1px solid rgb(0 100 180 / 25%);
+  background: var(--alarm-card-bg);
+  border: 1px solid var(--alarm-card-border);
   border-radius: 2px;
   cursor: pointer;
   text-align: left;
@@ -200,25 +200,25 @@ function handleActionClick(event: Event, label: string) {
   margin: 0;
   font-size: 14px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .search-card__title--danger {
-  color: #ff5a4a;
+  color: var(--color-danger);
 }
 
 .search-card__title--warning {
-  color: #f0b429;
+  color: var(--color-warning);
 }
 
 .search-card__title--safe {
-  color: #37cfff;
+  color: var(--map-marker-cyan);
 }
 
 .search-card__tag,
 .search-card__status {
   font-size: 11px;
-  color: #fff;
+  color: var(--color-text-strong);
   padding: 1px 6px;
   border: 1px solid rgb(255 255 255 / 35%);
   border-radius: 2px;
@@ -226,7 +226,7 @@ function handleActionClick(event: Event, label: string) {
 
 .search-card__status {
   margin-left: auto;
-  color: #6acab2;
+  color: var(--accent-cyan);
   border-color: rgb(106 202 178 / 45%);
 }
 
@@ -247,7 +247,7 @@ function handleActionClick(event: Event, label: string) {
   padding: 0;
   border: none;
   background: transparent;
-  color: #0af;
+  color: var(--color-accent-2);
   font-size: 12px;
   white-space: nowrap;
   cursor: pointer;

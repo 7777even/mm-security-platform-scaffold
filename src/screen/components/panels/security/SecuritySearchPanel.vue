@@ -184,13 +184,13 @@ function onUploadClick() {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
 .search-panel__count {
   font-size: 13px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   white-space: nowrap;
 }
 
@@ -233,7 +233,7 @@ function onUploadClick() {
   border: 1px dashed rgb(0 140 220 / 45%);
   border-radius: 4px;
   background: rgb(0 28 58 / 45%);
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -250,7 +250,7 @@ function onUploadClick() {
 .search-panel__upload-icon {
   width: 20px;
   height: 20px;
-  color: #37cfff;
+  color: var(--map-marker-cyan);
 }
 
 .search-panel__upload-hint {
@@ -266,16 +266,16 @@ function onUploadClick() {
 
 .search-panel__label {
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .search-panel__input {
   height: 32px;
   padding: 0 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #fff;
+  background: var(--btn-bg);
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   outline: none;
@@ -307,9 +307,9 @@ function onUploadClick() {
 .search-panel__btn {
   height: 32px;
   padding: 0 12px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -318,8 +318,8 @@ function onUploadClick() {
 }
 
 .search-panel__btn--primary {
-  color: #fff;
-  border-color: rgb(0 180 255 / 45%);
+  color: var(--color-text-strong);
+  border-color: var(--border-glow);
   background: rgb(0 90 160 / 45%);
 }
 

@@ -184,17 +184,17 @@ const maintenanceRows = computed(() => [
 .brigade-detail__tab {
   height: 28px;
   padding: 0 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 55%);
-  color: #8aa4c4;
+  background: var(--stat-card-icon-bg);
+  color: var(--map-device-offline);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
 }
 
 .brigade-detail__tab--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 50%);
 }
@@ -241,12 +241,12 @@ const maintenanceRows = computed(() => [
 
 .detail-row__label {
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .detail-row__value {
   font-size: 13px;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1.4;
   word-break: break-word;
 }
@@ -287,14 +287,14 @@ const maintenanceRows = computed(() => [
 }
 
 .crew-table th {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-weight: 500;
   padding-bottom: 6px;
   border-bottom: 1px solid rgb(0 120 200 / 18%);
 }
 
 .crew-table td {
-  color: #fff;
+  color: var(--color-text-strong);
   padding-top: 8px;
   padding-bottom: 8px;
 }

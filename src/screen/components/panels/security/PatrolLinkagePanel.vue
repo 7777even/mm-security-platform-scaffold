@@ -107,7 +107,7 @@ function handleMore() {
 
 .patrol-zone__label {
   font-size: 11px;
-  color: #c4dcff;
+  color: var(--map-popup-text-blue);
   text-align: center;
   line-height: 1.3;
 }
@@ -137,7 +137,7 @@ function handleMore() {
 }
 
 .patrol-zone:hover .patrol-zone__icon {
-  color: #fff;
+  color: var(--color-text-strong);
   box-shadow:
     inset 0 0 12px rgb(0 183 255 / 26%),
     0 0 12px rgb(0 174 255 / 20%);

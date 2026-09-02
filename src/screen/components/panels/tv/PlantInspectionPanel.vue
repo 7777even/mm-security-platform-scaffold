@@ -267,7 +267,7 @@ function personThumbStyle(index: number) {
 .capture-row__title strong {
   font-size: 15px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .capture-row__title span {
@@ -276,7 +276,7 @@ function personThumbStyle(index: number) {
   padding: 1px 8px;
   border-radius: 2px;
   font-size: 11px;
-  color: #fff;
+  color: var(--color-text-strong);
   background: rgb(0 120 220 / 85%);
 }
 
@@ -293,7 +293,7 @@ function personThumbStyle(index: number) {
   gap: 8px;
   margin-top: 6px;
   font-size: 12px;
-  color: #8795b0;
+  color: var(--color-text-muted);
 }
 
 .plant-inspection__empty {
@@ -301,7 +301,7 @@ function personThumbStyle(index: number) {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #8795b0;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 </style>

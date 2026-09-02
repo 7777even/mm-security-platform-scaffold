@@ -181,7 +181,7 @@ const scrollClass = computed(() => (props.theme === 'drill' ? 'dr-scroll' : 'ar-
   grid-template-columns: repeat(3, 1fr);
   flex-shrink: 0;
   height: 32px;
-  border: 1px solid rgb(0 110 190 / 35%);
+  border: 1px solid var(--panel-head-line);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -191,7 +191,7 @@ const scrollClass = computed(() => (props.theme === 'drill' ? 'dr-scroll' : 'ar-
   padding: 0;
   border: none;
   border-right: 1px solid rgb(0 110 190 / 28%);
-  background: rgb(0 22 48 / 82%);
+  background: var(--map-facility-btn-bg);
   color: #a8b8cc;
   font-size: 12px;
   font-family: var(--font-body);
@@ -203,7 +203,7 @@ const scrollClass = computed(() => (props.theme === 'drill' ? 'dr-scroll' : 'ar-
 }
 
 .dynamics-panel__tab--active {
-  color: #fff;
+  color: var(--color-text-strong);
   font-weight: 500;
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
 }
@@ -230,7 +230,7 @@ const scrollClass = computed(() => (props.theme === 'drill' ? 'dr-scroll' : 'ar-
   padding-top: 10px;
   font-size: 11px;
   line-height: 1.4;
-  color: #4f8dd3;
+  color: var(--map-facility-btn-fg);
   text-align: center;
 }
 
@@ -266,12 +266,12 @@ const scrollClass = computed(() => (props.theme === 'drill' ? 'dr-scroll' : 'ar-
 }
 
 .dynamics-list--drill .dynamics-card__title {
-  color: #eca641;
+  color: var(--accent-gold);
 }
 
 .dynamics-card__tag {
   margin-left: 4px;
-  color: #fff;
+  color: var(--color-text-strong);
   font-weight: 400;
 }
 
@@ -289,7 +289,7 @@ const scrollClass = computed(() => (props.theme === 'drill' ? 'dr-scroll' : 'ar-
   margin: 0 0 8px;
   font-size: 13px;
   line-height: 1.55;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .dynamics-card__reply {
@@ -322,7 +322,7 @@ const scrollClass = computed(() => (props.theme === 'drill' ? 'dr-scroll' : 'ar-
 }
 
 .dynamics-list--drill .dynamics-card__responder {
-  color: #eca641;
+  color: var(--accent-gold);
 }
 
 .dynamics-card__reply-text {
@@ -330,7 +330,7 @@ const scrollClass = computed(() => (props.theme === 'drill' ? 'dr-scroll' : 'ar-
 }
 
 .dynamics-list--drill .dynamics-card__reply-text {
-  color: #ffd9a0;
+  color: var(--map-route-orange-text-soft);
 }
 
 .dynamics-card__media {
@@ -447,7 +447,7 @@ const scrollClass = computed(() => (props.theme === 'drill' ? 'dr-scroll' : 'ar-
   align-items: center;
   justify-content: space-between;
   padding: 11px 15px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .dynamics-preview header button {

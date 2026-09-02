@@ -404,7 +404,7 @@ function onFilePick() {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .eem-dialog__close {
@@ -420,7 +420,7 @@ function onFilePick() {
 }
 
 .eem-dialog__close:hover {
-  color: #fff;
+  color: var(--color-text-strong);
   background: rgb(255 255 255 / 6%);
 }
 
@@ -628,12 +628,12 @@ function onFilePick() {
 .eem-btn--primary {
   border: 1px solid var(--eem-btn-primary-border);
   background: var(--eem-btn-primary);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .eem-btn--ghost {
   border: 1px solid var(--eem-border-strong);
-  background: rgb(0 25 55 / 65%);
+  background: var(--alarm-card-bg);
   color: #c8dcec;
 }
 

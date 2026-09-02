@@ -142,13 +142,13 @@ function handleSelect(id: number) {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
 .equip-list__count {
   font-size: 13px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   white-space: nowrap;
 }
 
@@ -185,10 +185,10 @@ function handleSelect(id: number) {
 .equip-list__select {
   height: 30px;
   padding: 0 8px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #fff;
+  background: var(--btn-bg);
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   outline: none;
@@ -202,9 +202,9 @@ function handleSelect(id: number) {
 .equip-list__btn {
   height: 30px;
   padding: 0 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -213,8 +213,8 @@ function handleSelect(id: number) {
 }
 
 .equip-list__btn--primary {
-  color: #fff;
-  border-color: rgb(0 180 255 / 45%);
+  color: var(--color-text-strong);
+  border-color: var(--border-glow);
   background: rgb(0 90 160 / 45%);
 }
 
@@ -239,7 +239,7 @@ function handleSelect(id: number) {
 .equip-table__head {
   padding: 0 8px 4px;
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   flex-shrink: 0;
 }
 
@@ -249,7 +249,7 @@ function handleSelect(id: number) {
   border: 1px solid rgb(0 130 210 / 18%);
   border-radius: 2px;
   background: rgb(0 24 50 / 45%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-family: var(--font-body);
   cursor: pointer;
   flex-shrink: 0;
@@ -275,7 +275,7 @@ function handleSelect(id: number) {
   display: block;
   margin-top: 2px;
   font-style: normal;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-size: 11px;
 }
 
@@ -291,9 +291,9 @@ function handleSelect(id: number) {
   min-width: 28px;
   height: 28px;
   padding: 0 8px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -306,7 +306,7 @@ function handleSelect(id: number) {
 }
 
 .page-btn--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 55%);
 }

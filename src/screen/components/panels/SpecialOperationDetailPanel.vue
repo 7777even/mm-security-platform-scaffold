@@ -123,17 +123,17 @@ const basicRows = computed(() => [
 .brigade-detail__tab {
   height: 28px;
   padding: 0 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 55%);
-  color: #8aa4c4;
+  background: var(--stat-card-icon-bg);
+  color: var(--map-device-offline);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
 }
 
 .brigade-detail__tab--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 50%);
 }
@@ -157,12 +157,12 @@ const basicRows = computed(() => [
 
 .detail-row__label {
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .detail-row__value {
   font-size: 12px;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1.4;
   word-break: break-word;
 }
@@ -193,12 +193,12 @@ const basicRows = computed(() => [
 .detail-card__title {
   font-size: 13px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .detail-card__meta {
   margin-top: 4px;
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 </style>

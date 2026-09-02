@@ -87,16 +87,16 @@ const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(() => {
 .brigade-marker__label {
   padding: 2px 8px;
   border-radius: 2px;
-  background: rgb(0 22 48 / 82%);
+  background: var(--map-facility-btn-bg);
   border: 1px solid rgb(0 150 240 / 35%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 11px;
   white-space: nowrap;
 }
 
 .brigade-marker--active .brigade-marker__label {
   border-color: rgb(0 200 255 / 75%);
-  box-shadow: 0 0 8px rgb(0 180 255 / 35%);
+  box-shadow: 0 0 8px var(--panel-border);
 }
 
 .brigade-marker__pin {
@@ -152,7 +152,7 @@ const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(() => {
   margin-bottom: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .brigade-popup__row {
@@ -164,7 +164,7 @@ const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(() => {
 .brigade-popup__desc {
   margin-top: 6px;
   font-size: 11px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   line-height: 1.4;
 }
 </style>

@@ -337,7 +337,7 @@ defineExpose({ openVideo });
 }
 
 .tw-aux-item__count--cyan {
-  color: #5ad8ff;
+  color: var(--map-rescue-weather-text);
 }
 
 .tw-aux-item__label {
@@ -418,7 +418,7 @@ defineExpose({ openVideo });
 .tw-shift-btn--active {
   border-color: rgb(0 166 244 / 55%);
   background: rgb(0 150 236 / 16%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .tw-right .tw-video-panel {

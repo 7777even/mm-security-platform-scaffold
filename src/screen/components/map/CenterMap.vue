@@ -242,7 +242,7 @@ function openSituationDetail(item: FireSituationMarkerItem) {
   position: relative;
   padding: 11px;
   font-size: 12px;
-  color: #ffc4c4;
+  color: var(--map-popup-red-text);
   line-height: 1.4;
 }
 
@@ -259,7 +259,7 @@ function openSituationDetail(item: FireSituationMarkerItem) {
 }
 
 .alarm-marker__status-text {
-  color: #d33232;
+  color: var(--map-danger-deep);
 }
 
 .map-controls {

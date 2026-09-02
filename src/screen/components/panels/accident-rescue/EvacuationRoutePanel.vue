@@ -131,7 +131,7 @@ function formatDistance(meters: number) {
   padding: 10px;
   border-radius: 8px;
   border: 1px solid rgb(0 150 236 / 20%);
-  background: rgb(0 22 48 / 55%);
+  background: var(--stat-card-icon-bg);
 }
 
 .evac-panel__stat-label {

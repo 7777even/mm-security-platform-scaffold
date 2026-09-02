@@ -206,7 +206,7 @@ onUnmounted(() => {
   font-size: 38px;
   font-weight: 400;
   letter-spacing: 2px;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1.15;
   white-space: nowrap;
   text-shadow: 0 0 20px rgb(80 170 255 / 55%);
@@ -294,7 +294,7 @@ onUnmounted(() => {
 .nav-item__label {
   font-size: 20px;
   font-weight: 400;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
   line-height: 1;
 }
@@ -321,7 +321,7 @@ onUnmounted(() => {
 .nav-warning__label {
   font-size: 16px;
   font-weight: 400;
-  color: #eca641;
+  color: var(--accent-gold);
   white-space: nowrap;
   font-family: 'Microsoft YaHei', var(--font-body);
 }
@@ -353,7 +353,7 @@ onUnmounted(() => {
 
 .weather__temp {
   font-size: 18px;
-  color: #fff;
+  color: var(--color-text-strong);
   font-family: 'Microsoft YaHei', var(--font-body);
   white-space: nowrap;
 }
@@ -365,7 +365,7 @@ onUnmounted(() => {
 
 .datetime__time {
   font-size: 18px;
-  color: #fff;
+  color: var(--color-text-strong);
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
   font-family: 'Microsoft YaHei', var(--font-body);
@@ -374,7 +374,7 @@ onUnmounted(() => {
 
 .datetime__date {
   font-size: 11px;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1.3;
   font-family: 'Microsoft YaHei', var(--font-body);
   white-space: nowrap;
@@ -404,7 +404,7 @@ onUnmounted(() => {
 
 .user__name {
   font-size: 14px;
-  color: #8795b0;
+  color: var(--color-text-muted);
   white-space: nowrap;
 }
 

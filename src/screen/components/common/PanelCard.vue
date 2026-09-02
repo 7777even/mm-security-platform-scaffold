@@ -97,7 +97,7 @@ const emit = defineEmits<{
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .panel-card__header-extra {
@@ -125,7 +125,7 @@ const emit = defineEmits<{
   gap: 4px;
   font-size: 14px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   text-decoration: none;
 }
 

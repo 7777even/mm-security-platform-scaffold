@@ -67,7 +67,7 @@ const { scaleAreaCount } = usePlantArea();
 .maintenance-orders__value {
   font-size: 26px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -75,6 +75,6 @@ const { scaleAreaCount } = usePlantArea();
 .maintenance-orders__label {
   margin-top: 6px;
   font-size: 13px;
-  color: #c4dcff;
+  color: var(--map-popup-text-blue);
 }
 </style>

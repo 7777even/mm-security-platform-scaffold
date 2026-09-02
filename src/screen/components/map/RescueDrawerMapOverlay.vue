@@ -269,13 +269,13 @@ button.rescue-map-marker__body {
 
 .rescue-map-marker--active .rescue-map-marker__box {
   border-color: rgb(0 200 255 / 75%);
-  box-shadow: 0 0 10px rgb(0 180 255 / 35%);
+  box-shadow: 0 0 10px var(--panel-border);
 }
 
 .rescue-map-marker__title {
   font-size: 11px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1.35;
   word-break: break-word;
 }
@@ -283,7 +283,7 @@ button.rescue-map-marker__body {
 .rescue-map-marker__meta {
   margin-top: 2px;
   font-size: 10px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   line-height: 1.35;
   word-break: break-word;
 }

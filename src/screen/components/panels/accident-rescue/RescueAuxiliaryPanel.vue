@@ -175,12 +175,12 @@ const items = computed(() =>
   font-size: 20px;
   font-weight: 600;
   line-height: 1.2;
-  color: #fff;
+  color: var(--color-text-strong);
   font-variant-numeric: tabular-nums;
 }
 
 .aux-grid--drill .aux-item__value {
-  color: #ffd9a0;
+  color: var(--map-route-orange-text-soft);
 }
 
 .aux-item__label {

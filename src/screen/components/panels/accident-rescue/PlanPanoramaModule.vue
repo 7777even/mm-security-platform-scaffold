@@ -1024,7 +1024,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 
 .ppm__plan-detail {
   flex-shrink: 0;
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 10px;
   white-space: nowrap;
 }
@@ -1071,8 +1071,8 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 .ppm__expand:hover,
 .ppm__modal-btn:hover {
   background: #334155;
-  border-color: #38bdf8;
-  color: #fff;
+  border-color: var(--map-sky);
+  color: var(--color-text-strong);
 }
 
 .ppm__advance-btn:disabled {
@@ -1092,9 +1092,9 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__demo-btn.is-running {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
   background: rgb(2 132 199 / 24%);
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
 }
 
 .ppm__top-scroll {
@@ -1128,7 +1128,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
   border: 1px solid #334155;
   border-radius: 4px;
   background: #1e293b;
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
@@ -1136,8 +1136,8 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__scrollbar__btn:hover {
-  border-color: #38bdf8;
-  color: #fff;
+  border-color: var(--map-sky);
+  color: var(--color-text-strong);
 }
 
 .ppm__scrollbar__rail {
@@ -1154,7 +1154,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
   top: 0;
   height: 100%;
   border-radius: 3px;
-  background: linear-gradient(90deg, #0284c7, #38bdf8);
+  background: linear-gradient(90deg, #0284c7, var(--map-sky));
   box-shadow: 0 0 8px rgb(56 189 248 / 50%);
   cursor: grab;
   transition:
@@ -1219,13 +1219,13 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__pill:hover {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
 }
 
 .ppm__pill.is-active {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
   background: rgb(2 132 199 / 20%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .ppm__pill-dot {
@@ -1236,7 +1236,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__pill--blue .ppm__pill-dot {
-  background: #38bdf8;
+  background: var(--map-sky);
 }
 
 .ppm__pill--cyan .ppm__pill-dot {
@@ -1257,7 +1257,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 
 .ppm__strip-current {
   margin-left: 8px;
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 11px;
   white-space: nowrap;
 }
@@ -1291,13 +1291,13 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__phase-tab:hover {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
 }
 
 .ppm__phase-tab.is-active {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
   background: rgb(2 132 199 / 20%);
-  color: #fff;
+  color: var(--color-text-strong);
   box-shadow: 0 0 10px rgb(56 189 248 / 20%);
 }
 
@@ -1308,7 +1308,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__phase-tab--blue .ppm__phase-tab__dot {
-  background: #38bdf8;
+  background: var(--map-sky);
 }
 
 .ppm__phase-tab--cyan .ppm__phase-tab__dot {
@@ -1421,14 +1421,14 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__node:hover .ppm__node-circle {
-  border-color: #38bdf8;
-  color: #7dd3fc;
+  border-color: var(--map-sky);
+  color: var(--map-sky-soft);
 }
 
 .ppm__node.is-active .ppm__node-circle {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
   background: rgb(2 132 199 / 30%);
-  color: #fff;
+  color: var(--color-text-strong);
   box-shadow:
     0 0 0 4px rgb(56 189 248 / 16%),
     0 0 14px rgb(56 189 248 / 55%);
@@ -1491,7 +1491,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
   border-radius: 50%;
   border: 1px solid #475569;
   background: #1e293b;
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 9px;
   font-weight: 800;
   line-height: 1;
@@ -1499,9 +1499,9 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__node-help:hover {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
   background: rgb(2 132 199 / 30%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .ppm__node-level {
@@ -1515,7 +1515,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__node.is-active .ppm__node-level {
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
 }
 
 .ppm__stage {
@@ -1562,7 +1562,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
   border-radius: 4px;
   background: rgb(56 189 248 / 16%);
   border: 1px solid rgb(56 189 248 / 40%);
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 10px;
   font-weight: 700;
 }
@@ -1628,7 +1628,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 
 .ppm__section__title {
   margin-bottom: 6px;
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 11px;
   font-weight: 700;
 }
@@ -1645,7 +1645,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__action-row input {
-  accent-color: #38bdf8;
+  accent-color: var(--map-sky);
   flex-shrink: 0;
 }
 
@@ -1677,7 +1677,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
   align-items: center;
   gap: 6px;
   margin-top: 6px;
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 11px;
 }
 
@@ -1703,7 +1703,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__roster__group b {
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
 }
 
 .ppm__roster__tags {
@@ -1786,7 +1786,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__action-card:hover {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
   filter: brightness(1.1);
 }
 
@@ -1808,7 +1808,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__action-card--in-progress .ppm__action-card__status {
-  color: #38bdf8;
+  color: var(--map-sky);
 }
 
 .ppm__action-card--completed .ppm__action-card__status {
@@ -1852,7 +1852,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 
 .ppm__variant-switch button.is-active {
   background: rgb(56 189 248 / 20%);
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
 }
 
 /* 方案 A：阶段分区轨道 */
@@ -1904,7 +1904,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__seg.is-active {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
   box-shadow:
     0 0 0 1px rgb(56 189 248 / 40%),
     0 0 14px rgb(56 189 248 / 18%);
@@ -1940,7 +1940,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__seg--blue .ppm__seg-dot {
-  background: #38bdf8;
+  background: var(--map-sky);
 }
 
 .ppm__seg--cyan .ppm__seg-dot {
@@ -1982,8 +1982,8 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__seg-collapsed:hover {
-  border-color: #38bdf8;
-  color: #7dd3fc;
+  border-color: var(--map-sky);
+  color: var(--map-sky-soft);
 }
 
 /* 方案 B：单轨聚焦 */
@@ -2012,8 +2012,8 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__dot-mini:hover {
-  background: #38bdf8;
-  border-color: #38bdf8;
+  background: var(--map-sky);
+  border-color: var(--map-sky);
 }
 
 .ppm__b-chip {
@@ -2024,7 +2024,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
   border-radius: 4px;
   background: rgb(56 189 248 / 18%);
   border: 1px solid rgb(56 189 248 / 40%);
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 10px;
   font-weight: 700;
 }
@@ -2070,7 +2070,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__card.is-active {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
   box-shadow:
     0 0 0 1px rgb(56 189 248 / 40%),
     0 0 14px rgb(56 189 248 / 18%);
@@ -2148,7 +2148,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm-plan-dialog__header span {
-  color: #38bdf8;
+  color: var(--map-sky);
   font-size: 11px;
   font-weight: 700;
 }
@@ -2174,8 +2174,8 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm-plan-dialog__header button:hover {
-  border-color: #38bdf8;
-  color: #fff;
+  border-color: var(--map-sky);
+  color: var(--color-text-strong);
 }
 
 .ppm-plan-dialog__body {
@@ -2224,7 +2224,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 
 .ppm-plan-dialog__body h4 {
   margin: 0 0 6px;
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 12px;
 }
 
@@ -2267,14 +2267,14 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
   border: 1px solid #0284c7;
   border-radius: 4px;
   background: rgb(2 132 199 / 22%);
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font: 700 11px var(--font-body);
   cursor: pointer;
 }
 
 .ppm-plan-dialog__footer button:hover {
   background: #0369a1;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .ppm-plan-dialog-enter-active,

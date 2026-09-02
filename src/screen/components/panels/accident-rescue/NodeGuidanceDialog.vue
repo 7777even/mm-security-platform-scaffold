@@ -187,7 +187,7 @@ const process = useEmergencyProcess();
   border-radius: 50%;
   background: rgb(56 189 248 / 18%);
   border: 1px solid rgb(56 189 248 / 50%);
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 13px;
   font-weight: 800;
   flex-shrink: 0;
@@ -219,7 +219,7 @@ const process = useEmergencyProcess();
 
 :global(.guidance-header__close:hover) {
   background: #334155;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 :global(.guidance-body) {
@@ -248,7 +248,7 @@ const process = useEmergencyProcess();
 }
 
 :global(.guidance-roster__group b) {
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
 }
 
 :global(.guidance-roster__tags) {
@@ -272,7 +272,7 @@ const process = useEmergencyProcess();
 
 :global(.guidance-section__title) {
   margin-bottom: 6px;
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 13px;
   font-weight: 700;
 }
@@ -303,7 +303,7 @@ const process = useEmergencyProcess();
   border-radius: 4px;
   background: rgb(56 189 248 / 14%);
   border: 1px solid rgb(56 189 248 / 40%);
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 10px;
   font-weight: 700;
   white-space: nowrap;
@@ -324,7 +324,7 @@ const process = useEmergencyProcess();
 }
 
 :global(.guidance-chain__arrow) {
-  color: #38bdf8;
+  color: var(--map-sky);
   font-size: 12px;
 }
 
@@ -381,7 +381,7 @@ const process = useEmergencyProcess();
 }
 
 :global(.guidance-role__person) {
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 10px;
 }
 
@@ -417,7 +417,7 @@ const process = useEmergencyProcess();
 }
 
 :global(.guidance-role__check) {
-  color: #38bdf8;
+  color: var(--map-sky);
   font-size: 11px;
   flex-shrink: 0;
 }
@@ -445,10 +445,10 @@ const process = useEmergencyProcess();
   min-width: 96px;
   height: 30px;
   padding: 0 18px;
-  border: 1px solid #38bdf8;
+  border: 1px solid var(--map-sky);
   border-radius: 4px;
   background: linear-gradient(180deg, #0284c7, #0369a1);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 13px;
   font-family: var(--font-body);
   cursor: pointer;

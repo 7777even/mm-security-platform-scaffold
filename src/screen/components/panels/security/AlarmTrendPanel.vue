@@ -104,9 +104,9 @@ const chartOption = computed(() => ({
   height: 28px;
   padding: 0 24px 0 10px;
   background: rgb(0 22 48 / 75%);
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 2px;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 13px;
   font-family: var(--font-body);
   outline: none;

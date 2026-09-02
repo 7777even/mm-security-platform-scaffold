@@ -82,7 +82,7 @@ const statusClass = computed(() => {
 
 .comm-detail__heading {
   margin: 0;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 16px;
   font-weight: 500;
 }
@@ -101,7 +101,7 @@ const statusClass = computed(() => {
 
 .comm-detail__row span {
   flex-shrink: 0;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .comm-detail__row em {
@@ -110,11 +110,11 @@ const statusClass = computed(() => {
 }
 
 .comm-detail__status--在线 {
-  color: #3dd68c;
+  color: var(--color-success);
 }
 
 .comm-detail__status--离线 {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .comm-detail__status--故障 {
@@ -133,7 +133,7 @@ const statusClass = computed(() => {
   height: 32px;
   border: 1px solid rgb(0 120 200 / 30%);
   border-radius: 3px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -141,12 +141,12 @@ const statusClass = computed(() => {
 }
 
 .comm-detail__btn:hover {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 50%);
 }
 
 .comm-detail__btn--primary {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 50%);
   background: rgb(0 90 160 / 50%);
 }

@@ -53,7 +53,7 @@ const sorted = computed(() => [...props.metrics]);
   border: 1px solid rgb(0 120 200 / 20%);
   border-radius: 2px;
   background: rgb(0 40 78 / 45%);
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-size: 12px;
 }
 

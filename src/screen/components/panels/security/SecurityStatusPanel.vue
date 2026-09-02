@@ -153,7 +153,7 @@ function resetDemo() {
   border: 1px solid #ff7179;
   border-radius: 50%;
   background: rgb(180 43 53 / 50%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 20px;
   font-weight: 700;
   box-shadow: 0 0 13px rgb(255 78 88 / 32%);
@@ -173,7 +173,7 @@ function resetDemo() {
 
 .status-summary__copy strong {
   display: block;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 15px;
   line-height: 1.3;
 }
@@ -273,7 +273,7 @@ function resetDemo() {
 }
 
 .disposal-card__head strong {
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 14px;
 }
 

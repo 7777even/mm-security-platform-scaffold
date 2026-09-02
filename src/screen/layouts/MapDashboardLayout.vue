@@ -18,7 +18,7 @@ import SharedCesiumMap from '../components/map/SharedCesiumMap.vue';
   height: 100%;
   min-height: 100vh;
   overflow: hidden;
-  background: #001630;
+  background: var(--color-bg);
 }
 
 .map-dashboard-layout__cesium {

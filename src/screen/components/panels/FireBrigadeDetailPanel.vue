@@ -332,17 +332,17 @@ function statusBadgeClass(status: string): string {
 .brigade-detail__tab {
   height: 28px;
   padding: 0 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 55%);
-  color: #8aa4c4;
+  background: var(--stat-card-icon-bg);
+  color: var(--map-device-offline);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
 }
 
 .brigade-detail__tab--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 50%);
 }
@@ -364,7 +364,7 @@ function statusBadgeClass(status: string): string {
   margin: 10px 0 2px;
   font-size: 13px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .detail-section__title:first-child {
@@ -374,7 +374,7 @@ function statusBadgeClass(status: string): string {
 .detail-section__count {
   font-size: 11px;
   font-weight: 400;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 /* ---- 基础信息：KPI 汇总卡 ---- */
@@ -390,10 +390,10 @@ function statusBadgeClass(status: string): string {
   flex-direction: column;
   gap: 4px;
   padding: 10px 12px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
   background: linear-gradient(180deg, rgb(0 55 105 / 45%), rgb(0 28 58 / 55%));
-  color: #fff;
+  color: var(--color-text-strong);
   font-family: var(--font-body);
   text-align: left;
   cursor: pointer;
@@ -409,7 +409,7 @@ function statusBadgeClass(status: string): string {
 
 .kpi-card__label {
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .kpi-card__value {
@@ -424,7 +424,7 @@ function statusBadgeClass(status: string): string {
   font-size: 12px;
   font-style: normal;
   font-weight: 400;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 /* ---- 基础信息：队伍档案 ---- */
@@ -448,12 +448,12 @@ function statusBadgeClass(status: string): string {
 
 .archive-item__label {
   font-size: 11px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .archive-item__value {
   font-size: 13px;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1.4;
   word-break: break-all;
 }
@@ -480,7 +480,7 @@ function statusBadgeClass(status: string): string {
 }
 
 .summary-strip__item b {
-  color: #fff;
+  color: var(--color-text-strong);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -493,27 +493,27 @@ function statusBadgeClass(status: string): string {
 }
 
 .dot--ok {
-  background: #3dd68c;
+  background: var(--color-success);
   box-shadow: 0 0 4px rgb(61 214 140 / 60%);
 }
 
 .dot--info {
-  background: #00b4ff;
+  background: var(--color-accent);
   box-shadow: 0 0 4px rgb(0 180 255 / 60%);
 }
 
 .dot--warn {
-  background: #eca641;
+  background: var(--accent-gold);
   box-shadow: 0 0 4px rgb(236 166 65 / 60%);
 }
 
 .dot--danger {
-  background: #d33232;
+  background: var(--map-danger-deep);
   box-shadow: 0 0 4px rgb(211 50 50 / 60%);
 }
 
 .dot--muted {
-  background: #8795b0;
+  background: var(--color-text-muted);
 }
 
 /* ---- 子表 ---- */
@@ -525,8 +525,8 @@ function statusBadgeClass(status: string): string {
 
 .sub-table th {
   padding: 5px 6px;
-  border-bottom: 1px solid rgb(0 120 200 / 28%);
-  color: #8aa4c4;
+  border-bottom: 1px solid var(--btn-border);
+  color: var(--map-device-offline);
   font-weight: 500;
   text-align: left;
   white-space: nowrap;
@@ -535,7 +535,7 @@ function statusBadgeClass(status: string): string {
 .sub-table td {
   padding: 6px;
   border-bottom: 1px solid rgb(0 120 200 / 12%);
-  color: #fff;
+  color: var(--color-text-strong);
   vertical-align: middle;
   line-height: 1.35;
 }
@@ -593,7 +593,7 @@ function statusBadgeClass(status: string): string {
 .empty-tip {
   padding: 18px 0;
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   text-align: center;
 }
 </style>

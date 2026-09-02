@@ -193,7 +193,7 @@ function handleVideoWall() {
   gap: 12px;
   flex-shrink: 0;
   padding: 12px 16px;
-  border-bottom: 1px solid rgb(0 110 190 / 35%);
+  border-bottom: 1px solid var(--panel-head-line);
   background: rgb(0 18 40 / 60%);
 }
 
@@ -208,7 +208,7 @@ function handleVideoWall() {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
@@ -216,10 +216,10 @@ function handleVideoWall() {
   position: relative;
   height: 30px;
   padding: 0 12px;
-  border: 1px solid rgb(0 180 255 / 45%);
+  border: 1px solid var(--border-glow);
   border-radius: 2px;
   background: rgb(0 90 160 / 35%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -234,7 +234,7 @@ function handleVideoWall() {
   height: 18px;
   padding: 0 4px;
   border-radius: 9px;
-  background: #f0b429;
+  background: var(--color-warning);
   color: #1a1200;
   font-size: 11px;
   font-weight: 700;
@@ -293,7 +293,7 @@ function handleVideoWall() {
 }
 
 .camera-list__table th {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-weight: 500;
 }
 
@@ -306,22 +306,22 @@ function handleVideoWall() {
 }
 
 .camera-list__status--normal {
-  color: #3dd68c;
+  color: var(--color-success);
 }
 
 .camera-list__status--offline {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .camera-list__status--fault {
-  color: #f0b429;
+  color: var(--color-warning);
 }
 
 .camera-list__action {
   padding: 0;
   border: none;
   background: transparent;
-  color: #0af;
+  color: var(--color-accent-2);
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
@@ -348,9 +348,9 @@ function handleVideoWall() {
   min-width: 28px;
   height: 28px;
   padding: 0 8px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -363,7 +363,7 @@ function handleVideoWall() {
 }
 
 .camera-list__page-btn--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 55%);
 }

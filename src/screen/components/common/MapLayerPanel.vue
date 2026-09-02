@@ -112,10 +112,10 @@ function rowClass(node: MapLayerNode) {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid #4a90e2;
+  border: 1px solid var(--map-layer-border);
   border-radius: 4px;
-  background: #fff;
-  box-shadow: 0 10px 28px rgb(0 40 90 / 28%);
+  background: var(--color-text-strong);
+  box-shadow: 0 10px 28px var(--map-layer-shadow);
   pointer-events: auto;
   font-size: 13px;
 }
@@ -126,7 +126,7 @@ function rowClass(node: MapLayerNode) {
   gap: 6px;
   flex-shrink: 0;
   padding: 8px 10px;
-  border-bottom: 1px solid #dbe7f8;
+  border-bottom: 1px solid var(--map-layer-divider);
 }
 
 .map-layer-panel__collapse {
@@ -135,7 +135,7 @@ function rowClass(node: MapLayerNode) {
 }
 
 .map-layer-panel__root {
-  color: #1f2d3d;
+  color: var(--map-layer-text);
   font-weight: 600;
 }
 
@@ -153,7 +153,7 @@ function rowClass(node: MapLayerNode) {
 .map-layer-panel__wireframe {
   flex-shrink: 0;
   padding: 6px 10px;
-  border-bottom: 1px dashed #dbe7f8;
+  border-bottom: 1px dashed var(--map-layer-divider);
 }
 
 .map-layer-panel__list {
@@ -190,7 +190,7 @@ function rowClass(node: MapLayerNode) {
 
 .map-layer-panel__group:hover,
 .map-layer-panel__leaf:hover {
-  background: #eef4fc;
+  background: var(--map-layer-hover-bg);
 }
 
 .map-layer-panel__group--expanded .map-layer-panel__arrow {
@@ -200,14 +200,14 @@ function rowClass(node: MapLayerNode) {
 .map-layer-panel__arrow {
   width: 12px;
   flex-shrink: 0;
-  color: #8a99a8;
+  color: var(--map-layer-text-muted);
   font-size: 10px;
   transition: transform 0.18s ease;
 }
 
 .map-layer-panel__icon {
   flex-shrink: 0;
-  color: #8a99a8;
+  color: var(--map-layer-text-muted);
   font-size: 12px;
 }
 
@@ -230,11 +230,11 @@ function rowClass(node: MapLayerNode) {
 }
 
 .map-layer-panel__row--active {
-  background: #e6f0ff;
+  background: var(--map-layer-active-bg);
 }
 
 .map-layer-panel__row--active .map-layer-panel__label {
-  color: #1a73e8;
+  color: var(--map-layer-active-fg);
   font-weight: 600;
 }
 
@@ -242,7 +242,7 @@ function rowClass(node: MapLayerNode) {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
-  accent-color: #1a73e8;
+  accent-color: var(--map-layer-active-fg);
   cursor: pointer;
 }
 
@@ -251,7 +251,7 @@ function rowClass(node: MapLayerNode) {
   gap: 8px;
   flex-shrink: 0;
   padding: 8px 10px;
-  border-top: 1px solid #dbe7f8;
+  border-top: 1px solid var(--map-layer-divider);
 }
 
 .map-layer-panel__action {
@@ -260,14 +260,14 @@ function rowClass(node: MapLayerNode) {
   border: 1px solid #b8cfe8;
   border-radius: 3px;
   background: #f4f8fd;
-  color: #2c5f9e;
+  color: var(--map-layer-action-fg);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
 }
 
 .map-layer-panel__action:hover {
-  border-color: #4a90e2;
-  background: #e6f0ff;
+  border-color: var(--map-layer-border);
+  background: var(--map-layer-active-bg);
 }
 </style>

@@ -60,7 +60,7 @@ import MaintenanceOrderPanel from './MaintenanceOrderPanel.vue';
   width: 3px;
   height: 12px;
   border-radius: 1px;
-  background: #00b4ff;
+  background: var(--color-accent);
   box-shadow: 0 0 7px rgb(0 180 255 / 70%);
 }
 

@@ -214,7 +214,7 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
   background: linear-gradient(155deg, rgb(72 18 18 / 94%) 0%, rgb(32 8 12 / 92%) 100%);
   border: 1px solid rgb(200 70 70 / 42%);
   border-radius: 6px;
-  box-shadow: inset 0 0 10px rgb(255 110 110 / 6%);
+  box-shadow: inset 0 0 10px var(--map-popup-red-glow);
   pointer-events: auto;
   overflow: hidden;
 }
@@ -233,7 +233,7 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
 
 .alarm-marker__popup--drill .alarm-marker__field,
 .alarm-marker__popup--drill .alarm-marker__label {
-  color: #ffd9a0;
+  color: var(--map-route-orange-text-soft);
 }
 
 .alarm-marker__popup--drill .alarm-marker__dispose-btn {
@@ -245,7 +245,7 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
   margin: 0;
   font-size: 14px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1.35;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -260,7 +260,7 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
   align-items: start;
   font-size: 12px;
   line-height: 1.25;
-  color: #ffc4c4;
+  color: var(--map-popup-red-text);
 }
 
 .alarm-marker__field--status {
@@ -269,7 +269,7 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
 
 .alarm-marker__label {
   flex-shrink: 0;
-  color: #ffc4c4;
+  color: var(--map-popup-red-text);
   white-space: nowrap;
 }
 
@@ -298,7 +298,7 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
 }
 
 .alarm-marker__status-text {
-  color: #d33232;
+  color: var(--map-danger-deep);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -306,11 +306,11 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
 }
 
 .alarm-marker__status-text--warning {
-  color: #eca641;
+  color: var(--accent-gold);
 }
 
 .alarm-marker__status-text--done {
-  color: #3dd68c;
+  color: var(--color-success);
 }
 
 .alarm-marker__dispose-btn {
@@ -321,7 +321,7 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
   border-radius: 2px;
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
   font-size: 11px;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1.25;
   cursor: pointer;
   white-space: nowrap;
@@ -356,7 +356,7 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
 .alarm-marker__popup--drill .alarm-marker__view-btn {
   border-color: rgb(236 166 65 / 42%);
   background: rgb(52 36 10 / 78%);
-  color: #eca641;
+  color: var(--accent-gold);
 }
 
 .alarm-marker__popup--drill .alarm-marker__view-btn:hover {

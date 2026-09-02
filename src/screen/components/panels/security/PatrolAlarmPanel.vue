@@ -86,9 +86,9 @@ const visiblePatrolAlarms = areaScopedItems(patrolAlarms);
   height: 30px;
   padding: 0 24px 0 10px;
   background: rgb(0 22 48 / 75%);
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 2px;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 13px;
   font-family: var(--font-body);
   outline: none;
@@ -145,15 +145,15 @@ const visiblePatrolAlarms = areaScopedItems(patrolAlarms);
 }
 
 .patrol-alarm-card__title--danger {
-  color: #ff5a4a;
+  color: var(--color-danger);
 }
 
 .patrol-alarm-card__title--warning {
-  color: #f0b429;
+  color: var(--color-warning);
 }
 
 .patrol-alarm-card__title--success {
-  color: #3dd68c;
+  color: var(--color-success);
 }
 
 .patrol-alarm-card__row {
@@ -180,19 +180,19 @@ const visiblePatrolAlarms = areaScopedItems(patrolAlarms);
 }
 
 .patrol-alarm-card__status--pending {
-  color: #d8e4f4;
+  color: var(--color-text);
   background: rgb(0 22 48 / 75%);
   border: 1px solid rgb(160 170 190 / 45%);
 }
 
 .patrol-alarm-card__status--processing {
   color: #1a1200;
-  background: #f0b429;
-  border: 1px solid #f0b429;
+  background: var(--color-warning);
+  border: 1px solid var(--color-warning);
 }
 
 .patrol-alarm-card__status--done {
-  color: #fff;
+  color: var(--color-text-strong);
   background: rgb(35 130 90 / 85%);
   border: 1px solid rgb(61 214 140 / 50%);
 }

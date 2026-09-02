@@ -52,19 +52,19 @@ function handleChange(event: Event) {
   height: 34px;
   padding: 0 8px;
   box-sizing: border-box;
-  border: 1px solid rgb(0 155 235 / 72%);
+  border: 1px solid var(--map-area-select-border);
   border-radius: 2px;
   background: linear-gradient(180deg, rgb(4 48 83 / 95%), rgb(2 28 55 / 96%));
   box-shadow:
-    inset 0 0 13px rgb(0 132 220 / 18%),
-    0 0 10px rgb(0 70 130 / 28%);
-  color: #d7efff;
+    inset 0 0 13px var(--map-area-select-glow-in),
+    0 0 10px var(--map-area-select-glow-out);
+  color: var(--map-area-select-fg);
   font-family: var(--font-body);
 }
 
 .plant-area-selector__icon {
   margin-right: 5px;
-  color: #37c7ff;
+  color: var(--map-area-select-icon);
   font-size: 16px;
   line-height: 1;
 }
@@ -72,7 +72,7 @@ function handleChange(event: Event) {
 .plant-area-selector__label {
   flex-shrink: 0;
   font-size: 12px;
-  color: #9fc9e8;
+  color: var(--map-area-select-label);
 }
 
 .plant-area-selector__select {
@@ -83,16 +83,16 @@ function handleChange(event: Event) {
   padding: 0 20px 0 5px;
   border: 0;
   outline: 0;
-  background: rgb(0 31 62 / 72%);
-  color: #fff;
+  background: var(--map-area-select-field-bg);
+  color: var(--color-text-strong);
   font: inherit;
   font-size: 12px;
   cursor: pointer;
 }
 
 .plant-area-selector__select option {
-  background: #062846;
-  color: #fff;
+  background: var(--map-area-select-option-bg);
+  color: var(--color-text-strong);
 }
 
 :global(.map-page-shell--clean) .plant-area-selector {

@@ -122,7 +122,7 @@ const activeTab = ref<(typeof tabs)[number]['key']>('basic');
 }
 
 .facility-detail__close:hover {
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .facility-detail {
@@ -139,7 +139,7 @@ const activeTab = ref<(typeof tabs)[number]['key']>('basic');
   flex-shrink: 0;
   height: 36px;
   margin-bottom: 8px;
-  border: 1px solid rgb(0 110 190 / 35%);
+  border: 1px solid var(--panel-head-line);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -149,7 +149,7 @@ const activeTab = ref<(typeof tabs)[number]['key']>('basic');
   padding: 0;
   border: none;
   border-right: 1px solid rgb(0 110 190 / 28%);
-  background: rgb(0 22 48 / 82%);
+  background: var(--map-facility-btn-bg);
   color: #a8b8cc;
   font-size: 13px;
   font-family: var(--font-body);
@@ -161,7 +161,7 @@ const activeTab = ref<(typeof tabs)[number]['key']>('basic');
 }
 
 .facility-detail__tab--active {
-  color: #fff;
+  color: var(--color-text-strong);
   font-weight: 500;
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
 }
@@ -185,12 +185,12 @@ const activeTab = ref<(typeof tabs)[number]['key']>('basic');
 }
 
 .facility-detail__code-label {
-  color: #4f8dd3;
+  color: var(--map-facility-btn-fg);
   white-space: nowrap;
 }
 
 .facility-detail__code-value {
-  color: #fff;
+  color: var(--color-text-strong);
   font-weight: 500;
   word-break: break-all;
 }
@@ -206,12 +206,12 @@ const activeTab = ref<(typeof tabs)[number]['key']>('basic');
 }
 
 .facility-detail__label {
-  color: #4f8dd3;
+  color: var(--map-facility-btn-fg);
   white-space: nowrap;
 }
 
 .facility-detail__value {
-  color: #fff;
+  color: var(--color-text-strong);
   word-break: break-all;
 }
 
@@ -233,7 +233,7 @@ const activeTab = ref<(typeof tabs)[number]['key']>('basic');
   height: 14px;
   border: 1px solid rgb(0 130 210 / 45%);
   border-radius: 2px;
-  background: rgb(0 22 48 / 82%);
+  background: var(--map-facility-btn-bg);
   flex-shrink: 0;
 }
 
@@ -259,7 +259,7 @@ const activeTab = ref<(typeof tabs)[number]['key']>('basic');
   padding: 8px 10px;
   border: 1px solid rgb(0 110 190 / 28%);
   border-radius: 2px;
-  background: rgb(0 22 48 / 82%);
+  background: var(--map-facility-btn-bg);
   color: #c8d4e8;
   font-size: 12px;
   font-family: var(--font-body);
@@ -269,7 +269,7 @@ const activeTab = ref<(typeof tabs)[number]['key']>('basic');
 
 .facility-detail__archive-item:hover {
   border-color: rgb(0 130 210 / 45%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .facility-detail__archive-icon {

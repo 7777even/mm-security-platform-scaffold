@@ -169,13 +169,13 @@ function removePerson(item: BlacklistPersonItem) {
   justify-content: space-between;
   flex-shrink: 0;
   padding: 12px 16px;
-  border-bottom: 1px solid rgb(0 110 190 / 35%);
+  border-bottom: 1px solid var(--panel-head-line);
 }
 
 .blacklist__title {
   margin: 0;
   font-size: 20px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .blacklist__close {
@@ -206,17 +206,17 @@ function removePerson(item: BlacklistPersonItem) {
 .blacklist__tab {
   height: 32px;
   padding: 0 18px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #8aa4c4;
+  background: var(--btn-bg);
+  color: var(--map-device-offline);
   font-size: 13px;
   font-family: var(--font-body);
   cursor: pointer;
 }
 
 .blacklist__tab--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 50%);
   background: rgb(0 90 160 / 50%);
 }
@@ -234,7 +234,7 @@ function removePerson(item: BlacklistPersonItem) {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
 }
 
 .blacklist__table th {
@@ -244,14 +244,14 @@ function removePerson(item: BlacklistPersonItem) {
   padding: 10px;
   text-align: left;
   font-weight: 500;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   background: rgb(0 28 58 / 95%);
   border-bottom: 1px solid rgb(0 110 190 / 28%);
 }
 
 .blacklist__table td {
   padding: 10px;
-  border-bottom: 1px solid rgb(0 90 150 / 15%);
+  border-bottom: 1px solid var(--list-divider);
 }
 
 .blacklist__time {
@@ -263,14 +263,14 @@ function removePerson(item: BlacklistPersonItem) {
 }
 
 .blacklist__status--disabled {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .blacklist__row-btn {
   padding: 0;
   border: none;
   background: transparent;
-  color: #0af;
+  color: var(--color-accent-2);
   font-size: 13px;
   font-family: var(--font-body);
   cursor: pointer;

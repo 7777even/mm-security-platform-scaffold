@@ -158,7 +158,7 @@ function isNodeVisible(node: VideoControlTreeNode): boolean {
 .vc-category:hover,
 .vc-category--active {
   background: rgb(0 70 140 / 35%);
-  border-color: rgb(0 180 255 / 35%);
+  border-color: var(--panel-border);
 }
 
 .vc-category__icon-wrap {
@@ -177,7 +177,7 @@ function isNodeVisible(node: VideoControlTreeNode): boolean {
   display: block;
   width: 22px;
   height: 22px;
-  color: #00b4ff;
+  color: var(--color-accent);
 }
 
 .vc-category__icon::before,
@@ -357,7 +357,7 @@ function isNodeVisible(node: VideoControlTreeNode): boolean {
   margin: 0;
   font-size: 16px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .vc-tree__search-btn {
@@ -404,7 +404,7 @@ function isNodeVisible(node: VideoControlTreeNode): boolean {
   border: 1px solid rgb(0 120 200 / 35%);
   border-radius: 2px;
   background: rgb(0 18 40 / 75%);
-  color: #c4dcff;
+  color: var(--map-popup-text-blue);
   font-size: 13px;
   outline: none;
 }
@@ -503,7 +503,7 @@ function isNodeVisible(node: VideoControlTreeNode): boolean {
 .vc-tree__leaf:hover,
 .vc-tree__leaf--active {
   background: rgb(0 90 180 / 35%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .vc-tree__file {
@@ -537,7 +537,7 @@ function isNodeVisible(node: VideoControlTreeNode): boolean {
 .vc-tree__pin {
   flex-shrink: 0;
   padding: 2px 6px;
-  border: 1px solid rgb(0 180 255 / 45%);
+  border: 1px solid var(--border-glow);
   border-radius: 2px;
   background: rgb(0 60 120 / 55%);
   font-size: 11px;

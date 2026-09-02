@@ -81,23 +81,23 @@ const stats = computed(() => ({
 }
 
 .video-analysis__dot--offline {
-  background: #8795b0;
+  background: var(--color-text-muted);
 }
 
 .video-analysis__dot--fault {
-  background: #ff5a4a;
+  background: var(--color-danger);
 }
 
 .video-analysis__label {
   font-size: 14px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .video-analysis__value {
   margin-left: auto;
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-strong);
   font-variant-numeric: tabular-nums;
 }
 

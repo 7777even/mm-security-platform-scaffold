@@ -216,7 +216,7 @@ const layouts: { key: GridLayout; label: string; cols: number }[] = [
 .vc-pager-num--active {
   border-color: rgb(0 200 255 / 65%);
   background: rgb(0 90 180 / 65%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-weight: 600;
 }
 

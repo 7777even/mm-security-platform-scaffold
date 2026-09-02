@@ -230,14 +230,14 @@ function handleAction(item: EmergencyCommandInstruction, event: MouseEvent) {
 
 .er-command-panel__close:hover {
   border-color: rgb(0 166 244 / 66%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .er-command-panel__tabs {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   height: 28px;
-  border: 1px solid rgb(0 110 190 / 35%);
+  border: 1px solid var(--panel-head-line);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -255,7 +255,7 @@ function handleAction(item: EmergencyCommandInstruction, event: MouseEvent) {
 
 .er-command-panel__tab--active {
   background: linear-gradient(180deg, rgb(0 72 130 / 92%), rgb(0 42 82 / 95%));
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .er-command-panel__filters {
@@ -351,7 +351,7 @@ function handleAction(item: EmergencyCommandInstruction, event: MouseEvent) {
 
 .er-command-card__action:hover {
   border-color: rgb(0 166 244 / 58%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .er-command-card__row {
@@ -411,7 +411,7 @@ function handleAction(item: EmergencyCommandInstruction, event: MouseEvent) {
   justify-content: center;
   border-top-left-radius: 4px;
   background: rgb(48 140 78 / 88%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 11px;
   line-height: 1;
 }

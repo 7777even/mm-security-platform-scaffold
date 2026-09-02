@@ -50,9 +50,9 @@ const labelClip = computed(() => footerLabelClip(props.module));
   margin: 0 17px 10px;
   box-sizing: border-box;
   background: linear-gradient(180deg, rgb(0 35 72 / 92%), rgb(0 20 45 / 96%));
-  border: 1px solid rgb(0 130 220 / 28%);
+  border: 1px solid var(--message-bar-border);
   border-radius: 2px;
-  box-shadow: inset 0 1px 0 rgb(0 180 255 / 12%);
+  box-shadow: inset 0 1px 0 var(--color-accent-soft);
 }
 
 .message-bar__label {
@@ -105,7 +105,7 @@ const labelClip = computed(() => footerLabelClip(props.module));
 }
 
 .message-item--danger .message-item__title {
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .message-item--warning .message-item__title {
@@ -113,7 +113,7 @@ const labelClip = computed(() => footerLabelClip(props.module));
 }
 
 .message-item__warn {
-  color: #f0b429;
+  color: var(--color-warning);
   font-size: 12px;
 }
 
@@ -129,7 +129,7 @@ const labelClip = computed(() => footerLabelClip(props.module));
   border: 1px solid rgb(0 180 255 / 40%);
   border-radius: 2px;
   background: rgb(0 80 160 / 30%);
-  color: #00b4ff;
+  color: var(--color-accent);
   font-size: 14px;
   font-family: var(--font-body);
   cursor: pointer;

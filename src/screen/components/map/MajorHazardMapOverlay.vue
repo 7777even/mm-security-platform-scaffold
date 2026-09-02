@@ -74,24 +74,24 @@ function openDetail(item: MajorHazardItem) {
   justify-content: center;
   font-size: 13px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-strong);
   box-shadow: 0 0 10px rgb(0 0 0 / 35%);
 }
 
 .hazard-marker--l1 .hazard-marker__badge {
-  background: #e04838;
+  background: var(--map-hazard-l1);
 }
 
 .hazard-marker--l2 .hazard-marker__badge {
-  background: #e07a28;
+  background: var(--map-hazard-l2);
 }
 
 .hazard-marker--l3 .hazard-marker__badge {
-  background: #d4a820;
+  background: var(--map-hazard-l3);
 }
 
 .hazard-marker--l4 .hazard-marker__badge {
-  background: #2a8fd4;
+  background: var(--map-hazard-l4);
 }
 
 .hazard-marker__stem {
@@ -106,9 +106,9 @@ function openDetail(item: MajorHazardItem) {
   max-width: 140px;
   padding: 2px 6px;
   border-radius: 2px;
-  background: rgb(0 16 36 / 78%);
+  background: var(--map-device-label-bg);
   border: 1px solid rgb(0 140 220 / 28%);
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   font-size: 11px;
   white-space: nowrap;
   overflow: hidden;

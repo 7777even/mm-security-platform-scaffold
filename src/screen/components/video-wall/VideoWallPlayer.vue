@@ -376,7 +376,7 @@ onUnmounted(() => {
   width: 24px;
   height: 24px;
   border: 2px solid rgb(0 130 210 / 35%);
-  border-top-color: #00b4ff;
+  border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 8px;
@@ -465,7 +465,7 @@ onUnmounted(() => {
 }
 
 .camera-name {
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 13px;
   font-weight: bold;
   text-shadow:
@@ -486,7 +486,7 @@ onUnmounted(() => {
 }
 
 .time-stamp {
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 13px;
   font-family: 'Courier New', Courier, monospace;
   font-weight: bold;
@@ -532,7 +532,7 @@ onUnmounted(() => {
 }
 
 .status-text {
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 10px;
   font-weight: bold;
   letter-spacing: 0.5px;
@@ -543,7 +543,7 @@ onUnmounted(() => {
   position: absolute;
   width: 10px;
   height: 10px;
-  border: 1.5px solid #00b4ff;
+  border: 1.5px solid var(--color-accent);
   opacity: 0.4;
   pointer-events: none;
   z-index: 2;

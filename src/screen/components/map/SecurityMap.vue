@@ -417,7 +417,7 @@ function handleGateControlMarkerClick(id: number) {
   position: relative;
   padding: 5px 12px 0 35px;
   font-size: 12px;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
@@ -429,7 +429,7 @@ function handleGateControlMarkerClick(id: number) {
   gap: 4px;
   padding: 8px 10px 0 26px;
   font-size: 12px;
-  color: #6acab2;
+  color: var(--accent-cyan);
   white-space: nowrap;
 }
 
@@ -598,7 +598,7 @@ function handleGateControlMarkerClick(id: number) {
 }
 
 .toolbar-btn--active .toolbar-btn__label {
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .toolbar-btn--active .toolbar-btn__icon-wrap {
@@ -632,7 +632,7 @@ function handleGateControlMarkerClick(id: number) {
 }
 
 .toolbar-btn:hover .toolbar-btn__label {
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .camera-marker {
@@ -788,9 +788,9 @@ function handleGateControlMarkerClick(id: number) {
   margin-bottom: 4px;
   padding: 2px 6px;
   border-radius: 2px;
-  background: rgb(0 16 36 / 78%);
+  background: var(--map-device-label-bg);
   border: 1px solid rgb(0 140 220 / 28%);
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   font-size: 11px;
   white-space: nowrap;
   font-family: var(--font-body);
@@ -803,8 +803,8 @@ function handleGateControlMarkerClick(id: number) {
   font-size: 10px;
   line-height: 15px;
   font-weight: 700;
-  color: #071426;
-  background: #37cfff;
+  color: var(--map-marker-ink);
+  background: var(--map-marker-cyan);
 }
 
 .patrol-marker__name {
@@ -819,14 +819,14 @@ function handleGateControlMarkerClick(id: number) {
   height: 24px;
   border-radius: 50%;
   border: 2px solid rgb(255 255 255 / 90%);
-  background: #37cfff;
+  background: var(--map-marker-cyan);
   box-shadow: 0 0 10px rgb(55 207 255 / 45%);
 }
 
 .patrol-marker__pin :deep(.map-marker-icon) {
   width: 14px;
   height: 14px;
-  color: #071426;
+  color: var(--map-marker-ink);
 }
 
 .patrol-marker__stem {
@@ -847,22 +847,22 @@ function handleGateControlMarkerClick(id: number) {
 
 .patrol-marker--离线 .patrol-marker__pin,
 .patrol-marker--离线 .patrol-marker__breath {
-  background: #8aa4c4;
+  background: var(--map-device-offline);
   box-shadow: none;
 }
 
 .patrol-marker--离线 .patrol-marker__status {
-  background: #8aa4c4;
+  background: var(--map-device-offline);
 }
 
 .patrol-marker--故障 .patrol-marker__pin,
 .patrol-marker--故障 .patrol-marker__breath {
-  background: #f0b429;
+  background: var(--color-warning);
   box-shadow: 0 0 10px rgb(240 180 41 / 40%);
 }
 
 .patrol-marker--故障 .patrol-marker__status {
-  background: #f0b429;
+  background: var(--color-warning);
 }
 
 @keyframes patrol-breath {

@@ -194,7 +194,7 @@ const pieOption = computed(() => ({
   margin-left: auto;
   font-size: 14px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   text-decoration: none;
 }
 
@@ -283,7 +283,7 @@ const pieOption = computed(() => ({
 .entry-stats__pie-value {
   font-size: 20px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1.2;
 }
 
@@ -316,7 +316,7 @@ const pieOption = computed(() => ({
 }
 
 .entry-stats__legend-value {
-  color: #fff;
+  color: var(--color-text-strong);
   font-weight: 500;
 }
 </style>

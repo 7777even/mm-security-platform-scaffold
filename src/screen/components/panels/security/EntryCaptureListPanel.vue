@@ -180,13 +180,13 @@ function toneClass(value?: number) {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
 .capture-list__sub {
   font-size: 13px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   white-space: nowrap;
 }
 
@@ -220,17 +220,17 @@ function toneClass(value?: number) {
 .capture-list__tab {
   height: 28px;
   padding: 0 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 55%);
-  color: #8aa4c4;
+  background: var(--stat-card-icon-bg);
+  color: var(--map-device-offline);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
 }
 
 .capture-list__tab--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 50%);
 }
@@ -245,10 +245,10 @@ function toneClass(value?: number) {
 .capture-list__input {
   height: 30px;
   padding: 0 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #fff;
+  background: var(--btn-bg);
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   outline: none;
@@ -261,9 +261,9 @@ function toneClass(value?: number) {
 .capture-list__btn {
   height: 30px;
   padding: 0 12px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -272,8 +272,8 @@ function toneClass(value?: number) {
 }
 
 .capture-list__btn--primary {
-  color: #fff;
-  border-color: rgb(0 180 255 / 45%);
+  color: var(--color-text-strong);
+  border-color: var(--border-glow);
   background: rgb(0 90 160 / 45%);
 }
 
@@ -292,8 +292,8 @@ function toneClass(value?: number) {
   grid-template-columns: 106px 1fr;
   gap: 10px;
   padding: 8px 10px;
-  background: rgb(0 25 55 / 65%);
-  border: 1px solid rgb(0 100 180 / 25%);
+  background: var(--alarm-card-bg);
+  border: 1px solid var(--alarm-card-border);
   border-radius: 2px;
 }
 
@@ -323,24 +323,24 @@ function toneClass(value?: number) {
   margin: 0;
   font-size: 14px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .capture-card__title--danger {
-  color: #ff5a4a;
+  color: var(--color-danger);
 }
 
 .capture-card__title--warning {
-  color: #f0b429;
+  color: var(--color-warning);
 }
 
 .capture-card__title--safe {
-  color: #37cfff;
+  color: var(--map-marker-cyan);
 }
 
 .capture-card__tag {
   font-size: 11px;
-  color: #fff;
+  color: var(--color-text-strong);
   padding: 1px 6px;
   border: 1px solid rgb(255 255 255 / 28%);
   border-radius: 2px;
@@ -356,12 +356,12 @@ function toneClass(value?: number) {
 }
 
 .capture-card__dir--enter {
-  color: #3dd68c;
+  color: var(--color-success);
   border-color: rgb(61 214 140 / 40%);
 }
 
 .capture-card__dir--exit {
-  color: #37cfff;
+  color: var(--map-marker-cyan);
   border-color: rgb(55 207 255 / 40%);
 }
 
@@ -383,9 +383,9 @@ function toneClass(value?: number) {
   min-width: 28px;
   height: 28px;
   padding: 0 8px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -398,7 +398,7 @@ function toneClass(value?: number) {
 }
 
 .page-btn--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 55%);
 }

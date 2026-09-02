@@ -269,7 +269,7 @@ const infoRows = computed(() => [
 .video-monitor-detail__back:focus-visible {
   border-color: rgb(0 200 255 / 72%);
   background: rgb(0 120 210 / 32%);
-  color: #fff;
+  color: var(--color-text-strong);
   box-shadow: 0 0 8px rgb(0 174 255 / 20%);
   outline: none;
 }
@@ -288,7 +288,7 @@ const infoRows = computed(() => [
   font-size: 18px;
   font-weight: 500;
   line-height: 1.2;
-  color: #fff;
+  color: var(--color-text-strong);
   font-family: var(--font-body);
 }
 
@@ -348,16 +348,16 @@ const infoRows = computed(() => [
   gap: 6px;
   font-size: 14px;
   line-height: 1.4;
-  color: #fff;
+  color: var(--color-text-strong);
   word-break: break-all;
 }
 
 .detail-info__value--online {
-  color: #3dd68c;
+  color: var(--color-success);
 }
 
 .detail-info__value--offline {
-  color: #8795b0;
+  color: var(--color-text-muted);
 }
 
 .detail-info__dot {
@@ -368,12 +368,12 @@ const infoRows = computed(() => [
 }
 
 .detail-info__dot--online {
-  background: #3dd68c;
+  background: var(--color-success);
   box-shadow: 0 0 6px rgb(61 214 140 / 65%);
 }
 
 .detail-info__dot--offline {
-  background: #8795b0;
+  background: var(--color-text-muted);
 }
 
 .detail-placeholder {
@@ -425,7 +425,7 @@ const infoRows = computed(() => [
   padding: 0 10px;
   border: 1px solid rgb(61 214 140 / 45%);
   background: rgb(0 10 24 / 58%);
-  color: #3dd68c;
+  color: var(--color-success);
   font-size: 12px;
   font-weight: 600;
 }
@@ -446,7 +446,7 @@ const infoRows = computed(() => [
   border: 1px solid rgb(0 180 255 / 55%);
   border-radius: 2px;
   background: rgb(0 70 145 / 72%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-family: var(--font-body);
   cursor: pointer;
 }
@@ -454,7 +454,7 @@ const infoRows = computed(() => [
 .detail-video__resume:disabled {
   border-color: rgb(135 149 176 / 35%);
   background: rgb(45 52 65 / 62%);
-  color: #8795b0;
+  color: var(--color-text-muted);
   cursor: not-allowed;
 }
 
@@ -468,7 +468,7 @@ const infoRows = computed(() => [
   box-sizing: border-box;
   border-top: 1px solid rgb(0 100 180 / 26%);
   background: rgb(0 18 40 / 88%);
-  color: #c4dcff;
+  color: var(--map-popup-text-blue);
   font-size: 12px;
   line-height: 29px;
   white-space: nowrap;
@@ -498,7 +498,7 @@ const infoRows = computed(() => [
 .video-monitor-detail__play:disabled {
   border-color: rgb(135 149 176 / 35%);
   background: linear-gradient(180deg, rgb(80 88 104 / 34%), rgb(40 46 58 / 58%));
-  color: #8795b0;
+  color: var(--color-text-muted);
   cursor: not-allowed;
   box-shadow: none;
 }

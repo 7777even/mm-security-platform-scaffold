@@ -382,7 +382,7 @@ function stageAlarmCount(id: string) {
 
 .mp-close:hover {
   border-color: #26c7ff;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .mp-filters {
@@ -430,7 +430,7 @@ function stageAlarmCount(id: string) {
 .mp-kind-tabs button.active {
   border-color: #18bff7;
   background: linear-gradient(180deg, #087ab6, #035c95);
-  color: #fff;
+  color: var(--color-text-strong);
   box-shadow: 0 0 10px rgb(0 181 241 / 18%);
 }
 
@@ -528,7 +528,7 @@ function stageAlarmCount(id: string) {
 }
 
 .mp-chart__value strong {
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 22px;
 }
 
@@ -803,7 +803,7 @@ function stageAlarmCount(id: string) {
 .mp-pagination button.active {
   border-color: #22c3fa;
   background: #0874ac;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .mp-pagination button:disabled {
@@ -898,7 +898,7 @@ function stageAlarmCount(id: string) {
 }
 
 .mp-chart circle:hover {
-  fill: #fff;
+  fill: var(--color-text-strong);
   stroke: #2ed1ff;
   stroke-width: 3;
 }
@@ -1063,7 +1063,7 @@ function stageAlarmCount(id: string) {
   padding: 2px 5px;
   border-radius: 2px;
   background: #7556bf;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 8px;
 }
 

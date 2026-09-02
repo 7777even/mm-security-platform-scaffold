@@ -117,7 +117,7 @@ function handleTest() {
   gap: 12px;
   flex-shrink: 0;
   padding: 12px 16px;
-  border-bottom: 1px solid rgb(0 110 190 / 35%);
+  border-bottom: 1px solid var(--panel-head-line);
   background: rgb(0 18 40 / 60%);
 }
 
@@ -132,7 +132,7 @@ function handleTest() {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -140,7 +140,7 @@ function handleTest() {
 
 .bollard-detail__meta {
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .bollard-detail__close {
@@ -185,7 +185,7 @@ function handleTest() {
 }
 
 .bollard-detail__row span {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .bollard-detail__status {
@@ -197,17 +197,17 @@ function handleTest() {
 }
 
 .bollard-detail__status--normal {
-  color: #3dd68c;
+  color: var(--color-success);
   border-color: rgb(61 214 140 / 40%);
 }
 
 .bollard-detail__status--offline {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   border-color: rgb(140 160 185 / 30%);
 }
 
 .bollard-detail__status--fault {
-  color: #f0b429;
+  color: var(--color-warning);
   border-color: rgb(240 180 41 / 35%);
 }
 
@@ -220,9 +220,9 @@ function handleTest() {
 .bollard-detail__btn {
   height: 34px;
   padding: 0 12px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -231,8 +231,8 @@ function handleTest() {
 }
 
 .bollard-detail__btn--primary {
-  color: #fff;
-  border-color: rgb(0 180 255 / 45%);
+  color: var(--color-text-strong);
+  border-color: var(--border-glow);
   background: rgb(0 90 160 / 45%);
 }
 

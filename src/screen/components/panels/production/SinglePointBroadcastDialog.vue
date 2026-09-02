@@ -154,13 +154,13 @@ function submit() {
   justify-content: space-between;
   flex-shrink: 0;
   padding: 12px 16px;
-  border-bottom: 1px solid rgb(0 110 190 / 35%);
+  border-bottom: 1px solid var(--panel-head-line);
 }
 
 .single-broadcast__title {
   margin: 0;
   font-size: 20px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .single-broadcast__close {
@@ -190,7 +190,7 @@ function submit() {
   flex-shrink: 0;
   width: 76px;
   padding-top: 8px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-size: 13px;
 }
 
@@ -204,23 +204,23 @@ function submit() {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   font-size: 13px;
   cursor: pointer;
 }
 
 .single-broadcast__radio input {
-  accent-color: #00b4ff;
+  accent-color: var(--color-accent);
 }
 
 .single-broadcast__textarea {
   flex: 1;
   min-width: 0;
   padding: 8px 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #fff;
+  background: var(--btn-bg);
+  color: var(--color-text-strong);
   font-size: 13px;
   font-family: var(--font-body);
   outline: none;
@@ -232,10 +232,10 @@ function submit() {
   min-width: 0;
   height: 34px;
   padding: 0 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #fff;
+  background: var(--btn-bg);
+  color: var(--color-text-strong);
   font-size: 13px;
   font-family: var(--font-body);
   outline: none;
@@ -253,9 +253,9 @@ function submit() {
 .single-broadcast__btn {
   height: 34px;
   padding: 0 18px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 4px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 13px;
   font-family: var(--font-body);
@@ -263,7 +263,7 @@ function submit() {
 }
 
 .single-broadcast__btn--primary {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 50%);
   background: rgb(0 90 160 / 50%);
 }

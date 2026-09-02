@@ -94,11 +94,11 @@ const assets = computed(() => getAssets(props.module));
   position: relative;
   font-size: 14px;
   font-weight: 500;
-  color: #4f8dd3;
+  color: var(--map-facility-btn-fg);
   white-space: nowrap;
 }
 
 .map-mode-toggle__btn--active span {
-  color: #fff;
+  color: var(--color-text-strong);
 }
 </style>

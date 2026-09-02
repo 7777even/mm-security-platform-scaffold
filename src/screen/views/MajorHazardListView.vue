@@ -112,7 +112,7 @@ watch(selectedPlantArea, () => void flyToHazards());
   padding: 0 18px;
   border: 1px solid rgb(0 150 230 / 45%);
   border-radius: 2px;
-  background: rgb(0 22 48 / 82%);
+  background: var(--map-facility-btn-bg);
   color: #e8f4ff;
   font-size: 14px;
   font-family: var(--font-body);

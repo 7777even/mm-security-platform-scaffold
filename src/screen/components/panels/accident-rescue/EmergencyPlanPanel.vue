@@ -280,7 +280,7 @@ function closeDetail() {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
@@ -296,7 +296,7 @@ function closeDetail() {
   padding: 0 0 0 8px;
   border: none;
   background: transparent;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   font-size: 11px;
   font-family: var(--font-body);
   line-height: 1;
@@ -348,7 +348,7 @@ function closeDetail() {
   height: 16px;
   line-height: 16px;
   font-size: 10px;
-  color: #fff;
+  color: var(--color-text-strong);
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
   border-radius: 2px;
 }
@@ -357,7 +357,7 @@ function closeDetail() {
   min-width: 0;
   font-size: 11px;
   line-height: 1.2;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -373,7 +373,7 @@ function closeDetail() {
 }
 
 .emergency-plan__value-btn:hover {
-  color: #eca641;
+  color: var(--accent-gold);
   text-decoration: none;
 }
 
@@ -384,7 +384,7 @@ function closeDetail() {
   border: none;
   border-radius: 2px;
   background: transparent;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   font-size: 11px;
   line-height: 1;
   font-family: var(--font-body);
@@ -398,16 +398,16 @@ function closeDetail() {
 
 .emergency-plan__row--current .emergency-plan__label,
 .emergency-plan__row--current .emergency-plan__value {
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .emergency-plan__row--current .emergency-plan__value-btn:hover {
-  color: #eca641;
+  color: var(--accent-gold);
 }
 
 .emergency-plan__row--current .emergency-plan__badge {
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 :global(.plan-detail-overlay) {
@@ -494,7 +494,7 @@ function closeDetail() {
 }
 
 :global(.plan-detail__close:hover) {
-  color: #fff;
+  color: var(--color-text-strong);
   background: rgb(0 120 210 / 25%);
 }
 
@@ -508,9 +508,9 @@ function closeDetail() {
   min-width: 92px;
   height: 30px;
   padding: 0 12px;
-  border: 1px solid rgb(0 110 190 / 35%);
+  border: 1px solid var(--panel-head-line);
   border-right: none;
-  background: rgb(0 22 48 / 82%);
+  background: var(--map-facility-btn-bg);
   color: #a8b8cc;
   font-size: 12px;
   font-family: var(--font-body);
@@ -518,11 +518,11 @@ function closeDetail() {
 }
 
 :global(.plan-detail__tab:last-child) {
-  border-right: 1px solid rgb(0 110 190 / 35%);
+  border-right: 1px solid var(--panel-head-line);
 }
 
 :global(.plan-detail__tab--active) {
-  color: #fff;
+  color: var(--color-text-strong);
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
 }
 
@@ -540,7 +540,7 @@ function closeDetail() {
 
 :global(.plan-detail__section-title) {
   margin: 0 0 6px;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   font-size: 12px;
   line-height: 1.2;
   font-weight: 500;
@@ -577,7 +577,7 @@ function closeDetail() {
 }
 
 :global(.plan-detail__field-value) {
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 11px;
   line-height: 1.2;
   overflow: hidden;

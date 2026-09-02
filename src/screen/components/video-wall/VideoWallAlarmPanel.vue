@@ -178,7 +178,7 @@ const toggleExpand = () => {
 }
 
 .more:hover {
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .section-title {
@@ -241,7 +241,7 @@ const toggleExpand = () => {
 
 .desc {
   flex: 1;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

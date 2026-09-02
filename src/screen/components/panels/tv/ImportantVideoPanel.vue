@@ -314,7 +314,7 @@ function openFeed(feed: VideoFeed) {
   top: 4px;
   min-width: 20px;
   height: 16px;
-  border: 1px solid rgb(0 180 255 / 45%);
+  border: 1px solid var(--border-glow);
   border-radius: 2px;
   background: rgb(0 12 27 / 70%);
   color: #25c9ff;

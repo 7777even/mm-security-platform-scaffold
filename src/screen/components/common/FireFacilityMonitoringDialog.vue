@@ -1421,7 +1421,7 @@ const currentWorkOrderDetail = computed(() => {
   justify-content: space-between;
   flex-shrink: 0;
   padding: 12px 16px;
-  border-bottom: 1px solid rgb(0 110 190 / 35%);
+  border-bottom: 1px solid var(--panel-head-line);
 }
 
 .ffm__header-main {
@@ -1434,7 +1434,7 @@ const currentWorkOrderDetail = computed(() => {
 .ffm__title {
   margin: 0;
   font-size: 20px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .ffm__tabs {
@@ -1447,15 +1447,15 @@ const currentWorkOrderDetail = computed(() => {
   padding: 0 14px;
   border: 1px solid rgb(0 130 210 / 35%);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #8aa4c4;
+  background: var(--btn-bg);
+  color: var(--map-device-offline);
   font-size: 13px;
   font-family: var(--font-body);
   cursor: pointer;
 }
 
 .ffm__tab--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 55%);
 }
@@ -1516,19 +1516,19 @@ const currentWorkOrderDetail = computed(() => {
 
 .ffm__stat-label {
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   white-space: nowrap;
 }
 
 .ffm__stat-value {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
 .ffm__stat-value--danger {
-  color: #ff5a4a;
+  color: var(--color-danger);
 }
 
 .ffm__toolbar {
@@ -1542,10 +1542,10 @@ const currentWorkOrderDetail = computed(() => {
 .ffm__select {
   height: 32px;
   padding: 0 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #fff;
+  background: var(--btn-bg);
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   outline: none;
@@ -1559,9 +1559,9 @@ const currentWorkOrderDetail = computed(() => {
 .ffm__btn {
   height: 32px;
   padding: 0 12px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -1570,8 +1570,8 @@ const currentWorkOrderDetail = computed(() => {
 }
 
 .ffm__btn--primary {
-  color: #fff;
-  border-color: rgb(0 180 255 / 45%);
+  color: var(--color-text-strong);
+  border-color: var(--border-glow);
   background: rgb(0 90 160 / 45%);
 }
 
@@ -1601,12 +1601,12 @@ const currentWorkOrderDetail = computed(() => {
 }
 
 .ffm__card:hover {
-  border-color: rgb(0 180 255 / 45%);
+  border-color: var(--border-glow);
   background: rgb(0 55 100 / 42%);
 }
 
 .ffm__card--alarm {
-  border-left: 3px solid #ff5a4a;
+  border-left: 3px solid var(--color-danger);
 }
 
 .ffm__card--offline {
@@ -1614,7 +1614,7 @@ const currentWorkOrderDetail = computed(() => {
 }
 
 .ffm__card--normal {
-  border-left: 3px solid #37cfff;
+  border-left: 3px solid var(--map-marker-cyan);
 }
 
 .ffm__card-head {
@@ -1629,11 +1629,11 @@ const currentWorkOrderDetail = computed(() => {
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
-  background: #37cfff;
+  background: var(--map-marker-cyan);
 }
 
 .ffm__card--alarm .ffm__card-status {
-  background: #ff5a4a;
+  background: var(--color-danger);
   box-shadow: 0 0 6px rgb(255 90 74 / 60%);
 }
 
@@ -1644,7 +1644,7 @@ const currentWorkOrderDetail = computed(() => {
 .ffm__card-name {
   font-size: 13px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1654,7 +1654,7 @@ const currentWorkOrderDetail = computed(() => {
 
 .ffm__card-state {
   font-size: 11px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   flex-shrink: 0;
 }
 
@@ -1670,12 +1670,12 @@ const currentWorkOrderDetail = computed(() => {
   justify-content: space-between;
   gap: 6px;
   font-size: 11px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .ffm__card-param b {
   font-weight: 600;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   white-space: nowrap;
 }
 
@@ -1684,11 +1684,11 @@ const currentWorkOrderDetail = computed(() => {
 }
 
 .ffm__value--warning {
-  color: #f0b429 !important;
+  color: var(--color-warning) !important;
 }
 
 .ffm__value--danger {
-  color: #ff5a4a !important;
+  color: var(--color-danger) !important;
 }
 
 .ffm__card-foot {
@@ -1701,7 +1701,7 @@ const currentWorkOrderDetail = computed(() => {
 }
 
 .ffm__card-link {
-  color: #0af;
+  color: var(--color-accent-2);
   flex-shrink: 0;
 }
 
@@ -1741,7 +1741,7 @@ const currentWorkOrderDetail = computed(() => {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
 }
 
 .ffm__table th {
@@ -1751,7 +1751,7 @@ const currentWorkOrderDetail = computed(() => {
   padding: 8px;
   text-align: left;
   font-weight: 500;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   background: rgb(0 28 58 / 95%);
   border-bottom: 1px solid rgb(0 110 190 / 28%);
   white-space: nowrap;
@@ -1759,7 +1759,7 @@ const currentWorkOrderDetail = computed(() => {
 
 .ffm__table td {
   padding: 8px;
-  border-bottom: 1px solid rgb(0 90 150 / 15%);
+  border-bottom: 1px solid var(--list-divider);
   vertical-align: middle;
   line-height: 1.45;
 }
@@ -1794,7 +1794,7 @@ const currentWorkOrderDetail = computed(() => {
 }
 
 .level-badge--warning {
-  color: #f0b429;
+  color: var(--color-warning);
   border-color: rgb(240 180 41 / 50%);
 }
 
@@ -1814,7 +1814,7 @@ const currentWorkOrderDetail = computed(() => {
 }
 
 .status-badge--doing {
-  color: #37cfff;
+  color: var(--map-marker-cyan);
   border-color: rgb(55 207 255 / 50%);
 }
 
@@ -1832,7 +1832,7 @@ const currentWorkOrderDetail = computed(() => {
   padding: 0;
   border: none;
   background: transparent;
-  color: #0af;
+  color: var(--color-accent-2);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -1858,7 +1858,7 @@ const currentWorkOrderDetail = computed(() => {
 
 .ffm__total {
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .ffm__pagination {
@@ -1871,9 +1871,9 @@ const currentWorkOrderDetail = computed(() => {
   min-width: 28px;
   height: 28px;
   padding: 0 8px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -1886,7 +1886,7 @@ const currentWorkOrderDetail = computed(() => {
 }
 
 .ffm__page-btn--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 55%);
 }
@@ -1900,9 +1900,9 @@ const currentWorkOrderDetail = computed(() => {
 
 .ffm__back {
   padding: 4px 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -1912,7 +1912,7 @@ const currentWorkOrderDetail = computed(() => {
 .ffm__detail-title {
   margin: 0;
   font-size: 16px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .ffm__detail-content {
@@ -1956,7 +1956,7 @@ const currentWorkOrderDetail = computed(() => {
 
 .ffm__info-value {
   font-size: 13px;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   word-break: break-all;
 }
 
@@ -1982,14 +1982,14 @@ const currentWorkOrderDetail = computed(() => {
   top: 14px;
   bottom: 0;
   width: 2px;
-  background: rgb(0 120 200 / 28%);
+  background: var(--btn-border);
 }
 
 .ffm__timeline-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #0af;
+  background: var(--color-accent-2);
   box-shadow: 0 0 6px rgb(0 170 255 / 55%);
   flex-shrink: 0;
   margin-top: 3px;
@@ -2010,18 +2010,18 @@ const currentWorkOrderDetail = computed(() => {
 
 .ffm__timeline-time {
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   white-space: nowrap;
 }
 
 .ffm__timeline-operator {
   font-size: 12px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .ffm__timeline-action {
   font-size: 12px;
-  color: #0af;
+  color: var(--color-accent-2);
 }
 
 .ffm__timeline-detail {

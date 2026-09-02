@@ -343,7 +343,7 @@ const nodeLabel = (id: string) => process.nodeConfigs.value[id]?.nodeName ?? id;
 }
 
 :global(.nodecfg-header__icon) {
-  color: #38bdf8;
+  color: var(--map-sky);
   font-size: 16px;
 }
 
@@ -366,7 +366,7 @@ const nodeLabel = (id: string) => process.nodeConfigs.value[id]?.nodeName ?? id;
 }
 
 :global(.nodecfg-header__close:hover) {
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 :global(.nodecfg-body) {
@@ -409,13 +409,13 @@ const nodeLabel = (id: string) => process.nodeConfigs.value[id]?.nodeName ?? id;
 }
 
 :global(.nodecfg-node:hover) {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
 }
 
 :global(.nodecfg-node.is-active) {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
   background: rgb(2 132 199 / 18%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 :global(.nodecfg-main) {
@@ -439,7 +439,7 @@ const nodeLabel = (id: string) => process.nodeConfigs.value[id]?.nodeName ?? id;
 
 :global(.nodecfg-section__title) {
   margin-bottom: 8px;
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 13px;
   font-weight: 700;
 }
@@ -468,7 +468,7 @@ const nodeLabel = (id: string) => process.nodeConfigs.value[id]?.nodeName ?? id;
   height: 20px;
   border-radius: 4px;
   background: rgb(56 189 248 / 16%);
-  color: #7dd3fc;
+  color: var(--map-sky-soft);
   font-size: 11px;
   font-weight: 700;
   flex-shrink: 0;
@@ -519,8 +519,8 @@ const nodeLabel = (id: string) => process.nodeConfigs.value[id]?.nodeName ?? id;
 }
 
 :global(.nodecfg-anchor__ops button:hover:not(:disabled)) {
-  color: #38bdf8;
-  border-color: #38bdf8;
+  color: var(--map-sky);
+  border-color: var(--map-sky);
 }
 
 :global(.nodecfg-add-anchor) {
@@ -553,7 +553,7 @@ const nodeLabel = (id: string) => process.nodeConfigs.value[id]?.nodeName ?? id;
 }
 
 :global(.nodecfg-check input) {
-  accent-color: #38bdf8;
+  accent-color: var(--map-sky);
 }
 
 :global(.nodecfg-footer) {
@@ -587,10 +587,10 @@ const nodeLabel = (id: string) => process.nodeConfigs.value[id]?.nodeName ?? id;
 :global(.nodecfg-footer__save) {
   height: 30px;
   padding: 0 20px;
-  border: 1px solid #38bdf8;
+  border: 1px solid var(--map-sky);
   border-radius: 5px;
   background: linear-gradient(180deg, #0284c7, #0369a1);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
   font-weight: 700;
   font-family: var(--font-body);

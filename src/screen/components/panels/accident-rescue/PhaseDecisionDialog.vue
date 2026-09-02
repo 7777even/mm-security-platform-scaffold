@@ -163,6 +163,6 @@ const process = useEmergencyProcess();
 :global(.pd-btn--escalate) {
   border: 1px solid rgb(244 63 94 / 50%);
   background: linear-gradient(180deg, #e11d48, #be123c);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 </style>

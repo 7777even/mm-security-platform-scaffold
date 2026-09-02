@@ -127,26 +127,26 @@ function cellIndex(index: number) {
   height: 30px;
   padding: 0 10px;
   background: rgb(0 0 0 / 55%);
-  border-bottom: 1px solid rgb(0 100 180 / 25%);
+  border-bottom: 1px solid var(--alarm-card-border);
   font-size: 12px;
-  color: #c4dcff;
+  color: var(--map-popup-text-blue);
 }
 
 .vc-cell__index {
   min-width: 22px;
   font-weight: 600;
-  color: #00d4ff;
+  color: var(--color-accent-bright);
   font-variant-numeric: tabular-nums;
 }
 
 .vc-cell__name {
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
 .vc-cell__type {
-  color: #8795b0;
+  color: var(--color-text-muted);
   white-space: nowrap;
 }
 
@@ -163,7 +163,7 @@ function cellIndex(index: number) {
 .vc-cell__time {
   margin-left: auto;
   font-size: 11px;
-  color: #8795b0;
+  color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -198,7 +198,7 @@ function cellIndex(index: number) {
   width: 28px;
   height: 28px;
   border: 2px solid rgb(0 180 255 / 25%);
-  border-top-color: #00d4ff;
+  border-top-color: var(--color-accent-bright);
   border-radius: 50%;
   animation: vc-spin 0.9s linear infinite;
 }
@@ -217,7 +217,7 @@ function cellIndex(index: number) {
 
 .vc-cell__ai-box {
   position: absolute;
-  border: 2px solid #3dd68c;
+  border: 2px solid var(--color-success);
   border-radius: 1px;
   box-shadow: 0 0 6px rgb(61 214 140 / 35%);
 }

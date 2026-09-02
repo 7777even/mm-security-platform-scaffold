@@ -271,7 +271,7 @@ watch(alarmVideoPopupsOpen, (open) => {
 .map-video-card time {
   position: absolute;
   top: 7px;
-  color: #fff;
+  color: var(--color-text-strong);
   font: 9px monospace;
   text-shadow: 0 1px 3px #000;
 }
@@ -313,7 +313,7 @@ watch(alarmVideoPopupsOpen, (open) => {
   top: -15px;
   padding: 1px 4px;
   background: #e64149;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 8px;
 }
 
@@ -391,7 +391,7 @@ watch(alarmVideoPopupsOpen, (open) => {
   border: 1px solid #ff5d64;
   border-radius: 50%;
   background: rgb(157 25 35 / 82%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-style: normal;
   font-weight: 700;
   box-shadow: 0 0 12px rgb(255 61 70 / 55%);

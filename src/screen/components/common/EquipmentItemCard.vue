@@ -56,7 +56,7 @@ defineProps<{
 .equip-card__count {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1.2;
 }
 

@@ -74,7 +74,7 @@ onMounted(() => {
   border: 2px solid rgb(255 255 255 / 90%);
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #ff8a75, #e6332a);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 13px;
   font-weight: 700;
   line-height: 16px;

@@ -404,7 +404,7 @@ function openSelectedWorkOrder() {
   justify-content: space-between;
   flex-shrink: 0;
   padding: 12px 16px;
-  border-bottom: 1px solid rgb(0 110 190 / 35%);
+  border-bottom: 1px solid var(--panel-head-line);
 }
 
 .patrol__header-main {
@@ -416,12 +416,12 @@ function openSelectedWorkOrder() {
 .patrol__title {
   margin: 0;
   font-size: 20px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .patrol__subtitle {
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .patrol__close {
@@ -456,10 +456,10 @@ function openSelectedWorkOrder() {
 .patrol__select {
   height: 32px;
   padding: 0 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #fff;
+  background: var(--btn-bg);
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   outline: none;
@@ -473,9 +473,9 @@ function openSelectedWorkOrder() {
 .patrol__btn {
   height: 32px;
   padding: 0 12px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -484,8 +484,8 @@ function openSelectedWorkOrder() {
 }
 
 .patrol__btn--primary {
-  color: #fff;
-  border-color: rgb(0 180 255 / 45%);
+  color: var(--color-text-strong);
+  border-color: var(--border-glow);
   background: rgb(0 90 160 / 45%);
 }
 
@@ -502,7 +502,7 @@ function openSelectedWorkOrder() {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
 }
 
 .patrol__table th {
@@ -512,7 +512,7 @@ function openSelectedWorkOrder() {
   padding: 9px 8px;
   text-align: left;
   font-weight: 500;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   background: rgb(0 28 58 / 95%);
   border-bottom: 1px solid rgb(0 110 190 / 28%);
   white-space: nowrap;
@@ -520,7 +520,7 @@ function openSelectedWorkOrder() {
 
 .patrol__table td {
   padding: 9px 8px;
-  border-bottom: 1px solid rgb(0 90 150 / 15%);
+  border-bottom: 1px solid var(--list-divider);
   vertical-align: middle;
   line-height: 1.45;
 }
@@ -542,7 +542,7 @@ function openSelectedWorkOrder() {
 
 .patrol__abnormal-count {
   font-weight: 700;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .patrol__abnormal-count--danger {
@@ -550,8 +550,8 @@ function openSelectedWorkOrder() {
   min-width: 22px;
   padding: 1px 5px;
   border-radius: 2px;
-  background: #ff5a4a;
-  color: #fff;
+  background: var(--color-danger);
+  color: var(--color-text-strong);
   text-align: center;
 }
 
@@ -586,7 +586,7 @@ function openSelectedWorkOrder() {
 }
 
 .patrol-result--na {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   border-color: rgb(138 164 196 / 40%);
 }
 
@@ -594,7 +594,7 @@ function openSelectedWorkOrder() {
   padding: 0;
   border: none;
   background: transparent;
-  color: #0af;
+  color: var(--color-accent-2);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -615,7 +615,7 @@ function openSelectedWorkOrder() {
 
 .patrol__total {
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .patrol__pagination {
@@ -628,9 +628,9 @@ function openSelectedWorkOrder() {
   min-width: 28px;
   height: 28px;
   padding: 0 8px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -643,7 +643,7 @@ function openSelectedWorkOrder() {
 }
 
 .patrol__page-btn--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 55%);
 }
@@ -657,9 +657,9 @@ function openSelectedWorkOrder() {
 
 .patrol__back {
   padding: 4px 10px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -669,7 +669,7 @@ function openSelectedWorkOrder() {
 .patrol__detail-title {
   margin: 0;
   font-size: 16px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .patrol__detail-content {
@@ -720,7 +720,7 @@ function openSelectedWorkOrder() {
 
 .patrol__info-value {
   font-size: 13px;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   word-break: break-all;
 }
 

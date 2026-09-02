@@ -388,7 +388,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 
 .accident-rescue-map__route-line--base,
 .accident-rescue-map__route-line--remaining {
-  stroke: #ff8c28;
+  stroke: var(--map-route-orange-mid);
   stroke-width: 7;
   stroke-dasharray: 16 12;
 }
@@ -437,7 +437,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   position: relative;
   padding: 5px 10px 0 26px;
   font-size: 12px;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
@@ -456,13 +456,18 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   height: 14px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #ffe0a8 0%, #ff9a3c 55%, #ff5c00 100%);
+  background: radial-gradient(
+    circle at 35% 35%,
+    var(--map-route-orange-pale) 0%,
+    var(--color-alarm-2) 55%,
+    var(--map-route-orange-deep) 100%
+  );
   box-shadow: 0 0 6px rgb(255 120 30 / 55%);
 }
 
 .gate-marker__start-label {
   margin-left: 6px;
-  color: #ffb86a;
+  color: var(--map-route-orange-text);
 }
 
 .gate-marker__pin {
@@ -477,7 +482,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 3px solid #ff8c28;
+  border: 3px solid var(--map-route-orange-mid);
   background: rgb(255 140 40 / 18%);
   box-shadow: 0 0 8px rgb(255 120 30 / 50%);
 }
@@ -490,7 +495,12 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   height: 10px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: linear-gradient(145deg, #ffe0a8 0%, #ff9a3c 55%, #ff5c00 100%);
+  background: linear-gradient(
+    145deg,
+    var(--map-route-orange-pale) 0%,
+    var(--color-alarm-2) 55%,
+    var(--map-route-orange-deep) 100%
+  );
 }
 
 .emergency-pin-marker {
@@ -517,7 +527,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   min-width: 220px;
   padding: 6px 8px;
   box-sizing: border-box;
-  background: rgb(10 32 58 / 88%);
+  background: var(--map-event-label-bg);
   border: 1px solid rgb(0 148 236 / 42%);
   border-radius: 6px;
   pointer-events: auto;
@@ -538,7 +548,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 .emergency-pin-marker__label-title {
   font-size: 13px;
   line-height: 1.35;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -549,37 +559,37 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   padding: 1px 8px;
   font-size: 11px;
   line-height: 1.35;
-  color: #fff;
+  color: var(--color-text-strong);
   border-radius: 4px;
   white-space: nowrap;
   pointer-events: none;
 }
 
 .emergency-pin-marker__hazard-level.is-level-one {
-  background: #d9481e;
+  background: var(--map-hazardb-l1);
 }
 
 .emergency-pin-marker__hazard-level.is-level-two {
-  background: #e08030;
+  background: var(--map-hazardb-l2);
 }
 
 .emergency-pin-marker__hazard-level.is-level-three {
-  background: #d9b020;
-  color: #3a2a08;
+  background: var(--map-hazardb-l3);
+  color: var(--map-hazardb-l3-fg);
 }
 
 .emergency-pin-marker__hazard-level.is-level-four {
-  background: #3a8ad8;
+  background: var(--map-hazardb-l4);
 }
 
 .emergency-pin-marker__facility-btn {
   flex-shrink: 0;
   height: 22px;
   padding: 0 8px;
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 82%);
-  color: #4f8dd3;
+  background: var(--map-facility-btn-bg);
+  color: var(--map-facility-btn-fg);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -615,7 +625,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   background: linear-gradient(155deg, rgb(72 18 18 / 94%) 0%, rgb(32 8 12 / 92%) 100%);
   border: 1px solid rgb(200 70 70 / 42%);
   border-radius: 6px;
-  box-shadow: inset 0 0 10px rgb(255 110 110 / 6%);
+  box-shadow: inset 0 0 10px var(--map-popup-red-glow);
   pointer-events: auto;
   overflow: hidden;
 }
@@ -630,7 +640,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   margin: 0;
   font-size: 14px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -645,12 +655,12 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   align-items: start;
   font-size: 12px;
   line-height: 1.45;
-  color: #ffc4c4;
+  color: var(--map-popup-red-text);
 }
 
 .emergency-pin-marker__popup--drill .emergency-pin-marker__field,
 .emergency-pin-marker__popup--drill .emergency-pin-marker__label {
-  color: #ffd9a0;
+  color: var(--map-route-orange-text-soft);
 }
 
 .emergency-pin-marker__field--status {
@@ -687,7 +697,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 }
 
 .emergency-pin-marker__status-text {
-  color: #d33232;
+  color: var(--map-danger-deep);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -695,7 +705,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 }
 
 .emergency-pin-marker__popup--drill .emergency-pin-marker__status-text {
-  color: #eca641;
+  color: var(--accent-gold);
 }
 
 .map-info-panel {
@@ -703,13 +713,13 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   background: linear-gradient(155deg, rgb(10 28 52 / 96%), rgb(6 16 34 / 94%));
   border: 1px solid rgb(0 148 236 / 55%);
   clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-  box-shadow: inset 0 0 12px rgb(0 120 220 / 8%);
+  box-shadow: inset 0 0 12px var(--map-info-panel-glow);
 }
 
 .map-info-panel--alarm {
   background: linear-gradient(155deg, rgb(52 12 16 / 96%), rgb(24 6 10 / 94%));
   border-color: rgb(200 70 70 / 50%);
-  box-shadow: inset 0 0 10px rgb(255 90 90 / 6%);
+  box-shadow: inset 0 0 10px var(--map-info-panel-alarm-glow);
 }
 
 .map-info-panel--vehicle {
@@ -719,7 +729,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 .map-info-panel__row {
   font-size: 12px;
   line-height: 1.45;
-  color: #ffc4c4;
+  color: var(--map-popup-red-text);
   word-break: break-all;
 }
 
@@ -755,7 +765,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 }
 
 .map-info-panel__status-text {
-  color: #d33232;
+  color: var(--map-danger-deep);
   white-space: nowrap;
 }
 
@@ -823,7 +833,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 
 .vehicle-marker__title {
   font-size: 15px;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 22px;
   white-space: nowrap;
   overflow: hidden;
@@ -832,7 +842,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 
 .vehicle-marker__row {
   font-size: 12px;
-  color: #c4dcff;
+  color: var(--map-popup-text-blue);
   line-height: 17px;
   white-space: nowrap;
   overflow: hidden;

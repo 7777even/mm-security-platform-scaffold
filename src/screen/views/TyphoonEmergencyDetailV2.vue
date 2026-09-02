@@ -1134,7 +1134,7 @@ function openPointVideo(point: RiskPoint) {
 .detail-actions button.primary {
   border-color: #189edb;
   background: #1286c0;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .weather-v2__legend {

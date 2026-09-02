@@ -196,7 +196,7 @@ const process = useEmergencyProcess();
   border: 1px solid rgb(244 63 94 / 60%);
   border-radius: 6px;
   background: linear-gradient(180deg, #e11d48, #be123c);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 13px;
   font-weight: 700;
   font-family: var(--font-body);

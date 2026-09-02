@@ -112,7 +112,7 @@ const pieOption = computed(() => ({
 .personnel__center-label {
   margin-top: 4px;
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .personnel__legend {
@@ -140,7 +140,7 @@ const pieOption = computed(() => ({
 }
 
 .personnel__name {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

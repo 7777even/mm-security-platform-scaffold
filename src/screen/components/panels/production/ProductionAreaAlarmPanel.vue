@@ -34,7 +34,7 @@ defineProps<{
   margin: 0;
   font-size: 16px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
@@ -43,7 +43,7 @@ defineProps<{
   height: 18px;
   padding: 0 5px;
   border-radius: 9px;
-  background: #f0c429;
+  background: var(--color-alarm-3);
   color: #1a1200;
   font-size: 11px;
   font-weight: 700;

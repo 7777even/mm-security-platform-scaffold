@@ -371,7 +371,7 @@ watch(
   inset: 12px 14px auto;
   display: flex;
   justify-content: space-between;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 11px;
   text-shadow: 0 1px 4px #000;
 }
@@ -520,7 +520,7 @@ watch(
 
 .surveillance-dialog__adjust b {
   text-align: center;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 11px;
 }
 

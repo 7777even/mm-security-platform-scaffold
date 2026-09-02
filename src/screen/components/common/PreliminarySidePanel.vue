@@ -68,7 +68,7 @@ const contentClass = computed(() => `preliminary-panel__content--${props.variant
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   z-index: 2;
   line-height: 1.4;
 }

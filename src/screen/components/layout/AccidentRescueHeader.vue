@@ -153,22 +153,22 @@ onUnmounted(() => {
   flex-shrink: 0;
   overflow: hidden;
 
-  --rescue-back-color: #fe0404;
+  --rescue-back-color: var(--map-rescue-red);
   --rescue-back-glow: rgb(254 4 4 / 28%);
 }
 
 .rescue-header--event {
-  --rescue-back-color: #fe0404;
+  --rescue-back-color: var(--map-rescue-red);
   --rescue-back-glow: rgb(254 4 4 / 28%);
 }
 
 .rescue-header--drill {
-  --rescue-back-color: #eca641;
+  --rescue-back-color: var(--accent-gold);
   --rescue-back-glow: rgb(236 166 65 / 32%);
 }
 
 .rescue-header--weather {
-  --rescue-back-color: #00a6f4;
+  --rescue-back-color: var(--map-rescue-weather-blue);
   --rescue-back-glow: rgb(0 166 244 / 32%);
 }
 
@@ -239,7 +239,7 @@ onUnmounted(() => {
   min-width: 0;
   font-size: 32px;
   font-weight: 500;
-  color: #fe0404;
+  color: var(--map-rescue-red);
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
@@ -248,17 +248,17 @@ onUnmounted(() => {
 }
 
 .rescue-header--event .rescue-header__incident-title {
-  color: #fe0404;
+  color: var(--map-rescue-red);
   text-shadow: 0 0 12px rgb(254 4 4 / 28%);
 }
 
 .rescue-header--drill .rescue-header__incident-title {
-  color: #eca641;
+  color: var(--accent-gold);
   text-shadow: 0 0 12px rgb(236 166 65 / 32%);
 }
 
 .rescue-header--weather .rescue-header__incident-title {
-  color: #5ad8ff;
+  color: var(--map-rescue-weather-text);
   text-shadow: 0 0 12px rgb(0 166 244 / 32%);
 }
 
@@ -274,7 +274,7 @@ onUnmounted(() => {
   z-index: 1;
   font-size: 36px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   text-shadow: 0 0 16px rgb(0 160 255 / 35%);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -307,7 +307,7 @@ onUnmounted(() => {
 
 .weather__temp {
   font-size: 18px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .weather-metrics {
@@ -324,13 +324,13 @@ onUnmounted(() => {
 
 .datetime__time {
   font-size: 18px;
-  color: #fff;
+  color: var(--color-text-strong);
   text-align: right;
 }
 
 .datetime__date {
   font-size: 11px;
-  color: #fff;
+  color: var(--color-text-strong);
   text-align: right;
 }
 
@@ -351,7 +351,7 @@ onUnmounted(() => {
 
 .user__name {
   font-size: 14px;
-  color: #8795b0;
+  color: var(--color-text-muted);
 }
 
 .user__arrow {

@@ -141,13 +141,13 @@ function handlePlay(item: PatrolCameraItem) {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
 .camera-list__count {
   font-size: 13px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   white-space: nowrap;
 }
 
@@ -168,7 +168,7 @@ function handlePlay(item: PatrolCameraItem) {
   height: 26px;
   padding: 0 10px;
   margin-left: 6px;
-  border: 1px solid rgb(0 180 255 / 45%);
+  border: 1px solid var(--border-glow);
   border-radius: 2px;
   background: rgb(0 90 160 / 35%);
   color: #e8f4ff;
@@ -180,8 +180,8 @@ function handlePlay(item: PatrolCameraItem) {
 
 .camera-list__wall-btn:hover {
   background: rgb(0 180 255 / 15%);
-  border-color: #00b4ff;
-  color: #fff;
+  border-color: var(--color-accent);
+  color: var(--color-text-strong);
 }
 
 .camera-list__wall-badge {
@@ -192,7 +192,7 @@ function handlePlay(item: PatrolCameraItem) {
   height: 18px;
   padding: 0 4px;
   border-radius: 9px;
-  background: #f0b429;
+  background: var(--color-warning);
   color: #1a1200;
   font-size: 11px;
   font-weight: 700;
@@ -212,10 +212,10 @@ function handlePlay(item: PatrolCameraItem) {
   min-width: 0;
   height: 30px;
   padding: 0 10px;
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 2px;
   background: rgb(0 22 48 / 75%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 13px;
   font-family: var(--font-body);
   outline: none;
@@ -272,7 +272,7 @@ function handlePlay(item: PatrolCameraItem) {
 .camera-table__head {
   padding: 0 10px 4px;
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .camera-table__row {
@@ -280,7 +280,7 @@ function handlePlay(item: PatrolCameraItem) {
   border: 1px solid rgb(0 130 210 / 18%);
   border-radius: 2px;
   background: rgb(0 24 50 / 45%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .camera-table__name {
@@ -294,7 +294,7 @@ function handlePlay(item: PatrolCameraItem) {
   margin-top: 2px;
   font-style: normal;
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-weight: 400;
 }
 
@@ -304,15 +304,15 @@ function handlePlay(item: PatrolCameraItem) {
 }
 
 .camera-table__status--normal {
-  color: #3dd68c;
+  color: var(--color-success);
 }
 
 .camera-table__status--offline {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .camera-table__status--fault {
-  color: #f0b429;
+  color: var(--color-warning);
 }
 
 .camera-table__action {
@@ -324,7 +324,7 @@ function handlePlay(item: PatrolCameraItem) {
   padding: 0;
   border: none;
   background: transparent;
-  color: #0af;
+  color: var(--color-accent-2);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -351,9 +351,9 @@ function handlePlay(item: PatrolCameraItem) {
   min-width: 28px;
   height: 28px;
   padding: 0 8px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -366,7 +366,7 @@ function handlePlay(item: PatrolCameraItem) {
 }
 
 .page-btn--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 55%);
 }

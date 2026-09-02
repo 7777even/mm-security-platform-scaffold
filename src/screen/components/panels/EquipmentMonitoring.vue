@@ -284,12 +284,12 @@ const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onli
 }
 
 .facility-subnav button.active {
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .facility-subnav button.active::after {
   background: linear-gradient(90deg, rgb(0 180 255 / 20%), #00b8ff, rgb(0 180 255 / 20%));
-  box-shadow: 0 0 6px rgb(0 180 255 / 45%);
+  box-shadow: 0 0 6px var(--border-glow);
 }
 
 .monitoring,
@@ -323,7 +323,7 @@ const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onli
   border: 0;
   border-right: 1px solid rgb(0 152 224 / 18%);
   background: transparent;
-  color: #fff;
+  color: var(--color-text-strong);
   font-family: var(--font-body);
   text-align: left;
   cursor: pointer;
@@ -396,7 +396,7 @@ const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onli
   top: 33px;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 13px;
 }
 
@@ -575,12 +575,12 @@ const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onli
 }
 
 .inspection__stats span {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-size: 10px;
 }
 
 .inspection__stats b {
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 15px;
 }
 
@@ -740,13 +740,13 @@ const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onli
   padding: 0;
   border: 0;
   background: transparent;
-  color: #fff;
+  color: var(--color-text-strong);
   font-family: var(--font-body);
   cursor: pointer;
 }
 
 .stat-row:hover .stat-row__label {
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .stat-row__label {
@@ -756,7 +756,7 @@ const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onli
 
 .stat-row strong {
   margin-left: auto;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 17px;
   line-height: 1;
 }
@@ -797,7 +797,7 @@ const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onli
 }
 
 .stat-dot--fault {
-  background: #ff5a4a;
+  background: var(--color-danger);
   box-shadow: 0 0 6px rgb(255 90 74 / 45%);
 }
 
@@ -830,7 +830,7 @@ const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onli
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(circle at 50% 40%, rgb(0 45 85 / 65%), rgb(0 14 28 / 90%));
-  box-shadow: inset 0 0 10px rgb(0 180 255 / 8%);
+  box-shadow: inset 0 0 10px var(--color-accent-faint);
 }
 
 .gauge-item b {
@@ -838,7 +838,7 @@ const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onli
   top: 38px;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 14px;
   line-height: 1;
 }

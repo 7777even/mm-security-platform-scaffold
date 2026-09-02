@@ -420,7 +420,7 @@ onUnmounted(() => {
 }
 
 .event-list-tabs__btn--active {
-  color: #fff;
+  color: var(--color-text-strong);
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
   border-color: rgb(0 160 240 / 55%);
 }
@@ -436,7 +436,7 @@ onUnmounted(() => {
   border-radius: 2px;
   border: 1px solid rgb(0 150 230 / 50%);
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 14px;
   font-weight: 500;
   font-family: var(--font-body);
@@ -481,7 +481,7 @@ onUnmounted(() => {
 }
 
 .event-list--drill {
-  --elist-accent: #eca641;
+  --elist-accent: var(--accent-gold);
   --elist-accent-soft: rgb(236 166 65 / 55%);
   --elist-border: rgb(180 120 40 / 40%);
   --elist-border-strong: rgb(236 166 65 / 48%);
@@ -490,7 +490,7 @@ onUnmounted(() => {
   --elist-page-active: linear-gradient(180deg, rgb(210 145 45 / 92%), rgb(160 105 25 / 92%));
   --elist-page-active-border: rgb(236 166 65 / 60%);
   --elist-card-border-left: rgb(236 166 65 / 85%);
-  --elist-group-title: #eca641;
+  --elist-group-title: var(--accent-gold);
   --elist-action-bg: linear-gradient(180deg, rgb(210 145 45 / 92%), rgb(160 105 25 / 92%));
   --elist-action-border: rgb(236 166 65 / 55%);
   --elist-action-view-bg: rgb(52 36 10 / 72%);
@@ -540,7 +540,7 @@ onUnmounted(() => {
 
 .event-list__btn--primary {
   background: var(--elist-btn-primary);
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: var(--elist-btn-primary-border);
 }
 
@@ -637,7 +637,7 @@ onUnmounted(() => {
   margin: 0;
   font-size: 14px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   flex: 1;
   min-width: 0;
 }
@@ -657,7 +657,7 @@ onUnmounted(() => {
 }
 
 .event-card__tag--warning-done-green {
-  color: #3dd68c;
+  color: var(--color-success);
   background: rgb(20 72 48 / 40%);
   border: 1px solid rgb(61 214 140 / 45%);
 }
@@ -698,7 +698,7 @@ onUnmounted(() => {
 }
 
 .event-card__action--dispose {
-  color: #fff;
+  color: var(--color-text-strong);
   background: var(--elist-action-bg);
   border: 1px solid var(--elist-action-border);
 }
@@ -747,7 +747,7 @@ onUnmounted(() => {
   padding: 0 6px;
   border: 1px solid rgb(0 120 200 / 30%);
   border-radius: 2px;
-  background: rgb(0 25 55 / 65%);
+  background: var(--alarm-card-bg);
   color: #a8b8cc;
   font-size: 13px;
   font-family: var(--font-body);
@@ -756,12 +756,12 @@ onUnmounted(() => {
 
 .page-btn--active {
   background: var(--elist-page-active);
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: var(--elist-page-active-border);
 }
 
 .page-arrow {
-  color: #8795b0;
+  color: var(--color-text-muted);
   border-color: transparent;
   background: transparent;
 }
@@ -772,7 +772,7 @@ onUnmounted(() => {
 }
 
 .page-ellipsis {
-  color: #8795b0;
+  color: var(--color-text-muted);
   font-size: 13px;
 }
 </style>

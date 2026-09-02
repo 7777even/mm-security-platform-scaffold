@@ -97,7 +97,7 @@ const { scaleAreaCount } = usePlantArea();
   display: block;
   width: 24px;
   height: 24px;
-  color: #00b4ff;
+  color: var(--color-accent);
 }
 
 .video-overview__icon::before,
@@ -124,10 +124,10 @@ const { scaleAreaCount } = usePlantArea();
   top: 10px;
   width: 2px;
   height: 7px;
-  background: #001630;
+  background: var(--color-bg);
   border-radius: 1px;
   transform: translateX(-50%);
-  box-shadow: 0 9px 0 #001630;
+  box-shadow: 0 9px 0 var(--color-bg);
 }
 
 /* 生产设施 — 厂房 */

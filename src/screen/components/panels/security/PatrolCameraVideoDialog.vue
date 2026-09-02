@@ -102,7 +102,7 @@ function closeDialog() {
   gap: 12px;
   flex-shrink: 0;
   padding: 12px 16px;
-  border-bottom: 1px solid rgb(0 110 190 / 35%);
+  border-bottom: 1px solid var(--panel-head-line);
   background: rgb(0 18 40 / 60%);
 }
 
@@ -117,7 +117,7 @@ function closeDialog() {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -125,7 +125,7 @@ function closeDialog() {
 
 .camera-video__meta {
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -200,7 +200,7 @@ function closeDialog() {
   border: 1px solid rgb(61 214 140 / 45%);
   border-radius: 2px;
   background: rgb(0 10 24 / 55%);
-  color: #3dd68c;
+  color: var(--color-success);
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
@@ -211,7 +211,7 @@ function closeDialog() {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #3dd68c;
+  background: var(--color-success);
   box-shadow: 0 0 8px rgb(61 214 140 / 80%);
   animation: camera-video-blink 1.2s ease-in-out infinite;
 }
@@ -235,7 +235,7 @@ function closeDialog() {
   padding: 10px 12px;
   border: 1px dashed rgb(0 148 236 / 35%);
   border-radius: 2px;
-  background: rgb(0 22 48 / 55%);
+  background: var(--stat-card-icon-bg);
 }
 
 .camera-video__info {
@@ -262,7 +262,7 @@ function closeDialog() {
 }
 
 .camera-video__row span {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .camera-video-fade-enter-active,

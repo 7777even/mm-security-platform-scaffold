@@ -187,7 +187,7 @@ watch(simulatedViewport, () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #000a18;
+  background: var(--map-video-page-bg);
   overflow: hidden;
 }
 
@@ -211,7 +211,7 @@ watch(simulatedViewport, () => {
   background: rgb(0 35 75 / 95%);
   border-bottom: 1px solid rgb(0 140 220 / 35%);
   font-size: 12px;
-  color: #8795b0;
+  color: var(--color-text-muted);
   transition:
     transform 0.25s ease,
     opacity 0.25s ease;
@@ -235,7 +235,7 @@ watch(simulatedViewport, () => {
   padding: 2px 8px;
   border-radius: 2px;
   background: rgb(0 180 255 / 15%);
-  color: #00b4ff;
+  color: var(--color-accent);
 }
 
 .viewport-simulator__size-btn {
@@ -251,26 +251,26 @@ watch(simulatedViewport, () => {
 }
 
 .viewport-simulator__size-btn:hover {
-  border-color: rgb(0 180 255 / 35%);
+  border-color: var(--panel-border);
   background: rgb(0 70 120 / 35%);
 }
 
 .viewport-simulator__size {
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
 }
 
 .viewport-simulator__scale {
-  color: #8795b0;
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 
 .viewport-simulator__exit {
   padding: 3px 10px;
-  border: 1px solid rgb(0 180 255 / 45%);
+  border: 1px solid var(--border-glow);
   border-radius: 3px;
   background: rgb(0 90 150 / 35%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
   cursor: pointer;
   white-space: nowrap;
@@ -300,9 +300,9 @@ watch(simulatedViewport, () => {
   left: 0;
   transform-origin: top left;
   overflow: hidden;
-  background: #001630;
+  background: var(--color-bg);
   box-shadow:
-    0 0 0 1px rgb(0 140 220 / 25%),
+    0 0 0 1px var(--color-border),
     0 12px 40px rgb(0 0 0 / 45%);
 }
 

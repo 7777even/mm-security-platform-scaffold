@@ -32,7 +32,7 @@ const open = ref(false);
   border: 1px solid transparent;
   border-radius: 3px;
   background: transparent;
-  color: #fff;
+  color: var(--color-text-strong);
   cursor: pointer;
   transition: 0.2s;
 }

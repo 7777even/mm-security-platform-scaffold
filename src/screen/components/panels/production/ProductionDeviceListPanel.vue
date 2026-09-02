@@ -142,7 +142,7 @@ function statusClass(status: ProductionDeviceStatus) {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -150,7 +150,7 @@ function statusClass(status: ProductionDeviceStatus) {
 
 .device-list__count {
   font-size: 13px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   flex-shrink: 0;
 }
 
@@ -215,7 +215,7 @@ function statusClass(status: ProductionDeviceStatus) {
 .device-list__btn--ghost {
   border-color: rgb(0 120 200 / 30%);
   background: rgb(0 28 58 / 55%);
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .device-table {
@@ -243,7 +243,7 @@ function statusClass(status: ProductionDeviceStatus) {
   height: 32px;
   flex-shrink: 0;
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   background: rgb(0 40 78 / 45%);
   border: 1px solid rgb(0 120 200 / 20%);
   border-radius: 2px;
@@ -270,7 +270,7 @@ function statusClass(status: ProductionDeviceStatus) {
 }
 
 .device-table__status--offline {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .device-table__status--fault {
@@ -280,7 +280,7 @@ function statusClass(status: ProductionDeviceStatus) {
 .device-table__empty {
   padding: 24px 0;
   text-align: center;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-size: 13px;
 }
 
@@ -296,10 +296,10 @@ function statusClass(status: ProductionDeviceStatus) {
   min-width: 28px;
   height: 28px;
   padding: 0 6px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 55%);
-  color: #8aa4c4;
+  background: var(--stat-card-icon-bg);
+  color: var(--map-device-offline);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -311,7 +311,7 @@ function statusClass(status: ProductionDeviceStatus) {
 }
 
 .page-btn--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 50%);
 }

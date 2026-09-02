@@ -578,7 +578,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
   justify-content: space-between;
   flex-shrink: 0;
   padding: 10px 14px;
-  border-bottom: 1px solid rgb(0 110 190 / 35%);
+  border-bottom: 1px solid var(--panel-head-line);
 }
 
 .alarm-detail__title-row {
@@ -591,7 +591,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
 .alarm-detail__title {
   margin: 0;
   font-size: 18px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .alarm-detail__status {
@@ -614,7 +614,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
 }
 
 .alarm-status--doing {
-  color: #37cfff;
+  color: var(--map-marker-cyan);
   background: rgb(55 207 255 / 12%);
   border: 1px solid rgb(55 207 255 / 50%);
 }
@@ -634,10 +634,10 @@ function trendX(item: AlarmDetailItem, index: number): number {
 .alarm-detail__publish {
   height: 28px;
   padding: 0 10px;
-  border: 1px solid rgb(0 180 255 / 45%);
+  border: 1px solid var(--border-glow);
   border-radius: 3px;
   background: rgb(0 90 160 / 45%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -706,7 +706,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
 
 .alarm-detail__value {
   font-size: 13px;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   word-break: break-all;
 }
 
@@ -723,7 +723,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
 }
 
 .alarm-level--warning {
-  color: #f0b429;
+  color: var(--color-warning);
   background: rgb(240 180 41 / 14%);
 }
 
@@ -756,7 +756,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
 .alarm-detail__image figcaption {
   padding: 3px 4px;
   font-size: 10px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -798,7 +798,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
 }
 
 .alarm-detail__threshold-text {
-  fill: #f0b429;
+  fill: var(--color-warning);
   font-size: 9px;
 }
 
@@ -827,10 +827,10 @@ function trendX(item: AlarmDetailItem, index: number): number {
 .alarm-detail__select {
   height: 30px;
   padding: 0 8px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #fff;
+  background: var(--btn-bg);
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   outline: none;
@@ -842,7 +842,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
   border: 1px solid rgb(0 180 255 / 40%);
   border-radius: 2px;
   background: rgb(0 90 160 / 40%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -856,7 +856,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
   height: 16px;
   border: 1px solid rgb(0 180 255 / 50%);
   border-radius: 50%;
-  color: #37cfff;
+  color: var(--map-marker-cyan);
   font-size: 11px;
   font-weight: 700;
   cursor: help;
@@ -884,7 +884,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
   padding: 0;
   border: none;
   background: transparent;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-size: 12px;
   cursor: pointer;
 }
@@ -894,7 +894,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   font-size: 12px;
   cursor: pointer;
 }
@@ -903,10 +903,10 @@ function trendX(item: AlarmDetailItem, index: number): number {
   width: 100%;
   min-height: 56px;
   padding: 6px 8px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #fff;
+  background: var(--btn-bg);
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   resize: vertical;
@@ -919,8 +919,8 @@ function trendX(item: AlarmDetailItem, index: number): number {
   padding: 0 10px;
   border: 1px solid rgb(0 120 200 / 30%);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #0af;
+  background: var(--btn-bg);
+  color: var(--color-accent-2);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -952,14 +952,14 @@ function trendX(item: AlarmDetailItem, index: number): number {
   top: 14px;
   bottom: 0;
   width: 2px;
-  background: rgb(0 120 200 / 28%);
+  background: var(--btn-border);
 }
 
 .alarm-detail__timeline-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #0af;
+  background: var(--color-accent-2);
   box-shadow: 0 0 6px rgb(0 170 255 / 55%);
   flex-shrink: 0;
   margin-top: 3px;
@@ -980,17 +980,17 @@ function trendX(item: AlarmDetailItem, index: number): number {
 
 .alarm-detail__timeline-time {
   font-size: 11px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .alarm-detail__timeline-operator {
   font-size: 12px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .alarm-detail__timeline-action {
   font-size: 12px;
-  color: #0af;
+  color: var(--color-accent-2);
 }
 
 .alarm-detail__timeline-detail {
@@ -1008,8 +1008,8 @@ function trendX(item: AlarmDetailItem, index: number): number {
   padding: 4px 10px;
   border: 1px solid rgb(0 120 200 / 30%);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #0af;
+  background: var(--btn-bg);
+  color: var(--color-accent-2);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -1029,7 +1029,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
   padding: 0 14px;
   border: 1px solid rgb(0 120 200 / 30%);
   border-radius: 3px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   color: #c8d8ec;
   font-size: 12px;
   font-family: var(--font-body);
@@ -1038,8 +1038,8 @@ function trendX(item: AlarmDetailItem, index: number): number {
 }
 
 .alarm-detail__btn--primary {
-  color: #fff;
-  border-color: rgb(0 180 255 / 45%);
+  color: var(--color-text-strong);
+  border-color: var(--border-glow);
   background: rgb(0 90 160 / 45%);
 }
 

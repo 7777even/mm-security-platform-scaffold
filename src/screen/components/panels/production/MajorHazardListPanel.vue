@@ -111,12 +111,12 @@ function closeList() {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .hazard-list__count {
   font-size: 13px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .hazard-list__close {
@@ -188,7 +188,7 @@ function closeList() {
   height: 32px;
   flex-shrink: 0;
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   background: rgb(0 40 78 / 45%);
   border: 1px solid rgb(0 120 200 / 20%);
   border-radius: 2px;
@@ -207,7 +207,7 @@ function closeList() {
 }
 
 .hazard-table__row:hover {
-  border-color: rgb(0 180 255 / 45%);
+  border-color: var(--border-glow);
   background: rgb(0 40 78 / 55%);
 }
 
@@ -222,11 +222,11 @@ function closeList() {
 }
 
 .hazard-table__level--l2 {
-  color: #ff9a3c;
+  color: var(--color-alarm-2);
 }
 
 .hazard-table__level--l3 {
-  color: #f0c429;
+  color: var(--color-alarm-3);
 }
 
 .hazard-table__level--l4 {
@@ -236,7 +236,7 @@ function closeList() {
 .hazard-table__empty {
   padding: 24px 0;
   text-align: center;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-size: 13px;
 }
 </style>

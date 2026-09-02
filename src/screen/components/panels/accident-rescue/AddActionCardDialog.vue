@@ -255,7 +255,7 @@ function handleSave() {
 }
 
 :global(.addcard-field__input:focus) {
-  border-color: #38bdf8;
+  border-color: var(--map-sky);
 }
 
 :global(.addcard-grid) {
@@ -288,10 +288,10 @@ function handleSave() {
 :global(.addcard-footer__save) {
   height: 30px;
   padding: 0 18px;
-  border: 1px solid #38bdf8;
+  border: 1px solid var(--map-sky);
   border-radius: 5px;
   background: linear-gradient(180deg, #0284c7, #0369a1);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
   font-weight: 700;
   font-family: var(--font-body);

@@ -112,7 +112,7 @@ const pieOption = computed(() => ({
 }
 
 .event-analysis__title-btn:hover {
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .event-analysis__title-btn:hover span {
@@ -127,7 +127,7 @@ const pieOption = computed(() => ({
   border: 1px solid rgb(0 140 220 / 35%);
   border-radius: 2px;
   background: rgb(0 30 60 / 60%);
-  color: #c4dcff;
+  color: var(--map-popup-text-blue);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -181,7 +181,7 @@ const pieOption = computed(() => ({
   margin-top: 3px;
   font-size: 23px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .event-analysis__legend {
@@ -214,14 +214,14 @@ const pieOption = computed(() => ({
 .event-analysis__legend-label {
   flex: 1;
   min-width: 0;
-  color: #c4dcff;
+  color: var(--map-popup-text-blue);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .event-analysis__legend-value {
-  color: #fff;
+  color: var(--color-text-strong);
   font-weight: 500;
 }
 </style>

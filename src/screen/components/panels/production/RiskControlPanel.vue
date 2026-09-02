@@ -86,7 +86,7 @@ const visibleRiskWarnings = areaScopedItems(riskWarnings);
   gap: 6px;
   height: 44px;
   padding: 0 8px;
-  background: rgb(0 22 48 / 65%);
+  background: var(--btn-bg);
   border: 1px solid rgb(0 130 210 / 28%);
   border-radius: 2px;
   box-sizing: border-box;
@@ -108,15 +108,15 @@ const visibleRiskWarnings = areaScopedItems(riskWarnings);
 }
 
 .risk-summary-item--red .risk-summary-item__value {
-  color: #ff5a4a;
+  color: var(--color-danger);
 }
 
 .risk-summary-item--orange .risk-summary-item__value {
-  color: #ff9a3c;
+  color: var(--color-alarm-2);
 }
 
 .risk-summary-item--yellow .risk-summary-item__value {
-  color: #f0c429;
+  color: var(--color-alarm-3);
 }
 
 .risk-panel__list {
@@ -146,13 +146,13 @@ const visibleRiskWarnings = areaScopedItems(riskWarnings);
   gap: 4px;
   flex-shrink: 0;
   padding: 3px 10px 3px 6px;
-  background: linear-gradient(180deg, #f0b429 0%, #c88a10 100%);
+  background: linear-gradient(180deg, var(--color-warning) 0%, #c88a10 100%);
   border-radius: 2px;
 }
 
 .risk-card__tag-text {
   font-size: 12px;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
   line-height: 1;
 }
@@ -160,7 +160,7 @@ const visibleRiskWarnings = areaScopedItems(riskWarnings);
 .risk-card__location {
   font-size: 14px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .risk-card__body {
@@ -174,7 +174,7 @@ const visibleRiskWarnings = areaScopedItems(riskWarnings);
 }
 
 .risk-card__label {
-  color: #8795b0;
+  color: var(--color-text-muted);
 }
 
 .risk-card__value {
@@ -191,6 +191,6 @@ const visibleRiskWarnings = areaScopedItems(riskWarnings);
 
 .risk-card__footer em {
   font-style: normal;
-  color: #ff9a3c;
+  color: var(--color-alarm-2);
 }
 </style>

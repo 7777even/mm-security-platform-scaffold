@@ -52,7 +52,7 @@ const tabFields = [accidentInfoFields, accidentReportFields, accidentArrivalFiel
   grid-template-columns: repeat(3, 1fr);
   flex-shrink: 0;
   height: 28px;
-  border: 1px solid rgb(0 110 190 / 35%);
+  border: 1px solid var(--panel-head-line);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -62,7 +62,7 @@ const tabFields = [accidentInfoFields, accidentReportFields, accidentArrivalFiel
   padding: 0;
   border: none;
   border-right: 1px solid rgb(0 110 190 / 28%);
-  background: rgb(0 22 48 / 82%);
+  background: var(--map-facility-btn-bg);
   color: #a8b8cc;
   font-size: 11px;
   font-family: var(--font-body);
@@ -74,7 +74,7 @@ const tabFields = [accidentInfoFields, accidentReportFields, accidentArrivalFiel
 }
 
 .accident-info__tab--active {
-  color: #fff;
+  color: var(--color-text-strong);
   font-weight: 500;
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
 }
@@ -100,12 +100,12 @@ const tabFields = [accidentInfoFields, accidentReportFields, accidentArrivalFiel
 }
 
 .accident-info__label {
-  color: #4f8dd3;
+  color: var(--map-facility-btn-fg);
   white-space: nowrap;
 }
 
 .accident-info__value {
-  color: #fff;
+  color: var(--color-text-strong);
   word-break: break-all;
 }
 </style>

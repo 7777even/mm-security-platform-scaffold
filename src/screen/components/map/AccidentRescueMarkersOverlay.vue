@@ -228,7 +228,7 @@ function monitoringIcon(category: string): MapMarkerIconName {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 2px;
-  color: #fff;
+  color: var(--color-text-strong);
   background: linear-gradient(180deg, rgb(10 44 80 / 96%), rgb(6 28 52 / 96%));
   border: 1px solid rgb(0 150 236 / 55%);
   box-shadow: 0 2px 10px rgb(0 0 0 / 35%);
@@ -236,12 +236,12 @@ function monitoringIcon(category: string): MapMarkerIconName {
 
 .acc-route-marker--start .acc-route-marker__badge {
   border-color: rgb(72 199 142 / 75%);
-  color: #7ff0b8;
+  color: var(--map-route-green-light);
 }
 
 .acc-route-marker--end .acc-route-marker__badge {
   border-color: rgb(255 170 60 / 75%);
-  color: #ffc46a;
+  color: var(--map-route-orange-light);
 }
 
 .acc-route-marker__pin {
@@ -250,17 +250,17 @@ function monitoringIcon(category: string): MapMarkerIconName {
   margin-top: 3px;
   border-radius: 50%;
   border: 2px solid rgb(255 255 255 / 92%);
-  background: #37cfff;
+  background: var(--map-marker-cyan);
   box-shadow: 0 0 10px rgb(55 207 255 / 50%);
 }
 
 .acc-route-marker--start .acc-route-marker__pin {
-  background: #47c78e;
+  background: var(--map-route-green);
   box-shadow: 0 0 10px rgb(71 199 142 / 50%);
 }
 
 .acc-route-marker--end .acc-route-marker__pin {
-  background: #ffaa3c;
+  background: var(--map-route-orange);
   box-shadow: 0 0 10px rgb(255 170 60 / 50%);
 }
 
@@ -300,13 +300,13 @@ function monitoringIcon(category: string): MapMarkerIconName {
   border-radius: 2px;
   font-size: 10px;
   line-height: 15px;
-  color: #071426;
+  color: var(--map-marker-ink);
   font-weight: 700;
 }
 
 .acc-point-marker__name {
   font-size: 11px;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -319,7 +319,7 @@ function monitoringIcon(category: string): MapMarkerIconName {
   height: 28px;
   border-radius: 50%;
   border: 2px solid rgb(255 255 255 / 92%);
-  color: #071426;
+  color: var(--map-marker-ink);
   box-shadow: 0 0 12px rgb(55 207 255 / 40%);
   transition:
     transform 0.18s ease,
@@ -390,7 +390,7 @@ function monitoringIcon(category: string): MapMarkerIconName {
 
 .acc-point-marker--dispatch .acc-point-marker__pin {
   background: #16c7ff;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 13px;
 }
 

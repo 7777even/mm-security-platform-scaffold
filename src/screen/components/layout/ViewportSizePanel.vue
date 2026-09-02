@@ -146,12 +146,12 @@ function handleApplyCustom() {
   gap: 8px;
   margin-bottom: 8px;
   font-size: 12px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .viewport-size-panel__active {
   font-size: 11px;
-  color: #00b4ff;
+  color: var(--color-accent);
   white-space: nowrap;
 }
 
@@ -178,26 +178,26 @@ function handleApplyCustom() {
 }
 
 .viewport-size-panel__item:hover {
-  border-color: rgb(0 180 255 / 35%);
+  border-color: var(--panel-border);
   background: rgb(0 70 120 / 45%);
 }
 
 .viewport-size-panel__item--active {
   border-color: rgb(0 180 255 / 65%);
   background: rgb(0 90 150 / 50%);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .viewport-size-panel__custom {
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid rgb(0 140 220 / 25%);
+  border-top: 1px solid var(--color-border);
 }
 
 .viewport-size-panel__custom-title {
   margin-bottom: 6px;
   font-size: 11px;
-  color: #8795b0;
+  color: var(--color-text-muted);
 }
 
 .viewport-size-panel__custom-row {
@@ -212,7 +212,7 @@ function handleApplyCustom() {
   flex-direction: column;
   gap: 4px;
   font-size: 11px;
-  color: #8795b0;
+  color: var(--color-text-muted);
 }
 
 .viewport-size-panel__custom-row input {
@@ -222,7 +222,7 @@ function handleApplyCustom() {
   border: 1px solid rgb(0 140 220 / 35%);
   border-radius: 3px;
   background: rgb(0 35 75 / 80%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
 }
 
@@ -232,7 +232,7 @@ function handleApplyCustom() {
   border: 1px solid rgb(0 180 255 / 55%);
   border-radius: 3px;
   background: rgb(0 120 200 / 35%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 12px;
   cursor: pointer;
   white-space: nowrap;

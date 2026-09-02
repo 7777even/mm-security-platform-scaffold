@@ -379,7 +379,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
 .alarm-video__mode button.active {
   background: rgb(0 143 210 / 36%);
   color: #64d9ff;
-  box-shadow: inset 0 0 8px rgb(0 180 255 / 12%);
+  box-shadow: inset 0 0 8px var(--color-accent-soft);
 }
 
 .alarm-video__close {
@@ -441,7 +441,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
   position: absolute;
   top: 12px;
   z-index: 2;
-  color: #fff;
+  color: var(--color-text-strong);
   text-shadow: 0 1px 4px #000;
 }
 
@@ -513,7 +513,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
   left: -1px;
   padding: 2px 6px;
   background: #e7424b;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 10px;
 }
 

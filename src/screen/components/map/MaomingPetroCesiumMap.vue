@@ -6631,8 +6631,8 @@ watch(
   margin: 0;
   padding: 8px 16px;
   border-radius: 6px;
-  background: rgb(8 32 64 / 88%);
-  color: #9ed4ff;
+  background: var(--map-status-bg);
+  color: var(--map-status-fg);
   font-size: 13px;
 }
 
@@ -6645,8 +6645,8 @@ watch(
   margin: 0;
   padding: 12px 20px;
   border-radius: 6px;
-  background: rgb(120 20 30 / 85%);
-  color: #fecaca;
+  background: var(--map-error-bg);
+  color: var(--map-error-fg);
   font-size: 14px;
   max-width: 80%;
   text-align: center;

@@ -73,7 +73,7 @@ const levels = computed(() => [
 .hazard-stats__heading {
   font-size: 22px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1.2;
 }
 
@@ -99,7 +99,7 @@ const levels = computed(() => [
 .hazard-stats__total-label,
 .hazard-stats__item-label {
   font-size: 13px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .hazard-stats__total-value {
@@ -124,19 +124,19 @@ const levels = computed(() => [
 }
 
 .hazard-stats__item--l2 {
-  border-left: 3px solid #ff9a3c;
+  border-left: 3px solid var(--color-alarm-2);
 }
 
 .hazard-stats__item--l2 .hazard-stats__item-value {
-  color: #ff9a3c;
+  color: var(--color-alarm-2);
 }
 
 .hazard-stats__item--l3 {
-  border-left: 3px solid #f0c429;
+  border-left: 3px solid var(--color-alarm-3);
 }
 
 .hazard-stats__item--l3 .hazard-stats__item-value {
-  color: #f0c429;
+  color: var(--color-alarm-3);
 }
 
 .hazard-stats__item--l4 {

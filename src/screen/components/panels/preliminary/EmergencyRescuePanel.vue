@@ -71,7 +71,7 @@ const iconClips = computed(() =>
 .rescue-item__value {
   font-size: 22px;
   font-weight: 700;
-  color: #00d4ff;
+  color: var(--color-accent-bright);
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }

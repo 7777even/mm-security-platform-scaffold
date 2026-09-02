@@ -334,7 +334,7 @@ const emit = defineEmits<{
 }
 
 .incident-detail--accident {
-  --incident-surface-bg: rgb(0 22 48 / 82%);
+  --incident-surface-bg: var(--map-facility-btn-bg);
   --incident-report-disabled-bg: rgb(0 34 62 / 88%);
   --incident-report-disabled-border: rgb(0 130 210 / 42%);
   --incident-report-disabled-text: #a8b8cc;
@@ -350,7 +350,7 @@ const emit = defineEmits<{
   flex-shrink: 0;
   height: 32px;
   margin-bottom: 6px;
-  border: 1px solid rgb(0 110 190 / 35%);
+  border: 1px solid var(--panel-head-line);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -386,7 +386,7 @@ const emit = defineEmits<{
   padding: 0;
   border: none;
   border-right: 1px solid rgb(0 110 190 / 28%);
-  background: rgb(0 22 48 / 82%);
+  background: var(--map-facility-btn-bg);
   color: #a8b8cc;
   font-size: 12px;
   font-family: var(--font-body);
@@ -398,7 +398,7 @@ const emit = defineEmits<{
 }
 
 .incident-detail__tab--active {
-  color: #fff;
+  color: var(--color-text-strong);
   font-weight: 500;
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
 }
@@ -426,12 +426,12 @@ const emit = defineEmits<{
 }
 
 .incident-detail__label {
-  color: #4f8dd3;
+  color: var(--map-facility-btn-fg);
   white-space: nowrap;
 }
 
 .incident-detail__value {
-  color: #fff;
+  color: var(--color-text-strong);
   word-break: break-all;
 }
 
@@ -454,7 +454,7 @@ const emit = defineEmits<{
 .incident-detail__btn {
   flex: 1;
   height: 36px;
-  border: 1px solid rgb(0 110 190 / 38%);
+  border: 1px solid var(--map-facility-btn-border);
   border-radius: 2px;
   background: var(--incident-surface-bg);
   color: #c8d4e8;
@@ -464,7 +464,7 @@ const emit = defineEmits<{
 }
 
 .incident-detail__btn--primary {
-  color: #fff;
+  color: var(--color-text-strong);
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
   border-color: rgb(0 160 240 / 55%);
 }
@@ -475,7 +475,7 @@ const emit = defineEmits<{
 }
 
 .incident-detail__btn--start {
-  color: #fff;
+  color: var(--color-text-strong);
   background: linear-gradient(180deg, rgb(186 26 36 / 94%), rgb(128 12 20 / 94%));
   border-color: rgb(254 4 4 / 62%);
   box-shadow:
@@ -522,7 +522,7 @@ const emit = defineEmits<{
 }
 
 .incident-detail__btn--terminate {
-  color: #fe0404;
+  color: var(--map-rescue-red);
   background: rgb(56 10 16 / 78%);
   border: 1px solid rgb(254 4 4 / 62%);
   font-weight: 500;
@@ -537,7 +537,7 @@ const emit = defineEmits<{
 }
 
 .incident-detail__btn--terminate-drill {
-  color: #eca641;
+  color: var(--accent-gold);
   background: rgb(56 38 12 / 78%);
   border: 1px solid rgb(236 166 65 / 62%);
   text-shadow: 0 0 12px rgb(236 166 65 / 32%);
@@ -548,7 +548,7 @@ const emit = defineEmits<{
 
 .incident-detail__btn--terminate:hover {
   background: rgb(88 14 22 / 88%);
-  border-color: #fe0404;
+  border-color: var(--map-rescue-red);
   box-shadow:
     inset 0 0 16px rgb(254 4 4 / 20%),
     0 0 16px rgb(254 4 4 / 34%);
@@ -556,7 +556,7 @@ const emit = defineEmits<{
 
 .incident-detail__btn--terminate-drill:hover {
   background: rgb(80 54 16 / 88%);
-  border-color: #eca641;
+  border-color: var(--accent-gold);
   box-shadow:
     inset 0 0 16px rgb(236 166 65 / 20%),
     0 0 16px rgb(236 166 65 / 36%);
@@ -586,13 +586,13 @@ const emit = defineEmits<{
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  border-bottom: 1px solid rgb(0 110 190 / 35%);
+  border-bottom: 1px solid var(--panel-head-line);
 }
 
 .incident-warning__title {
   margin: 0;
   font-size: 24px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .incident-warning__close {
@@ -621,7 +621,7 @@ const emit = defineEmits<{
 }
 
 .incident-warning__label {
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   font-size: 14px;
   line-height: 32px;
 }
@@ -631,7 +631,7 @@ const emit = defineEmits<{
   display: flex;
   flex-wrap: wrap;
   gap: 18px;
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   font-size: 14px;
   line-height: 32px;
 }
@@ -644,10 +644,10 @@ const emit = defineEmits<{
 .incident-warning__row textarea {
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid rgb(0 110 190 / 35%);
+  border: 1px solid var(--panel-head-line);
   border-radius: 4px;
   background: rgb(0 20 45 / 82%);
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 13px;
   font-family: var(--font-body);
   line-height: 1.4;
@@ -672,15 +672,15 @@ const emit = defineEmits<{
 }
 
 .incident-warning__btn--ghost {
-  border: 1px solid rgb(0 110 190 / 38%);
-  background: rgb(0 22 48 / 82%);
-  color: #dbe7f8;
+  border: 1px solid var(--map-facility-btn-border);
+  background: var(--map-facility-btn-bg);
+  color: var(--map-layer-divider);
 }
 
 .incident-warning__btn--primary {
   border: 1px solid rgb(0 160 240 / 55%);
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .incident-warning-fade-enter-active,
@@ -725,7 +725,7 @@ const emit = defineEmits<{
 
 .incident-edit-dialog h3 {
   margin: 0;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 18px;
 }
 
@@ -765,7 +765,7 @@ const emit = defineEmits<{
   border: 1px solid rgb(14 165 233 / 34%);
   border-radius: 3px;
   background: #041b36;
-  color: #fff;
+  color: var(--color-text-strong);
   padding: 7px 8px;
   font: 12px var(--font-body);
 }
@@ -793,6 +793,6 @@ const emit = defineEmits<{
 
 .incident-edit-dialog footer .is-primary {
   background: linear-gradient(180deg, #087bd4, #075aa7);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 </style>

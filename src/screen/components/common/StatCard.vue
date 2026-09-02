@@ -40,7 +40,7 @@ const emit = defineEmits<{
 }
 
 .stat-card--clickable:hover {
-  border-color: rgb(0 180 255 / 45%);
+  border-color: var(--border-glow);
   box-shadow:
     inset 0 0 10px rgb(0 170 255 / 8%),
     0 0 10px rgb(0 150 255 / 12%);
@@ -52,7 +52,7 @@ const emit = defineEmits<{
   gap: 8px;
   padding: 8px 10px;
   background: linear-gradient(180deg, rgb(0 34 66 / 55%), rgb(0 20 42 / 42%));
-  border: 1px solid rgb(0 150 240 / 22%);
+  border: 1px solid var(--stat-card-border);
   border-radius: 2px;
   height: 100%;
   min-height: 0;
@@ -69,8 +69,8 @@ const emit = defineEmits<{
   align-items: center;
   justify-content: center;
   border-radius: 2px;
-  background: rgb(0 22 48 / 55%);
-  border: 1px solid rgb(0 150 240 / 22%);
+  background: var(--stat-card-icon-bg);
+  border: 1px solid var(--stat-card-border);
   overflow: visible; /* 避免图标被裁切 */
 }
 
@@ -100,7 +100,7 @@ const emit = defineEmits<{
 .stat-card__value {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-strong);
   letter-spacing: 0.2px;
   white-space: nowrap;
   overflow: hidden;

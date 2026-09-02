@@ -259,7 +259,7 @@ onMounted(() => {
   margin: 0;
   font-size: 16px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .hazard-detail__back-btn {
@@ -292,10 +292,10 @@ onMounted(() => {
 .hazard-detail__tab {
   height: 30px;
   padding: 0 4px;
-  border: 1px solid rgb(0 120 200 / 28%);
+  border: 1px solid var(--btn-border);
   border-radius: 2px;
-  background: rgb(0 22 48 / 55%);
-  color: #8aa4c4;
+  background: var(--stat-card-icon-bg);
+  color: var(--map-device-offline);
   font-size: 11px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -303,7 +303,7 @@ onMounted(() => {
 }
 
 .hazard-detail__tab--active {
-  color: #fff;
+  color: var(--color-text-strong);
   border-color: rgb(0 180 255 / 55%);
   background: rgb(0 90 160 / 50%);
 }
@@ -319,14 +319,14 @@ onMounted(() => {
   margin: 0 0 6px;
   font-size: 16px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-strong);
   line-height: 1.35;
 }
 
 .hazard-detail__code {
   margin-bottom: 12px;
   font-size: 12px;
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .hazard-detail__rows {
@@ -354,7 +354,7 @@ onMounted(() => {
 }
 
 .hazard-detail__row span {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .hazard-detail__row em {
@@ -367,11 +367,11 @@ onMounted(() => {
 }
 
 .hazard-detail__level--l2 {
-  color: #ff9a3c !important;
+  color: var(--color-alarm-2) !important;
 }
 
 .hazard-detail__level--l3 {
-  color: #f0c429 !important;
+  color: var(--color-alarm-3) !important;
 }
 
 .hazard-detail__level--l4 {
@@ -425,7 +425,7 @@ onMounted(() => {
 
 .hazard-detail__route-path {
   white-space: normal !important;
-  color: #8aa4c4 !important;
+  color: var(--map-device-offline) !important;
 }
 
 .hazard-detail__file span {
@@ -451,7 +451,7 @@ onMounted(() => {
 }
 
 .is-off {
-  color: #8aa4c4 !important;
+  color: var(--map-device-offline) !important;
 }
 
 .hazard-detail-map {
@@ -479,23 +479,23 @@ onMounted(() => {
   justify-content: center;
   font-size: 13px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .hazard-marker--l1 .hazard-marker__badge {
-  background: #e04838;
+  background: var(--map-hazard-l1);
 }
 
 .hazard-marker--l2 .hazard-marker__badge {
-  background: #e07a28;
+  background: var(--map-hazard-l2);
 }
 
 .hazard-marker--l3 .hazard-marker__badge {
-  background: #d4a820;
+  background: var(--map-hazard-l3);
 }
 
 .hazard-marker--l4 .hazard-marker__badge {
-  background: #2a8fd4;
+  background: var(--map-hazard-l4);
 }
 
 .hazard-marker__stem {
@@ -510,9 +510,9 @@ onMounted(() => {
   max-width: 180px;
   padding: 2px 6px;
   border-radius: 2px;
-  background: rgb(0 16 36 / 78%);
+  background: var(--map-device-label-bg);
   border: 1px solid rgb(0 140 220 / 28%);
-  color: #dbe7f8;
+  color: var(--map-layer-divider);
   font-size: 11px;
   white-space: nowrap;
   overflow: hidden;

@@ -69,12 +69,12 @@ function statusClass(status: string) {
   margin: 0;
   font-size: 17px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
 .patrol-linkage-list__count {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-size: 12px;
 }
 
@@ -115,7 +115,7 @@ function statusClass(status: string) {
   border: 1px solid rgb(0 120 200 / 20%);
   border-radius: 2px;
   background: rgb(0 40 78 / 45%);
-  color: #8aa4c4;
+  color: var(--map-device-offline);
   font-size: 12px;
 }
 
@@ -141,7 +141,7 @@ function statusClass(status: string) {
 }
 
 .patrol-linkage-list__row:hover {
-  border-color: rgb(0 180 255 / 45%);
+  border-color: var(--border-glow);
   background: rgb(0 35 70 / 55%);
 }
 
@@ -157,7 +157,7 @@ function statusClass(status: string) {
 }
 
 .patrol-linkage-list__status--offline {
-  color: #8aa4c4;
+  color: var(--map-device-offline);
 }
 
 .patrol-linkage-list__status--fault {

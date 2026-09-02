@@ -136,7 +136,7 @@ function handleStatClick(label: string) {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
 }
 
@@ -168,8 +168,8 @@ function handleStatClick(label: string) {
   padding: 0 18px 0 6px;
   border: 1px solid rgb(0 120 200 / 35%);
   border-radius: 2px;
-  background: rgb(0 22 48 / 65%);
-  color: #fff;
+  background: var(--btn-bg);
+  color: var(--color-text-strong);
   font-size: 12px;
   font-family: var(--font-body);
   outline: none;
@@ -190,8 +190,8 @@ function handleStatClick(label: string) {
   flex: 1;
   padding: 0;
   border: none;
-  background: rgb(0 25 55 / 65%);
-  color: #8aa4c4;
+  background: var(--alarm-card-bg);
+  color: var(--map-device-offline);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -199,7 +199,7 @@ function handleStatClick(label: string) {
 
 .duty-shift__btn--active {
   background: linear-gradient(180deg, rgb(0 130 220 / 90%), rgb(0 90 175 / 90%));
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .duty-list {
@@ -259,7 +259,7 @@ function handleStatClick(label: string) {
   gap: 8px;
   padding: 8px 10px;
   background: linear-gradient(180deg, rgb(0 34 66 / 55%), rgb(0 20 42 / 42%));
-  border: 1px solid rgb(0 150 240 / 22%);
+  border: 1px solid var(--stat-card-border);
   border-radius: 2px;
   box-shadow: inset 0 0 10px rgb(0 170 255 / 8%);
   box-sizing: border-box;
@@ -275,8 +275,8 @@ function handleStatClick(label: string) {
   align-items: center;
   justify-content: center;
   border-radius: 2px;
-  background: rgb(0 22 48 / 55%);
-  border: 1px solid rgb(0 150 240 / 22%);
+  background: var(--stat-card-icon-bg);
+  border: 1px solid var(--stat-card-border);
   overflow: hidden;
 }
 
@@ -302,7 +302,7 @@ function handleStatClick(label: string) {
 .duty-card__name {
   font-size: 14px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -322,7 +322,7 @@ function handleStatClick(label: string) {
   gap: 5px;
   margin-top: 4px;
   font-size: 12px;
-  color: #0af;
+  color: var(--color-accent-2);
   line-height: 1.2;
 }
 

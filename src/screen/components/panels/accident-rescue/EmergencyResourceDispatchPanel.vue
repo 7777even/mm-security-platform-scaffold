@@ -277,7 +277,7 @@ function confirmDispatch() {
 
 .resource-card__head strong {
   font-size: 13px;
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .resource-card__type {
@@ -378,7 +378,7 @@ function confirmDispatch() {
 .resource-dispatch__footer .is-primary,
 .dispatch-dialog .is-primary {
   background: linear-gradient(180deg, #087bd4, #075aa7);
-  color: #fff;
+  color: var(--color-text-strong);
 }
 
 .resource-dispatch__empty {
@@ -416,7 +416,7 @@ function confirmDispatch() {
 
 .dispatch-dialog h3 {
   margin: 0;
-  color: #fff;
+  color: var(--color-text-strong);
   font-size: 18px;
 }
 
