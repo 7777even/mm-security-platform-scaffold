@@ -8,6 +8,7 @@ export default tseslint.config(
   {
     ignores: [
       'dist*',
+      '**/dist*/**',
       'public/**',
       'node_modules',
       '.verify-out/**',
@@ -16,6 +17,10 @@ export default tseslint.config(
       '**/.verify-tmp/**',
       '.migration-tmp/**',
       '**/.migration-tmp/**',
+      '.tmp-migrate/**',
+      '.tmp-ui-redesign/**',
+      '.workbuddy/**',
+      '.superpowers/**',
       '*.config.ts',
       '*.config.js',
     ],
