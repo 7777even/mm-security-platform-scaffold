@@ -1,147 +1,69 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import type { Component } from 'vue';
 import {
   Aim,
   Bell,
-  Cpu,
-  Files,
   FirstAidKit,
   Message,
   OfficeBuilding,
+  Setting,
+  VideoCamera,
   Warning,
 } from '@element-plus/icons-vue';
+import { mgmtMenus, firstLeafPath, leafCount, flattenLeaves } from '@/data/mgmtMenus';
 
 // 工作台（导航门户，UI 规范 §5.1「主界面级」形态）：
-// 页标题 + 右上统计卡 + 八大业务模块卡片（模块名 / 业务页面数 / 子页面直达入口）
-// 样式全部走 tokens.css [data-theme='mgmt'] 块，禁止硬编码色 / 字号 / 尺寸
+// 由 mgmtMenus 数据驱动——模块卡 / 子页 / 页面数全部取自真实菜单，点模块卡或子页真实跳转。
+// 图标与色调按 group key 映射（对齐原型 icons/tones 语义）。样式全部走 tokens.css [data-theme='mgmt']。
 
 type Tone = 'danger' | 'warning' | 'primary' | 'success';
 
-interface WorkbenchStat {
-  label: string;
-  value: number;
-  tone: Tone;
+const router = useRouter();
+
+const iconByKey: Record<string, Component> = {
+  alarm: Bell,
+  fire: Warning,
+  emergency: FirstAidKit,
+  production: OfficeBuilding,
+  security: Aim,
+  monitor: VideoCamera,
+  comm: Message,
+  sys: Setting,
+};
+
+const toneByKey: Record<string, Tone> = {
+  alarm: 'danger',
+  fire: 'warning',
+  emergency: 'warning',
+  production: 'primary',
+  security: 'primary',
+  monitor: 'success',
+  comm: 'primary',
+  sys: 'primary',
+};
+
+// 统计卡（原型右上 4 项）；子系统数动态取自菜单分组数，其余为代表性示例值（同原型写死语义）
+const stats = computed(() => [
+  { label: '今日告警', value: 6, tone: 'danger' as Tone },
+  { label: '在办工单', value: 18, tone: 'warning' as Tone },
+  { label: '子系统', value: mgmtMenus.length, tone: 'primary' as Tone },
+  { label: '在线设备', value: 304, tone: 'success' as Tone },
+]);
+
+// 每个分组展示的前 4 个子页 + 余量
+function previewLeaves(key: string) {
+  const group = mgmtMenus.find((g) => g.key === key);
+  if (!group) return { leaves: [] as { name: string; path: string }[], more: 0 };
+  const all = flattenLeaves(group.children);
+  return { leaves: all.slice(0, 4), more: Math.max(0, all.length - 4) };
 }
 
-interface ModulePage {
-  label: string;
-  path?: string;
+function goGroup(key: string) {
+  const group = mgmtMenus.find((g) => g.key === key);
+  if (group) router.push(firstLeafPath(group));
 }
-
-interface WorkbenchModule {
-  name: string;
-  pageTotal: number;
-  tone: Tone;
-  icon: Component;
-  pages: ModulePage[];
-  /** 未展示的其余业务页面数（+N 胶囊） */
-  more?: number;
-}
-
-// 统计卡（原型右上 4 项）：数值着色只用语义 token（§7 映射表同源色阶）
-const stats: WorkbenchStat[] = [
-  { label: '今日告警', value: 6, tone: 'danger' },
-  { label: '在办工单', value: 18, tone: 'warning' },
-  { label: '子系统', value: 8, tone: 'primary' },
-  { label: '在线设备', value: 304, tone: 'success' },
-];
-
-// 八大业务模块（原型卡片栅格，行优先两列）；已实现路由的子页面挂 path，其余为占位入口
-const modules: WorkbenchModule[] = [
-  {
-    name: '报警管理',
-    pageTotal: 2,
-    tone: 'danger',
-    icon: Bell,
-    pages: [{ label: '报警记录', path: '/alarm-records' }],
-    more: 1,
-  },
-  {
-    name: '消防设施管理',
-    pageTotal: 35,
-    tone: 'warning',
-    icon: Warning,
-    pages: [
-      { label: '消防重点部位管理' },
-      { label: '火灾自动报警系统' },
-      { label: '消防水系统' },
-      { label: '室外消火栓' },
-    ],
-    more: 31,
-  },
-  {
-    name: '应急及演练管理',
-    pageTotal: 18,
-    tone: 'warning',
-    icon: FirstAidKit,
-    pages: [
-      { label: '应急知识库' },
-      { label: '预案管理' },
-      { label: '演练培训管理' },
-      { label: '演练设备管理' },
-    ],
-    more: 14,
-  },
-  {
-    name: '生产信息管理',
-    pageTotal: 13,
-    tone: 'primary',
-    icon: OfficeBuilding,
-    pages: [
-      { label: '企业基本信息管理' },
-      { label: '两重点一重大管理' },
-      { label: '特殊作业管理' },
-    ],
-    more: 10,
-  },
-  {
-    name: '治安防恐管理',
-    pageTotal: 5,
-    tone: 'primary',
-    icon: Aim,
-    pages: [
-      { label: '人员备案管理' },
-      { label: '车辆备案管理' },
-      { label: '卡口门禁设施管理' },
-      { label: '道闸管理' },
-    ],
-    more: 1,
-  },
-  {
-    name: '设备管理',
-    pageTotal: 5,
-    tone: 'success',
-    icon: Cpu,
-    pages: [{ label: '视频监控管理' }, { label: '应急监测设备管理' }, { label: '应急防控管理' }],
-    more: 2,
-  },
-  {
-    name: '通讯通知管理',
-    pageTotal: 6,
-    tone: 'primary',
-    icon: Message,
-    pages: [
-      { label: '短信记录' },
-      { label: '短信通讯录记录' },
-      { label: '广播播发记录' },
-      { label: '广播设备管理' },
-    ],
-    more: 2,
-  },
-  {
-    name: '基础信息管理',
-    pageTotal: 5,
-    tone: 'primary',
-    icon: Files,
-    pages: [
-      { label: '组织管理' },
-      { label: '人员与账号管理' },
-      { label: '角色与权限管理' },
-      { label: '审计日志管理' },
-    ],
-    more: 1,
-  },
-];
 </script>
 
 <template>
@@ -162,26 +84,39 @@ const modules: WorkbenchModule[] = [
       </div>
     </header>
 
-    <!-- 业务模块卡片栅格（两列） -->
+    <!-- 业务模块卡片栅格（两列）：数据驱动 mgmtMenus，点卡 / 子页真实跳转 -->
     <section class="workbench__grid">
-      <article v-for="mod in modules" :key="mod.name" class="wb-card">
+      <article
+        v-for="g in mgmtMenus"
+        :key="g.key"
+        class="wb-card"
+        role="button"
+        tabindex="0"
+        @click="goGroup(g.key)"
+        @keyup.enter="goGroup(g.key)"
+      >
         <header class="wb-card__head">
-          <span class="wb-card__icon" :class="`wb-card__icon--${mod.tone}`">
-            <el-icon :size="18"><component :is="mod.icon" /></el-icon>
+          <span class="wb-card__icon" :class="`wb-card__icon--${toneByKey[g.key]}`">
+            <el-icon :size="18"><component :is="iconByKey[g.key]" /></el-icon>
           </span>
           <div class="wb-card__meta">
-            <h3 class="wb-card__name">{{ mod.name }}</h3>
-            <p class="wb-card__count">{{ mod.pageTotal }} 个业务页面</p>
+            <h3 class="wb-card__name">{{ g.title }}</h3>
+            <p class="wb-card__count">{{ leafCount(g) }} 个业务页面</p>
           </div>
         </header>
         <footer class="wb-card__foot">
-          <template v-for="page in mod.pages" :key="page.label">
-            <RouterLink v-if="page.path" :to="page.path" class="tag tag-info wb-card__link">
-              {{ page.label }}
-            </RouterLink>
-            <span v-else class="tag tag-info wb-card__link">{{ page.label }}</span>
-          </template>
-          <span v-if="mod.more" class="wb-card__more">+{{ mod.more }}</span>
+          <RouterLink
+            v-for="leaf in previewLeaves(g.key).leaves"
+            :key="leaf.path"
+            :to="leaf.path"
+            class="tag tag-info wb-card__link"
+            @click.stop
+          >
+            {{ leaf.name }}
+          </RouterLink>
+          <span v-if="previewLeaves(g.key).more" class="wb-card__more">
+            +{{ previewLeaves(g.key).more }}
+          </span>
         </footer>
       </article>
     </section>
@@ -264,7 +199,7 @@ const modules: WorkbenchModule[] = [
   color: var(--text-muted-mgmt);
 }
 
-/* 模块卡片栅格：两列，白卡 + 细描边 + 大圆角 */
+/* 模块卡片栅格：两列，白卡 + 细描边 + 大圆角；整卡可点 */
 .workbench__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -278,11 +213,20 @@ const modules: WorkbenchModule[] = [
   background: var(--card-mgmt);
   border: 1px solid var(--border-mgmt);
   border-radius: var(--mgmt-radius-lg);
-  transition: box-shadow 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+  cursor: pointer;
 }
 
 .wb-card:hover {
   box-shadow: var(--mgmt-card-shadow-hover);
+  border-color: var(--primary-mgmt);
+}
+
+.wb-card:focus-visible {
+  outline: 2px solid var(--primary-mgmt);
+  outline-offset: 2px;
 }
 
 /* 卡头：浅底圆形图标 + 模块名（16，档3）+ 页面数（12，档4） */
