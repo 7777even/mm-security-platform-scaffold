@@ -62,7 +62,7 @@ const process = useEmergencyProcess();
 :global(.pd-mask) {
   position: fixed;
   inset: 0;
-  z-index: 1900;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -157,7 +157,7 @@ const process = useEmergencyProcess();
 :global(.pd-btn--finish) {
   border: 1px solid rgb(16 185 129 / 50%);
   background: rgb(16 185 129 / 14%);
-  color: #34d399;
+  color: var(--color-success);
 }
 
 :global(.pd-btn--escalate) {

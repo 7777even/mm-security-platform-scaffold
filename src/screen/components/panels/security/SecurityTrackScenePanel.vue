@@ -533,7 +533,7 @@ function handleMonitorPlayback() {
   background: rgb(0 18 40 / 78%);
   backdrop-filter: blur(6px);
   pointer-events: auto;
-  z-index: 1400;
+  z-index: var(--z-toast);
 }
 
 .st-row {

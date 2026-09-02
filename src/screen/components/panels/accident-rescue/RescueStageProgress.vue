@@ -115,7 +115,7 @@ function connectorDone(index: number) {
   background: rgb(16 34 58 / 94%);
   box-sizing: border-box;
   flex-shrink: 0;
-  z-index: 2;
+  z-index: var(--z-chrome);
 }
 
 .rescue-stage-progress__step--done .rescue-stage-progress__node {
@@ -167,7 +167,7 @@ function connectorDone(index: number) {
 
 .rescue-stage-progress__label {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   font-size: 12px;
   line-height: 1;
   color: #a8b8cc;

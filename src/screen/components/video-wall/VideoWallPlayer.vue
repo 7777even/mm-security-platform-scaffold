@@ -126,11 +126,11 @@ const generateAiBoxes = () => {
   // Only sometimes render AI detection targets
   if (Math.random() > 0.4) {
     const list = [
-      { label: 'Reactor B02: NORMAL', color: '#00ff66' },
-      { label: 'Vessel Valve: CLOSED', color: '#00ff66' },
-      { label: 'Temp Sensor: 41.8°C', color: '#00ff66' },
-      { label: 'Flow Rate: 120L/s', color: '#00ff66' },
-      { label: 'Warning: High Temp (Sim)', color: '#ff4d4f' },
+      { label: 'Reactor B02: NORMAL', color: '#3dd68c' },
+      { label: 'Vessel Valve: CLOSED', color: '#3dd68c' },
+      { label: 'Temp Sensor: 41.8°C', color: '#3dd68c' },
+      { label: 'Flow Rate: 120L/s', color: '#3dd68c' },
+      { label: 'Warning: High Temp (Sim)', color: '#ff5a4a' },
       { label: 'Worker Detected', color: '#00b4ff' },
     ];
 
@@ -369,7 +369,7 @@ onUnmounted(() => {
   background: #0a0a0a;
   color: #7cdbff;
   font-size: 13px;
-  z-index: 10;
+  z-index: var(--z-chrome);
 }
 
 .spinner {
@@ -416,7 +416,7 @@ onUnmounted(() => {
   );
   pointer-events: none;
   opacity: 0.8;
-  z-index: 2;
+  z-index: var(--z-chrome);
   position: absolute;
 }
 
@@ -429,18 +429,18 @@ onUnmounted(() => {
   height: 100%;
   background: radial-gradient(circle, rgb(0 0 0 / 0%) 60%, rgb(0 0 0 / 40%) 100%);
   pointer-events: none;
-  z-index: 1;
+  z-index: var(--z-chrome);
 }
 
 /* AI detection target styles */
 .simulated-ai-box {
   position: absolute;
-  border: 1px solid #0f6;
+  border: 1px solid var(--color-success);
   pointer-events: none;
   box-shadow:
     0 0 6px rgb(0 255 102 / 20%),
     inset 0 0 6px rgb(0 255 102 / 20%);
-  z-index: 3;
+  z-index: var(--z-chrome);
   transition: all 0.5s ease-in-out;
 }
 
@@ -461,7 +461,7 @@ onUnmounted(() => {
   position: absolute;
   top: 8px;
   left: 12px;
-  z-index: 5;
+  z-index: var(--z-marker);
 }
 
 .camera-name {
@@ -478,7 +478,7 @@ onUnmounted(() => {
   position: absolute;
   top: 8px;
   right: 12px;
-  z-index: 5;
+  z-index: var(--z-marker);
   text-align: right;
   display: flex;
   flex-direction: column;
@@ -510,8 +510,8 @@ onUnmounted(() => {
 }
 
 .blink-red {
-  background-color: #f33;
-  box-shadow: 0 0 5px #f33;
+  background-color: var(--color-danger);
+  box-shadow: 0 0 5px var(--color-danger);
   animation: blink 1.5s infinite;
 }
 
@@ -546,7 +546,7 @@ onUnmounted(() => {
   border: 1.5px solid var(--color-accent);
   opacity: 0.4;
   pointer-events: none;
-  z-index: 2;
+  z-index: var(--z-chrome);
 }
 
 .top-left {

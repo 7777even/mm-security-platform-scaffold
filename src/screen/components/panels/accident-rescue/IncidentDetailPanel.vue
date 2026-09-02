@@ -565,7 +565,7 @@ const emit = defineEmits<{
 .incident-warning-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2200;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -696,7 +696,7 @@ const emit = defineEmits<{
 .incident-edit-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2500;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;

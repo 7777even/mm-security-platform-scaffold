@@ -61,7 +61,7 @@ const objects = [
 }
 
 .object-card__head > span:last-child {
-  color: #62d9b2;
+  color: var(--color-success);
   font-size: 12px;
 }
 
@@ -69,7 +69,7 @@ const objects = [
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #49d5a4;
+  background: var(--color-success);
   box-shadow: 0 0 8px currentcolor;
 }
 
@@ -88,11 +88,11 @@ const objects = [
 }
 
 .object-card--warning .object-card__dot {
-  background: #ffb62e;
+  background: var(--color-warning);
 }
 
 .object-card--warning .object-card__head > span:last-child {
-  color: #ffbf47;
+  color: var(--color-warning);
 }
 
 .object-card--danger {
@@ -101,10 +101,10 @@ const objects = [
 }
 
 .object-card--danger .object-card__dot {
-  background: #ff515c;
+  background: var(--color-danger);
 }
 
 .object-card--danger .object-card__head > span:last-child {
-  color: #ff6670;
+  color: var(--color-danger);
 }
 </style>

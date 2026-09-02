@@ -184,7 +184,7 @@ onUnmounted(() => {
 
 .app-header__left {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   height: 100%;
 }
 
@@ -232,7 +232,7 @@ onUnmounted(() => {
 
 .app-header__center {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -328,7 +328,7 @@ onUnmounted(() => {
 
 .app-header__right {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   display: flex;
   align-items: center;
   justify-content: flex-end;

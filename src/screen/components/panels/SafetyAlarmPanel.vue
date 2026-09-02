@@ -400,17 +400,17 @@ function callPersonnel(area: FireAreaSummary) {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  border: 1px solid #51e8bd;
+  border: 1px solid var(--color-success);
   border-radius: 50%;
   background: rgb(25 129 103 / 44%);
-  color: #6affd2;
+  color: var(--color-success);
   font-size: 22px;
   font-weight: 700;
   box-shadow: 0 0 12px rgb(55 231 183 / 22%);
 }
 
 .fire-status--alarm .fire-status__icon {
-  border-color: #ff7179;
+  border-color: var(--color-danger);
   background: rgb(180 43 53 / 50%);
   color: var(--color-text-strong);
   box-shadow: 0 0 13px rgb(255 78 88 / 36%);
@@ -441,14 +441,14 @@ function callPersonnel(area: FireAreaSummary) {
   border: 1px solid rgb(60 230 184 / 45%);
   border-radius: 14px;
   background: rgb(22 132 102 / 25%);
-  color: #5ef0c2;
+  color: var(--color-success);
   font-size: 12px;
 }
 
 .fire-status__badge--alarm {
   border-color: rgb(255 101 109 / 55%);
   background: rgb(181 42 53 / 30%);
-  color: #ff9096;
+  color: var(--color-danger);
 }
 
 .fire-status__demo {
@@ -543,7 +543,7 @@ function callPersonnel(area: FireAreaSummary) {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ff525c;
+  background: var(--color-danger);
   box-shadow: 0 0 10px rgb(255 71 82 / 80%);
 }
 
@@ -552,7 +552,7 @@ function callPersonnel(area: FireAreaSummary) {
 }
 
 .section-heading__dot {
-  background: #4be5b5;
+  background: var(--color-success);
   box-shadow: 0 0 8px rgb(75 229 181 / 55%);
 }
 
@@ -711,24 +711,24 @@ function callPersonnel(area: FireAreaSummary) {
 
 .area-card__head > span {
   flex-shrink: 0;
-  color: #52e6b6;
+  color: var(--color-success);
   font-size: 11px;
 }
 
 .area-card--attention .area-card__head > span {
-  color: #ffc35a;
+  color: var(--color-warning);
 }
 
 .area-card__dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #4be4b4;
+  background: var(--color-success);
   box-shadow: 0 0 7px rgb(75 228 180 / 55%);
 }
 
 .area-card--attention .area-card__dot {
-  background: #ffc052;
+  background: var(--color-warning);
   box-shadow: 0 0 7px rgb(255 192 82 / 55%);
 }
 

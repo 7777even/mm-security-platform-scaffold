@@ -102,7 +102,7 @@ const emit = defineEmits<{
 
 .panel-card__header-extra {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -113,12 +113,12 @@ const emit = defineEmits<{
 .panel-card__header :slotted(a),
 .panel-card__header :slotted(button) {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
 }
 
 .panel-card__more {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   margin-left: auto;
   display: flex;
   align-items: center;
@@ -154,7 +154,7 @@ const emit = defineEmits<{
 
 .panel-card__content {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   flex: 1;
   min-height: 0;
   padding: 8px 14px 16px;
@@ -179,6 +179,6 @@ const emit = defineEmits<{
   height: auto;
   max-height: 16px;
   pointer-events: none;
-  z-index: 2;
+  z-index: var(--z-chrome);
 }
 </style>

@@ -651,7 +651,7 @@ onUnmounted(() => {
 }
 
 .event-card__tag--warning-done {
-  color: #ff7070;
+  color: var(--color-danger);
   background: rgb(120 20 20 / 35%);
   border: 1px solid rgb(200 60 60 / 45%);
 }

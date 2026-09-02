@@ -389,7 +389,7 @@ function handleAction(item: EmergencyCommandInstruction, event: MouseEvent) {
 }
 
 .er-command-card__status--is-pending {
-  color: #f0b45a;
+  color: var(--color-warning);
 }
 
 .er-command-card__status--is-dispatch {
@@ -397,7 +397,7 @@ function handleAction(item: EmergencyCommandInstruction, event: MouseEvent) {
 }
 
 .er-command-card__status--is-done {
-  color: #6fd08a;
+  color: var(--color-success);
 }
 
 .er-command-card__done {

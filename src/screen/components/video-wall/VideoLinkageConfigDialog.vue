@@ -360,7 +360,7 @@ function goToPage(page: number) {
 .linkage-dialog {
   position: fixed;
   inset: 0;
-  z-index: 2200;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -483,7 +483,7 @@ function goToPage(page: number) {
 .linkage-dialog__table th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: var(--z-chrome);
   padding: 10px 8px;
   text-align: left;
   font-weight: 500;
@@ -528,7 +528,7 @@ function goToPage(page: number) {
 }
 
 .linkage-dialog__row-btn--danger {
-  color: #ff7a6a;
+  color: var(--color-danger);
 }
 
 .linkage-dialog__pagination,
@@ -629,7 +629,7 @@ function goToPage(page: number) {
   border: 1px solid rgb(61 214 140 / 50%);
   border-radius: 4px;
   background: rgb(10 60 40 / 90%);
-  color: #9fe8c2;
+  color: var(--color-success);
   font-size: 13px;
 }
 

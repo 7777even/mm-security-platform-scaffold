@@ -92,7 +92,7 @@ const pieOption = computed(() => ({
 
 .event-analysis__title-btn {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -121,7 +121,7 @@ const pieOption = computed(() => ({
 
 .event-analysis__range {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   height: 26px;
   padding: 0 24px 0 10px;
   border: 1px solid rgb(0 140 220 / 35%);

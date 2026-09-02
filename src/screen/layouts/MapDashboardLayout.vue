@@ -24,13 +24,13 @@ import SharedCesiumMap from '../components/map/SharedCesiumMap.vue';
 .map-dashboard-layout__cesium {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: var(--z-base);
 }
 
 .map-dashboard-layout__pages {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-chrome);
   pointer-events: none;
 }
 </style>

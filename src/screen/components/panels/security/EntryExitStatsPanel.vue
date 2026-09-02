@@ -190,7 +190,7 @@ const pieOption = computed(() => ({
 
 .entry-stats__detail {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   margin-left: auto;
   font-size: 14px;
   font-weight: 500;
@@ -225,7 +225,7 @@ const pieOption = computed(() => ({
 }
 
 .entry-tab--active {
-  color: #ff8c00;
+  color: var(--color-warning);
 }
 
 .entry-tab--active::after {

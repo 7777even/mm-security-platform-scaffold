@@ -364,7 +364,7 @@ function onFilePick() {
 .eem-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -499,7 +499,7 @@ function onFilePick() {
 
 .eem-label--required::before {
   content: '*';
-  color: #ff7070;
+  color: var(--color-danger);
   margin-right: 2px;
 }
 

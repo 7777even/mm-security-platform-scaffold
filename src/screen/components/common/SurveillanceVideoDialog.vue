@@ -239,7 +239,7 @@ watch(
 .surveillance-dialog {
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  z-index: var(--z-toast);
   display: grid;
   place-items: center;
   font-family: var(--font-body, sans-serif);
@@ -302,17 +302,17 @@ watch(
   height: 7px;
   margin-right: 5px;
   border-radius: 50%;
-  background: #27df8c;
-  box-shadow: 0 0 8px #27df8c;
+  background: var(--color-success);
+  box-shadow: 0 0 8px var(--color-success);
 }
 
 .surveillance-dialog__header span.is-offline {
-  color: #ff8f8f;
+  color: var(--color-danger);
 }
 
 .surveillance-dialog__header span.is-offline i {
-  background: #ff5c5c;
-  box-shadow: 0 0 8px #ff5c5c;
+  background: var(--color-danger);
+  box-shadow: 0 0 8px var(--color-danger);
 }
 
 .surveillance-dialog__header > button {
@@ -377,7 +377,7 @@ watch(
 }
 
 .surveillance-dialog__hud span {
-  color: #ff5b5b;
+  color: var(--color-danger);
 }
 
 .surveillance-dialog__paused,
@@ -400,12 +400,12 @@ watch(
   padding: 12px 20px;
   border: 1px solid rgb(255 92 92 / 50%);
   background: rgb(40 8 12 / 88%);
-  color: #ffb1b1;
+  color: var(--color-danger);
 }
 
 .surveillance-dialog__toast {
   top: 18%;
-  color: #63ffba;
+  color: var(--color-success);
 }
 
 .surveillance-dialog__timeline {

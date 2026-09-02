@@ -561,7 +561,7 @@ function statusBadgeClass(status: string): string {
 }
 
 .status-badge--ok {
-  color: #7dffb0;
+  color: var(--color-success);
   background: rgb(0 160 80 / 22%);
   border: 1px solid rgb(0 200 100 / 40%);
 }
@@ -573,13 +573,13 @@ function statusBadgeClass(status: string): string {
 }
 
 .status-badge--warn {
-  color: #ffc97a;
+  color: var(--color-warning);
   background: rgb(200 120 0 / 24%);
   border: 1px solid rgb(255 160 0 / 45%);
 }
 
 .status-badge--danger {
-  color: #ff9b9b;
+  color: var(--color-danger);
   background: rgb(190 40 40 / 24%);
   border: 1px solid rgb(255 90 90 / 45%);
 }

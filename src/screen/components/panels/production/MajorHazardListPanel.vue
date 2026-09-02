@@ -218,7 +218,7 @@ function closeList() {
 }
 
 .hazard-table__level--l1 {
-  color: #ff6b5a;
+  color: var(--color-danger);
 }
 
 .hazard-table__level--l2 {

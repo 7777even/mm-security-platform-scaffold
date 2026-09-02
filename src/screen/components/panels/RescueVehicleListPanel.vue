@@ -327,13 +327,13 @@ function handleSelect(id: number) {
 }
 
 .vehicle-status--idle {
-  color: #7dffb0;
+  color: var(--color-success);
   background: rgb(0 160 80 / 28%);
   border: 1px solid rgb(0 200 100 / 40%);
 }
 
 .vehicle-status--repair {
-  color: #ffc97a;
+  color: var(--color-warning);
   background: rgb(200 120 0 / 28%);
   border: 1px solid rgb(255 160 0 / 45%);
 }

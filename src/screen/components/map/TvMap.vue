@@ -157,7 +157,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
 .tv-map__depth {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-base);
   pointer-events: none;
   background:
     radial-gradient(
@@ -184,7 +184,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
 
 .map-pin {
   position: absolute;
-  z-index: 4;
+  z-index: var(--z-marker);
   transform: translate(-50%, -100%);
   display: flex;
   flex-direction: column;
@@ -198,7 +198,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
 }
 
 .map-pin--scan-result {
-  z-index: 7;
+  z-index: var(--z-marker);
 }
 
 .map-pin__label {
@@ -223,7 +223,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
 .map-pin__label-text {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-marker);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -289,7 +289,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
 
 .alarm-marker {
   position: absolute;
-  z-index: 5;
+  z-index: var(--z-marker);
   transform: translate(-50%, -100%);
   pointer-events: none;
 }
@@ -421,7 +421,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
   flex-direction: column;
   align-items: flex-start;
   gap: 5px;
-  z-index: 6;
+  z-index: var(--z-chrome);
   pointer-events: auto;
 }
 
@@ -483,7 +483,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
 
 .video-map-point {
   position: absolute;
-  z-index: 7;
+  z-index: var(--z-marker);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -556,7 +556,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
   height: 6px;
   border: 1px solid #00223e;
   border-radius: 50%;
-  background: #35e394;
+  background: var(--color-success);
 }
 
 .video-map-point__stem {
@@ -574,7 +574,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
 }
 
 .video-map-point:hover {
-  z-index: 10;
+  z-index: var(--z-chrome);
   color: #fff36a;
 }
 
@@ -582,7 +582,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
   position: absolute;
   top: calc(var(--header-height) + 66px);
   left: calc(var(--sidebar-width) + 208px);
-  z-index: 9;
+  z-index: var(--z-marker);
   pointer-events: auto;
   display: flex;
   align-items: center;

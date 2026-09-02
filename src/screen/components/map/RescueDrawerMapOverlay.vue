@@ -234,7 +234,7 @@ function handleSelect(id: number) {
   inset: 0;
   pointer-events: none;
   overflow: hidden;
-  z-index: 4;
+  z-index: var(--z-base);
 }
 
 .rescue-map-marker {

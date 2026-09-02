@@ -60,7 +60,7 @@ const process = useEmergencyProcess();
 :global(.escalate-mask) {
   position: fixed;
   inset: 0;
-  z-index: 1800;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,7 +101,7 @@ const process = useEmergencyProcess();
 
 :global(.escalate-header__title) {
   flex: 1;
-  color: #f43f5e;
+  color: var(--color-danger);
   font-size: 15px;
   font-weight: 700;
 }
@@ -133,7 +133,7 @@ const process = useEmergencyProcess();
   border-radius: 50%;
   background: rgb(244 63 94 / 14%);
   border: 1px solid rgb(244 63 94 / 45%);
-  color: #f43f5e;
+  color: var(--color-danger);
   font-size: 22px;
   animation: escalate-pulse 1.6s ease-in-out infinite;
 }
@@ -159,7 +159,7 @@ const process = useEmergencyProcess();
 }
 
 :global(.escalate-prompt__target) {
-  color: #f43f5e;
+  color: var(--color-danger);
 }
 
 :global(.escalate-prompt__desc) {

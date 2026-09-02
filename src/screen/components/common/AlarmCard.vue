@@ -195,10 +195,10 @@ function alarmThumbnail() {
 }
 
 .alarm-card__action--primary {
-  color: #ff7a6a;
+  color: var(--color-danger);
 }
 
 .alarm-card__action--primary:hover {
-  color: #ff9a8e;
+  color: var(--color-danger);
 }
 </style>

@@ -277,7 +277,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
 .alarm-video {
   position: fixed;
   inset: 0;
-  z-index: 2200;
+  z-index: var(--z-toast);
   display: grid;
   place-items: center;
   font-family: var(--font-body, sans-serif);
@@ -336,7 +336,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
   border: 1px solid rgb(255 92 92 / 58%);
   border-radius: 50%;
   background: rgb(177 35 45 / 28%);
-  color: #ff777d;
+  color: var(--color-danger);
   font-size: 13px;
   box-shadow: 0 0 12px rgb(255 67 76 / 20%);
 }
@@ -440,7 +440,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
 .alarm-video__osd {
   position: absolute;
   top: 12px;
-  z-index: 2;
+  z-index: var(--z-chrome);
   color: var(--color-text-strong);
   text-shadow: 0 1px 4px #000;
 }
@@ -485,13 +485,13 @@ onBeforeUnmount(() => window.clearInterval(timer));
   height: 6px;
   margin-right: 5px;
   border-radius: 50%;
-  background: #ffc928;
-  box-shadow: 0 0 6px #ffc928;
+  background: var(--color-warning);
+  box-shadow: 0 0 6px var(--color-warning);
 }
 
 .alarm-video__osd--right span.live i {
-  background: #ff4e57;
-  box-shadow: 0 0 6px #ff4e57;
+  background: var(--color-danger);
+  box-shadow: 0 0 6px var(--color-danger);
   animation: live-blink 1.4s infinite;
 }
 
@@ -501,7 +501,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
   top: 38%;
   width: 25%;
   height: 29%;
-  border: 1px solid #ff575f;
+  border: 1px solid var(--color-danger);
   box-shadow:
     0 0 10px rgb(255 55 65 / 28%),
     inset 0 0 10px rgb(255 55 65 / 10%);
@@ -512,7 +512,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
   top: -20px;
   left: -1px;
   padding: 2px 6px;
-  background: #e7424b;
+  background: var(--color-danger);
   color: var(--color-text-strong);
   font-size: 10px;
 }
@@ -522,7 +522,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
   position: absolute;
   left: 50%;
   top: 50%;
-  z-index: 3;
+  z-index: var(--z-chrome);
   transform: translate(-50%, -50%);
   padding: 10px 17px;
   border: 1px solid rgb(74 194 255 / 42%);
@@ -533,7 +533,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
 .alarm-video__toast {
   top: 18%;
   border-color: rgb(63 235 168 / 48%);
-  color: #65f4b8;
+  color: var(--color-success);
 }
 
 .alarm-video__timeline {
@@ -572,7 +572,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
   left: 50%;
   top: 16px;
   transform: translateX(-50%);
-  color: #ff858a;
+  color: var(--color-danger);
   font-size: 9px;
   pointer-events: none;
   white-space: nowrap;
@@ -584,7 +584,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
   bottom: 13px;
   width: 2px;
   height: 17px;
-  background: #ff5059;
+  background: var(--color-danger);
   box-shadow: 0 0 7px rgb(255 70 80 / 70%);
 }
 
@@ -592,7 +592,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #68cfa8;
+  color: var(--color-success);
   font-size: 11px;
 }
 
@@ -601,8 +601,8 @@ onBeforeUnmount(() => window.clearInterval(timer));
   height: 7px;
   margin-right: 6px;
   border-radius: 50%;
-  background: #35e795;
-  box-shadow: 0 0 8px #35e795;
+  background: var(--color-success);
+  box-shadow: 0 0 8px var(--color-success);
 }
 
 .alarm-video__controls {
@@ -653,12 +653,12 @@ onBeforeUnmount(() => window.clearInterval(timer));
 }
 
 .side-title span {
-  color: #ff8a90;
+  color: var(--color-danger);
   font-size: 10px;
 }
 
 .alarm-video__cameras .side-title span {
-  color: #54e6b2;
+  color: var(--color-success);
 }
 
 .alarm-video__alarm-info dl {
@@ -686,7 +686,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
 .alarm-video__alarm-info p {
   margin: 9px 0 0;
   padding: 9px;
-  border-left: 2px solid #ff626a;
+  border-left: 2px solid var(--color-danger);
   background: rgb(119 27 35 / 18%);
   color: #bfced8;
   font-size: 11px;
@@ -729,9 +729,9 @@ onBeforeUnmount(() => window.clearInterval(timer));
   position: absolute;
   right: 4px;
   top: 3px;
-  color: #3cec9c;
+  color: var(--color-success);
   font-size: 8px;
-  text-shadow: 0 0 6px #3cec9c;
+  text-shadow: 0 0 6px var(--color-success);
 }
 
 .alarm-video__cameras button > span:nth-child(2) {

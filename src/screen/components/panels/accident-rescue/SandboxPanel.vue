@@ -151,7 +151,7 @@ function handleExit() {
   top: calc(var(--header-height, 105px) + 18px);
   right: 39px;
   bottom: 12px;
-  z-index: 10;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   width: 419px;

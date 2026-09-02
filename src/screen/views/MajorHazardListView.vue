@@ -107,7 +107,7 @@ watch(selectedPlantArea, () => void flyToHazards());
   position: absolute;
   left: 18px;
   bottom: 18px;
-  z-index: 5;
+  z-index: var(--z-marker);
   height: 36px;
   padding: 0 18px;
   border: 1px solid rgb(0 150 230 / 45%);

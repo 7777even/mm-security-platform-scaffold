@@ -62,7 +62,7 @@ const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(() => {
   inset: 0;
   pointer-events: none;
   overflow: hidden;
-  z-index: 4;
+  z-index: var(--z-chrome);
 }
 
 .brigade-marker,

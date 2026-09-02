@@ -558,7 +558,7 @@ onUnmounted(() => {
 :global(.pano-mask) {
   position: fixed;
   inset: 0;
-  z-index: 1300;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -652,7 +652,7 @@ onUnmounted(() => {
 :global(.pano-badge--event) {
   background: rgb(239 68 68 / 20%);
   border: 1px solid rgb(239 68 68 / 50%);
-  color: #f87171;
+  color: var(--color-danger);
   text-shadow: 0 0 5px rgb(248 113 113 / 50%);
 }
 
@@ -708,7 +708,7 @@ onUnmounted(() => {
 
 :global(.pano-dialog--event .pano-switch-btn) {
   border-color: rgb(239 68 68 / 40%);
-  color: #fca5a5;
+  color: var(--color-danger);
 }
 
 :global(.pano-switch-btn:hover) {
@@ -799,11 +799,11 @@ onUnmounted(() => {
 }
 
 :global(.pano-legend__item--completed) {
-  color: #10b981;
+  color: var(--color-success);
 }
 
 :global(.pano-legend__item--risk) {
-  color: #f87171;
+  color: var(--color-danger);
 }
 
 :global(.pano-scroll) {
@@ -886,7 +886,7 @@ onUnmounted(() => {
   right: -13px;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 3;
+  z-index: var(--z-chrome);
   color: var(--map-sky);
   font-size: 15px;
   text-shadow: 0 0 8px rgb(56 189 248 / 60%);
@@ -993,7 +993,7 @@ onUnmounted(() => {
 
 :global(.pano-ctx) {
   position: fixed;
-  z-index: 2100;
+  z-index: var(--z-toast);
   min-width: 170px;
   padding: 5px;
   border: 1px solid #475569;
@@ -1025,7 +1025,7 @@ onUnmounted(() => {
 
 :global(.pano-ctx button.is-danger:hover) {
   background: rgb(239 68 68 / 18%);
-  color: #fca5a5;
+  color: var(--color-danger);
 }
 
 .pano-risk {
@@ -1060,7 +1060,7 @@ onUnmounted(() => {
   border-radius: 3px;
   background: rgb(239 68 68 / 12%);
   border: 1px solid rgb(239 68 68 / 40%);
-  color: #f87171;
+  color: var(--color-danger);
   font-size: 10px;
   line-height: 1.2;
   white-space: nowrap;
@@ -1103,7 +1103,7 @@ onUnmounted(() => {
   padding: 8px 10px;
   background: #1e293b;
   border: 1px solid #334155;
-  z-index: 2;
+  z-index: var(--z-chrome);
 }
 
 .pano-resource__name {
@@ -1134,13 +1134,13 @@ onUnmounted(() => {
 .pano-count-badge.is-ok {
   background: rgb(16 185 129 / 14%);
   border: 1px solid rgb(16 185 129 / 40%);
-  color: #34d399;
+  color: var(--color-success);
 }
 
 .pano-count-badge.is-warn {
   background: rgb(245 158 11 / 14%);
   border: 1px solid rgb(245 158 11 / 45%);
-  color: #fbbf24;
+  color: var(--color-warning);
 }
 
 .pano-resource__contacts {
@@ -1196,7 +1196,7 @@ onUnmounted(() => {
   box-sizing: border-box;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
-  z-index: 1;
+  z-index: var(--z-chrome);
 }
 
 .pano-card--pending {
@@ -1230,7 +1230,7 @@ onUnmounted(() => {
 
 .pano-card--completed:hover {
   background: rgb(16 185 129 / 20%);
-  border-color: #10b981;
+  border-color: var(--color-success);
   transform: translateY(-1px);
 }
 
@@ -1256,7 +1256,7 @@ onUnmounted(() => {
 }
 
 .pano-card--completed .pano-card__status {
-  color: #34d399;
+  color: var(--color-success);
 }
 
 .pano-card__risk {
@@ -1267,7 +1267,7 @@ onUnmounted(() => {
   border-radius: 3px;
   background: rgb(239 68 68 / 14%);
   border: 1px solid rgb(239 68 68 / 40%);
-  color: #f87171;
+  color: var(--color-danger);
   font-size: 9px;
   line-height: 1;
 }
@@ -1348,7 +1348,7 @@ onUnmounted(() => {
 }
 
 :global(.pano-process__step--done .pano-process__dot) {
-  background: #10b981;
+  background: var(--color-success);
   box-shadow: 0 0 7px rgb(16 185 129 / 70%);
 }
 
@@ -1382,7 +1382,7 @@ onUnmounted(() => {
 }
 
 :global(.pano-process__step--done .pano-process__status) {
-  color: #34d399;
+  color: var(--color-success);
 }
 
 :global(.pano-process__step--active .pano-process__status) {
@@ -1418,7 +1418,7 @@ onUnmounted(() => {
 :global(.pano-plan-selector) {
   position: absolute;
   inset: 0;
-  z-index: 30;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -208,7 +208,7 @@ watch(
 :global(.action-detail-mask) {
   position: fixed;
   inset: 0;
-  z-index: 1400;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -371,7 +371,7 @@ watch(
 }
 
 :global(.action-detail__status-btn--completed.is-active) {
-  border-color: #34d399;
+  border-color: var(--color-success);
   color: var(--color-text-strong);
   background: linear-gradient(180deg, #059669, #047857);
 }
@@ -400,7 +400,7 @@ watch(
 
 :global(.action-detail__risk-name) {
   display: block;
-  color: #fca5a5;
+  color: var(--color-danger);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -493,7 +493,7 @@ watch(
   top: 48px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1500;
+  z-index: var(--z-toast);
   display: inline-flex;
   align-items: center;
   gap: 8px;

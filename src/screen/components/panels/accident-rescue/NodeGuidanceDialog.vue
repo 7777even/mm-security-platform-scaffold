@@ -116,7 +116,7 @@ const process = useEmergencyProcess();
 :global(.guidance-mask) {
   position: fixed;
   inset: 0;
-  z-index: 1500;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -333,7 +333,7 @@ const process = useEmergencyProcess();
   border-radius: 3px;
   background: rgb(245 158 11 / 14%);
   border: 1px solid rgb(245 158 11 / 40%);
-  color: #fbbf24;
+  color: var(--color-warning);
   font-size: 10px;
 }
 
@@ -428,7 +428,7 @@ const process = useEmergencyProcess();
   border: 1px solid rgb(239 68 68 / 40%);
   border-radius: 6px;
   background: rgb(127 29 29 / 16%);
-  color: #fca5a5;
+  color: var(--color-danger);
   font-size: 12px;
   line-height: 1.55;
 }

@@ -318,7 +318,7 @@ const scrollClass = computed(() => (props.theme === 'drill' ? 'dr-scroll' : 'ar-
 }
 
 .dynamics-card__responder {
-  color: #5ecfb8;
+  color: var(--color-success);
 }
 
 .dynamics-list--drill .dynamics-card__responder {
@@ -425,7 +425,7 @@ const scrollClass = computed(() => (props.theme === 'drill' ? 'dr-scroll' : 'ar-
 
 .dynamics-preview {
   position: fixed;
-  z-index: 10000;
+  z-index: var(--z-toast);
   inset: 0;
   display: grid;
   place-items: center;

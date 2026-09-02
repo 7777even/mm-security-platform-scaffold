@@ -58,7 +58,7 @@ const contentClass = computed(() => `preliminary-panel__content--${props.variant
   top: 13px;
   width: 16px;
   height: 16px;
-  z-index: 2;
+  z-index: var(--z-chrome);
 }
 
 .preliminary-panel__title {
@@ -69,13 +69,13 @@ const contentClass = computed(() => `preliminary-panel__content--${props.variant
   font-size: 18px;
   font-weight: 500;
   color: var(--color-text-strong);
-  z-index: 2;
+  z-index: var(--z-chrome);
   line-height: 1.4;
 }
 
 .preliminary-panel__content {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -106,6 +106,6 @@ const contentClass = computed(() => `preliminary-panel__content--${props.variant
   height: auto;
   max-height: 16px;
   pointer-events: none;
-  z-index: 2;
+  z-index: var(--z-chrome);
 }
 </style>

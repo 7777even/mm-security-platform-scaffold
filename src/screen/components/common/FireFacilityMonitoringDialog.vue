@@ -1395,7 +1395,7 @@ const currentWorkOrderDetail = computed(() => {
 .ffm {
   position: fixed;
   inset: 0;
-  z-index: 2250;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1747,7 +1747,7 @@ const currentWorkOrderDetail = computed(() => {
 .ffm__table th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: var(--z-chrome);
   padding: 8px;
   text-align: left;
   font-weight: 500;
@@ -1789,7 +1789,7 @@ const currentWorkOrderDetail = computed(() => {
 }
 
 .level-badge--danger {
-  color: #ff6b5e;
+  color: var(--color-danger);
   border-color: rgb(255 90 74 / 55%);
 }
 
@@ -1804,7 +1804,7 @@ const currentWorkOrderDetail = computed(() => {
 }
 
 .status-badge--pending {
-  color: #ff9f43;
+  color: var(--color-warning);
   border-color: rgb(255 159 67 / 50%);
 }
 
@@ -1824,7 +1824,7 @@ const currentWorkOrderDetail = computed(() => {
 }
 
 .status-badge--done {
-  color: #6dd58c;
+  color: var(--color-success);
   border-color: rgb(109 213 140 / 50%);
 }
 
@@ -1845,7 +1845,7 @@ const currentWorkOrderDetail = computed(() => {
 }
 
 .ffm__link--danger {
-  color: #ff6b5e;
+  color: var(--color-danger);
 }
 
 .ffm__footer {
@@ -1993,7 +1993,7 @@ const currentWorkOrderDetail = computed(() => {
   box-shadow: 0 0 6px rgb(0 170 255 / 55%);
   flex-shrink: 0;
   margin-top: 3px;
-  z-index: 1;
+  z-index: var(--z-marker);
 }
 
 .ffm__timeline-content {

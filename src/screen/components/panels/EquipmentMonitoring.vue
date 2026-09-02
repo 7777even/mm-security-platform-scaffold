@@ -429,11 +429,11 @@ const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onli
 }
 
 .status-counts .offline b {
-  color: #ffbf49;
+  color: var(--color-warning);
 }
 
 .status-counts .fault b {
-  color: #ff665e;
+  color: var(--color-danger);
 }
 
 .status-counts button:hover {
@@ -517,12 +517,12 @@ const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onli
 }
 
 .focus-item > i.danger {
-  background: #ff564f;
+  background: var(--color-danger);
   box-shadow: 0 0 7px rgb(255 86 79 / 70%);
 }
 
 .focus-item > i.warning {
-  background: #ffbd42;
+  background: var(--color-warning);
   box-shadow: 0 0 7px rgb(255 189 66 / 55%);
 }
 
@@ -585,11 +585,11 @@ const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onli
 }
 
 .danger-text {
-  color: #ff6259 !important;
+  color: var(--color-danger) !important;
 }
 
 .warning-text {
-  color: #ffbd42 !important;
+  color: var(--color-warning) !important;
 }
 
 .progress-card {
@@ -689,19 +689,19 @@ const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onli
   padding: 2px 5px;
   border-radius: 2px;
   background: rgb(54 190 153 / 13%);
-  color: #54d7ae;
+  color: var(--color-success);
   font-size: 9px;
   text-align: center;
 }
 
 .inspection__list header span.danger {
   background: rgb(255 86 79 / 14%);
-  color: #ff6b64;
+  color: var(--color-danger);
 }
 
 .inspection__list header span.warning {
   background: rgb(255 189 66 / 13%);
-  color: #ffbd42;
+  color: var(--color-warning);
 }
 
 .inspection__list small {
@@ -782,7 +782,7 @@ const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onli
 }
 
 .stat-row__label--danger {
-  color: #ff6a62;
+  color: var(--color-danger);
 }
 
 .stat-dot {

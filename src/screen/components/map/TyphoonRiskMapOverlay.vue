@@ -84,7 +84,7 @@ const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(
 
 .tw-risk-marker {
   position: absolute;
-  z-index: 4;
+  z-index: var(--z-marker);
   pointer-events: none;
 }
 
@@ -194,17 +194,17 @@ const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(
 }
 
 .tw-risk-marker--critical {
-  --risk-color: #ff3b3b;
+  --risk-color: var(--color-danger);
   --risk-glow: rgb(255 59 59 / 65%);
 }
 
 .tw-risk-marker--warning {
-  --risk-color: #ff9f2f;
+  --risk-color: var(--color-warning);
   --risk-glow: rgb(255 159 47 / 62%);
 }
 
 .tw-risk-marker--normal {
-  --risk-color: #29d383;
+  --risk-color: var(--color-success);
   --risk-glow: rgb(41 211 131 / 58%);
 }
 
@@ -225,7 +225,7 @@ const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(
   font-size: 11px;
   line-height: 18px;
   text-align: center;
-  z-index: 2;
+  z-index: var(--z-marker);
 }
 
 @keyframes tw-risk-pin-breathe {

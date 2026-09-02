@@ -102,7 +102,7 @@ watch(
 .risk-video-wall {
   position: fixed;
   inset: 0;
-  z-index: 1900;
+  z-index: var(--z-toast);
   display: grid;
   place-items: center;
   font-family: var(--font-body, sans-serif);
@@ -220,7 +220,7 @@ watch(
   position: absolute;
   top: 10px;
   right: 12px;
-  color: #ff6464;
+  color: var(--color-danger);
   font-size: 11px;
   text-shadow: 0 1px 4px #000;
 }
@@ -256,7 +256,7 @@ watch(
   padding: 7px 12px;
   border: 1px solid rgb(255 110 110 / 45%);
   background: rgb(38 8 12 / 80%);
-  color: #ffb0b0;
+  color: var(--color-danger);
   font-size: 12px;
 }
 

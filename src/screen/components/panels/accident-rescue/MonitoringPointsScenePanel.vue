@@ -311,7 +311,7 @@ function stageAlarmCount(id: string) {
 .mp-scene {
   position: absolute;
   inset: calc(var(--header-height, 105px) + 18px) 18px 18px;
-  z-index: 40;
+  z-index: var(--z-toast);
   display: grid;
   grid-template-columns: 410px minmax(0, 1fr) 410px;
   gap: 14px;
@@ -496,19 +496,19 @@ function stageAlarmCount(id: string) {
   padding: 2px 5px;
   border-radius: 2px;
   background: rgb(53 210 152 / 10%);
-  color: #4bd4a6;
+  color: var(--color-success);
   font-size: 9px;
   font-style: normal;
 }
 
 .mp-trend-card.tone-warning > header em {
   background: rgb(255 180 45 / 12%);
-  color: #ffc052;
+  color: var(--color-warning);
 }
 
 .mp-trend-card.tone-alarm > header em {
   background: rgb(255 79 73 / 14%);
-  color: #ff6861;
+  color: var(--color-danger);
 }
 
 .mp-chart {
@@ -566,11 +566,11 @@ function stageAlarmCount(id: string) {
 }
 
 .mp-chart .limit--high {
-  stroke: #ff5650;
+  stroke: var(--color-danger);
 }
 
 .mp-chart .limit--warning {
-  stroke: #ffb23b;
+  stroke: var(--color-warning);
 }
 
 .mp-chart__labels {
@@ -616,15 +616,15 @@ function stageAlarmCount(id: string) {
 }
 
 .mp-map-legend .normal {
-  background: #42d69f;
+  background: var(--color-success);
 }
 
 .mp-map-legend .warning {
-  background: #ffb936;
+  background: var(--color-warning);
 }
 
 .mp-map-legend .alarm {
-  background: #ff514b;
+  background: var(--color-danger);
 }
 
 .mp-map-legend .offline {
@@ -677,7 +677,7 @@ function stageAlarmCount(id: string) {
 }
 
 .mp-timeline-item__dot {
-  z-index: 1;
+  z-index: var(--z-marker);
   width: 9px;
   height: 9px;
   margin-top: 13px;
@@ -746,29 +746,29 @@ function stageAlarmCount(id: string) {
 }
 
 .mp-timeline-item.tone-alarm .mp-timeline-item__dot {
-  background: #ff514b;
+  background: var(--color-danger);
   box-shadow: 0 0 8px rgb(255 81 75 / 55%);
 }
 
 .mp-timeline-item.tone-alarm .mp-alarm-card {
-  border-left-color: #ff514b;
+  border-left-color: var(--color-danger);
 }
 
 .mp-timeline-item.tone-alarm .mp-alarm-card header em {
   background: rgb(255 81 75 / 13%);
-  color: #ff706a;
+  color: var(--color-danger);
 }
 
 .mp-timeline-item.tone-warning .mp-timeline-item__dot {
-  background: #ffba38;
+  background: var(--color-warning);
 }
 
 .mp-timeline-item.tone-warning .mp-alarm-card {
-  border-left-color: #ffba38;
+  border-left-color: var(--color-warning);
 }
 
 .mp-timeline-item.tone-warning .mp-alarm-card header em {
-  color: #ffc457;
+  color: var(--color-warning);
 }
 
 .mp-timeline-item.tone-offline .mp-timeline-item__dot {
@@ -864,12 +864,12 @@ function stageAlarmCount(id: string) {
 }
 
 .mp-trend-card.tone-warning::before {
-  background: #ffb936;
+  background: var(--color-warning);
   opacity: 0.9;
 }
 
 .mp-trend-card.tone-alarm::before {
-  background: #ff514b;
+  background: var(--color-danger);
   opacity: 1;
 }
 
@@ -905,7 +905,7 @@ function stageAlarmCount(id: string) {
 
 .mp-chart-tooltip {
   position: absolute;
-  z-index: 4;
+  z-index: var(--z-chrome);
   display: flex;
   min-width: 61px;
   flex-direction: column;
@@ -1125,12 +1125,12 @@ function stageAlarmCount(id: string) {
 }
 
 .mp-trend-card.tone-warning .mp-chart__value strong {
-  color: #ffc54d;
+  color: var(--color-warning);
   text-shadow: 0 0 9px rgb(255 185 54 / 40%);
 }
 
 .mp-trend-card.tone-alarm .mp-chart__value strong {
-  color: #ff7772;
+  color: var(--color-danger);
   text-shadow: 0 0 10px rgb(255 81 75 / 52%);
 }
 

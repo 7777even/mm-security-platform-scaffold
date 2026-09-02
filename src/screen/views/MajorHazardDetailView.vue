@@ -363,7 +363,7 @@ onMounted(() => {
 }
 
 .hazard-detail__level--l1 {
-  color: #ff6b5a !important;
+  color: var(--color-danger) !important;
 }
 
 .hazard-detail__level--l2 {
@@ -447,7 +447,7 @@ onMounted(() => {
 }
 
 .is-ok {
-  color: #3ecf8e !important;
+  color: var(--color-success) !important;
 }
 
 .is-off {
@@ -458,12 +458,12 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 4;
+  z-index: var(--z-chrome);
 }
 
 .hazard-marker {
   position: absolute;
-  z-index: 5;
+  z-index: var(--z-marker);
   display: flex;
   flex-direction: column;
   align-items: center;

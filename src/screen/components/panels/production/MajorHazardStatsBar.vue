@@ -116,11 +116,11 @@ const levels = computed(() => [
 }
 
 .hazard-stats__item--l1 {
-  border-left: 3px solid #ff6b5a;
+  border-left: 3px solid var(--color-danger);
 }
 
 .hazard-stats__item--l1 .hazard-stats__item-value {
-  color: #ff6b5a;
+  color: var(--color-danger);
 }
 
 .hazard-stats__item--l2 {

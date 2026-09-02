@@ -192,7 +192,7 @@ onBeforeUnmount(stopAlarmSound);
 .sound-light-alarm {
   position: fixed;
   inset: 0;
-  z-index: 3600;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -222,7 +222,7 @@ onBeforeUnmount(stopAlarmSound);
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #e9433c;
+  background: var(--color-danger);
   color: var(--color-text-strong);
   font-size: 21px;
   font-weight: 800;
@@ -246,7 +246,7 @@ onBeforeUnmount(stopAlarmSound);
 
 .sound-light-alarm__title {
   margin: 0;
-  color: #ff625a;
+  color: var(--color-danger);
   font-size: 30px;
   font-weight: 700;
 }
@@ -257,7 +257,7 @@ onBeforeUnmount(stopAlarmSound);
   border: 1px solid rgb(255 105 105 / 35%);
   border-radius: 2px;
   background: rgb(255 55 55 / 8%);
-  color: #ffaaa5;
+  color: var(--color-danger);
   font-size: 20px;
   cursor: pointer;
 }
@@ -269,7 +269,7 @@ onBeforeUnmount(stopAlarmSound);
   height: 34px;
   padding: 0 20px;
   background: rgb(255 44 44 / 12%);
-  color: #ffaaa5;
+  color: var(--color-danger);
   font-size: 13px;
 }
 
@@ -277,8 +277,8 @@ onBeforeUnmount(stopAlarmSound);
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ff4740;
-  box-shadow: 0 0 10px #ff4740;
+  background: var(--color-danger);
+  box-shadow: 0 0 10px var(--color-danger);
   animation: sound-light-status 0.7s ease-in-out infinite alternate;
 }
 
@@ -320,7 +320,7 @@ onBeforeUnmount(stopAlarmSound);
 
 .sound-light-alarm__image-label {
   position: absolute;
-  z-index: 1;
+  z-index: var(--z-chrome);
   top: 10px;
   left: 10px;
   padding: 4px 9px;
@@ -402,7 +402,7 @@ onBeforeUnmount(stopAlarmSound);
 
 .sound-light-alarm__time {
   margin-right: 12px;
-  color: #ffc19d;
+  color: var(--color-warning);
   white-space: nowrap;
 }
 
@@ -489,7 +489,7 @@ onBeforeUnmount(stopAlarmSound);
   }
 
   50% {
-    border-color: #ff5b55;
+    border-color: var(--color-danger);
   }
 }
 

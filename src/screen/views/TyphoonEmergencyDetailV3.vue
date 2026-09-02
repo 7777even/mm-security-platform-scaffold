@@ -89,7 +89,7 @@ const dynamics = computed(() =>
 const trendOption = computed(() => {
   const isRain = trendMetric.value === 'rain';
   const data = isRain ? incident.value.precipitationSeries : incident.value.windSpeedSeries;
-  const color = isRain ? '#35c6ff' : '#5cdda4';
+  const color = isRain ? '#35c6ff' : '#3dd68c';
   return {
     animation: false,
     grid: { left: 32, right: 10, top: 12, bottom: 22 },
@@ -144,20 +144,20 @@ const waterOption = computed(() => ({
       data: incident.value.waterLevelSeries,
       smooth: true,
       symbolSize: 4,
-      lineStyle: { color: '#ffbc4d', width: 2 },
-      itemStyle: { color: '#ffbc4d' },
+      lineStyle: { color: '#f0b429', width: 2 },
+      itemStyle: { color: '#f0b429' },
       markLine: {
         symbol: 'none',
         data: [
           {
             yAxis: incident.value.waterLevelWarn,
-            lineStyle: { color: '#ffb23f', type: 'dashed' },
-            label: { formatter: '警戒', color: '#ffbd5c', fontSize: 9 },
+            lineStyle: { color: '#f0b429', type: 'dashed' },
+            label: { formatter: '警戒', color: '#f0b429', fontSize: 9 },
           },
           {
             yAxis: incident.value.waterLevelDanger,
-            lineStyle: { color: '#ff6269', type: 'dashed' },
-            label: { formatter: '危险', color: '#ff777d', fontSize: 9 },
+            lineStyle: { color: '#ff5a4a', type: 'dashed' },
+            label: { formatter: '危险', color: '#ff5a4a', fontSize: 9 },
           },
         ],
       },
@@ -383,7 +383,7 @@ function openPointVideo(point: RiskPoint) {
 <style scoped>
 .sense-page {
   position: relative;
-  z-index: 3;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -394,7 +394,7 @@ function openPointVideo(point: RiskPoint) {
   --line: rgb(83 165 213 / 22%);
   --muted: #7f9bb1;
   --cyan: #39c6ff;
-  --red: #ff626b;
+  --red: var(--color-danger);
   --amber: #ffb84c;
 }
 
@@ -414,7 +414,7 @@ function openPointVideo(point: RiskPoint) {
   position: absolute;
   left: 50%;
   top: 82px;
-  z-index: 8;
+  z-index: var(--z-chrome);
   display: flex;
   align-items: center;
   gap: 0;
@@ -452,7 +452,7 @@ function openPointVideo(point: RiskPoint) {
 }
 
 .event-state .state {
-  color: #62dda3;
+  color: var(--color-success);
 }
 
 .event-state b {
@@ -586,7 +586,7 @@ function openPointVideo(point: RiskPoint) {
 }
 
 .monitor-grid header em {
-  color: #5cd99f;
+  color: var(--color-success);
   font-size: 8px;
   font-style: normal;
   white-space: nowrap;
@@ -790,7 +790,7 @@ function openPointVideo(point: RiskPoint) {
 }
 
 .map-legend .normal {
-  background: #43d695;
+  background: var(--color-success);
 }
 
 .map-legend > b {
@@ -820,7 +820,7 @@ function openPointVideo(point: RiskPoint) {
 }
 
 .online {
-  color: #62d99e !important;
+  color: var(--color-success) !important;
 }
 
 .leader {
@@ -958,7 +958,7 @@ function openPointVideo(point: RiskPoint) {
 .resource-grid em {
   grid-column: 1/-1;
   margin-top: 2px;
-  color: #5ccf98;
+  color: var(--color-success);
   font-size: 7px;
   font-style: normal;
 }
@@ -1019,8 +1019,8 @@ function openPointVideo(point: RiskPoint) {
   height: 6px;
   margin-top: 2px;
   border-radius: 50%;
-  background: #4fd49a;
-  box-shadow: 0 0 6px #4fd49a;
+  background: var(--color-success);
+  box-shadow: 0 0 6px var(--color-success);
 }
 
 .dynamic-list article > i::after {

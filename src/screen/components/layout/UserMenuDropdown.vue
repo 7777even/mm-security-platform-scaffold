@@ -73,7 +73,7 @@ function handleLogout() {
 <style scoped>
 .user-menu {
   position: fixed;
-  z-index: 10000;
+  z-index: var(--z-toast);
   min-width: 120px;
   padding: 6px;
   border: 1px solid rgb(0 140 220 / 45%);

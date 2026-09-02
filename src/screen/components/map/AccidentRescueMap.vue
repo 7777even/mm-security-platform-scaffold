@@ -345,7 +345,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 .accident-rescue-map__depth {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-base);
   pointer-events: none;
   background:
     radial-gradient(
@@ -373,7 +373,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 .accident-rescue-map__route {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: var(--z-base);
   width: 100%;
   height: 100%;
   pointer-events: none;
@@ -411,7 +411,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   --gate-pin-size: 20px;
 
   position: absolute;
-  z-index: 4;
+  z-index: var(--z-marker);
   width: 121px;
   height: 96px;
   pointer-events: none;
@@ -505,7 +505,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 
 .emergency-pin-marker {
   position: absolute;
-  z-index: 5;
+  z-index: var(--z-marker);
   pointer-events: none;
 }
 
@@ -771,7 +771,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 
 .vehicle-marker {
   position: absolute;
-  z-index: 6;
+  z-index: var(--z-marker);
   width: 0;
   height: 0;
   pointer-events: none;
@@ -862,7 +862,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   flex-direction: column;
   align-items: flex-end;
   gap: 12px;
-  z-index: 6;
+  z-index: var(--z-chrome);
   pointer-events: auto;
 }
 

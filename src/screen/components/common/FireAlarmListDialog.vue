@@ -308,7 +308,7 @@ const dialogActions: DialogAction[] = [
 .fire-alarm-list {
   position: fixed;
   inset: 0;
-  z-index: 2200;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -434,7 +434,7 @@ const dialogActions: DialogAction[] = [
 .fire-alarm-list__table th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: var(--z-chrome);
   padding: 10px 8px;
   text-align: left;
   font-weight: 500;
@@ -473,7 +473,7 @@ const dialogActions: DialogAction[] = [
 }
 
 .type-label--gds {
-  color: #c43d3d;
+  color: var(--color-danger);
 }
 
 .type-label--muted {
@@ -481,7 +481,7 @@ const dialogActions: DialogAction[] = [
 }
 
 .status-label {
-  color: #ff7a6a;
+  color: var(--color-danger);
 }
 
 .status-label--closed {
@@ -511,11 +511,11 @@ const dialogActions: DialogAction[] = [
 }
 
 .row-action--primary {
-  color: #ff7a6a;
+  color: var(--color-danger);
 }
 
 .row-action--primary:hover {
-  color: #ff9a8e;
+  color: var(--color-danger);
 }
 
 .fire-alarm-list__pagination {

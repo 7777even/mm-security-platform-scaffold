@@ -341,7 +341,7 @@ function toggleTasksDropdown() {
   top: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
-  z-index: 4;
+  z-index: var(--z-chrome);
   min-width: 168px;
   padding: 6px;
   box-sizing: border-box;
@@ -382,6 +382,6 @@ function toggleTasksDropdown() {
 }
 
 .process-panorama__task--active .process-panorama__task-status {
-  color: #5ecfb8;
+  color: var(--color-success);
 }
 </style>

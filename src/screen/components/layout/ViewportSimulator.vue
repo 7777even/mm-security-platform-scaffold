@@ -194,7 +194,7 @@ watch(simulatedViewport, () => {
 .viewport-simulator__toolbar-zone {
   position: relative;
   flex-shrink: 0;
-  z-index: 10;
+  z-index: var(--z-chrome);
   transition: height 0.25s ease;
 }
 

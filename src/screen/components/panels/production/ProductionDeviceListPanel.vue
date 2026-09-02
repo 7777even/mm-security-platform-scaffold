@@ -266,7 +266,7 @@ function statusClass(status: ProductionDeviceStatus) {
 }
 
 .device-table__status--ok {
-  color: #3ecf8e;
+  color: var(--color-success);
 }
 
 .device-table__status--offline {
@@ -274,7 +274,7 @@ function statusClass(status: ProductionDeviceStatus) {
 }
 
 .device-table__status--fault {
-  color: #ff6b5a;
+  color: var(--color-danger);
 }
 
 .device-table__empty {

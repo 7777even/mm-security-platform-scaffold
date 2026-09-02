@@ -240,7 +240,7 @@ const weeklyLowPoints = computed(() =>
 .weather-dialog {
   position: fixed;
   inset: 0;
-  z-index: 10020;
+  z-index: var(--z-toast);
   display: grid;
   place-items: center;
   background: rgb(0 8 20 / 76%);
@@ -341,7 +341,7 @@ p {
 
 .air-quality {
   height: 62px;
-  border-left: 3px solid #62dc87;
+  border-left: 3px solid var(--color-success);
   background: rgb(65 183 99 / 10%);
   display: flex;
   flex-direction: column;
@@ -351,7 +351,7 @@ p {
 
 .air-quality strong {
   font-size: 24px;
-  color: #67e190;
+  color: var(--color-success);
 }
 
 .air-quality span {
@@ -551,7 +551,7 @@ dd {
 
 .weekly-forecast .daily-list {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 10px;
@@ -617,7 +617,7 @@ dd {
 
 .weekly-temperature-chart {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-chrome);
   left: 14px;
   right: 14px;
   top: 105px;

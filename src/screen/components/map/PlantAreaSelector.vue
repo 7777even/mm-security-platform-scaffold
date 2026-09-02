@@ -44,7 +44,7 @@ function handleChange(event: Event) {
   position: absolute;
   top: calc(var(--header-height) + 66px);
   left: calc(var(--sidebar-width) + 28px);
-  z-index: 9;
+  z-index: var(--z-chrome);
   pointer-events: auto;
   display: flex;
   align-items: center;

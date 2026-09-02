@@ -57,7 +57,7 @@ onMounted(() => {
 <style scoped>
 .alarm-detail-map-marker {
   position: absolute;
-  z-index: 6;
+  z-index: var(--z-marker);
   width: 22px;
   height: 22px;
   transform: translate(-50%, -50%);
@@ -124,7 +124,7 @@ onMounted(() => {
 }
 
 .alarm-detail-map-marker__popup-title {
-  color: #ffb4a8;
+  color: var(--color-danger);
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;

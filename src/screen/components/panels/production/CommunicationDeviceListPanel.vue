@@ -195,7 +195,7 @@ function statusTone(status: string) {
 }
 
 .comm-list__status--ok {
-  color: #3ecf8e;
+  color: var(--color-success);
 }
 
 .comm-list__status--offline {
@@ -203,7 +203,7 @@ function statusTone(status: string) {
 }
 
 .comm-list__status--fault {
-  color: #ff6b5a;
+  color: var(--color-danger);
 }
 
 .comm-list__direct {

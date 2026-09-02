@@ -91,7 +91,7 @@ const shellDrawerActive = computed(() => productionDeviceDrawerActive.value);
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 12;
+  z-index: var(--z-overlay);
 }
 
 .production-drawer {
@@ -192,7 +192,7 @@ const shellDrawerActive = computed(() => productionDeviceDrawerActive.value);
   left: 17px;
   right: 465px;
   bottom: 8px;
-  z-index: 3;
+  z-index: var(--z-chrome);
   pointer-events: auto;
 }
 

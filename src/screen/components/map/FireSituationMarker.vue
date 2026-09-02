@@ -40,32 +40,32 @@ const { anchorStyle } = useCesiumScreenAnchor(() => ({
 <style scoped>
 .fire-situation-marker {
   position: absolute;
-  z-index: 4;
+  z-index: var(--z-marker);
   transform: translate(-20px, -64px);
   width: 40px;
   height: 64px;
   pointer-events: auto;
 
-  --marker: #ffbc3f;
+  --marker: var(--color-warning);
   --glow: rgb(255 174 41 / 55%);
 }
 
 .fire-situation-marker--event {
-  --marker: #ff3d4f;
+  --marker: var(--color-danger);
   --glow: rgb(255 42 64 / 62%);
 
-  z-index: 7;
+  z-index: var(--z-marker);
 }
 
 .fire-situation-marker--alarm {
-  --marker: #ff665e;
+  --marker: var(--color-danger);
   --glow: rgb(255 68 57 / 58%);
 
-  z-index: 6;
+  z-index: var(--z-marker);
 }
 
 .fire-situation-marker--operation {
-  --marker: #ffba36;
+  --marker: var(--color-warning);
   --glow: rgb(255 176 35 / 48%);
 }
 
@@ -95,7 +95,7 @@ const { anchorStyle } = useCesiumScreenAnchor(() => ({
 
 .fire-situation-marker__level {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-marker);
   left: 27px;
   top: -2px;
   min-width: 28px;
@@ -103,7 +103,7 @@ const { anchorStyle } = useCesiumScreenAnchor(() => ({
   border: 1px solid rgb(255 195 70 / 72%);
   border-radius: 8px;
   background: rgb(48 31 3 / 94%);
-  color: #ffd16a;
+  color: var(--color-warning);
   font-size: 9px;
   font-weight: 700;
   line-height: 14px;

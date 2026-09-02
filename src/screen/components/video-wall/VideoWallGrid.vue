@@ -686,7 +686,7 @@ watch(
   padding: 2px 6px;
   border: 1px solid rgb(255 174 61 / 40%);
   background: rgb(105 55 5 / 36%);
-  color: #ffbd67;
+  color: var(--color-warning);
   font-size: 10px;
   font-style: normal;
   white-space: nowrap;
@@ -697,7 +697,7 @@ watch(
   height: 7px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: #21d89b;
+  background: var(--color-success);
   box-shadow: 0 0 8px rgb(33 216 155 / 80%);
 }
 
@@ -768,13 +768,13 @@ watch(
 }
 
 .remove-page-btn.mini {
-  color: #ff6b6b;
+  color: var(--color-danger);
   border-color: rgb(255 107 107 / 30%);
 }
 
 .remove-page-btn.mini:hover:not(:disabled) {
   background: rgb(255 107 107 / 20%);
-  border-color: #ff6b6b;
+  border-color: var(--color-danger);
   color: var(--color-text-strong);
 }
 
@@ -920,7 +920,7 @@ watch(
   transform: translateX(-50%);
   background: rgb(0 0 0 / 85%);
   border: 1px solid rgb(255 77 79 / 50%);
-  color: #ff4d4f;
+  color: var(--color-danger);
   font-size: 10px;
   padding: 2px 6px;
   border-radius: 2px;
@@ -1038,7 +1038,7 @@ watch(
 }
 
 .video-name {
-  color: #64ffda;
+  color: var(--color-success);
   font-size: 16px;
   font-weight: bold;
   text-shadow: 0 0 8px rgb(100 255 218 / 50%);

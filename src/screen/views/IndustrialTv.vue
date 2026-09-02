@@ -118,7 +118,7 @@ watch(
   position: absolute;
   top: 14px;
   right: 38px;
-  z-index: 8;
+  z-index: var(--z-chrome);
   transform: translateX(calc(100% + 40px));
   opacity: 0;
   pointer-events: none;

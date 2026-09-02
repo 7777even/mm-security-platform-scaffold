@@ -66,11 +66,11 @@ const assistItems = [
 }
 
 .assist-item--green .assist-item__value {
-  color: #58d8ae;
+  color: var(--color-success);
 }
 
 .assist-item--orange .assist-item__value {
-  color: #ffbd58;
+  color: var(--color-warning);
 }
 
 .assist-item--cyan .assist-item__value {

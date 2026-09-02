@@ -128,7 +128,7 @@ function submit() {
 .single-broadcast {
   position: fixed;
   inset: 0;
-  z-index: 2200;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -276,7 +276,7 @@ function submit() {
   border: 1px solid rgb(61 214 140 / 50%);
   border-radius: 4px;
   background: rgb(10 60 40 / 90%);
-  color: #9fe8c2;
+  color: var(--color-success);
   font-size: 13px;
 }
 

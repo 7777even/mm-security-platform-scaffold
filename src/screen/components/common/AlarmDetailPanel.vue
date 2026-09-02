@@ -569,7 +569,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
   box-shadow: 0 14px 36px rgb(0 0 0 / 42%);
   overflow: hidden;
   pointer-events: auto;
-  z-index: 20;
+  z-index: var(--z-overlay);
 }
 
 .alarm-detail__header {
@@ -602,7 +602,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
 }
 
 .alarm-status--pending {
-  color: #ff9f43;
+  color: var(--color-warning);
   background: rgb(255 159 67 / 15%);
   border: 1px solid rgb(255 159 67 / 50%);
 }
@@ -620,7 +620,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
 }
 
 .alarm-status--done {
-  color: #6dd58c;
+  color: var(--color-success);
   background: rgb(109 213 140 / 12%);
   border: 1px solid rgb(109 213 140 / 50%);
 }
@@ -718,7 +718,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
 }
 
 .alarm-level--danger {
-  color: #ff6b5e;
+  color: var(--color-danger);
   background: rgb(255 90 74 / 14%);
 }
 
@@ -963,7 +963,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
   box-shadow: 0 0 6px rgb(0 170 255 / 55%);
   flex-shrink: 0;
   margin-top: 3px;
-  z-index: 1;
+  z-index: var(--z-marker);
 }
 
 .alarm-detail__timeline-content {
@@ -1044,7 +1044,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
 }
 
 .alarm-detail__btn--danger {
-  color: #ff8a7a;
+  color: var(--color-danger);
   border-color: rgb(255 90 74 / 45%);
   background: rgb(120 30 20 / 25%);
 }

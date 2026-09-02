@@ -135,7 +135,7 @@ const toggleExpand = () => {
   border: none;
   border-top: 1px solid rgb(0 130 210 / 35%);
   padding: 15px;
-  z-index: 20;
+  z-index: var(--z-overlay);
 }
 
 .header {
@@ -148,7 +148,7 @@ const toggleExpand = () => {
 .title {
   font-size: 14px;
   font-weight: bold;
-  color: #ff6464;
+  color: var(--color-danger);
 }
 
 .header-actions {
@@ -168,7 +168,7 @@ const toggleExpand = () => {
 
 .linkage-checkbox input {
   cursor: pointer;
-  accent-color: #ff6464;
+  accent-color: var(--color-danger);
 }
 
 .more {
@@ -251,7 +251,7 @@ const toggleExpand = () => {
 .handle-btn {
   background: rgb(255 100 100 / 20%);
   border: 1px solid rgb(255 100 100 / 50%);
-  color: #ff6464;
+  color: var(--color-danger);
   padding: 2px 8px;
   border-radius: 2px;
   cursor: pointer;

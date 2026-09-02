@@ -160,7 +160,7 @@ watch(alarmVideoPopupsOpen, (open) => {
 .map-alarm-videos {
   position: absolute;
   inset: 0;
-  z-index: 5;
+  z-index: var(--z-marker);
   pointer-events: none;
   font-family: var(--font-body);
 }
@@ -210,8 +210,8 @@ watch(alarmVideoPopupsOpen, (open) => {
   height: 6px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: #31ed9b;
-  box-shadow: 0 0 7px #31ed9b;
+  background: var(--color-success);
+  box-shadow: 0 0 7px var(--color-success);
 }
 
 .map-video-card header strong {
@@ -242,7 +242,7 @@ watch(alarmVideoPopupsOpen, (open) => {
 }
 
 .map-video-card header button:hover {
-  color: #ff7a80;
+  color: var(--color-danger);
 }
 
 .map-video-card__viewport {
@@ -288,8 +288,8 @@ watch(alarmVideoPopupsOpen, (open) => {
   height: 5px;
   margin-right: 3px;
   border-radius: 50%;
-  background: #ff4e57;
-  box-shadow: 0 0 5px #ff4e57;
+  background: var(--color-danger);
+  box-shadow: 0 0 5px var(--color-danger);
   animation: live-pulse 1.3s infinite;
 }
 
@@ -303,7 +303,7 @@ watch(alarmVideoPopupsOpen, (open) => {
   top: 38%;
   width: 25%;
   height: 32%;
-  border: 1px solid #ff555d;
+  border: 1px solid var(--color-danger);
   box-shadow: 0 0 7px rgb(255 68 77 / 22%);
 }
 
@@ -312,7 +312,7 @@ watch(alarmVideoPopupsOpen, (open) => {
   left: -1px;
   top: -15px;
   padding: 1px 4px;
-  background: #e64149;
+  background: var(--color-danger);
   color: var(--color-text-strong);
   font-size: 8px;
 }
@@ -378,7 +378,7 @@ watch(alarmVideoPopupsOpen, (open) => {
   align-items: center;
   gap: 5px;
   transform: translate(-50%, -50%);
-  color: #ff9297;
+  color: var(--color-danger);
   font-size: 10px;
 }
 
@@ -387,8 +387,8 @@ watch(alarmVideoPopupsOpen, (open) => {
   height: 25px;
   display: grid;
   place-items: center;
-  z-index: 2;
-  border: 1px solid #ff5d64;
+  z-index: var(--z-marker);
+  border: 1px solid var(--color-danger);
   border-radius: 50%;
   background: rgb(157 25 35 / 82%);
   color: var(--color-text-strong);
@@ -425,7 +425,7 @@ watch(alarmVideoPopupsOpen, (open) => {
 }
 
 .map-alarm-videos__summary > div {
-  color: #ff8187;
+  color: var(--color-danger);
   font-size: 11px;
 }
 
@@ -435,8 +435,8 @@ watch(alarmVideoPopupsOpen, (open) => {
   height: 6px;
   margin-right: 5px;
   border-radius: 50%;
-  background: #ff525a;
-  box-shadow: 0 0 6px #ff525a;
+  background: var(--color-danger);
+  box-shadow: 0 0 6px var(--color-danger);
 }
 
 .map-alarm-videos__summary > span {

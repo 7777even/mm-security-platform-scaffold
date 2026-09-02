@@ -311,7 +311,7 @@ function handleStatClick(label: string) {
 
 .duty-card__role {
   font-size: 12px;
-  color: #5ecfb8;
+  color: var(--color-success);
   white-space: nowrap;
   flex-shrink: 0;
 }

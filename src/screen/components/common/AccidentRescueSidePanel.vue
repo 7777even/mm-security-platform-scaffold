@@ -71,7 +71,7 @@ const titleStyle = computed(() => ({ left: props.titleLeft }));
   top: 13px;
   width: 16px;
   height: 16px;
-  z-index: 2;
+  z-index: var(--z-chrome);
 }
 
 .accident-rescue-panel__title {
@@ -81,7 +81,7 @@ const titleStyle = computed(() => ({ left: props.titleLeft }));
   font-size: 18px;
   font-weight: 500;
   color: var(--color-text-strong);
-  z-index: 2;
+  z-index: var(--z-chrome);
   line-height: 1.4;
 }
 
@@ -89,7 +89,7 @@ const titleStyle = computed(() => ({ left: props.titleLeft }));
   position: absolute;
   right: 14px;
   top: 10px;
-  z-index: 2;
+  z-index: var(--z-chrome);
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -111,14 +111,14 @@ const titleStyle = computed(() => ({ left: props.titleLeft }));
   position: absolute;
   right: 12px;
   top: 8px;
-  z-index: 3;
+  z-index: var(--z-chrome);
   display: flex;
   align-items: center;
 }
 
 .accident-rescue-panel__content {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   flex: 1;
   min-height: 0;
   overflow: hidden;
@@ -164,6 +164,6 @@ const titleStyle = computed(() => ({ left: props.titleLeft }));
   height: auto;
   max-height: 19px;
   pointer-events: none;
-  z-index: 2;
+  z-index: var(--z-chrome);
 }
 </style>

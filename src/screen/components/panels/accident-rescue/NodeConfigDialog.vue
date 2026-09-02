@@ -281,7 +281,7 @@ const nodeLabel = (id: string) => process.nodeConfigs.value[id]?.nodeName ?? id;
 :global(.nodecfg-mask) {
   position: fixed;
   inset: 0;
-  z-index: 1600;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -568,7 +568,7 @@ const nodeLabel = (id: string) => process.nodeConfigs.value[id]?.nodeName ?? id;
 
 :global(.nodecfg-footer__tip) {
   margin-right: auto;
-  color: #34d399;
+  color: var(--color-success);
   font-size: 12px;
 }
 

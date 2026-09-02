@@ -221,7 +221,7 @@ watch([communicationDrawerOpen, selectedDeviceId], ([open, id]) => {
 .production-map__depth {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-base);
   pointer-events: none;
   background:
     radial-gradient(
@@ -250,12 +250,12 @@ watch([communicationDrawerOpen, selectedDeviceId], ([open, id]) => {
   position: absolute;
   object-fit: fill;
   pointer-events: none;
-  z-index: 2;
+  z-index: var(--z-chrome);
 }
 
 .personnel-marker {
   position: absolute;
-  z-index: 4;
+  z-index: var(--z-marker);
   transform: translate(-50%, -50%);
 }
 
@@ -350,7 +350,7 @@ watch([communicationDrawerOpen, selectedDeviceId], ([open, id]) => {
 
 .device-marker {
   position: absolute;
-  z-index: 6;
+  z-index: var(--z-marker);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -481,7 +481,7 @@ watch([communicationDrawerOpen, selectedDeviceId], ([open, id]) => {
   flex-direction: column;
   align-items: flex-start;
   gap: 5px;
-  z-index: 5;
+  z-index: var(--z-marker);
   pointer-events: auto;
   transition: right 0.26s ease;
 }

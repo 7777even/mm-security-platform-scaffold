@@ -787,7 +787,7 @@ onUnmounted(() => {
 <style scoped>
 .accident-rescue-page__ui {
   position: relative;
-  z-index: 3;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -838,7 +838,7 @@ onUnmounted(() => {
 .accident-rescue-page__side-toggle {
   position: absolute;
   top: 50%;
-  z-index: 16;
+  z-index: var(--z-overlay);
   width: 22px;
   height: 64px;
   padding: 0;
@@ -965,7 +965,7 @@ onUnmounted(() => {
   position: absolute;
   left: calc(100% + 7px);
   top: 0;
-  z-index: 14;
+  z-index: var(--z-overlay);
   width: 419px;
   height: 100%;
   transform: translateX(-24px);
@@ -1021,7 +1021,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   top: 0;
-  z-index: 12;
+  z-index: var(--z-overlay);
   width: 100%;
   height: var(--accident-rescue-right-stack-height);
   transform: translateX(calc(100% + 24px));
@@ -1043,7 +1043,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 12px;
-  z-index: 5;
+  z-index: var(--z-marker);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1061,7 +1061,7 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: flex-end;
   gap: 12px;
-  z-index: 8;
+  z-index: var(--z-chrome);
   pointer-events: auto;
 }
 
@@ -1098,7 +1098,7 @@ onUnmounted(() => {
   position: absolute;
   left: calc(100% + 10px);
   top: 0;
-  z-index: 12;
+  z-index: var(--z-overlay);
   width: 318px;
   max-height: 420px;
   overflow-y: auto;

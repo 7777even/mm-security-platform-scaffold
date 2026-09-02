@@ -114,7 +114,7 @@ function openSituationDetail(item: FireSituationMarkerItem) {
 .center-map__depth {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-base);
   pointer-events: none;
   background:
     radial-gradient(
@@ -141,7 +141,7 @@ function openSituationDetail(item: FireSituationMarkerItem) {
 
 .alarm-marker {
   position: absolute;
-  z-index: 4;
+  z-index: var(--z-marker);
 
   /* 锚点对齐标点落地点（line 末端圆点） */
   transform: translate(-48px, -97px);
@@ -270,7 +270,7 @@ function openSituationDetail(item: FireSituationMarkerItem) {
   flex-direction: column;
   align-items: flex-start;
   gap: 5px;
-  z-index: 5;
+  z-index: var(--z-marker);
   pointer-events: auto;
 }
 
@@ -297,7 +297,7 @@ function openSituationDetail(item: FireSituationMarkerItem) {
 .fire-situation-layer {
   position: absolute;
   inset: 0;
-  z-index: 4;
+  z-index: var(--z-base);
   pointer-events: none;
 }
 
@@ -307,7 +307,7 @@ function openSituationDetail(item: FireSituationMarkerItem) {
 
   /* 左侧面板右侧：位于地图可视区域左上角，不被侧栏遮挡 */
   left: calc(var(--sidebar-width) + 28px);
-  z-index: 5;
+  z-index: var(--z-marker);
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
@@ -331,7 +331,7 @@ function openSituationDetail(item: FireSituationMarkerItem) {
 
 .sound-light-trigger:hover {
   filter: brightness(1.18);
-  border-color: #ff746e;
+  border-color: var(--color-danger);
   box-shadow: 0 0 16px rgb(255 48 42 / 32%);
 }
 
@@ -339,8 +339,8 @@ function openSituationDetail(item: FireSituationMarkerItem) {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ff514a;
-  box-shadow: 0 0 8px #ff514a;
+  background: var(--color-danger);
+  box-shadow: 0 0 8px var(--color-danger);
   animation: sound-light-trigger-blink 0.8s ease-in-out infinite alternate;
 }
 

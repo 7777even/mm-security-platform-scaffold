@@ -379,7 +379,7 @@ function setTrackSpeed(value: number) {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 7;
+  z-index: var(--z-base);
 }
 
 .security-drawer {

@@ -357,7 +357,7 @@ function handleGateControlMarkerClick(id: number) {
 .security-map__depth {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-base);
   pointer-events: none;
   background:
     radial-gradient(
@@ -386,7 +386,7 @@ function handleGateControlMarkerClick(id: number) {
   --gate-pin-size: 20px;
 
   position: absolute;
-  z-index: 4;
+  z-index: var(--z-marker);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -518,7 +518,7 @@ function handleGateControlMarkerClick(id: number) {
   flex-direction: column;
   align-items: flex-start;
   gap: 5px;
-  z-index: 5;
+  z-index: var(--z-marker);
   pointer-events: auto;
 }
 
@@ -551,7 +551,7 @@ function handleGateControlMarkerClick(id: number) {
   align-items: stretch;
   justify-content: center;
   gap: 14px;
-  z-index: 5;
+  z-index: var(--z-marker);
   pointer-events: auto;
   padding: 8px 18px;
   max-width: calc(100% - 640px);
@@ -637,7 +637,7 @@ function handleGateControlMarkerClick(id: number) {
 
 .camera-marker {
   position: absolute;
-  z-index: 6;
+  z-index: var(--z-marker);
   width: 28px;
   height: 28px;
   border: none;
@@ -769,7 +769,7 @@ function handleGateControlMarkerClick(id: number) {
 
 .patrol-marker {
   position: absolute;
-  z-index: 6;
+  z-index: var(--z-marker);
   display: flex;
   flex-direction: column;
   align-items: center;

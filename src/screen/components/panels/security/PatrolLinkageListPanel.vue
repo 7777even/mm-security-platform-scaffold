@@ -153,7 +153,7 @@ function statusClass(status: string) {
 }
 
 .patrol-linkage-list__status--ok {
-  color: #3ecf8e;
+  color: var(--color-success);
 }
 
 .patrol-linkage-list__status--offline {
@@ -161,7 +161,7 @@ function statusClass(status: string) {
 }
 
 .patrol-linkage-list__status--fault {
-  color: #ff6b5a;
+  color: var(--color-danger);
 }
 
 .patrol-linkage-list__play {

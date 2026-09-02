@@ -206,7 +206,7 @@ const infoRows = computed(() => [
   border-color: rgb(0 200 255 / 45%);
   border-style: solid;
   pointer-events: none;
-  z-index: 1;
+  z-index: var(--z-chrome);
 }
 
 .video-monitor-detail::before {
@@ -225,7 +225,7 @@ const infoRows = computed(() => [
   position: absolute;
   left: 0;
   top: 0;
-  z-index: 2;
+  z-index: var(--z-chrome);
   display: flex;
   align-items: center;
   width: 100%;
@@ -294,7 +294,7 @@ const infoRows = computed(() => [
 
 .video-monitor-detail__content {
   position: absolute;
-  z-index: 1;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -490,7 +490,7 @@ const infoRows = computed(() => [
 .video-monitor-detail__play {
   position: absolute;
   left: 50%;
-  z-index: 2;
+  z-index: var(--z-chrome);
   transform: translateX(-50%);
   padding: 0;
 }

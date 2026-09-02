@@ -293,11 +293,11 @@ function confirmDispatch() {
 }
 
 .resource-card__status.is-可调度 {
-  color: #42e3a2;
+  color: var(--color-success);
 }
 
 .resource-card__status.is-任务中 {
-  color: #facc15;
+  color: var(--color-warning);
 }
 
 .resource-card__status.is-离线 {
@@ -353,7 +353,7 @@ function confirmDispatch() {
   padding: 7px 9px;
   border: 1px solid rgb(34 197 94 / 32%);
   background: rgb(22 101 52 / 17%);
-  color: #70e8a1;
+  color: var(--color-success);
   font-size: 11px;
 }
 
@@ -390,7 +390,7 @@ function confirmDispatch() {
 .dispatch-dialog-mask {
   position: fixed;
   inset: 0;
-  z-index: 2600;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;

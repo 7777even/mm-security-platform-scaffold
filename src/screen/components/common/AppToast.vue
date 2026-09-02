@@ -17,7 +17,7 @@ import { toastMessage } from '../../lib/composables/useToast';
   position: fixed;
   left: 50%;
   bottom: 96px;
-  z-index: 3000;
+  z-index: var(--z-toast);
   transform: translateX(-50%);
   max-width: 560px;
   padding: 12px 22px;

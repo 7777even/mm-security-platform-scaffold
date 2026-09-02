@@ -64,7 +64,7 @@ const assets = computed(() => getAssets(props.module));
   transform: translateX(-50%);
   display: flex;
   gap: 6px;
-  z-index: 6;
+  z-index: var(--z-chrome);
   pointer-events: auto;
 }
 

@@ -116,7 +116,7 @@ function handleItemClick(label: string) {
 
 .special-ops__count {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   font-size: 18px;
   font-weight: 700;
   line-height: 1;

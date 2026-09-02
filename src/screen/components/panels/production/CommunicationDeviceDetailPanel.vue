@@ -118,7 +118,7 @@ const statusClass = computed(() => {
 }
 
 .comm-detail__status--故障 {
-  color: #ff7a6a;
+  color: var(--color-danger);
 }
 
 .comm-detail__actions {

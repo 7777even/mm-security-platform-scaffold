@@ -209,7 +209,7 @@ function monitoringIcon(category: string): MapMarkerIconName {
 /* ---------- 路线起终点 ---------- */
 .acc-route-marker {
   position: absolute;
-  z-index: 5;
+  z-index: var(--z-marker);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -267,7 +267,7 @@ function monitoringIcon(category: string): MapMarkerIconName {
 /* ---------- 监测点 / 疏散人员 ---------- */
 .acc-point-marker {
   position: absolute;
-  z-index: 6;
+  z-index: var(--z-marker);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -408,7 +408,7 @@ function monitoringIcon(category: string): MapMarkerIconName {
 }
 
 .acc-point-marker--warning .acc-point-marker__pin {
-  background: #ffb020;
+  background: var(--color-warning);
   box-shadow: 0 0 12px rgb(255 176 32 / 45%);
 }
 
@@ -422,11 +422,11 @@ function monitoringIcon(category: string): MapMarkerIconName {
 }
 
 .acc-point-marker--warning .acc-point-marker__status {
-  background: #ffb020;
+  background: var(--color-warning);
 }
 
 .acc-point-marker--alarm .acc-point-marker__pin {
-  background: #ff4d4f;
+  background: var(--color-danger);
   box-shadow: 0 0 14px rgb(255 77 79 / 55%);
 }
 
@@ -440,7 +440,7 @@ function monitoringIcon(category: string): MapMarkerIconName {
 }
 
 .acc-point-marker--alarm .acc-point-marker__status {
-  background: #ff4d4f;
+  background: var(--color-danger);
 }
 
 @keyframes acc-point-breath {

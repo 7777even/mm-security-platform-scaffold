@@ -336,7 +336,7 @@ function closePreview() {
   position: absolute;
   right: 14px;
   top: 13px;
-  z-index: 4;
+  z-index: var(--z-chrome);
   width: 28px;
   height: 25px;
   padding: 0;
@@ -531,7 +531,7 @@ function closePreview() {
 
 .command-detail__mini-btn--call {
   border-color: rgb(56 168 98 / 45%);
-  color: #8ee0a8;
+  color: var(--color-success);
 }
 
 .command-detail__body--logs {
@@ -588,12 +588,12 @@ function closePreview() {
 }
 
 .command-detail__dynamic--异常 .command-detail__dynamic-dot {
-  background: #ff5d5d;
+  background: var(--color-danger);
   box-shadow: 0 0 6px rgb(255 93 93 / 85%);
 }
 
 .command-detail__dynamic--已完成 .command-detail__dynamic-dot {
-  background: #58cf82;
+  background: var(--color-success);
   box-shadow: 0 0 6px rgb(88 207 130 / 75%);
 }
 
@@ -613,12 +613,12 @@ function closePreview() {
 }
 
 .command-detail__dynamic-result {
-  color: #78d394;
+  color: var(--color-success);
   font-size: 10px;
 }
 
 .command-detail__dynamic--异常 .command-detail__dynamic-result {
-  color: #ff7373;
+  color: var(--color-danger);
 }
 
 .command-detail__dynamic-time {
@@ -692,7 +692,7 @@ function closePreview() {
 
 .command-detail__media-play {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-chrome);
   left: 50%;
   top: 45%;
   transform: translate(-50%, -50%);
@@ -708,7 +708,7 @@ function closePreview() {
 
 .command-detail__media-type {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-chrome);
   left: 5px;
   top: 5px;
   padding: 1px 4px;
@@ -720,7 +720,7 @@ function closePreview() {
 
 .command-detail__media-name {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-chrome);
   left: 5px;
   right: 34px;
   bottom: 5px;
@@ -734,7 +734,7 @@ function closePreview() {
 
 .command-detail__media-duration {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-chrome);
   right: 5px;
   bottom: 5px;
   color: #d8e8f8;
@@ -821,7 +821,7 @@ function closePreview() {
 
 .command-media-preview {
   position: fixed;
-  z-index: 9999;
+  z-index: var(--z-toast);
   inset: 0;
   display: grid;
   place-items: center;

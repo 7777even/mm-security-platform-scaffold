@@ -309,7 +309,7 @@ function openFeed(feed: VideoFeed) {
 
 .video-tile__index {
   position: absolute;
-  z-index: 1;
+  z-index: var(--z-chrome);
   left: 4px;
   top: 4px;
   min-width: 20px;
@@ -325,7 +325,7 @@ function openFeed(feed: VideoFeed) {
 
 .video-tile footer {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-chrome);
   left: 0;
   right: 0;
   bottom: 0;
@@ -349,7 +349,7 @@ function openFeed(feed: VideoFeed) {
 
 .video-tile footer em {
   flex-shrink: 0;
-  color: #42d998;
+  color: var(--color-success);
   font-style: normal;
 }
 

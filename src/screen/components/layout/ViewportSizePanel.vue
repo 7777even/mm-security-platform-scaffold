@@ -128,7 +128,7 @@ function handleApplyCustom() {
 <style scoped>
 .viewport-size-panel {
   position: fixed;
-  z-index: 10001;
+  z-index: var(--z-toast);
   width: 220px;
   max-height: min(70vh, 520px);
   overflow-y: auto;

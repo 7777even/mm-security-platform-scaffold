@@ -283,8 +283,8 @@ defineExpose({ openVideo });
   position: absolute;
   top: 5px;
   right: 6px;
-  z-index: 1;
-  color: #ff6262;
+  z-index: var(--z-chrome);
+  color: var(--color-danger);
   font-size: 9px;
   text-shadow: 0 1px 4px rgb(0 0 0 / 90%);
 }
@@ -293,7 +293,7 @@ defineExpose({ openVideo });
   position: absolute;
   left: 6px;
   bottom: 6px;
-  z-index: 1;
+  z-index: var(--z-chrome);
   font-size: 10px;
   color: rgb(255 255 255 / 92%);
   text-shadow: 0 1px 4px rgb(0 0 0 / 60%);
@@ -524,7 +524,7 @@ defineExpose({ openVideo });
 }
 
 .tw-support .tw-duty-card__role {
-  color: #56d9a3;
+  color: var(--color-success);
   font-size: 10px;
   white-space: nowrap;
 }

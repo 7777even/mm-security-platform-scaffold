@@ -389,7 +389,7 @@ function handleOverlayClick(event: MouseEvent) {
 .sandbox-overlay {
   position: absolute;
   inset: 0;
-  z-index: 4;
+  z-index: var(--z-chrome);
   pointer-events: auto;
   cursor: default;
 }
@@ -436,7 +436,7 @@ function handleOverlayClick(event: MouseEvent) {
   box-shadow: 0 4px 12px rgb(0 0 0 / 42%);
   transform-origin: 50% 100%;
   cursor: grab;
-  z-index: 3;
+  z-index: var(--z-marker);
 }
 
 .sandbox-marker__icon {
@@ -456,7 +456,7 @@ function handleOverlayClick(event: MouseEvent) {
 }
 
 .sandbox-marker--fire-truck .sandbox-marker__icon {
-  color: #ff9d8e;
+  color: var(--color-danger);
 }
 
 .sandbox-marker--medical-point .sandbox-marker__icon {
@@ -480,7 +480,7 @@ function handleOverlayClick(event: MouseEvent) {
   font-size: 12px;
   box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
   pointer-events: none;
-  z-index: 5;
+  z-index: var(--z-marker);
 }
 
 .sandbox-hint__dot {

@@ -166,7 +166,7 @@ function handleVideoWall() {
 .camera-list {
   position: fixed;
   inset: 0;
-  z-index: 2200;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -281,7 +281,7 @@ function handleVideoWall() {
 .camera-list__table thead {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: var(--z-chrome);
   background: rgb(0 28 58 / 95%);
 }
 

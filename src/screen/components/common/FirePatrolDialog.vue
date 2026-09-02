@@ -378,7 +378,7 @@ function openSelectedWorkOrder() {
 .patrol {
   position: fixed;
   inset: 0;
-  z-index: 2260;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -508,7 +508,7 @@ function openSelectedWorkOrder() {
 .patrol__table th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: var(--z-chrome);
   padding: 9px 8px;
   text-align: left;
   font-weight: 500;
@@ -565,12 +565,12 @@ function openSelectedWorkOrder() {
 }
 
 .patrol-badge--done {
-  color: #6dd58c;
+  color: var(--color-success);
   border-color: rgb(109 213 140 / 50%);
 }
 
 .patrol-badge--pending {
-  color: #ff9f43;
+  color: var(--color-warning);
   border-color: rgb(255 159 67 / 50%);
 }
 
@@ -580,7 +580,7 @@ function openSelectedWorkOrder() {
 }
 
 .patrol-result--abnormal {
-  color: #ff6b5e;
+  color: var(--color-danger);
   border-color: rgb(255 90 74 / 55%);
   background: rgb(255 90 74 / 10%);
 }
@@ -725,7 +725,7 @@ function openSelectedWorkOrder() {
 }
 
 .patrol__info-value--abnormal {
-  color: #ff6b5e;
+  color: var(--color-danger);
   font-weight: 700;
 }
 

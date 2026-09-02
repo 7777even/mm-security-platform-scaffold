@@ -205,7 +205,7 @@ const weatherChartOption = computed(() => {
     weatherMetric.value === 'precipitation'
       ? props.incident.precipitationSeries
       : props.incident.windSpeedSeries;
-  const color = weatherMetric.value === 'precipitation' ? '#00b4ff' : '#5ad8a6';
+  const color = weatherMetric.value === 'precipitation' ? '#00b4ff' : '#3dd68c';
   return {
     grid: { left: 30, right: 8, top: 8, bottom: 18 },
     tooltip: { trigger: 'axis' },
@@ -272,21 +272,21 @@ const waterChartOption = computed(() => ({
       symbol: 'circle',
       symbolSize: 5,
       data: props.incident.waterLevelSeries,
-      lineStyle: { color: '#ffc857', width: 2 },
-      itemStyle: { color: '#ffc857' },
+      lineStyle: { color: '#f0b429', width: 2 },
+      itemStyle: { color: '#f0b429' },
       markLine: {
         symbol: 'none',
         lineStyle: { type: 'dashed' },
         data: [
           {
             yAxis: props.incident.waterLevelWarn,
-            lineStyle: { color: '#ffb020' },
-            label: { formatter: '警戒', color: '#ffb020' },
+            lineStyle: { color: '#f0b429' },
+            label: { formatter: '警戒', color: '#f0b429' },
           },
           {
             yAxis: props.incident.waterLevelDanger,
-            lineStyle: { color: '#ff5c5c' },
-            label: { formatter: '危险', color: '#ff5c5c' },
+            lineStyle: { color: '#ff5a4a' },
+            label: { formatter: '危险', color: '#ff5a4a' },
           },
         ],
       },
@@ -913,7 +913,7 @@ const waterChartOption = computed(() => ({
 
 .tw-weather-summary span {
   padding: 2px 6px;
-  background: #d86b14;
+  background: var(--color-warning);
   color: var(--color-text-strong);
   font-size: 10px;
 }
@@ -925,7 +925,7 @@ const waterChartOption = computed(() => ({
 
 .tw-weather-summary small {
   grid-column: 1/-1;
-  color: #e9b86d;
+  color: var(--color-warning);
   font-size: 10px;
 }
 
@@ -998,7 +998,7 @@ const waterChartOption = computed(() => ({
 }
 
 .tw-command__head .is-已完成 {
-  color: #42e3a2;
+  color: var(--color-success);
 }
 
 .tw-command__head .is-执行中 {
@@ -1006,7 +1006,7 @@ const waterChartOption = computed(() => ({
 }
 
 .tw-command__head .is-待执行 {
-  color: #facc15;
+  color: var(--color-warning);
 }
 
 .tw-command p {
@@ -1045,7 +1045,7 @@ const waterChartOption = computed(() => ({
 .tw-edit-mask {
   position: fixed;
   inset: 0;
-  z-index: 2600;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1243,15 +1243,15 @@ const waterChartOption = computed(() => ({
 }
 
 .tw-monitor--normal .tw-monitor__status {
-  color: #55d99c;
+  color: var(--color-success);
 }
 
 .tw-monitor--warning .tw-monitor__status {
-  color: #ffc25e;
+  color: var(--color-warning);
 }
 
 .tw-monitor--critical .tw-monitor__status {
-  color: #ff7b82;
+  color: var(--color-danger);
 }
 
 .tw-text {
@@ -1288,7 +1288,7 @@ const waterChartOption = computed(() => ({
 
 .tw-section__summary b {
   margin-right: 2px;
-  color: #ff7a81;
+  color: var(--color-danger);
   font-size: 12px;
 }
 
@@ -1365,7 +1365,7 @@ const waterChartOption = computed(() => ({
   height: 19px;
   padding: 0 3px;
   border-radius: 5px;
-  background: #ffd04d;
+  background: var(--color-warning);
   color: #432b00;
   box-shadow: 0 2px 7px rgb(255 185 40 / 30%);
   font-size: 10px;
@@ -1384,19 +1384,19 @@ const waterChartOption = computed(() => ({
 }
 
 .tw-attention-card--normal {
-  --attention-color: #70df91;
+  --attention-color: var(--color-success);
   --attention-border: rgb(77 213 129 / 30%);
   --attention-bg: rgb(33 104 70 / 35%);
 }
 
 .tw-attention-card--warning {
-  --attention-color: #ffc13d;
+  --attention-color: var(--color-warning);
   --attention-border: rgb(255 185 51 / 40%);
   --attention-bg: rgb(108 75 10 / 42%);
 }
 
 .tw-attention-card--critical {
-  --attention-color: #ff7078;
+  --attention-color: var(--color-danger);
   --attention-border: rgb(255 105 115 / 40%);
   --attention-bg: rgb(111 36 48 / 46%);
 }
@@ -1408,7 +1408,7 @@ const waterChartOption = computed(() => ({
 
 .tw-attention-card--weather header strong {
   margin-right: 4px;
-  color: #ffc757;
+  color: var(--color-warning);
   font-size: 10px;
 }
 
@@ -1497,7 +1497,7 @@ const waterChartOption = computed(() => ({
 }
 
 .tw-warning-row--critical {
-  --warning-color: #ff666e;
+  --warning-color: var(--color-danger);
   --warning-bg: rgb(255 82 94 / 12%);
 }
 
@@ -1832,7 +1832,7 @@ const waterChartOption = computed(() => ({
 }
 
 .tw-weather-banner {
-  --banner-accent: #ff9b32;
+  --banner-accent: var(--color-warning);
 
   position: relative;
   display: flex;
@@ -1868,7 +1868,7 @@ const waterChartOption = computed(() => ({
 }
 
 .tw-weather-banner--yellow {
-  --banner-accent: #ffc247;
+  --banner-accent: var(--color-warning);
 }
 
 .tw-weather-banner--blue {
@@ -1877,7 +1877,7 @@ const waterChartOption = computed(() => ({
 
 .tw-weather-banner__content {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-chrome);
   min-width: 0;
 }
 
@@ -1918,7 +1918,7 @@ const waterChartOption = computed(() => ({
 
 .tw-weather-banner__cloud {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-chrome);
   right: 14px;
   top: 13px;
   height: 25px;
@@ -1933,7 +1933,7 @@ const waterChartOption = computed(() => ({
 
 .tw-weather-banner__pager {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-chrome);
   right: 15px;
   bottom: 14px;
   display: flex;

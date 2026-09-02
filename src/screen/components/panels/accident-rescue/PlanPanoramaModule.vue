@@ -945,7 +945,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 .ppm__badge--event {
   background: rgb(239 68 68 / 20%);
   border: 1px solid rgb(239 68 68 / 50%);
-  color: #f87171;
+  color: var(--color-danger);
 }
 
 .ppm__title {
@@ -988,7 +988,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
   flex-shrink: 0;
   padding-right: 7px;
   border-right: 1px solid rgb(148 163 184 / 25%);
-  color: #fca5a5;
+  color: var(--color-danger);
   font-size: 10px;
   font-weight: 700;
   white-space: nowrap;
@@ -1088,7 +1088,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 .ppm__finish-btn:not(:disabled) {
   border-color: rgb(16 185 129 / 55%);
   background: rgb(16 185 129 / 16%);
-  color: #34d399;
+  color: var(--color-success);
 }
 
 .ppm__demo-btn.is-running {
@@ -1244,15 +1244,15 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__pill--amber .ppm__pill-dot {
-  background: #fbbf24;
+  background: var(--color-warning);
 }
 
 .ppm__pill--red .ppm__pill-dot {
-  background: #f87171;
+  background: var(--color-danger);
 }
 
 .ppm__pill--green .ppm__pill-dot {
-  background: #34d399;
+  background: var(--color-success);
 }
 
 .ppm__strip-current {
@@ -1316,15 +1316,15 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__phase-tab--amber .ppm__phase-tab__dot {
-  background: #fbbf24;
+  background: var(--color-warning);
 }
 
 .ppm__phase-tab--red .ppm__phase-tab__dot {
-  background: #f87171;
+  background: var(--color-danger);
 }
 
 .ppm__phase-tab--green .ppm__phase-tab__dot {
-  background: #34d399;
+  background: var(--color-success);
 }
 
 .ppm__phase-tab__range {
@@ -1348,14 +1348,14 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
   right: 14px;
   height: 2px;
   background: #334155;
-  z-index: 1;
+  z-index: var(--z-chrome);
 }
 
 .ppm__phase-band {
   position: absolute;
   top: 0;
   bottom: 0;
-  z-index: 0;
+  z-index: var(--z-base);
   border-radius: 5px;
   pointer-events: none;
   transition: box-shadow 0.2s ease;
@@ -1394,7 +1394,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 
 .ppm__node {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1436,9 +1436,9 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__node.is-completed .ppm__node-circle {
-  border-color: #10b981;
+  border-color: var(--color-success);
   background: rgb(16 185 129 / 22%);
-  color: #34d399;
+  color: var(--color-success);
 }
 
 @keyframes ppm-node-pulse {
@@ -1598,7 +1598,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
   border-radius: 4px;
   background: rgb(239 68 68 / 14%);
   border: 1px solid rgb(239 68 68 / 40%);
-  color: #f87171;
+  color: var(--color-danger);
   font-size: 10px;
   font-weight: 700;
 }
@@ -1650,7 +1650,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__action-row--danger .ppm__action-row-text {
-  color: #fca5a5;
+  color: var(--color-danger);
 }
 
 .ppm__criteria-row {
@@ -1682,7 +1682,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__escalation-arrow {
-  color: #fbbf24;
+  color: var(--color-warning);
 }
 
 .ppm__roster {
@@ -1758,13 +1758,13 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 .ppm__count-badge.is-ok {
   background: rgb(16 185 129 / 14%);
   border: 1px solid rgb(16 185 129 / 40%);
-  color: #34d399;
+  color: var(--color-success);
 }
 
 .ppm__count-badge.is-warn {
   background: rgb(245 158 11 / 14%);
   border: 1px solid rgb(245 158 11 / 45%);
-  color: #fbbf24;
+  color: var(--color-warning);
 }
 
 .ppm__action-card {
@@ -1812,7 +1812,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__action-card--completed .ppm__action-card__status {
-  color: #34d399;
+  color: var(--color-success);
 }
 
 .ppm__action-card__title {
@@ -1948,15 +1948,15 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm__seg--amber .ppm__seg-dot {
-  background: #fbbf24;
+  background: var(--color-warning);
 }
 
 .ppm__seg--red .ppm__seg-dot {
-  background: #f87171;
+  background: var(--color-danger);
 }
 
 .ppm__seg--green .ppm__seg-dot {
-  background: #34d399;
+  background: var(--color-success);
 }
 
 .ppm__seg-nodes {
@@ -1998,7 +1998,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 
 .ppm__dot-mini {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-marker);
   align-self: center;
   width: 10px;
   height: 10px;
@@ -2114,7 +2114,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 .ppm-plan-overlay {
   position: fixed;
   inset: 0;
-  z-index: 21000;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;

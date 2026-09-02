@@ -370,7 +370,7 @@ function openPointVideo(point: RiskPoint) {
 <style scoped>
 .weather-v2 {
   position: relative;
-  z-index: 3;
+  z-index: var(--z-chrome);
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -382,7 +382,7 @@ function openPointVideo(point: RiskPoint) {
   --line: rgb(92 172 220 / 22%);
   --muted: #8ca6bd;
   --cyan: #42c7ff;
-  --red: #ff6068;
+  --red: var(--color-danger);
   --amber: #ffb84d;
 }
 
@@ -516,7 +516,7 @@ function openPointVideo(point: RiskPoint) {
   padding: 4px 8px;
   border-radius: 10px;
   background: rgb(255 96 104 / 12%);
-  color: #ff8d92;
+  color: var(--color-danger);
   font-size: 10px;
 }
 
@@ -532,8 +532,8 @@ function openPointVideo(point: RiskPoint) {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #3bd28d;
-  box-shadow: 0 0 8px #3bd28d;
+  background: var(--color-success);
+  box-shadow: 0 0 8px var(--color-success);
 }
 
 .weather-v2__tabs {
@@ -634,7 +634,7 @@ function openPointVideo(point: RiskPoint) {
 }
 
 .risk-card.is-critical em {
-  color: #ff8187;
+  color: var(--color-danger);
 }
 
 .risk-card__meta {
@@ -684,11 +684,11 @@ function openPointVideo(point: RiskPoint) {
 }
 
 .task-card span.is-待反馈 {
-  color: #ffba58;
+  color: var(--color-warning);
 }
 
 .task-card span.is-已完成 {
-  color: #50d99a;
+  color: var(--color-success);
 }
 
 .task-card p {
@@ -1013,7 +1013,7 @@ function openPointVideo(point: RiskPoint) {
 
 .detail-status.is-critical {
   background: rgb(255 96 104 / 9%);
-  color: #ff8187;
+  color: var(--color-danger);
 }
 
 .detail-status span {
@@ -1092,7 +1092,7 @@ function openPointVideo(point: RiskPoint) {
   position: absolute;
   right: 8px;
   top: 7px;
-  color: #ff6d74;
+  color: var(--color-danger);
   font-size: 8px;
 }
 
@@ -1170,7 +1170,7 @@ function openPointVideo(point: RiskPoint) {
 }
 
 .weather-v2__legend i.normal {
-  background: #3ad18c;
+  background: var(--color-success);
 }
 
 @media (width <= 2100px) {

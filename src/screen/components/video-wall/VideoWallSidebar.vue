@@ -1267,13 +1267,13 @@ const saveBind = () => {
 
 .count-badge {
   float: right;
-  color: #0f6;
+  color: var(--color-success);
   font-size: 12px;
 }
 
 .context-menu {
   position: fixed;
-  z-index: 1000;
+  z-index: var(--z-toast);
   background: rgb(20 30 45 / 95%);
   border: 1px solid rgb(0 180 255 / 50%);
   border-radius: 2px;
@@ -1298,7 +1298,7 @@ const saveBind = () => {
   position: fixed;
   inset: 0;
   background: rgb(0 0 0 / 60%);
-  z-index: 2000;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1407,7 +1407,7 @@ const saveBind = () => {
   justify-content: center;
   gap: 6px;
   background: linear-gradient(180deg, rgb(0 28 58 / 95%) 0%, rgb(0 12 28 / 98%) 100%);
-  z-index: 1;
+  z-index: var(--z-chrome);
 }
 
 .eagle-eye-placeholder__grid {
@@ -1422,7 +1422,7 @@ const saveBind = () => {
 
 .map-text {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-chrome);
   color: #7cdbff;
   font-size: 13px;
   font-weight: 600;
@@ -1431,7 +1431,7 @@ const saveBind = () => {
 
 .map-text-sub {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-chrome);
   color: rgb(124 219 255 / 55%);
   font-size: 11px;
 }
@@ -1442,7 +1442,7 @@ const saveBind = () => {
   height: 12px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  z-index: 2;
+  z-index: var(--z-marker);
   box-shadow: 0 0 8px rgb(255 255 255 / 50%);
 }
 
@@ -1452,7 +1452,7 @@ const saveBind = () => {
 }
 
 .map-marker.alarm {
-  background: #ff4d4f;
+  background: var(--color-danger);
   border: 2px solid var(--color-text-strong);
   animation: pulse 1.5s infinite;
 }
@@ -1476,7 +1476,7 @@ const saveBind = () => {
   bottom: 15px;
   left: 15px;
   right: 15px;
-  z-index: 10;
+  z-index: var(--z-chrome);
 }
 </style>
 
@@ -1551,7 +1551,7 @@ const saveBind = () => {
 }
 
 .plan-info .name {
-  color: #fa0;
+  color: var(--color-warning);
   font-weight: bold;
 }
 
@@ -1577,8 +1577,8 @@ const saveBind = () => {
 
 .action-btn.start {
   background: rgb(0 255 100 / 20%);
-  border-color: #0f6;
-  color: #0f6;
+  border-color: var(--color-success);
+  color: var(--color-success);
 }
 
 .action-btn.start:hover {
@@ -1587,8 +1587,8 @@ const saveBind = () => {
 
 .action-btn.stop {
   background: rgb(255 50 50 / 20%);
-  border-color: #f33;
-  color: #f33;
+  border-color: var(--color-danger);
+  color: var(--color-danger);
 }
 
 .action-btn.stop:hover {
@@ -1761,7 +1761,7 @@ const saveBind = () => {
 .remove-step-btn {
   background: none;
   border: none;
-  color: #f33;
+  color: var(--color-danger);
   cursor: pointer;
 }
 
@@ -1929,7 +1929,7 @@ const saveBind = () => {
   content: '展示中';
   grid-column: 2 / 4;
   margin-top: -9px;
-  color: #53e3b1;
+  color: var(--color-success);
   font-size: 8px;
 }
 
@@ -1988,7 +1988,7 @@ const saveBind = () => {
   padding: 1px 4px;
   border: 1px solid rgb(45 213 160 / 32%);
   background: rgb(17 105 78 / 28%);
-  color: #5de4b7;
+  color: var(--color-success);
   font-size: 8px;
   white-space: nowrap;
 }
@@ -2085,12 +2085,12 @@ const saveBind = () => {
 }
 
 .tab--event {
-  color: #ffb55a;
+  color: var(--color-warning);
 }
 
 .tab--event.active {
-  color: #ffb55a;
-  border-bottom-color: #ff9f2f;
+  color: var(--color-warning);
+  border-bottom-color: var(--color-warning);
   background: rgb(255 145 38 / 8%);
 }
 
@@ -2109,7 +2109,7 @@ const saveBind = () => {
 .event-video-summary__eyebrow {
   display: block;
   margin-bottom: 5px;
-  color: #ffb55a;
+  color: var(--color-warning);
   font-size: 11px;
 }
 
@@ -2151,7 +2151,7 @@ const saveBind = () => {
   padding: 7px 8px;
   border: 1px solid rgb(38 214 139 / 34%);
   background: rgb(13 91 65 / 28%);
-  color: #70efbd;
+  color: var(--color-success);
   font-size: 11px;
   line-height: 1.45;
 }
@@ -2207,7 +2207,7 @@ const saveBind = () => {
   padding: 1px 4px;
   border: 1px solid rgb(255 172 66 / 42%);
   background: rgb(111 62 8 / 42%);
-  color: #ffc16f;
+  color: var(--color-warning);
   font-size: 9px;
   font-style: normal;
   white-space: nowrap;
@@ -2217,7 +2217,7 @@ const saveBind = () => {
   padding: 1px 4px;
   border: 1px solid rgb(42 216 160 / 32%);
   background: rgb(11 99 72 / 26%);
-  color: #5de4b7;
+  color: var(--color-success);
   font-size: 8px;
   white-space: nowrap;
 }
@@ -2250,7 +2250,7 @@ const saveBind = () => {
 .event-video-group__actions button.is-danger {
   border-color: rgb(255 91 91 / 38%);
   background: rgb(112 27 35 / 34%);
-  color: #ff9494;
+  color: var(--color-danger);
 }
 
 .event-video-group__body {
@@ -2283,7 +2283,7 @@ const saveBind = () => {
   flex-shrink: 0;
   border: 0;
   background: transparent;
-  color: #e18d7c;
+  color: var(--color-danger);
   font-size: 10px;
   cursor: pointer;
 }
@@ -2333,7 +2333,7 @@ const saveBind = () => {
   min-width: 20px;
   border-radius: 8px;
   background: rgb(255 166 61 / 15%);
-  color: #ffb45c;
+  color: var(--color-warning);
   font: normal 10px/16px var(--font-body);
   text-align: center;
 }
@@ -2587,7 +2587,7 @@ const saveBind = () => {
 
 .event-group-create-modal__error {
   margin: 8px 14px 0;
-  color: #ff8f8f;
+  color: var(--color-danger);
   font-size: 11px;
 }
 

@@ -139,7 +139,7 @@ const leader = computed(
 
 .duty-watch__summary-status {
   margin-left: auto;
-  color: #55d789;
+  color: var(--color-success);
 }
 
 .duty-watch__filter {
@@ -201,7 +201,7 @@ const leader = computed(
 
 .duty-card__role {
   font-size: 12px;
-  color: #5ecfb8;
+  color: var(--color-success);
 }
 
 .duty-card__phone {

@@ -137,7 +137,7 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
 .preliminary-map__depth {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-base);
   pointer-events: none;
   background:
     radial-gradient(
@@ -164,13 +164,13 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
 
 .alarm-marker {
   position: absolute;
-  z-index: 4;
+  z-index: var(--z-marker);
   pointer-events: none;
   transition: filter 0.2s ease;
 }
 
 .alarm-marker--active {
-  z-index: 6;
+  z-index: var(--z-marker);
   filter: brightness(1.15);
 }
 
@@ -365,7 +365,7 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
   flex-direction: column;
   align-items: flex-start;
   gap: 5px;
-  z-index: 5;
+  z-index: var(--z-marker);
   pointer-events: auto;
 }
 

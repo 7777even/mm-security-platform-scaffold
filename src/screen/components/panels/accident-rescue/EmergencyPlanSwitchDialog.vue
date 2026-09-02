@@ -197,7 +197,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
 .plan-switch-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1250;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -398,7 +398,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
 .plan-switch__table th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: var(--z-chrome);
   padding: 8px 10px;
   text-align: left;
   color: #8aa4c0;
@@ -418,7 +418,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
 }
 
 .plan-switch__picked {
-  color: #6fd08a;
+  color: var(--color-success);
   font-size: 12px;
 }
 
