@@ -30,6 +30,7 @@ import router from './router';
 import { installDynamicRoutes, DEFAULT_MENUS } from './router/menu';
 import { fetchMenus } from './services/menu';
 import { vPermission } from './directives/permission';
+import type { WujieEventMap } from './shell/wujieBridge';
 import { useAuthStore } from './stores/auth';
 import { startRealtime } from './services/realtime';
 import http from './services/http';
@@ -108,16 +109,16 @@ async function bootstrap(): Promise<void> {
   // 注意：wujie EventBus.$on 回调只接收 $emit 的负载参数（首个参数即 data），
   // 二参签名 (event, data) 会把 data 视为 undefined——此前跨应用跳转即因此静默失效。
   // query 透传：源项目使用 route.query 传递 eventId/from/autostart/tab/monitor 等参数。
-  WujieVue.bus.$on(
-    'route-navigate',
-    (data: { path: string; query?: Record<string, string | string[] | null> }) => {
-      if (data.query) {
-        void router.push({ path: data.path, query: data.query });
-      } else {
-        void router.push(data.path);
-      }
-    },
-  );
+  // replace 负载：消耗型一次性参数（?create=event）清理后，主壳用 router.replace
+  // 更新 URL 且不留历史，避免浏览器后退重放该参数再次触发 UI。
+  WujieVue.bus.$on('route-navigate', (data: WujieEventMap['route-navigate']) => {
+    const navigate = data.replace ? router.replace : router.push;
+    if (data.query) {
+      void navigate({ path: data.path, query: data.query });
+    } else {
+      void navigate(data.path);
+    }
+  });
 
   await router.isReady();
 

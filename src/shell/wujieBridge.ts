@@ -15,7 +15,9 @@ export interface WujieEventMap {
   'perm-changed': { perms: string[] };
   // 子应用内路由跳转委托主壳（二级页由主壳 SECONDARY_ROUTES 承载）。
   // 携带 path 与可选 query（源项目用 route.query 传递 eventId/from/autostart/tab 等）。
-  'route-navigate': { path: string; query?: WujieRouteQuery };
+  // replace：true 时主壳用 router.replace（不留历史记录），用于消耗型参数（如 ?create=event）
+  // 清理——子应用消费完一次性的 UI 意图参数后，把主壳 URL 里该参数剥掉，避免 re-nav 重放。
+  'route-navigate': { path: string; query?: WujieRouteQuery; replace?: boolean };
 }
 
 export interface WujieBus {

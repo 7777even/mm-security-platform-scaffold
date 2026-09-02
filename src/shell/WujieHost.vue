@@ -59,6 +59,11 @@ const subappName = computed(() => {
 // 销毁时，vue-router 已把 route 更新到下一条，subappName 这个 computed 也会跟着重算成
 // 下一条路由的 name，销毁的就是还没创建的「未来」实例。mountName 在 setup 时定下值，
 // 整个组件生命周期不变，正是这个 WujieHost 启动的那个 wujie sandbox 的 key。
+// 队列中的 start 竞态：若子应用 main.ts 的 startApp 仍处于 Promise 等待（脚本下载 / 沙箱初始化未完成）
+// 时，组件被 RouterView 重建触发 destroyApp(mountName)，wujie 全局 map 里可能尚无该 name
+// 记录，destroyApp 对未启动实例是幂等 no-op；新一次 startApp 会在新组件 mountName 下重新入队，
+// 不会产生「销毁正在初始化的实例导致 iframe 泄露」的隐患。仅在开发期若发现 destroyApp 后
+// document.querySelectorAll('iframe').length > 1 才需要回头排查这里（详见 task-12 报告 §11）。
 const mountName = subappName.value;
 onBeforeUnmount(() => {
   if (mountName) {
@@ -97,7 +102,9 @@ function onBeforeMount(appWindow: Window) {
   <!-- width/height 显式 100%：wujie iframe 为 100%×100%，但其容器 div 默认 height:auto,
        不传会高度塌陷（子应用只剩背景、面板/地图不可见） -->
   <!-- :key 与 :name 同值：路由 path/params/query 变化时 Vue 重新挂载 WujieVue；
-       旧 sandbox 由 script 段 onBeforeUnmount 显式 destroyApp 拆掉，避免同 URL 重复 Cesium。 -->
+       旧 sandbox 由 script 段 onBeforeUnmount 显式 destroyApp 拆掉，避免同 URL 重复 Cesium。
+       刻意不设 alive：wujie-vue3 用 alive 控制 sandbox 是否常驻复用，此处每个 URL 实例
+       用完即毁（:key=fullPath 重建策略），常驻只会累积 iframe/WebGL 上下文。 -->
   <WujieVue
     v-if="subappUrl"
     :key="subappName"
@@ -108,7 +115,6 @@ function onBeforeMount(appWindow: Window) {
     width="100%"
     height="100%"
     :sandbox="'allow-scripts allow-same-origin'"
-    :live="true"
   >
     <template #loading>
       <div class="wujie-state">子应用加载中…</div>

@@ -102,6 +102,8 @@ describe('fmRouteNameMap：子应用 router.push 目标 → 主壳 path 翻译',
     expect(serializeParamPath('/a/:id/b', { id: 'X' })).toBe('/a/X/b');
     expect(serializeParamPath('/a/:id/b', {})).toBe('/a/:id/b');
     expect(serializeParamPath('/a/:id', { id: 7 })).toBe('/a/7');
+    // 替换值做 URL 编码：含保留字符 / 空格的参数安全拼入 path（主壳按 path 段解码还原）
+    expect(serializeParamPath('/a/:id', { id: 'A/B C#D' })).toBe('/a/A%2FB%20C%23D');
   });
 
   it('FM_SOURCE_ROUTE_TO_SHELL_PATH 覆盖 reviewer 列出的全部源路由名', () => {

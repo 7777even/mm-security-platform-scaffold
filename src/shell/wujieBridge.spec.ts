@@ -62,7 +62,7 @@ describe('wujieBridge：类型化事件总线', () => {
     expect(getWujieBus()).toBeUndefined();
   });
 
-  it('route-navigate 事件负载携带可选 query（type-check 覆盖）', () => {
+  it('route-navigate 事件负载携带可选 query / replace（type-check 覆盖）', () => {
     const { bus } = createMockBus();
     vi.stubGlobal('window', { $wujie: { bus, props: {} } });
     const received: Array<WujieEventMap['route-navigate']> = [];
@@ -74,9 +74,12 @@ describe('wujieBridge：类型化事件总线', () => {
       path: '/fire/rescue',
       query: { eventId: '42', autostart: '1' },
     });
+    // replace：一次性消费参数（?create=event）清理后主壳不留历史
+    emitWujieEvent('route-navigate', { path: '/emergency', query: {}, replace: true });
     expect(received).toEqual([
       { path: '/emergency/drill' },
       { path: '/fire/rescue', query: { eventId: '42', autostart: '1' } },
+      { path: '/emergency', query: {}, replace: true },
     ]);
   });
 });

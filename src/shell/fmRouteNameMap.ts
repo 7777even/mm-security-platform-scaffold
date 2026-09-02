@@ -29,11 +29,13 @@ export interface DelegatedLocation {
   query?: Record<string, string | null | Array<string | null>>;
 }
 
-/** 将模板化 path 中的 :param 占位替换为实际参数（如 facilityId/hazardId） */
+/** 将模板化 path 中的 :param 占位替换为实际参数（如 facilityId/hazardId）。
+ *  替换值经 encodeURIComponent 编码，保证含空格 / '/' / '#' 等保留字符的参数
+ *  也能安全拼进 path（主壳 vue-router 会按 path 段解码回 route.params）。 */
 export function serializeParamPath(template: string, params: Record<string, unknown>): string {
   return template.replace(/:([A-Za-z0-9_]+)/g, (match, key: string) => {
     const value = params[key];
-    return value === undefined || value === null ? match : String(value);
+    return value === undefined || value === null ? match : encodeURIComponent(String(value));
   });
 }
 

@@ -24,8 +24,8 @@ function createMockBus(): WujieBus {
   };
 }
 
-describe('subappRouter：子应用 router.push 委托主壳', () => {
-  let received: Array<{ path: string; query?: WujieRouteQuery }> = [];
+describe('subappRouter：子应用 router.push / replace 委托主壳', () => {
+  let received: Array<{ path: string; query?: WujieRouteQuery; replace?: boolean }> = [];
 
   beforeEach(() => {
     received = [];
@@ -90,6 +90,31 @@ describe('subappRouter：子应用 router.push 委托主壳', () => {
     const router = createSubappRouter();
     await router.push({ name: 'subapp-fallback' });
     // subapp-fallback 是子应用 vue-router 兜底名，不应再次委托回主壳
+    expect(received).toEqual([]);
+  });
+
+  it('router.replace 委托主壳并携带 replace: true', async () => {
+    const router = createSubappRouter();
+    await router.replace('/emergency');
+    expect(received).toEqual([{ path: '/emergency', replace: true }]);
+  });
+
+  it('router.replace({name, params}) 翻译并携带 replace: true', async () => {
+    const router = createSubappRouter();
+    await router.replace({
+      name: 'majorHazardDetail',
+      params: { hazardId: 'MH-7' },
+      query: { tab: 'video' },
+    });
+    expect(received).toEqual([
+      { path: '/production/hazards/MH-7', query: { tab: 'video' }, replace: true },
+    ]);
+  });
+
+  it('pathless { query } 的 replace 不触发委托（无 path/name 可翻译，回退本地路由）', async () => {
+    const router = createSubappRouter();
+    // 子应用沙箱内这类清理是无操作；跨页清理 shell query 必须携带主壳当前 path
+    await router.replace({ query: { create: 'event' } }).catch(() => undefined);
     expect(received).toEqual([]);
   });
 });
