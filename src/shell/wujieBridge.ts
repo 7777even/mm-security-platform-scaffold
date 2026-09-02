@@ -2,6 +2,10 @@
 // 修正 mm-safety-master 既有桥接中 `window as any` 反模式（S1 禁 any）：
 // 全部经强类型 WujieBus 访问，禁止裸 any。
 
+/** vue-router LocationQueryValue 形状（与 vue-router 4 一致） */
+export type WujieRouteQueryValue = string | null | undefined;
+export type WujieRouteQuery = Record<string, WujieRouteQueryValue | WujieRouteQueryValue[]>;
+
 /** 主壳 → 子应用 / 子应用间 跨应用事件契约（仅监视/导航类，零下行控制红线） */
 export interface WujieEventMap {
   'map-fly-to': { lng: number; lat: number; height?: number };
@@ -9,8 +13,9 @@ export interface WujieEventMap {
   'emergency-event-changed': { eventId: string; status: string };
   'theme-changed': { theme: string };
   'perm-changed': { perms: string[] };
-  // 子应用内路由跳转委托主壳（二级页由主壳 SECONDARY_ROUTES 承载）
-  'route-navigate': { path: string };
+  // 子应用内路由跳转委托主壳（二级页由主壳 SECONDARY_ROUTES 承载）。
+  // 携带 path 与可选 query（源项目用 route.query 传递 eventId/from/autostart/tab 等）。
+  'route-navigate': { path: string; query?: WujieRouteQuery };
 }
 
 export interface WujieBus {

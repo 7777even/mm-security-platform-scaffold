@@ -61,4 +61,22 @@ describe('wujieBridge：类型化事件总线', () => {
     expect(() => emitWujieEvent('theme-changed', { theme: 'dark' })).not.toThrow();
     expect(getWujieBus()).toBeUndefined();
   });
+
+  it('route-navigate 事件负载携带可选 query（type-check 覆盖）', () => {
+    const { bus } = createMockBus();
+    vi.stubGlobal('window', { $wujie: { bus, props: {} } });
+    const received: Array<WujieEventMap['route-navigate']> = [];
+    onWujieEvent('route-navigate', (d) => received.push(d));
+    // 纯路径
+    emitWujieEvent('route-navigate', { path: '/emergency/drill' });
+    // 路径 + query（drill/autostart/eventId 等参数依赖此通道）
+    emitWujieEvent('route-navigate', {
+      path: '/fire/rescue',
+      query: { eventId: '42', autostart: '1' },
+    });
+    expect(received).toEqual([
+      { path: '/emergency/drill' },
+      { path: '/fire/rescue', query: { eventId: '42', autostart: '1' } },
+    ]);
+  });
 });

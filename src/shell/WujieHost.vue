@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import WujieVue from 'wujie-vue3';
 import { useAuthStore } from '@/stores/auth';
@@ -8,13 +8,67 @@ import { injectDesignTokens } from './wujieTokens';
 // wujie 主壳装载槽（wujie-shell spec）。
 // 经 <RouterView> 渲染：当路由 meta.subappUrl 存在时挂载对应子应用，
 // AppLayout 的 <RouterView/> 即为主壳挂载槽。子应用不可达时由 loading 插槽兜底。
-// 子应用名取自路由 name（同域唯一），保证 wujie 实例复用。
+// 实例命名策略（reviewer task-12 #4/#5 综合权衡）：
+// 1. 以子应用 URL（route.meta.subappUrl）派生 slug（去掉前后缀 + 'subapps/' 前缀）作为实例主键。
+// 2. 在 slug 后追加 route.path（包含参数）与 query 哈希 → 不同路径/参数/查询各自独立 wujie 实例。
+// 依据：wujie-vue3 1.0.29 的 WujieVue 仅在 (name + url) 变化时调用 startApp，且对已存在
+// 的 alive sandbox 不会重跑子应用脚本（无 props 响应式桥）。模块顶层的 routeParams 读取
+// 只能反映首次启动时的 props；以全路径派生实例名可让 A→B 切换/list→detail/drill→rescue
+// 都重新执行子应用 main.ts，避免 params/mode 错乱（task-12 #5 reviewer 备选方案）。
+// 旧实例清理：wujie-vue3 的 beforeDestroy 仅 bus.$offAll，不会自动 destroyApp；切到新 name 后
+// 旧 wujie sandbox（iframe + Cesium WebGL 上下文）会留在 wujie 全局 map 中持续消耗资源，
+// 直接破坏 reviewer #4「避免同 URL 重复 Cesium」目标。下方显式 watch subappName 切名时
+// 调 WujieVue.destroyApp(oldName) 拆掉旧 iframe（保证 drill→rescue / area A→B 不留尾）。
+// 跨子应用切换会重 boot 一次（Cesium 重建），smoke 阶段 14 条直链路由均各自加载，经验可接受。
 
 const route = useRoute();
 const auth = useAuthStore();
 
 const subappUrl = computed(() => route.meta.subappUrl as string | undefined);
-const subappName = computed(() => (route.name as string) ?? 'subapp');
+
+function slugifySubappUrl(url: string | undefined): string {
+  if (!url) return 'subapp';
+  // 形如 '/subapps/fm-rescue/' → 'fm-rescue'；其它来源直接 trim 斜杠
+  const trimmed = url.replace(/^\/+|\/+$/g, '');
+  return trimmed.replace(/^subapps\//, '') || 'subapp';
+}
+
+const subappSlug = computed(() => slugifySubappUrl(subappUrl.value));
+
+// 全路径派生：路径含参数（/production/area/A），query 区分 eventId/from 等上下文。
+// 顺序：slug + path + ('?' + sortedQuery)。空 query 仅留 path。
+const subappName = computed(() => {
+  const slug = subappSlug.value;
+  const path = route.path || '';
+  const queryEntries = Object.entries(route.query).filter(([, v]) => v !== undefined);
+  if (queryEntries.length === 0) return `${slug}::${path}`;
+  const sorted = queryEntries
+    .slice()
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(',') : String(v)}`)
+    .join('&');
+  return `${slug}::${path}?${sorted}`;
+});
+
+// 切名时显式拆掉旧 sandbox。wujie-vue3 不自动 destroy，旧实例会随 iframe 进程持续占内存；
+// 同时挂载两个 fm-rescue 同 URL 实例会创建两份 Cesium 上下文（reviewer #4 直白目标）。
+const previousName = ref<string | null>(null);
+watch(
+  subappName,
+  (next, prev) => {
+    if (prev && prev !== next) {
+      WujieVue.destroyApp(prev);
+    }
+    previousName.value = next;
+  },
+  { immediate: true },
+);
+// 离开子应用路由（meta.subappUrl 缺失 → v-if=false 卸载 WujieVue）时也要拆掉当前 sandbox
+watch(subappUrl, (next, prev) => {
+  if (prev && !next && previousName.value) {
+    WujieVue.destroyApp(previousName.value);
+  }
+});
 
 // 主壳 → 子应用下传共享态（子应用经 window.$wujie.props 读取）
 // routeParams：二级参数页（fm-production-area 的 facilityId / fm-major-hazard 的 hazardId）
@@ -22,6 +76,8 @@ const subappName = computed(() => (route.name as string) ?? 'subapp');
 // routeName / routePath：子应用无独立路由树，但 SharedCesiumMap 等组件依赖 useRoute()
 // 才能解析出 Cesium 地图模式与 focus；透传主壳当前路由的 name / path，
 // 子应用侧经 window.$wujie.props 读取后回退到本地 vue-router 之上。
+// query：子应用视图大量使用 route.query（eventId/from/autostart/tab/monitor/...），
+// 由主壳下传替代子应用沙箱 vue-router 永远命中的 subapp-fallback 缺失。
 const sharedProps = computed(() => ({
   user: auth.roleId,
   perms: auth.perms,
@@ -29,6 +85,7 @@ const sharedProps = computed(() => ({
   routeParams: { ...route.params } as Record<string, string>,
   routeName: route.name as string | undefined,
   routePath: route.path,
+  query: { ...route.query } as Record<string, string | string[] | null | undefined>,
 }));
 
 // 子应用沙箱 style 隔离，无法读取主壳 :root 变量；
@@ -41,10 +98,13 @@ function onBeforeMount(appWindow: Window) {
 <template>
   <!-- sandbox 显式声明：allow-scripts + allow-same-origin 保证 wujie 的同源 blob 沙箱
        可创建 WebGL 上下文（Cesium 强依赖 WebGL），排除 iframe 沙箱拦截 WebGL 的隐患 -->
-  <!-- width/height 显式 100%：wujie iframe 为 100%×100%，但其容器 div 默认 height:auto，
+  <!-- width/height 显式 100%：wujie iframe 为 100%×100%，但其容器 div 默认 height:auto,
        不传会高度塌陷（子应用只剩背景、面板/地图不可见） -->
+  <!-- :key 与 :name 同值：路由 path/params/query 变化时 Vue 重新挂载 WujieVue；
+       旧 sandbox 由上方 watch 显式 destroyApp 拆掉，避免同 URL 重复 Cesium。 -->
   <WujieVue
     v-if="subappUrl"
+    :key="subappName"
     :name="subappName"
     :url="subappUrl"
     :props="sharedProps"

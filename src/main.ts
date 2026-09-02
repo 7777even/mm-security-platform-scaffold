@@ -105,10 +105,19 @@ async function bootstrap(): Promise<void> {
 
   // 子应用内路由跳转统一委托主壳路由（二级页由主壳 SECONDARY_ROUTES 承载）。
   // 子应用经 wujie 总线 emit('route-navigate')，主壳监听后执行 router.push。
-  WujieVue.bus.$on('route-navigate', (event: string, data: { path: string }) => {
-    void event;
-    void router.push(data.path);
-  });
+  // 注意：wujie EventBus.$on 回调只接收 $emit 的负载参数（首个参数即 data），
+  // 二参签名 (event, data) 会把 data 视为 undefined——此前跨应用跳转即因此静默失效。
+  // query 透传：源项目使用 route.query 传递 eventId/from/autostart/tab/monitor 等参数。
+  WujieVue.bus.$on(
+    'route-navigate',
+    (data: { path: string; query?: Record<string, string | string[] | null> }) => {
+      if (data.query) {
+        void router.push({ path: data.path, query: data.query });
+      } else {
+        void router.push(data.path);
+      }
+    },
+  );
 
   await router.isReady();
 
