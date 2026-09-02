@@ -158,6 +158,34 @@ export default defineConfig({
         opsMonitorSubapp: fileURLToPath(
           new URL('./subapps/ops-monitor/index.html', import.meta.url),
         ),
+        fmEmergencySubapp: fileURLToPath(
+          new URL('./subapps/fm-emergency/index.html', import.meta.url),
+        ),
+        fmFireSubapp: fileURLToPath(new URL('./subapps/fm-fire/index.html', import.meta.url)),
+        fmRescueSubapp: fileURLToPath(new URL('./subapps/fm-rescue/index.html', import.meta.url)),
+        fmTyphoonSubapp: fileURLToPath(new URL('./subapps/fm-typhoon/index.html', import.meta.url)),
+        fmSecuritySubapp: fileURLToPath(
+          new URL('./subapps/fm-security/index.html', import.meta.url),
+        ),
+        fmTvSubapp: fileURLToPath(new URL('./subapps/fm-tv/index.html', import.meta.url)),
+        fmProductionSubapp: fileURLToPath(
+          new URL('./subapps/fm-production/index.html', import.meta.url),
+        ),
+        fmProductionAreaSubapp: fileURLToPath(
+          new URL('./subapps/fm-production-area/index.html', import.meta.url),
+        ),
+        fmMajorHazardSubapp: fileURLToPath(
+          new URL('./subapps/fm-major-hazard/index.html', import.meta.url),
+        ),
+        fmCommunicationSubapp: fileURLToPath(
+          new URL('./subapps/fm-communication/index.html', import.meta.url),
+        ),
+        fmVideoControlSubapp: fileURLToPath(
+          new URL('./subapps/fm-video-control/index.html', import.meta.url),
+        ),
+        fmVideoWallSubapp: fileURLToPath(
+          new URL('./subapps/fm-video-wall/index.html', import.meta.url),
+        ),
       },
       output: { manualChunks: { echarts: ['echarts'] } },
     },
