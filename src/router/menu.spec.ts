@@ -79,7 +79,7 @@ describe('installDynamicRoutes：装配到路由实例', () => {
     expect(getInstalledMenuRoutes()).toHaveLength(1);
   });
 
-  it('管理员身份可见全部六大模块（脚手架阶段单一身份，授予全部权限）', () => {
+  it('管理员身份可见全部 fm 五模块（脚手架阶段单一身份，授予全部权限）', () => {
     const router = createTestRouter();
     installDynamicRoutes(router, DEFAULT_MENUS);
     const auth = useAuthStore();
@@ -88,13 +88,8 @@ describe('installDynamicRoutes：装配到路由实例', () => {
     auth.setRole('admin');
     const filtered = filterRoutesByPerm(getInstalledMenuRoutes());
     const names = filtered.map((r) => r.name).join(',');
-    [
-      'dashboard',
-      'extreme-weather',
-      'fire-alarm',
-      'security-anti-terror',
-      'industrial-video',
-      'ops-monitor',
-    ].forEach((n) => expect(names).toContain(n));
+    ['fm-emergency', 'fm-fire', 'fm-security', 'fm-tv', 'fm-production'].forEach((n) =>
+      expect(names).toContain(n),
+    );
   });
 });

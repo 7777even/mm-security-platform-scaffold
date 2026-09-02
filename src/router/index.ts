@@ -102,6 +102,115 @@ const SECONDARY_ROUTES: RouteRecordRaw[] = [
     component: () => import('@/views/video-wall/index.vue'),
     meta: { title: '视频墙', perm: 'video:view', hidden: true },
   },
+  // —— fire-monitoring 迁移二级页（fm-* 子应用，路径镜像源项目 router）——
+  {
+    path: '/emergency/drill',
+    name: 'fm-drill',
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    meta: {
+      title: '应急演练详情',
+      perm: 'dashboard:view',
+      hidden: true,
+      subapp: true,
+      subappUrl: '/subapps/fm-rescue/',
+    },
+  },
+  {
+    path: '/emergency/typhoon',
+    name: 'fm-typhoon',
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    meta: {
+      title: '台风应急详情',
+      perm: 'dashboard:view',
+      hidden: true,
+      subapp: true,
+      subappUrl: '/subapps/fm-typhoon/',
+    },
+  },
+  {
+    path: '/fire/rescue',
+    name: 'fm-fire-rescue',
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    meta: {
+      title: '事故应急救援',
+      perm: 'fire-alarm:view',
+      hidden: true,
+      subapp: true,
+      subappUrl: '/subapps/fm-rescue/',
+    },
+  },
+  {
+    path: '/production/area/:facilityId',
+    name: 'fm-production-area',
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    meta: {
+      title: '生产区域详情',
+      perm: 'ops:view',
+      hidden: true,
+      subapp: true,
+      subappUrl: '/subapps/fm-production-area/',
+    },
+  },
+  {
+    path: '/production/hazards',
+    name: 'fm-major-hazard-list',
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    meta: {
+      title: '重大危险源',
+      perm: 'ops:view',
+      hidden: true,
+      subapp: true,
+      subappUrl: '/subapps/fm-major-hazard/',
+    },
+  },
+  {
+    path: '/production/hazards/:hazardId',
+    name: 'fm-major-hazard-detail',
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    meta: {
+      title: '重大危险源详情',
+      perm: 'ops:view',
+      hidden: true,
+      subapp: true,
+      subappUrl: '/subapps/fm-major-hazard/',
+    },
+  },
+  {
+    path: '/production/communication',
+    name: 'fm-communication',
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    meta: {
+      title: '生产通信',
+      perm: 'ops:view',
+      hidden: true,
+      subapp: true,
+      subappUrl: '/subapps/fm-communication/',
+    },
+  },
+  {
+    path: '/tv/video-control',
+    name: 'fm-video-control',
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    meta: {
+      title: '视频控制平台',
+      perm: 'video:view',
+      hidden: true,
+      subapp: true,
+      subappUrl: '/subapps/fm-video-control/',
+    },
+  },
+  {
+    path: '/tv/video-wall',
+    name: 'fm-video-wall',
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    meta: {
+      title: '视频墙',
+      perm: 'video:view',
+      hidden: true,
+      subapp: true,
+      subappUrl: '/subapps/fm-video-wall/',
+    },
+  },
 ];
 
 const routes: RouteRecordRaw[] = [
@@ -109,7 +218,7 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     name: 'layout',
     component: () => import('@/components/layout/AppLayout.vue'),
-    redirect: '/dashboard',
+    redirect: '/fire',
     children: [...SECONDARY_ROUTES],
   },
   {

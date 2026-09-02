@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildDynamicRoutes, MENU_ROUTE_SPECS } from '@/router/menu';
+import { buildDynamicRoutes, MENU_ROUTE_SPECS, DEFAULT_MENUS } from '@/router/menu';
 
 describe('dashboard 路由 → wujie 子应用挂载映射', () => {
   it('dashboard 菜单规格携带 subappUrl 与 subapp 标记', () => {
@@ -43,5 +43,22 @@ describe('其余业务模块 → wujie 子应用挂载映射', () => {
     for (const id of migrated) {
       expect(MENU_ROUTE_SPECS[id]!.component.toString()).toContain('WujieHost');
     }
+  });
+});
+
+describe('fm 子应用菜单接管（fire-monitoring 迁移）', () => {
+  it('fm 子应用菜单条目指向 /subapps/fm-* 且默认菜单切换为 fm 五项', () => {
+    expect(MENU_ROUTE_SPECS['fm-emergency'].subappUrl).toBe('/subapps/fm-emergency/');
+    expect(MENU_ROUTE_SPECS['fm-fire'].subappUrl).toBe('/subapps/fm-fire/');
+    expect(MENU_ROUTE_SPECS['fm-security'].subappUrl).toBe('/subapps/fm-security/');
+    expect(MENU_ROUTE_SPECS['fm-tv'].subappUrl).toBe('/subapps/fm-tv/');
+    expect(MENU_ROUTE_SPECS['fm-production'].subappUrl).toBe('/subapps/fm-production/');
+    expect(DEFAULT_MENUS.map((m) => m.id)).toEqual([
+      'fm-emergency',
+      'fm-fire',
+      'fm-security',
+      'fm-tv',
+      'fm-production',
+    ]);
   });
 });

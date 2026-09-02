@@ -79,16 +79,57 @@ export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
     subapp: true,
     subappUrl: import.meta.env.VITE_EXTREME_WEATHER_SUBAPP_URL ?? '/subapps/extreme-weather/',
   },
+  // —— fire-monitoring 迁移子应用（fm-*）：默认菜单指向；旧 6 子应用保留可经 env 指回 ——
+  'fm-emergency': {
+    title: '应急指挥',
+    perm: 'dashboard:view',
+    icon: DataBoard,
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_FM_EMERGENCY_SUBAPP_URL ?? '/subapps/fm-emergency/',
+  },
+  'fm-fire': {
+    title: '消防报警',
+    perm: 'fire-alarm:view',
+    icon: Warning,
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_FM_FIRE_SUBAPP_URL ?? '/subapps/fm-fire/',
+  },
+  'fm-security': {
+    title: '治安防恐',
+    perm: 'security:view',
+    icon: Lock,
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_FM_SECURITY_SUBAPP_URL ?? '/subapps/fm-security/',
+  },
+  'fm-tv': {
+    title: '工业电视',
+    perm: 'video:view',
+    icon: VideoCamera,
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_FM_TV_SUBAPP_URL ?? '/subapps/fm-tv/',
+  },
+  'fm-production': {
+    title: '生产应急',
+    perm: 'ops:view',
+    icon: OfficeBuilding,
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_FM_PRODUCTION_SUBAPP_URL ?? '/subapps/fm-production/',
+  },
 };
 
-// 降级默认菜单：mock/后端菜单不可达时装配，保证不白屏（对齐六大业务模块原型）
+// 降级默认菜单：fm-*（fire-monitoring 迁移版大屏）；旧 6 子应用保留在 MENU_ROUTE_SPECS，
+// 菜单不可达时装配以下五项（对齐源项目 navItems：预警中心源项目无页面，暂不设项）
 export const DEFAULT_MENUS: MenuItem[] = [
-  { id: 'dashboard', name: '应急指挥', path: '/dashboard' },
-  { id: 'fire-alarm', name: '消防报警', path: '/fire-alarm' },
-  { id: 'security-anti-terror', name: '安全防恐', path: '/security-anti-terror' },
-  { id: 'industrial-video', name: '工业电视', path: '/industrial-video' },
-  { id: 'ops-monitor', name: '生产应急', path: '/ops-monitor' },
-  { id: 'extreme-weather', name: '预警中心', path: '/extreme-weather' },
+  { id: 'fm-emergency', name: '应急指挥', path: '/emergency' },
+  { id: 'fm-fire', name: '消防报警', path: '/fire' },
+  { id: 'fm-security', name: '治安防恐', path: '/security' },
+  { id: 'fm-tv', name: '工业电视', path: '/tv' },
+  { id: 'fm-production', name: '生产应急', path: '/production' },
 ];
 
 // 菜单 → 路由记录（递归；未注册 id 跳过并告警，避免装配无组件路由）
