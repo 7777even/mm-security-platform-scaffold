@@ -87,7 +87,7 @@
 
 ## 3. 布局骨架（一图统览 · 三级视觉布局）
 
-- **顶部全局导航** `--layout-header-h: 77px`：深蓝渐变底 + 底部亮线，承载系统大标题（38px + 蓝辉光 `--header-title-glow`）、时间、全局状态、用户状态与一级导航（20px，`--font-size-nav`）。
+- **顶部全局导航** `--layout-header-h: 77px`：深蓝渐变底 + 底部亮线，承载系统大标题（38px + 蓝辉光 `--header-title-glow`）、时间、全局状态、用户状态与一级导航（20px，`--font-size-nav`）。**左上角品牌 Logo（盾形标 + 系统标题）点击返回主页**（已实现于 `src/components/layout/AppLayout.vue` 的 `.brand`，对齐中石化品牌规范）。
 - **中央地图主视觉**：深蓝地理底图 + 业务要素分层叠加，通过透明度和描边区分基础图层与业务标注；支持园区概览 → 装置区 → 装置 → 设备 / 点位逐级下钻。
 - **两侧专题面板**：右 `--layout-aside-w: 419px` / 窄侧 `--layout-aside-w-narrow: 338px`，半透明深蓝面板；**左侧放统计类高优先元素，右侧放操作类低优先交互元素**，遵循「主视觉居中、辅助信息对称分布」。
 - **底部栏** `--layout-bottom-h: 67px`：底部消息栏以滚动方式播报系统消息、报警通知与处置提示（设计说明 §5.3.3.1.1）；事件处置阶段可按需承载时间轴 / 快捷工具。
@@ -135,6 +135,7 @@
 **AlarmListItem 报警列表项**
 
 - 缩略图 `var(--alarm-list-thumb-w: 96px) × var(--alarm-list-thumb-h: 72px)`；状态点 `var(--alarm-list-status-{active/acked/dispatched/closed})` 对应 §7 映射；行高 `var(--list-row-h: 56px)`；分隔 `var(--alarm-list-divider)`。
+- 数据列表开启**隔行变色（斑马纹）**，复用 `--row-alt-bg`（深蓝半透底），提升战时高压阅读下的视觉舒适度（对齐中石化品牌规范《石化智云 UI 规范》）。
 - 状态色只用映射表，**禁止文字颜色自造**。
 
 **按钮**
@@ -155,7 +156,7 @@
 
 **字体与图标**
 
-- 中文标题用思源黑体 / Noto Sans SC 等无衬线字体；数据指标用几何感强的西文字体（`--font-family-num`），保证数字对齐（`tabular-nums`）与易读。
+- 系统默认中文字体 **Microsoft YaHei（微软雅黑）优先**，Noto Sans SC / 思源黑体等无衬线字体兜底（token `--font-family-zh`，首位已对齐中石化品牌规范）；数据指标用几何感强的西文字体（`--font-family-num`），保证数字对齐（`tabular-nums`）与易读。
 - 图标线性或面性结合的矢量风格，语义明确、轮廓简洁；地图控制 / 业务功能 / 状态指示图标视觉重量一致。
 
 **多场景视觉适配**
@@ -236,3 +237,5 @@ export const RISK_FILL: Record<string, string> = {
 - [ ] 字号多档位且来自 §3.1 表；z-index 只用五层 token。
 - [ ] 高频操作常驻 / 半常驻；动效柔和过渡，报警高亮主动触达。
 - [ ] 弹层为深蓝底 + `--z-overlay`，不是白底办公弹窗。
+- [ ] 左上角品牌 Logo 点击返回主页（AppLayout `.brand`）；数据列表开启隔行变色（复用 `--row-alt-bg`）。
+- [ ] 默认中文字体 Microsoft YaHei 优先（`--font-family-zh` 首位，对齐中石化品牌规范）。
