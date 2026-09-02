@@ -17,10 +17,13 @@ const subappUrl = computed(() => route.meta.subappUrl as string | undefined);
 const subappName = computed(() => (route.name as string) ?? 'subapp');
 
 // 主壳 → 子应用下传共享态（子应用经 window.$wujie.props 读取）
+// routeParams：二级参数页（fm-production-area 的 facilityId / fm-major-hazard 的 hazardId）
+// 由主壳路由参数透传，子应用无路由树也能拿到路径参数。
 const sharedProps = computed(() => ({
   user: auth.roleId,
   perms: auth.perms,
   theme: 'dark',
+  routeParams: { ...route.params } as Record<string, string>,
 }));
 
 // 子应用沙箱 style 隔离，无法读取主壳 :root 变量；
