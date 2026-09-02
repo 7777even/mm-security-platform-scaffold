@@ -77,6 +77,165 @@ function renderARTable() {
 
 function formatARTime(dt) { return dt ? dt.replace('T',' ') : '-'; }
 
+// 报警详情「数据走势图」：在 #ar-trend-chart canvas 上绘制近 1 小时监测值走势（造点示例数据）。
+// 原型无图表库，直接用 Canvas 2D 绘制（网格 + 阈值线 + 面积渐变 + 走势线 + 当前值）。
+// 支持「30 秒自动刷新」滚动：维护滚动缓冲，每次刷新追加新采样点、丢弃最旧点，曲线整体左移。
+var arTrendTimer = null;   // 30s 刷新定时器
+var arTrendBuf = null;     // { times:[], data:[], unit, base, hi, lo, hasHi, hasLo, _item }
+var AR_TREND_N = 120;      // 近 1 小时，每 30s 一点 → 120 点
+
+function arTrendFmt(t) {
+  return ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2) + ':' + ('0' + t.getSeconds()).slice(-2);
+}
+
+// 均值回复随机游走 + 偶发尖峰，生成下一个采样值（让曲线有“活”的波动）
+function arTrendNextValue(prev, base, hi, lo, hasHi, hasLo) {
+  var v = prev + (base - prev) * 0.08 + (Math.random() - 0.5) * base * 0.06;
+  if (Math.random() < 0.05) v += (hasHi ? (hi - base) : base * 0.3) * (0.5 + Math.random());
+  if (hasHi) v = Math.min(v, hi * 1.15);
+  if (hasLo) v = Math.max(v, lo * 0.85);
+  return Math.round(v * 10) / 10;
+}
+
+function initARTrend(item) {
+  var df = item.detailFields || {};
+  var measured = parseFloat(df.measuredValue);
+  var hi = parseFloat(df.alarmHi);
+  var lo = parseFloat(df.alarmLo);
+  var hasHi = !isNaN(hi), hasLo = !isNaN(lo);
+  var base = (!isNaN(measured) && measured) ? measured : (45 + Math.random() * 40);
+  var now = new Date();
+  var times = [], data = [];
+  var v = base;
+  for (var i = 0; i < AR_TREND_N; i++) {
+    var t = new Date(now.getTime() - (AR_TREND_N - 1 - i) * 30000);
+    times.push(arTrendFmt(t));
+    v = arTrendNextValue(v, base, hi, lo, hasHi, hasLo);
+    data.push(v);
+  }
+  arTrendBuf = {
+    times: times, data: data, unit: df.unit || '',
+    base: base, hi: hi, lo: lo, hasHi: hasHi, hasLo: hasLo, _item: item,
+  };
+}
+
+function startARTrendRefresh() {
+  stopARTrendRefresh();
+  arTrendTimer = setInterval(function () {
+    var canvas = document.getElementById('ar-trend-chart');
+    if (!canvas || !arTrendBuf) { stopARTrendRefresh(); return; }
+    // 滚动：丢弃最旧点，追加基于当前时间的新采样点（曲线整体左移）
+    var now = new Date();
+    var prev = arTrendBuf.data[arTrendBuf.data.length - 1];
+    var nv = arTrendNextValue(prev, arTrendBuf.base, arTrendBuf.hi, arTrendBuf.lo, arTrendBuf.hasHi, arTrendBuf.hasLo);
+    arTrendBuf.times.push(arTrendFmt(now));
+    arTrendBuf.data.push(nv);
+    arTrendBuf.times.shift();
+    arTrendBuf.data.shift();
+    drawARTrendChart();
+  }, 30000);
+}
+
+function stopARTrendRefresh() {
+  if (arTrendTimer) { clearInterval(arTrendTimer); arTrendTimer = null; }
+}
+
+function drawARTrendChart(item) {
+  var canvas = document.getElementById('ar-trend-chart');
+  if (!canvas) return;
+  if (item && (!arTrendBuf || arTrendBuf._item !== item)) initARTrend(item);
+  if (!arTrendBuf) return;
+  var times = arTrendBuf.times, data = arTrendBuf.data, unit = arTrendBuf.unit;
+  var hi = arTrendBuf.hi, lo = arTrendBuf.lo, hasHi = arTrendBuf.hasHi, hasLo = arTrendBuf.hasLo;
+  var N = data.length;
+
+  // 画布按 DPR 高清化
+  var rect = canvas.getBoundingClientRect();
+  var W = rect.width || 600, H = rect.height || 200;
+  var dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  var ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+
+  var padL = 46, padR = 14, padT = 14, padB = 26;
+  var plotW = W - padL - padR, plotH = H - padT - padB;
+  // 有阈值时固定 Y 轴范围（滚动更平稳），否则按数据自适应
+  var yMin, yMax;
+  if (hasHi && hasLo) { yMin = Math.min(lo, arTrendBuf.base) * 0.9; yMax = hi * 1.2; }
+  else if (hasHi) { yMin = Math.min(arTrendBuf.base, hi) * 0.85; yMax = hi * 1.2; }
+  else if (hasLo) { yMin = lo * 0.9; yMax = Math.max(arTrendBuf.base, lo) * 1.15; }
+  else { yMin = Math.min.apply(null, data) * 0.95; yMax = Math.max.apply(null, data) * 1.05; }
+  var xAt = function (i) { return padL + (i / (N - 1)) * plotW; };
+  var yAt = function (v) { return padT + (1 - (v - yMin) / (yMax - yMin)) * plotH; };
+
+  // 横向网格 + Y 轴刻度
+  ctx.font = '10px sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'right';
+  for (var g = 0; g <= 4; g++) {
+    var gv = yMin + ((yMax - yMin) * g) / 4;
+    var gy = yAt(gv);
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(W - padR, gy); ctx.stroke();
+    ctx.fillStyle = '#94a4b1';
+    ctx.fillText(gv.toFixed(1), padL - 6, gy);
+  }
+
+  // 阈值线（上限红 / 下限橙，虚线）
+  function drawThreshold(val, color, label) {
+    if (isNaN(val)) return;
+    var ty = yAt(val);
+    ctx.save();
+    ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+    ctx.beginPath(); ctx.moveTo(padL, ty); ctx.lineTo(W - padR, ty); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = color; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText(label, padL + 2, ty - 2);
+    ctx.restore();
+  }
+  if (hasHi) drawThreshold(hi, '#f5222d', '上限 ' + hi);
+  if (hasLo) drawThreshold(lo, '#fa8c16', '下限 ' + lo);
+
+  // 面积渐变
+  var grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+  grad.addColorStop(0, 'rgba(24,144,255,0.28)');
+  grad.addColorStop(1, 'rgba(24,144,255,0.02)');
+  ctx.beginPath();
+  ctx.moveTo(xAt(0), yAt(data[0]));
+  for (var j = 1; j < N; j++) ctx.lineTo(xAt(j), yAt(data[j]));
+  ctx.lineTo(xAt(N - 1), padT + plotH);
+  ctx.lineTo(xAt(0), padT + plotH);
+  ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+
+  // 走势线
+  ctx.beginPath();
+  ctx.moveTo(xAt(0), yAt(data[0]));
+  for (var k = 1; k < N; k++) ctx.lineTo(xAt(k), yAt(data[k]));
+  ctx.strokeStyle = '#1890ff'; ctx.lineWidth = 2; ctx.stroke();
+
+  // 数据点（仅末点高亮 + 当前值）
+  for (var p = 0; p < N; p++) {
+    var px = xAt(p), py = yAt(data[p]);
+    if (p === N - 1) {
+      ctx.fillStyle = '#1890ff';
+      ctx.beginPath(); ctx.arc(px, py, 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#1a3550'; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+      ctx.fillText(data[p] + (unit ? ' ' + unit : ''), px - 4, py - 6);
+    }
+  }
+
+  // X 轴时间标签（约 6 个，仅显示 HH:MM）
+  ctx.fillStyle = '#94a4b1'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  var step = Math.ceil(N / 6);
+  for (var s = 0; s < N; s += step) {
+    ctx.fillText(times[s].slice(0, 5), xAt(s), padT + plotH + 6);
+  }
+}
+
 // ===== 详情 =====
 function viewARDetail(idx) {
   var item = arData[idx]; if(!item) return;
@@ -111,6 +270,8 @@ function viewARDetail(idx) {
     '<tr><td style="color:var(--gray-400);">备注</td><td colspan="3">'+(item.remark||'-')+'</td></tr>' +
   '</table></div>' +
   '<div class="btn-group"><button class="btn btn-outline" onclick="showARList()">← 返回列表</button></div>';
+  if (item.alarmType === 'DCS报警' || item.alarmType === 'GDS报警') { drawARTrendChart(item); startARTrendRefresh(); }
+  else { stopARTrendRefresh(); }
 }
 
 function renderARDetailFields(alarmType, df) {
@@ -167,10 +328,10 @@ function renderARDetailFields(alarmType, df) {
   return html + '</div>';
 }
 
-function showARList() { renderARList(); }
+function showARList() { stopARTrendRefresh(); renderARList(); }
 
 // ===== 新增/编辑（内联）=====
-function showARNew() { arEditIdx=-1; document.getElementById('ar-toolbar').style.display='none';
+function showARNew() { stopARTrendRefresh(); arEditIdx=-1; document.getElementById('ar-toolbar').style.display='none';
   document.getElementById('ar-content').innerHTML='<div class="page-nav"><span class="nav-item" onclick="showARList()">🚨 报警记录列表</span> / 新增记录</div>'+renderARForm({})+'<div class="card"><div class="btn-group"><button class="btn btn-primary" onclick="saveAR()">💾 保存</button> <button class="btn btn-outline" onclick="showARList()">取消</button></div></div>'; }
 function editARDetail(idx) { arEditIdx=idx; var item=arData[idx]; if(!item)return; document.getElementById('ar-toolbar').style.display='none';
   var lvCls = AR_LEVEL_CLASS[item.alarmLevel]||'neutral';
@@ -202,6 +363,8 @@ function editARDetail(idx) { arEditIdx=idx; var item=arData[idx]; if(!item)retur
     '<tr><td style="color:var(--gray-400);">备注</td><td colspan="3"><input class="form-input" id="f-ar-remark" value="'+heAR(item.remark||'')+'"></td></tr>' +
   '</table></div>' +
   '<div class="btn-group"><button class="btn btn-primary" onclick="saveAR()">💾 保存</button> <button class="btn btn-outline" onclick="viewARDetail('+idx+')">↩ 取消编辑</button></div>';
+  if (item.alarmType === 'DCS报警' || item.alarmType === 'GDS报警') { drawARTrendChart(item); startARTrendRefresh(); }
+  else { stopARTrendRefresh(); }
 }
 
 function renderARForm(item) {
