@@ -1,0 +1,7 @@
+/* 嵌入态样式（外置以符合生产 CSP 禁 unsafe-inline）：隐藏原型自带侧栏/顶栏，主内容铺满 iframe */
+html.embed .sidebar,
+html.embed .topbar,
+html.embed .back-to-hub { display: none !important; }
+html.embed .layout { display: block !important; }
+html.embed .main { width: 100% !important; min-height: 100vh; margin: 0 !important; }
+html.embed .content { min-height: 100vh; background: #eff5f9; }

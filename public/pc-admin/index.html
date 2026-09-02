@@ -1,0 +1,368 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>茂名石化 — 安全管控平台管理后台</title>
+<script src="js/embed-flag.js"></script>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/theme-v2.css">
+<link rel="stylesheet" href="css/theme-mastergo.css">
+<link rel="stylesheet" href="css/icons.css">
+<link rel="stylesheet" href="css/theme-controls.css">
+<link rel="stylesheet" href="css/embed.css">
+</head>
+<body>
+<div class="layout">
+
+  <!-- ═══ 侧边栏 ═══ -->
+  <div class="sidebar">
+    <div class="sidebar-logo"><span class="dot"></span>安全管控平台管理后台</div>
+    <div class="sidebar-menu">
+      <!-- 00 报警管理（一级） -->
+      <div class="menu-group">
+        <div class="menu-parent expanded" data-menu="alarm">
+          <i class="icon mi mi-alarm" aria-hidden="true"></i>报警管理
+          <span class="arrow">▶</span>
+        </div>
+        <div class="sub-menu open" id="sub-alarm">
+          <div class="sub-menu-item active" data-page="alarm-record">报警记录</div>
+          <div class="sub-menu-item" data-page="alarm-config">报警规则配置</div>
+        </div>
+      </div>
+      <!-- 01 消防设施管理 -->
+      <div class="menu-group">
+        <div class="menu-parent expanded" data-menu="fire">
+          <i class="icon mi mi-fire" aria-hidden="true"></i>消防设施管理
+          <span class="arrow">▶</span>
+        </div>
+        <div class="sub-menu open" id="sub-fire">
+          <div class="sub-menu-item" data-page="key-location">消防重点部位管理</div>
+          <div class="sub-menu-parent expanded" onclick="toggleSubSubMenu(this)"><i class="mi mi-ledger" aria-hidden="true"></i> 消防设施台账<span class="arrow">▶</span></div>
+          <div class="sub-sub-menu open">
+            <div class="sub-sub-menu-item" data-page="facility-fire-alarm">火灾自动报警系统</div>
+            <div class="sub-sub-menu-item" data-page="facility-water-source">消防水源</div>
+            <div class="sub-sub-menu-item" data-page="facility-hydrant">室外消火栓</div>
+            <div class="sub-sub-menu-item" data-page="facility-sprinkler">自动喷水灭火系统</div>
+            <div class="sub-sub-menu-item" data-page="facility-gas">气体灭火系统</div>
+            <div class="sub-sub-menu-item" data-page="facility-foam">泡沫灭火系统</div>
+            <div class="sub-sub-menu-item" data-page="facility-dry-powder">干粉灭火系统</div>
+            <div class="sub-sub-menu-item" data-page="facility-smoke">防烟排烟系统</div>
+            <div class="sub-sub-menu-item" data-page="facility-separation">防火分隔设施</div>
+            <div class="sub-sub-menu-item" data-page="facility-broadcast">消防应急广播</div>
+            <div class="sub-sub-menu-item" data-page="facility-light">应急照明及疏散指示</div>
+            <div class="sub-sub-menu-item" data-page="facility-power">消防电源</div>
+          </div>
+          <div class="sub-menu-item" data-page="facility-maintenance">维护保养记录</div>
+          <div class="sub-menu-parent" onclick="toggleSubSubMenu(this)"><i class="mi mi-monitor" aria-hidden="true"></i> 消防设施管理及运行监控<span class="arrow">▶</span></div>
+          <div class="sub-sub-menu">
+            <div class="sub-sub-menu-item" data-page="fault-mgmt">设备故障管理</div>
+            <div class="sub-sub-menu-item" data-page="monitor-fas">火灾探测报警设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-linkage">消防联动控制设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-pump">消防水泵运行设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-hydrant">消火栓报警设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-fire-monitor">固定消防炮状态设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-sprinkler">自动喷水灭火设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-foam">泡沫灭火系统设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-steam">蒸汽灭火系统设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-gas">气体与细水雾灭火设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-dry-powder">干粉灭火系统设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-smoke">防烟排烟系统设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-door">防火门与卷帘设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-hvac">通风与空调消防设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-broadcast">消防应急广播设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-light">应急照明与疏散指示设备</div>
+            <div class="sub-sub-menu-item" data-page="monitor-power">消防电源设备</div>
+          </div>
+          <div class="sub-menu-item" data-page="patrol-mgmt">日常防火巡查管理</div>
+          <div class="sub-menu-item" data-page="incident-archive">灭火事件档案管理</div>
+          <div class="sub-menu-item" data-page="water-system">消防水系统管理</div>
+          <div class="sub-menu-item" data-page="training-mgmt">消防培训与学习管理</div>
+        </div>
+      </div>
+      <!-- 02 应急及演练管理 -->
+      <div class="menu-group">
+        <div class="menu-parent" data-menu="emergency">
+          <i class="icon mi mi-emergency" aria-hidden="true"></i>应急及演练管理
+          <span class="arrow">▶</span>
+        </div>
+        <div class="sub-menu" id="sub-emergency">
+          <div class="sub-menu-item" data-page="emergency-knowledge">应急知识库</div>
+          <div class="sub-menu-item" data-page="drill-mgmt">演练管理</div>
+          <div class="sub-menu-item" data-page="drill-evaluation">演练评估管理</div>
+          <div class="sub-menu-item" data-page="drill-script">演练脚本管理</div>
+          <div class="sub-menu-item" data-page="plan-mgmt">预案管理</div>
+          <div class="sub-menu-item" data-page="fire-rescue-plan">消防救援预案管理</div>
+          <div class="sub-menu-item" data-page="emergency-plan">现场处置方案管理</div>
+          <div class="sub-menu-item" data-page="resource-mgmt">应急物资与装备管理</div>
+          <div class="sub-menu-item" data-page="emergency-team">应急队伍管理</div>
+          <div class="sub-menu-item" data-page="emergency-vehicle">应急车辆管理</div>
+          <div class="sub-menu-item" data-page="emergency-expert">应急专家管理</div>
+          <div class="sub-menu-item" data-page="contacts-mgmt">应急通讯录管理</div>
+          <div class="sub-menu-item" data-page="linkage-unit">后勤联动单位管理</div>
+          <div class="sub-menu-item" data-page="case-lib">事故案例库管理</div>
+          <div class="sub-menu-item" data-page="chemsafe-db">危险化学品数据库管理</div>
+          <div class="sub-menu-item" data-page="auto-linkage">应急自动联动配置管理</div>
+          <div class="sub-menu-item" data-page="emergency-pool">应急/雨水监控池管理</div>
+          <div class="sub-menu-item" data-page="flood-point">厂区易涝点管理</div>
+        </div>
+      </div>
+      <!-- 03 生产信息管理 -->
+      <div class="menu-group">
+        <div class="menu-parent" data-menu="production">
+          <i class="icon mi mi-production" aria-hidden="true"></i>生产信息管理
+          <span class="arrow">▶</span>
+        </div>
+        <div class="sub-menu" id="sub-production">
+          <div class="sub-menu-item" data-page="enterprise-basic">企业基本信息管理</div>
+          <div class="sub-menu-item" data-page="device-mgmt">装置管理</div>
+          <div class="sub-menu-item" data-page="hazard-mgmt">两重点一重大管理</div>
+          <div class="sub-menu-item" data-page="special-ops">特殊作业管理</div>
+          <div class="sub-menu-item" data-page="prod-emergency">生产应急资料管理</div>
+          <div class="sub-menu-item" data-page="media-fire-params">介质消防参数管理</div>
+          <div class="sub-menu-parent" data-menu="equip-facility">
+            <i class="mi mi-production" aria-hidden="true"></i> 设备设施管理
+            <span class="arrow">▶</span>
+          </div>
+          <div class="sub-sub-menu" id="sub-equip-facility">
+            <div class="sub-sub-menu-item" data-page="ef-tankfarm">罐区</div>
+            <div class="sub-sub-menu-item" data-page="ef-tank">储罐</div>
+            <div class="sub-sub-menu-item" data-page="ef-warehouse-zone">库区</div>
+            <div class="sub-sub-menu-item" data-page="ef-warehouse">仓库</div>
+            <div class="sub-sub-menu-item" data-page="ef-unit">装置</div>
+            <div class="sub-sub-menu-item" data-page="ef-equipment">设备</div>
+            <div class="sub-sub-menu-item" data-page="ef-medium">设备介质</div>
+          </div>
+        </div>
+      </div>
+      <!-- 04 治安防恐管理 -->
+      <div class="menu-group">
+        <div class="menu-parent" data-menu="security">
+          <i class="icon mi mi-security" aria-hidden="true"></i>治安防恐管理
+          <span class="arrow">▶</span>
+        </div>
+        <div class="sub-menu" id="sub-security">
+          <div class="sub-menu-item" data-page="personnel-registration">人员备案管理</div>
+          <div class="sub-menu-item" data-page="vehicle-registration">车辆备案管理</div>
+          <div class="sub-menu-item" data-page="gate-mgmt">卡口门禁信息管理</div>
+          <div class="sub-menu-item" data-page="barrier-mgmt">道闸管理</div>
+          <div class="sub-menu-item" data-page="bollard-mgmt">液压防撞柱管理</div>
+        </div>
+      </div>
+      <!-- 05 设备管理 -->
+      <div class="menu-group">
+        <div class="menu-parent" data-menu="monitor">
+          <i class="icon mi mi-device" aria-hidden="true"></i>设备管理
+          <span class="arrow">▶</span>
+        </div>
+        <div class="sub-menu" id="sub-monitor">
+          <div class="sub-menu-item" data-page="video-mgmt">视频监控管理</div>
+          <div class="sub-menu-item" data-page="video-health">视频健康度管理</div>
+          <div class="sub-menu-item" data-page="monitor-point">监测点位管理</div>
+          <div class="sub-menu-item" data-page="phone-management">电话设备管理</div>
+          <div class="sub-menu-item" data-page="radio-management">无线对讲设备管理</div>
+          <div class="sub-menu-item" data-page="broadcast-device">广播设备管理</div>
+        </div>
+      </div>
+      <!-- 06 通讯通知管理 -->
+      <div class="menu-group">
+        <div class="menu-parent" data-menu="comm">
+          <i class="icon mi mi-comm" aria-hidden="true"></i>通讯通知管理
+          <span class="arrow">▶</span>
+        </div>
+        <div class="sub-menu" id="sub-comm">
+          <div class="sub-menu-item" data-page="comm-sms">短信记录</div>
+          <div class="sub-menu-item" data-page="comm-call">电话通话记录</div>
+          <div class="sub-menu-item" data-page="comm-broadcast">广播播报记录</div>
+          <div class="sub-menu-item" data-page="broadcast-template">广播模板管理</div>
+          <div class="sub-menu-item" data-page="comm-push">APP推送记录</div>
+          <div class="sub-menu-item" data-page="comm-intercom">语音对讲记录</div>
+        </div>
+      </div>
+      <!-- 07 基础信息管理 -->
+      <div class="menu-group">
+        <div class="menu-parent" data-menu="sys">
+          <i class="icon mi mi-sys" aria-hidden="true"></i>基础信息管理
+          <span class="arrow">▶</span>
+        </div>
+        <div class="sub-menu" id="sub-sys">
+          <div class="sub-menu-item" data-page="org-mgmt">组织管理</div>
+          <div class="sub-menu-item" data-page="staff-mgmt">人员与账号管理</div>
+          <div class="sub-menu-item" data-page="role-mgmt">角色与权限管理</div>
+          <div class="sub-menu-item" data-page="audit-log">审计日志管理</div>
+          <div class="sub-menu-item" data-page="area-config">茂名石化厂区配置</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 主区域 ═══ -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left" id="tab-bar"></div>
+      <div class="topbar-right">
+        <button class="top-ico" type="button" title="全局搜索"><i class="mi mi-top-search"></i></button><button class="top-ico" type="button" title="消息中心"><i class="mi mi-top-bell"></i><em class="notify-dot"></em></button><div class="topbar-divider"></div>
+        <span class="time">2026-05-26 14:30</span>
+        <div class="topbar-user">
+          <div class="topbar-avatar">张</div><span>张工</span>
+        </div>
+      </div>
+    </div>
+    <div class="content" id="main-content"></div>
+  </div>
+</div>
+
+<!-- ═══ Modal: 人员与账号 ═══ -->
+<div class="modal-overlay" id="modal-staff">
+  <div class="modal">
+    <div class="modal-hd"><h4 id="modal-staff-title">编辑人员与账号</h4><span class="close" onclick="hideStaffModal()">×</span></div>
+    <div class="modal-bd" id="staff-content"></div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="hideStaffModal()">取消</button><button class="btn btn-primary" onclick="saveStaff()">确认</button></div>
+  </div>
+</div>
+
+<!-- ═══ Modal: 责任人员 ═══ -->
+<div class="modal-overlay" id="modal-person">
+  <div class="modal">
+    <div class="modal-hd"><h4 id="modal-person-title">新增责任人员</h4><span class="close" onclick="hidePersonModal()">×</span></div>
+    <div class="modal-bd">
+      <div class="form-group"><label class="form-label">人员类别 <span class="req">*</span></label><select class="form-select form-w" id="person_type"><option value="">请选择</option><option>法人代表</option><option>消防安全责任人</option><option>消防安全管理人</option><option>专兼职消防管理人员</option></select></div>
+      <div class="form-row"><div class="form-col"><div class="form-group"><label class="form-label">姓名 <span class="req">*</span></label><input class="form-input form-w" id="person_name"></div></div><div class="form-col"><div class="form-group"><label class="form-label">身份证号码 <span class="req">*</span></label><input class="form-input form-w" id="person_idno" maxlength="18"></div></div></div>
+      <div class="form-row"><div class="form-col"><div class="form-group"><label class="form-label">联系电话 <span class="req">*</span></label><input class="form-input form-w" id="person_phone" maxlength="11"></div></div><div class="form-col"><div class="form-group"><label class="form-label">所属部门</label><input class="form-input form-w" id="person_dept"></div></div></div>
+      <div class="form-group"><label class="form-label">备注</label><textarea class="form-textarea" id="person_remark"></textarea></div>
+      <input type="hidden" id="person_edit_idx" value="-1">
+    </div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="hidePersonModal()">取消</button><button class="btn btn-primary" id="btn-confirm-person">确认</button></div>
+  </div>
+</div>
+
+<!-- ═══ Modal: 添加角色用户 ═══ -->
+<div class="modal-overlay" id="modal-os">
+  <div class="modal">
+    <div class="modal-hd"><h4 id="modal-os-title">添加角色用户</h4><span class="close" onclick="document.getElementById('modal-os').classList.remove('show')">×</span></div>
+    <div class="modal-bd" id="os-content"></div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="document.getElementById('modal-os').classList.remove('show')">取消</button><button class="btn btn-primary" id="btn-confirm-os">确认</button></div>
+  </div>
+</div>
+
+<!-- ═══ Modal: 预案 预览/详情/新增/编辑 ═══ -->
+<div class="modal-overlay" id="modal-plan">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-hd"><h4 id="modal-plan-title">预案详情</h4><span class="close" onclick="hidePlanModal()">×</span></div>
+    <div class="modal-bd" id="plan-modal-content"></div>
+    <div class="modal-ft" id="plan-modal-ft-view"><button class="btn btn-outline" onclick="hidePlanModal()">关闭</button></div>
+    <div class="modal-ft" id="plan-modal-ft-edit" style="display:none;"><button class="btn btn-outline" onclick="hidePlanModal()">取消</button><button class="btn btn-primary" onclick="savePlan()">确认</button></div>
+  </div>
+</div>
+
+<!-- ═══ Modal: 指令详情 ═══ -->
+<div class="modal-overlay" id="modal-drill">
+  <div class="modal" style="max-width:750px;">
+    <div class="modal-hd"><h4 id="modal-drill-title">指令详情</h4><span class="close" onclick="hideInstructionModal()">×</span></div>
+    <div class="modal-bd" id="modal-drill-body"></div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="hideInstructionModal()">关闭</button></div>
+  </div>
+</div>
+
+<!-- ═══ Modal: 预案阶段 ═══ -->
+<div class="modal-overlay" id="modal-phase">
+  <div class="modal">
+    <div class="modal-hd"><h4 id="modal-phase-title">新增阶段</h4><span class="close" onclick="hidePhaseModal()">×</span></div>
+    <div class="modal-bd" id="phase-content"></div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="hidePhaseModal()">取消</button><button class="btn btn-primary" onclick="savePhase()">确认</button></div>
+  </div>
+</div>
+
+<!-- ═══ Modal: 预案指令 ═══ -->
+<div class="modal-overlay" id="modal-instr">
+  <div class="modal">
+    <div class="modal-hd"><h4 id="modal-instr-title">新增指令</h4><span class="close" onclick="hideInstrModal()">×</span></div>
+    <div class="modal-bd" id="instr-content"></div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="hideInstrModal()">取消</button><button class="btn btn-primary" onclick="saveInstr()">确认</button></div>
+  </div>
+</div>
+
+<!-- ═══ Modal: 装置编辑 ═══ -->
+<div class="modal-overlay" id="modal-device">
+  <div class="modal">
+    <div class="modal-hd"><h4 id="modal-device-title">编辑装置</h4><span class="close" onclick="hideDeviceModal()">×</span></div>
+    <div class="modal-bd" id="device-modal-body"></div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="hideDeviceModal()">取消</button><button class="btn btn-primary" id="btn-confirm-device">确认</button></div>
+  </div>
+</div>
+
+<!-- ═══ Modal: 装置地图 ═══ -->
+<div class="modal-overlay" id="modal-map">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-hd"><h4>地图标注</h4><span class="close" onclick="hideMapModal()">×</span></div>
+    <div class="modal-bd" id="map-modal-body"></div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="hideMapModal()">取消</button><button class="btn btn-primary" id="btn-confirm-map">确认标注</button></div>
+  </div>
+</div>
+
+<!-- ═══ Modal: 应急联动 ═══ -->
+<div class="modal-overlay" id="modal-auto-link">
+  <div class="modal" style="max-width:650px;">
+    <div class="modal-hd"><h4 id="modal-auto-link-title">编辑联动规则</h4><span class="close" onclick="hideAutoLinkModal()">×</span></div>
+    <div class="modal-bd" id="modal-auto-link-body"></div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="hideAutoLinkModal()">取消</button><button class="btn btn-primary" id="btn-confirm-auto-link">确认</button></div>
+  </div>
+</div>
+
+<!-- ═══ Modal: 日志详情 ═══ -->
+<div class="modal-overlay" id="modal-log">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-hd"><h4>日志详情</h4><span class="close" onclick="document.getElementById('modal-log').classList.remove('show')">×</span></div>
+    <div class="modal-bd" id="log-content"></div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="document.getElementById('modal-log').classList.remove('show')">关闭</button></div>
+  </div>
+</div>
+
+<div class="toast success" id="toast"></div>
+
+<script src="js/app.js"></script>
+<script src="js/pages/enterprise-basic.js"></script>
+<script src="js/pages/device-mgmt.js"></script>
+<script src="js/pages/key-location.js"></script>
+<script src="js/pages/patrol-mgmt.js"></script>
+<script src="js/pages/incident-archive.js"></script>
+<script src="js/pages/fault-mgmt.js"></script>
+<script src="js/pages/facility-ledger.js"></script>
+<script src="js/pages/org-staff.js"></script>
+<script src="js/pages/role-log.js"></script>
+<script src="js/pages/hazard-mgmt.js"></script>
+<script src="js/pages/facility-fire-alarm.js"></script>
+<script src="js/pages/facility-separation.js"></script>
+<script src="js/pages/knowledge-base.js"></script>
+<script src="js/pages/plan-mgmt.js"></script>
+<script src="js/data/ek-pilot-data.js"></script>
+<script src="js/pages/emergency-knowledge.js"></script>
+<script src="js/pages/fire-rescue-plan.js"></script>
+<script src="js/pages/media-fire-params.js"></script>
+<script src="js/pages/case-lib.js"></script>
+<script src="js/pages/chemsafe-db.js"></script>
+<script src="js/pages/drill-mgmt.js"></script>
+<script src="js/pages/drill-evaluation.js"></script>
+<script src="js/pages/video-mgmt.js"></script>
+<script src="js/pages/video-health.js"></script>
+<script src="js/pages/monitor-point.js"></script>
+<script src="js/pages/alarm-record.js"></script>
+<script src="js/pages/alarm-config.js"></script>
+<script src="js/pages/auto-linkage.js"></script>
+<script src="js/pages/water-system.js"></script>
+<script src="js/pages/security-gate.js"></script>
+<script src="js/pages/security-control.js"></script>
+<script src="js/pages/equipment-comm.js"></script>
+<script src="js/pages/emergency-pool.js"></script>
+<script src="js/pages/flood-point.js"></script>
+<script src="js/pages/emergency-team.js"></script>
+<script src="js/pages/special-ops.js"></script>
+<script src="js/pages/broadcast-mgmt.js"></script>
+<script src="js/pages/comm-notification.js"></script>
+<script src="js/pages/equipment-facility.js"></script>
+<script src="js/menu-icons.js"></script>
+<script src="js/embed-polish.js"></script>
+<a class="back-to-hub" href="/" target="_parent">← 返回导航首页</a>
+<script src="js/embed-boot.js"></script>
+</body>
+</html>

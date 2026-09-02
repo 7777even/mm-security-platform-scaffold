@@ -7,11 +7,13 @@ import type { RouteRecordRaw } from 'vue-router';
 // - dev：vite.config.ts 的 appsHtmlFallback 中间件把 /apps/mgmt/* 回退到本入口 index.html；
 // - 生产：网关需为 /apps/mgmt/* 配置 rewrite → /apps/mgmt/index.html（与主壳回退规则同理）。
 
-// 由 mgmtMenus 数据驱动的路由（侧栏 + 模块页一一对应）
+// 由 mgmtMenus 数据驱动的路由（侧栏 + 模块页一一对应）。
+// 模块页统一走 module-embed.vue：原型页命中 → iframe 嵌入 public/pc-admin（二级界面与交互）；
+// /form → 流程填报向导；未命中原型清单 → 回退 module.vue 数据驱动三态页。
 const moduleRoutes: RouteRecordRaw[] = mgmtMenus.flatMap((g) =>
   g.children.map((c) => ({
     path: c.path,
-    component: () => import('./views/module.vue'),
+    component: () => import('./views/module-embed.vue'),
     meta: { title: c.name, group: g.title, groupKey: g.key },
   })),
 );
@@ -25,6 +27,13 @@ const router = createRouter({
       name: 'mgmt-workbench',
       component: () => import('./views/workbench.vue'),
       meta: { title: '工作台' },
+    },
+    {
+      // 流程填报向导（mgmtWorkbenchLinks 顶层入口，不在菜单分组内）
+      path: '/form',
+      name: 'mgmt-form-wizard',
+      component: () => import('./views/module-embed.vue'),
+      meta: { title: '流程填报' },
     },
     ...moduleRoutes,
     { path: '/:pathMatch(.*)*', redirect: '/workbench' },

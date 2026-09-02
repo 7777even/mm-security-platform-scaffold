@@ -1,0 +1,151 @@
+/* MasterGo PC 图标规范：侧栏约 20×20 线框 · 未选次要灰 / 选中主色 · 同列视觉重量一致 */
+.mi {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  vertical-align: -4px;
+  background-color: currentColor;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.mi-01 { -webkit-mask-image: url('../icons/pc-ico-01.svg'); mask-image: url('../icons/pc-ico-01.svg'); }
+.mi-02 { -webkit-mask-image: url('../icons/pc-ico-02.svg'); mask-image: url('../icons/pc-ico-02.svg'); }
+.mi-03 { -webkit-mask-image: url('../icons/pc-ico-03.svg'); mask-image: url('../icons/pc-ico-03.svg'); }
+.mi-04 { -webkit-mask-image: url('../icons/pc-ico-04.svg'); mask-image: url('../icons/pc-ico-04.svg'); }
+.mi-05 { -webkit-mask-image: url('../icons/pc-ico-05.svg'); mask-image: url('../icons/pc-ico-05.svg'); }
+.mi-06 { -webkit-mask-image: url('../icons/pc-ico-06.svg'); mask-image: url('../icons/pc-ico-06.svg'); }
+.mi-07 { -webkit-mask-image: url('../icons/pc-ico-07.svg'); mask-image: url('../icons/pc-ico-07.svg'); }
+.mi-08 { -webkit-mask-image: url('../icons/pc-ico-08.svg'); mask-image: url('../icons/pc-ico-08.svg'); }
+.mi-09 { -webkit-mask-image: url('../icons/pc-ico-09.svg'); mask-image: url('../icons/pc-ico-09.svg'); }
+.mi-10 { -webkit-mask-image: url('../icons/pc-ico-10.svg'); mask-image: url('../icons/pc-ico-10.svg'); }
+.mi-11 { -webkit-mask-image: url('../icons/pc-ico-11.svg'); mask-image: url('../icons/pc-ico-11.svg'); }
+.mi-12 { -webkit-mask-image: url('../icons/pc-ico-12.svg'); mask-image: url('../icons/pc-ico-12.svg'); }
+.mi-13 { -webkit-mask-image: url('../icons/pc-ico-13.svg'); mask-image: url('../icons/pc-ico-13.svg'); }
+
+/* 语义别名（八大子系统） */
+.mi-alarm { -webkit-mask-image: url('../icons/pc-ico-01.svg'); mask-image: url('../icons/pc-ico-01.svg'); }
+.mi-fire { -webkit-mask-image: url('../icons/pc-ico-02.svg'); mask-image: url('../icons/pc-ico-02.svg'); }
+.mi-emergency { -webkit-mask-image: url('../icons/pc-ico-03.svg'); mask-image: url('../icons/pc-ico-03.svg'); }
+.mi-production { -webkit-mask-image: url('../icons/pc-ico-04.svg'); mask-image: url('../icons/pc-ico-04.svg'); }
+.mi-security { -webkit-mask-image: url('../icons/pc-ico-05.svg'); mask-image: url('../icons/pc-ico-05.svg'); }
+.mi-device { -webkit-mask-image: url('../icons/pc-ico-06.svg'); mask-image: url('../icons/pc-ico-06.svg'); }
+.mi-comm { -webkit-mask-image: url('../icons/pc-ico-07.svg'); mask-image: url('../icons/pc-ico-07.svg'); }
+.mi-sys { -webkit-mask-image: url('../icons/pc-ico-08.svg'); mask-image: url('../icons/pc-ico-08.svg'); }
+.mi-ledger { -webkit-mask-image: url('../icons/pc-ico-09.svg'); mask-image: url('../icons/pc-ico-09.svg'); }
+.mi-monitor { -webkit-mask-image: url('../icons/pc-ico-10.svg'); mask-image: url('../icons/pc-ico-10.svg'); }
+.mi-patrol { -webkit-mask-image: url('../icons/pc-ico-11.svg'); mask-image: url('../icons/pc-ico-11.svg'); }
+.mi-video { -webkit-mask-image: url('../icons/pc-ico-12.svg'); mask-image: url('../icons/pc-ico-12.svg'); }
+.mi-settings { -webkit-mask-image: url('../icons/pc-ico-13.svg'); mask-image: url('../icons/pc-ico-13.svg'); }
+
+.menu-parent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.menu-parent .icon.mi {
+  color: #94a4b1;
+  width: 20px;
+  height: 20px;
+}
+.menu-parent:hover .icon.mi,
+.menu-parent.expanded .icon.mi {
+  color: #0b69d7;
+}
+.menu-parent .arrow {
+  margin-left: auto;
+  font-size: 10px;
+  color: #94a4b1;
+}
+
+.sub-menu-parent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sub-menu-parent .mi {
+  width: 16px;
+  height: 16px;
+  color: #94a4b1;
+}
+.sub-menu-item,
+.sub-sub-menu-item {
+  position: relative;
+}
+.sub-menu-item::before,
+.sub-sub-menu-item::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d0dbe5;
+  margin-right: 8px;
+  vertical-align: 1px;
+}
+.sub-menu-item.active::before,
+.sub-sub-menu-item.active::before {
+  background: #0b69d7;
+}
+
+/* 顶栏快捷：白描线 · 半透明圆角底 */
+.top-ico {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.14);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  padding: 0;
+  position: relative;
+}
+.top-ico .notify-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f5222d;
+  border: 1px solid #0a5fbf;
+}
+.page-tab {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+}
+.page-tab .tab-title {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.top-ico .mi {
+  width: 16px;
+  height: 16px;
+  color: #fff;
+  background-color: currentColor;
+}
+.mi-top-search { -webkit-mask-image: url('../icons/pc-top-01.svg'); mask-image: url('../icons/pc-top-01.svg'); }
+.mi-top-bell { -webkit-mask-image: url('../icons/pc-top-02.svg'); mask-image: url('../icons/pc-top-02.svg'); }
+.mi-top-msg { -webkit-mask-image: url('../icons/pc-top-03.svg'); mask-image: url('../icons/pc-top-03.svg'); }
+.mi-top-more { -webkit-mask-image: url('../icons/pc-top-04.svg'); mask-image: url('../icons/pc-top-04.svg'); }
+
+.page-tab .mi {
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+  color: inherit;
+  vertical-align: -2px;
+}
+.page-tab.active .mi {
+  color: #0b69d7;
+}

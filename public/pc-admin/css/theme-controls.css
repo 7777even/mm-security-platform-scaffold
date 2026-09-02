@@ -1,0 +1,481 @@
+/* 控件层：输入框 / 按钮 / 标签 / 上传 — 对齐 Vue PcTablePage + MasterGo */
+.btn,
+button.btn {
+  height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: background 0.15s, border-color 0.15s, color 0.15s !important;
+}
+.btn:hover,
+button.btn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+.btn-primary {
+  background: #0b69d7 !important;
+  color: #fff !important;
+  border: none !important;
+}
+.btn-primary:hover {
+  background: #0964c9 !important;
+}
+.btn-outline {
+  background: #fff !important;
+  color: #5e7385 !important;
+  border: 1px solid #dde8f0 !important;
+}
+.btn-outline:hover {
+  border-color: #0b69d7 !important;
+  color: #0b69d7 !important;
+  background: #f5faff !important;
+}
+.btn-danger {
+  background: #f5222d !important;
+  box-shadow: none !important;
+}
+.btn-sm {
+  height: 28px !important;
+  padding: 0 10px !important;
+  font-size: 12px !important;
+  border-radius: 6px !important;
+}
+
+.form-input,
+.form-select,
+.form-textarea,
+input.form-input,
+select.form-select,
+textarea.form-textarea,
+.card input[type='text'],
+.card input[type='number'],
+.card input[type='date'],
+.card input[type='search'],
+.card input[type='tel'],
+.card input[type='password'],
+.card select,
+.modal input[type='text'],
+.modal input[type='number'],
+.modal input[type='date'],
+.modal select,
+.modal textarea {
+  height: 36px !important;
+  border: 1px solid #dde8f0 !important;
+  border-radius: 8px !important;
+  padding: 0 12px !important;
+  font-size: 13px !important;
+  color: #1a3550 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+.form-textarea,
+textarea.form-textarea,
+.modal textarea {
+  height: auto !important;
+  min-height: 88px !important;
+  padding: 10px 12px !important;
+  line-height: 1.5 !important;
+}
+.form-input:hover,
+.form-select:hover,
+.card input:hover,
+.card select:hover,
+.modal input:hover,
+.modal select:hover {
+  border-color: #b7c5d1 !important;
+}
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus,
+.card input:focus,
+.card select:focus,
+.card textarea:focus,
+.modal input:focus,
+.modal select:focus,
+.modal textarea:focus {
+  border-color: #0b69d7 !important;
+  box-shadow: 0 0 0 3px rgba(11, 105, 215, 0.1) !important;
+}
+.form-select,
+.card select,
+.modal select {
+  padding-right: 32px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230B69D7' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-color: #fff !important;
+}
+.form-label,
+label.form-label {
+  font-size: 12px !important;
+  color: #94a4b1 !important;
+  font-weight: 600 !important;
+  margin-bottom: 6px !important;
+}
+.req {
+  color: #f5222d !important;
+}
+
+.tag {
+  border-radius: 6px !important;
+  padding: 3px 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+.tag-danger {
+  background: #ffecec !important;
+  color: #f5222d !important;
+}
+.tag-warning {
+  background: #fff7ec !important;
+  color: #fa8c16 !important;
+}
+.tag-success {
+  background: #e8f9ef !important;
+  color: #22c55e !important;
+}
+.tag-info {
+  background: #e8f3ff !important;
+  color: #0b69d7 !important;
+}
+
+.upload-area {
+  border: 1px dashed #dde8f0 !important;
+  border-radius: 10px !important;
+  background: #f7fbfe !important;
+  color: #94a4b1 !important;
+}
+.upload-area:hover {
+  border-color: #0b69d7 !important;
+  color: #0b69d7 !important;
+  background: #e8f3ff !important;
+}
+.upload-area.has-file {
+  border-color: #22c55e !important;
+  background: #e8f9ef !important;
+  color: #16a34a !important;
+}
+
+.link {
+  color: #0b69d7 !important;
+  font-weight: 600 !important;
+}
+.link:hover {
+  color: #0964c9 !important;
+}
+
+.page-hd {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  margin-bottom: 16px !important;
+  flex-wrap: wrap;
+}
+.page-hd-main {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-width: 0;
+  flex: 1;
+  flex-wrap: wrap;
+}
+.page-hd h3 {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #1a3550 !important;
+  margin: 0 !important;
+}
+.page-hd-actions {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.crumb {
+  margin-top: 0 !important;
+  font-size: 13px !important;
+  color: #94a4b1 !important;
+  font-weight: 500 !important;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+/* 页面标题：方底实色 + 与侧栏同一套线框图形 */
+.page-hd h3 .mg-title-ico {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 10px !important;
+  background: #0b69d7 !important;
+  flex-shrink: 0;
+  color: #fff !important;
+}
+.page-hd h3 .mg-title-ico .mg-title-glyph {
+  width: 20px !important;
+  height: 20px !important;
+  display: block;
+}
+.page-hd h3 .mg-title-ico .mi {
+  display: none !important;
+}
+
+/* 搜索区输入：search-box / datetime 与 form-input 统一 */
+.search-box,
+input.search-box,
+.toolbar .search-box,
+.toolbar-left .search-box,
+.toolbar input[type='datetime-local'],
+.toolbar-left input[type='datetime-local'],
+input[type='datetime-local'].form-input {
+  height: 36px !important;
+  border: 1px solid #dde8f0 !important;
+  border-radius: 8px !important;
+  padding: 0 12px !important;
+  font-size: 13px !important;
+  color: #1a3550 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+}
+.search-box:hover,
+input.search-box:hover,
+input[type='datetime-local']:hover {
+  border-color: #b7c5d1 !important;
+}
+.search-box:focus,
+input.search-box:focus,
+input[type='datetime-local']:focus {
+  border-color: #0b69d7 !important;
+  box-shadow: 0 0 0 3px rgba(11, 105, 215, 0.1) !important;
+}
+.toolbar .form-input,
+.toolbar .form-select,
+.toolbar-left .form-input,
+.toolbar-left .form-select,
+.toolbar select.form-select,
+.toolbar-left select.form-select {
+  height: 36px !important;
+  font-size: 13px !important;
+  border-radius: 8px !important;
+  border: 1px solid #dde8f0 !important;
+}
+
+/* 启用开关 */
+.toggle {
+  position: relative !important;
+  display: inline-block !important;
+  width: 40px !important;
+  height: 22px !important;
+  cursor: pointer !important;
+  vertical-align: middle;
+}
+.toggle input {
+  display: none !important;
+}
+.toggle .slider {
+  position: absolute !important;
+  inset: 0 !important;
+  background: #c5d0da !important;
+  border-radius: 22px !important;
+  transition: 0.2s !important;
+}
+.toggle .slider::before {
+  content: '' !important;
+  position: absolute !important;
+  height: 16px !important;
+  width: 16px !important;
+  left: 3px !important;
+  bottom: 3px !important;
+  background: #fff !important;
+  border-radius: 50% !important;
+  transition: 0.2s !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
+}
+.toggle input:checked + .slider {
+  background: #0b69d7 !important;
+  box-shadow: none !important;
+}
+.toggle input:checked + .slider::before {
+  transform: translateX(18px) !important;
+}
+
+/* 误报状态图标 */
+.mg-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.mg-flag svg {
+  display: block;
+}
+.mg-flag--warn {
+  background: #fff7e6;
+  color: #fa8c16;
+}
+.mg-flag--mute {
+  background: #f0f4f8;
+  color: #94a4b1;
+}
+.mg-flag--mute:hover {
+  color: #0b69d7;
+  background: #e8f2ff;
+}
+
+.empty-state .icon,
+.empty-state .ic {
+  display: block;
+  font-size: 0 !important;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 10px;
+  border-radius: 12px;
+  background-color: #e8f3ff;
+  position: relative;
+}
+.empty-state .icon::after,
+.empty-state .ic::after {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  background-color: #0b69d7;
+  -webkit-mask: url('../icons/pc-ico-09.svg') center / contain no-repeat;
+  mask: url('../icons/pc-ico-09.svg') center / contain no-repeat;
+}
+
+.modal-overlay .modal {
+  border-radius: 12px !important;
+  border: 1px solid #dde8f0 !important;
+  box-shadow: none !important;
+}
+.modal-hd {
+  border-bottom: 1px solid #e8eef4 !important;
+}
+.modal-ft {
+  border-top: 1px solid #e8eef4 !important;
+  gap: 8px;
+}
+
+/* ===== MasterGo 移动端风格：列表操作图标 / 工具栏按钮图标 ===== */
+.mg-ico {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+.mg-ico svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+/* 列表行操作：方底浅蓝 + 主色线框（规范 E 列表·17） */
+.mg-ico-btn {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  border: none !important;
+  background: #e8f2ff !important;
+  color: #1677ff !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: none !important;
+  transform: none !important;
+  vertical-align: middle;
+}
+.mg-ico-btn:hover {
+  background: #d6e9ff !important;
+  color: #0b5ed7 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+.mg-ico-btn--danger {
+  background: #ffecec !important;
+  color: #f5222d !important;
+}
+.mg-ico-btn--danger:hover {
+  background: #ffd6d6 !important;
+  color: #cf1322 !important;
+}
+.mg-ico-btn--primary {
+  background: #0b69d7 !important;
+  color: #fff !important;
+}
+.mg-ico-btn--primary:hover {
+  background: #0964c9 !important;
+  color: #fff !important;
+}
+.mg-ico-btn .mg-ico,
+.mg-ico-btn .mg-ico svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* 带文字的工具栏按钮：左图标右文案 */
+.mg-btn-ico {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+.mg-btn-ico .mg-ico {
+  color: inherit;
+}
+.mg-btn-ico.btn-outline .mg-ico,
+.mg-btn-ico.btn-sm:not(.btn-primary):not(.btn-danger) .mg-ico {
+  color: #0b69d7;
+}
+.mg-btn-txt {
+  line-height: 1;
+}
+
+/* 操作列对齐 */
+.mg-ops-td {
+  width: 1%;
+  white-space: nowrap !important;
+  vertical-align: middle !important;
+}
+.mg-ops {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  vertical-align: middle;
+}
+
+/* 表格行高贴近规范 48–56 */
+.data-table tbody td {
+  height: 52px;
+  vertical-align: middle !important;
+}
+.data-table tbody td .mg-ops {
+  min-height: 32px;
+}
+
+/* 去掉 theme-v2 动效 */
+* {
+  --glow-brand: none !important;
+  --glow-danger: none !important;
+}
