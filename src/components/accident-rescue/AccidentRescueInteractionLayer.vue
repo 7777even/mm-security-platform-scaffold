@@ -6,7 +6,7 @@
 -->
 <script setup lang="ts">
 import { useAccidentRescueInteraction } from '@/composables/useAccidentRescueInteraction';
-import EmergencyAddressBookDialog from './EmergencyAddressBookDialog.vue';
+import EmergencyAddressBookDialog from '@/components/panels/accident-rescue/EmergencyAddressBookDialog.vue';
 
 const ia = useAccidentRescueInteraction();
 </script>
