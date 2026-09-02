@@ -221,5 +221,27 @@ export const ROUTE_CESIUM_META: Record<string, RouteCesiumMeta> = {
 
 export function resolveRouteCesiumMeta(routeName: string | null | undefined): RouteCesiumMeta {
   if (!routeName) return { cesium: false, mapMode: 'fire', mapFocus: null };
-  return ROUTE_CESIUM_META[routeName] ?? { cesium: false, mapMode: 'fire', mapFocus: null };
+  // wujie 主壳透传的路由 id 为 fm-*（menu.id），旧 6 子应用（非迁移）用同名短 id；
+  // 两套命名均需命中 ROUTE_CESIUM_META：先直查，再剥 fm- 前缀，再按别名表（kebab/camel 互转）。
+  const alias = ROUTE_NAME_ALIAS[routeName] ?? routeName.replace(/^fm-/, '');
+  return (
+    ROUTE_CESIUM_META[routeName] ??
+    ROUTE_CESIUM_META[alias] ?? { cesium: false, mapMode: 'fire', mapFocus: null }
+  );
 }
+
+/**
+ * 路由名别名表（wujie 主壳路由 id ↔ 视图语义名）。
+ * 直查 + fm- 前缀剥除仍不能命中时（如 kebab vs camel 的歧义）走此表。
+ */
+const ROUTE_NAME_ALIAS: Record<string, string> = {
+  'fm-drill': 'drillEmergencyDetail',
+  'fm-typhoon': 'typhoonEmergencyDetail',
+  'fm-fire-rescue': 'fireAccidentRescue',
+  'fm-production-area': 'productionArea',
+  'fm-major-hazard-list': 'majorHazardList',
+  'fm-major-hazard-detail': 'majorHazardDetail',
+  'fm-communication': 'production',
+  'fm-video-control': 'tv',
+  'fm-video-wall': 'tv',
+};

@@ -12,6 +12,12 @@ import { resolveRouteCesiumMeta } from '../../config/cesiumMapModes';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 
 const route = useRoute();
+// wujie 子应用无独立路由树，本地 vue-router 仅余 catch-all，无法定位到主壳当前页面；
+// 主壳 WujieHost 在 sharedProps 透传当前路由 name，子应用侧优先使用之。
+const shellRouteName = computed<string | undefined>(
+  () => (window.$wujie?.props as { routeName?: string } | undefined)?.routeName ?? undefined,
+);
+const effectiveRouteName = computed(() => shellRouteName.value ?? String(route.name ?? ''));
 const mapRef = ref<InstanceType<typeof MaomingPetroCesiumMap> | null>(null);
 const { selectedPlantArea } = usePlantArea();
 
@@ -25,7 +31,7 @@ function shouldFlyToPlantArea(routeName: unknown) {
   return !INCIDENT_DETAIL_ROUTE_NAMES.has(String(routeName ?? ''));
 }
 
-const routeMeta = computed(() => resolveRouteCesiumMeta(String(route.name ?? '')));
+const routeMeta = computed(() => resolveRouteCesiumMeta(effectiveRouteName.value));
 
 const effectiveMapMode = computed(() => cesiumMapModeOverride.value ?? routeMeta.value.mapMode);
 

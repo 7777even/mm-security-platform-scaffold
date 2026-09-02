@@ -111,7 +111,7 @@ declare module 'vue' {
     NodeConfigDialog: typeof import('./src/components/panels/accident-rescue/NodeConfigDialog.vue')['default']
     NodeGuidanceDialog: typeof import('./src/components/panels/accident-rescue/NodeGuidanceDialog.vue')['default']
     NoticeListDialog: typeof import('./src/components/industrial-video/NoticeListDialog.vue')['default']
-    OneKeyBroadcastDialog: typeof import('./src/components/panels/production/OneKeyBroadcastDialog.vue')['default']
+    OneKeyBroadcastDialog: typeof import('./src/components/fire/OneKeyBroadcastDialog.vue')['default']
     OneKeyDispatchDialog: typeof import('./src/components/common/OneKeyDispatchDialog.vue')['default']
     OpsMonitorInteractionLayer: typeof import('./src/components/ops-monitor/OpsMonitorInteractionLayer.vue')['default']
     PanelCard: typeof import('./src/components/common/PanelCard.vue')['default']
