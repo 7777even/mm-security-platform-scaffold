@@ -13,13 +13,15 @@ import PatrolListDialog from './PatrolListDialog.vue';
 
 const ia = useSecurityInteraction();
 const payload = computed(() => ia.current.value?.payload);
+// patrolDetail 载荷：以 computed 收窄类型（模板内 as 联合类型会误触 no-deprecated-filter）
+const patrolDetailPayload = computed(() => payload.value as PatrolItemPayload | undefined);
 </script>
 
 <template>
   <HazardSourceDialog v-if="ia.isOpen('hazardSource')" @close="ia.close()" />
   <PatrolDetailDialog
     v-else-if="ia.isOpen('patrolDetail')"
-    :payload="payload as PatrolItemPayload | undefined"
+    :payload="patrolDetailPayload"
     @close="ia.close()"
   />
   <PatrolListDialog v-else-if="ia.isOpen('patrolList')" @close="ia.close()" />

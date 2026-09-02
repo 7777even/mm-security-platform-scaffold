@@ -15,12 +15,14 @@ import VideoWallDialog from '@/components/common/VideoWallDialog.vue';
 
 const ia = useProductionAreaInteraction();
 const payload = computed(() => ia.current.value?.payload);
+// facility-id 通道值：以 computed 收窄类型（模板内 as 联合类型会误触 no-deprecated-filter）
+const facilityPayloadId = computed(() => payload.value as number | string);
 </script>
 
 <template>
   <ProductionAreaFacilityDetailDialog
     v-if="ia.isOpen('facilityDetail')"
-    :facility-id="payload as number | string"
+    :facility-id="facilityPayloadId"
     @close="ia.close()"
   />
   <ProductionAreaPersonnelDialog
@@ -30,7 +32,7 @@ const payload = computed(() => ia.current.value?.payload);
   />
   <ProductionAreaAlarmListDialog
     v-else-if="ia.isOpen('alarmList')"
-    :facility-id="payload as number | string"
+    :facility-id="facilityPayloadId"
     @close="ia.close()"
   />
   <VideoWallDialog
