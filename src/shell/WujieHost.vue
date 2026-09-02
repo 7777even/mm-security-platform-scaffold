@@ -19,11 +19,16 @@ const subappName = computed(() => (route.name as string) ?? 'subapp');
 // 主壳 → 子应用下传共享态（子应用经 window.$wujie.props 读取）
 // routeParams：二级参数页（fm-production-area 的 facilityId / fm-major-hazard 的 hazardId）
 // 由主壳路由参数透传，子应用无路由树也能拿到路径参数。
+// routeName / routePath：子应用无独立路由树，但 SharedCesiumMap 等组件依赖 useRoute()
+// 才能解析出 Cesium 地图模式与 focus；透传主壳当前路由的 name / path，
+// 子应用侧经 window.$wujie.props 读取后回退到本地 vue-router 之上。
 const sharedProps = computed(() => ({
   user: auth.roleId,
   perms: auth.perms,
   theme: 'dark',
   routeParams: { ...route.params } as Record<string, string>,
+  routeName: route.name as string | undefined,
+  routePath: route.path,
 }));
 
 // 子应用沙箱 style 隔离，无法读取主壳 :root 变量；
