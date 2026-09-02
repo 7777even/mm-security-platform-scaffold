@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Bell,
   Clock,
+  Close,
   Files,
   FirstAidKit,
   Grid,
@@ -288,7 +289,7 @@ function resolveIcon(name: string): Component {
                 title="关闭"
                 @click.stop="closeTab(t.path)"
               >
-                ×
+                <el-icon :size="12"><Close /></el-icon>
               </span>
             </button>
           </div>
@@ -403,25 +404,29 @@ function resolveIcon(name: string): Component {
   padding: 0 var(--space-sm) 0 var(--space-xs);
   flex-shrink: 0;
   border: none;
-  border-radius: var(--mgmt-radius-sm) var(--mgmt-radius-sm) 0 0;
-  background: var(--mgmt-tab-item-bg, rgba(255 255 255 / 55%));
+  border-radius: var(--mgmt-tab-radius);
+  background: var(--mgmt-tab-bg);
   font-size: var(--mgmt-fz-caption);
   font-weight: 600;
-  color: var(--text-title-mgmt);
+  color: var(--mgmt-tab-fg);
   cursor: pointer;
   font-family: inherit;
   white-space: nowrap;
-  backdrop-filter: blur(2px);
 }
 
 .mgmt-tab:hover {
-  background: var(--mgmt-tab-item-hover-bg, rgba(255 255 255 / 75%));
+  background: var(--mgmt-tab-hover-bg);
+  color: var(--mgmt-tab-fg);
 }
 
 .mgmt-tab--on {
-  background: var(--card-mgmt);
-  color: var(--primary-mgmt);
-  box-shadow: inset 0 -2px 0 0 var(--primary-mgmt);
+  background: var(--mgmt-tab-on-bg);
+  color: var(--mgmt-tab-on-fg);
+}
+
+.mgmt-tab--on:hover {
+  background: var(--mgmt-tab-on-bg);
+  color: var(--mgmt-tab-on-fg);
 }
 
 .mgmt-tab__label {
@@ -449,10 +454,6 @@ function resolveIcon(name: string): Component {
 .mgmt-tab__close:hover {
   background: var(--tag-danger-bg);
   color: var(--danger-mgmt);
-}
-
-.mgmt-tab--on .mgmt-tab__close:hover {
-  color: var(--color-on-primary);
 }
 
 .mgmt-header__spacer {
