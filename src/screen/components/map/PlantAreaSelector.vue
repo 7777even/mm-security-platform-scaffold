@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRoute } from 'vue-router';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
+import { useShellRoute } from '../../lib/composables/useShellRoute';
 import type { PlantAreaCode } from '../../lib/data/plantAreas';
 
 const { plantAreaOptions, selectedPlantArea, setSelectedPlantArea } = usePlantArea();
 
-const route = useRoute();
+const shellRoute = useShellRoute();
 const hiddenOnIncidentDetail = computed(() =>
   ['typhoonEmergencyDetail', 'fireAccidentRescue', 'drillEmergencyDetail'].includes(
-    String(route.name ?? ''),
+    shellRoute.name.value,
   ),
 );
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import DashboardLayout from '../components/layout/DashboardLayout.vue';
 import MapPageShell from '../components/map/MapPageShell.vue';
 import TvMap from '../components/map/TvMap.vue';
@@ -14,24 +14,32 @@ import {
   tvVideoDetailMonitor,
   tvVideoDetailOpen,
 } from '../lib/composables/useTvVideoDetail';
+import { useShellRoute } from '../lib/composables/useShellRoute';
 
-const route = useRoute();
 const router = useRouter();
+const shellRoute = useShellRoute();
 const showVideoDetail = computed(() => tvVideoDetailOpen.value && tvVideoDetailMonitor.value);
 
 function handleVideoDetailBack() {
   closeTvVideoDetail();
 
-  if (route.query.monitor || route.query.monitorLabel) {
-    const query = { ...route.query };
-    delete query.monitor;
-    delete query.monitorLabel;
-    void router.replace({ query });
+  const monitor = shellRoute.query.value.monitor;
+  const monitorLabel = shellRoute.query.value.monitorLabel;
+  if (monitor || monitorLabel) {
+    const next = { ...shellRoute.query.value };
+    delete next.monitor;
+    delete next.monitorLabel;
+    void router.replace({ query: next });
   }
 }
 
 watch(
-  () => [route.name, route.query.monitor, route.query.monitorLabel] as const,
+  () =>
+    [
+      shellRoute.name.value,
+      shellRoute.query.value.monitor,
+      shellRoute.query.value.monitorLabel,
+    ] as const,
   ([name, monitor, monitorLabel]) => {
     if (name !== 'tv' || typeof monitor !== 'string' || !monitor) return;
     openTvVideoDetail({

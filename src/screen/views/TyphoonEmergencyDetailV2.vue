@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
 import AccidentRescueHeader from '../components/layout/AccidentRescueHeader.vue';
 import MapPageShell from '../components/map/MapPageShell.vue';
 import TyphoonRiskMapOverlay from '../components/map/TyphoonRiskMapOverlay.vue';
@@ -9,11 +8,12 @@ import TyphoonRiskVideoWallDialog from '../components/panels/typhoon/TyphoonRisk
 import floodCctvGridUrl from '../assets/semantic-scenes/typhoon-flood-cctv-grid.png';
 import { resolveTyphoonEmergencyIncidentV2 } from '../lib/data/typhoonEmergencyMock';
 import type { TyphoonEmergencyIncident } from '../lib/data/typhoonEmergencyMock';
+import { useShellRoute } from '../lib/composables/useShellRoute';
 
 type RiskPoint = TyphoonEmergencyIncident['mapRiskPoints'][number];
 type WorkspaceTab = 'risk' | 'task' | 'trend';
 
-const route = useRoute();
+const shellRoute = useShellRoute();
 const activeTab = ref<WorkspaceTab>('risk');
 const showAllPoints = ref(false);
 const cloudMapOpen = ref(false);
@@ -21,7 +21,7 @@ const selectedPoint = ref<RiskPoint | null>(null);
 const selectedVideoPoint = ref<RiskPoint | null>(null);
 
 const incident = computed(() =>
-  resolveTyphoonEmergencyIncidentV2(Number(route.query.eventId) || undefined),
+  resolveTyphoonEmergencyIncidentV2(Number(shellRoute.query.value.eventId) || undefined),
 );
 
 const abnormalPoints = computed(() =>

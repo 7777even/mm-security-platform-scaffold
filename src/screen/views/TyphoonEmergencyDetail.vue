@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
 import {
   setCesiumMapModeOverride,
   getSharedMap,
@@ -16,15 +15,16 @@ import SatelliteCloudMapDialog from '../components/panels/typhoon/SatelliteCloud
 import { resolveTyphoonEmergencyIncident } from '../lib/data/typhoonEmergencyMock';
 import type { TyphoonEmergencyIncident } from '../lib/data/typhoonEmergencyMock';
 import type { EmergencyDispatchResource } from '../lib/data/accidentRescueMock';
+import { useShellRoute } from '../lib/composables/useShellRoute';
 import '../styles/accidentRescueScroll.css';
 
-const route = useRoute();
+const shellRoute = useShellRoute();
 const satelliteCloudMapOpen = ref(false);
 const focusedResource = ref<EmergencyDispatchResource | null>(null);
 const selectedRiskPoint = ref<TyphoonEmergencyIncident['mapRiskPoints'][number] | null>(null);
 
 const incident = computed(() =>
-  resolveTyphoonEmergencyIncident(Number(route.query.eventId) || undefined),
+  resolveTyphoonEmergencyIncident(Number(shellRoute.query.value.eventId) || undefined),
 );
 
 const displayRiskPoints = computed(() => {

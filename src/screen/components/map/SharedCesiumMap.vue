@@ -1,6 +1,5 @@
 ﻿<script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
 import MaomingPetroCesiumMap from './MaomingPetroCesiumMap.vue';
 import {
   bindSharedMap,
@@ -10,14 +9,13 @@ import {
 } from '../../lib/composables/sharedCesiumBridge';
 import { resolveRouteCesiumMeta } from '../../config/cesiumMapModes';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
+import { useShellRoute } from '../../lib/composables/useShellRoute';
 
-const route = useRoute();
-// wujie 子应用无独立路由树，本地 vue-router 仅余 catch-all，无法定位到主壳当前页面；
-// 主壳 WujieHost 在 sharedProps 透传当前路由 name，子应用侧优先使用之。
-const shellRouteName = computed<string | undefined>(
-  () => (window.$wujie?.props as { routeName?: string } | undefined)?.routeName ?? undefined,
-);
-const effectiveRouteName = computed(() => shellRouteName.value ?? String(route.name ?? ''));
+// wujie 子应用无独立路由树，本地 vue-router 仅余 catch-all；主壳 WujieHost 在
+// sharedProps 透传当前路由的源项目语义名（drillEmergencyDetail / production …），
+// 本组件统一从 useShellRoute 取值，避免子应用 route.name 永远为 subapp-fallback。
+const shellRoute = useShellRoute();
+const effectiveRouteName = computed(() => shellRoute.name.value || '');
 const mapRef = ref<InstanceType<typeof MaomingPetroCesiumMap> | null>(null);
 const { selectedPlantArea } = usePlantArea();
 
@@ -54,7 +52,7 @@ function onMapReady() {
   bindSharedMap(mapRef.value as unknown as SharedCesiumMapExpose);
   setSharedMapReady(true);
   void mapRef.value?.setPlantAreaSelection?.(selectedPlantArea.value, {
-    fly: shouldFlyToPlantArea(route.name),
+    fly: shouldFlyToPlantArea(shellRoute.name.value),
   });
 }
 
@@ -69,7 +67,7 @@ const SKIP_RESTORE_ROUTE_NAMES = new Set([
 ]);
 
 watch(
-  () => route.name,
+  () => shellRoute.name.value,
   async (name) => {
     if (!(name && SKIP_RESTORE_ROUTE_NAMES.has(String(name)))) {
       await mapRef.value?.restoreModuleDefaultView?.();
@@ -83,7 +81,7 @@ watch(
 
 watch(selectedPlantArea, (code) => {
   void mapRef.value?.setPlantAreaSelection?.(code, {
-    fly: shouldFlyToPlantArea(route.name),
+    fly: shouldFlyToPlantArea(shellRoute.name.value),
   });
 });
 </script>

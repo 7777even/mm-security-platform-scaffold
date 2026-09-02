@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import {
   setCesiumMapModeOverride,
   flyToSharedAccidentRescueIncident,
@@ -56,22 +56,25 @@ import {
   closeCommandActionDetail,
 } from '../lib/composables/useCommandActionDetail';
 import { useSandboxScene } from '../lib/composables/useSandboxScene';
+import { useShellRoute } from '../lib/composables/useShellRoute';
 import { prepareEventVideoWall } from '../components/video-wall/videoWallStore';
 import '../styles/accidentRescueScroll.css';
 
-const route = useRoute();
 const router = useRouter();
 const sandbox = useSandboxScene();
+const shellRoute = useShellRoute();
 
-const isDrillMode = computed(() => route.name === 'drillEmergencyDetail');
+// wujie 沙箱内 vue-router 仅余 catch-all，比较应基于主壳下传的源项目语义名
+// （fm-drill → drillEmergencyDetail / fm-fire-rescue → fireAccidentRescue / fm-typhoon → typhoonEmergencyDetail）。
+const isDrillMode = computed(() => shellRoute.name.value === 'drillEmergencyDetail');
 const pageTheme = computed(() => (isDrillMode.value ? 'drill' : 'event'));
 const panelTheme = computed(() => (isDrillMode.value ? 'drill' : 'accident'));
 const actionKind = computed(() => (isDrillMode.value ? 'drill' : 'event'));
 
 const incident = computed(() =>
   isDrillMode.value
-    ? resolveDrillRescueIncident(Number(route.query.eventId) || undefined)
-    : resolveAccidentRescueIncident(Number(route.query.eventId) || undefined),
+    ? resolveDrillRescueIncident(Number(shellRoute.query.value.eventId) || undefined)
+    : resolveAccidentRescueIncident(Number(shellRoute.query.value.eventId) || undefined),
 );
 
 const facilityDetail = computed(() => resolveFacilityDetail(incident.value.facilityName));
@@ -202,7 +205,7 @@ function handleStartEmergencyResponse() {
 }
 
 watch(
-  () => route.query.autostart,
+  () => shellRoute.query.value.autostart,
   (value) => {
     if (value === '1' && !isDrillMode.value && !responseStarted.value) {
       handleStartEmergencyResponse();
@@ -238,7 +241,9 @@ function handleToolAction(item: string) {
   activeToolItem.value = item;
   if (item === '视频监控墙') {
     closeToolMenu();
-    const sourceRoute = typeof route.name === 'string' ? route.name : 'fireAccidentRescue';
+    // 携带源项目语义名（drillEmergencyDetail / fireAccidentRescue / typhoonEmergencyDetail）
+    // 作为 video wall 返回来源，由 VideoWallView 的 from query 收回后 push 同名回到此页
+    const sourceRoute = shellRoute.name.value || 'fireAccidentRescue';
     prepareEventVideoWall({
       eventId: incident.value.eventId,
       eventTitle: incident.value.title,

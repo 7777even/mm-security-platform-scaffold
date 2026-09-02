@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 import { LineChart } from 'echarts/charts';
@@ -13,12 +12,13 @@ import SatelliteCloudMapDialog from '../components/panels/typhoon/SatelliteCloud
 import TyphoonRiskVideoWallDialog from '../components/panels/typhoon/TyphoonRiskVideoWallDialog.vue';
 import { resolveTyphoonEmergencyIncidentV2 } from '../lib/data/typhoonEmergencyMock';
 import type { TyphoonEmergencyIncident } from '../lib/data/typhoonEmergencyMock';
+import { useShellRoute } from '../lib/composables/useShellRoute';
 
 use([LineChart, GridComponent, MarkLineComponent, TooltipComponent, CanvasRenderer]);
 
 type RiskPoint = TyphoonEmergencyIncident['mapRiskPoints'][number];
 
-const route = useRoute();
+const shellRoute = useShellRoute();
 const cloudMapOpen = ref(false);
 const showAllPoints = ref(true);
 const trendMetric = ref<'rain' | 'wind'>('rain');
@@ -26,7 +26,7 @@ const selectedVideoPoint = ref<RiskPoint | null>(null);
 const dynamicFilter = ref<'all' | 'alarm' | 'command' | 'feedback'>('all');
 
 const incident = computed(() =>
-  resolveTyphoonEmergencyIncidentV2(Number(route.query.eventId) || undefined),
+  resolveTyphoonEmergencyIncidentV2(Number(shellRoute.query.value.eventId) || undefined),
 );
 const abnormalPoints = computed(() =>
   incident.value.mapRiskPoints.filter((point) => point.status !== 'normal'),

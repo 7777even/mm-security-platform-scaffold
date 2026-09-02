@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
 import ClipImage from '../../common/ClipImage.vue';
 import { eventListIconClip } from '../../../utils/preliminaryClipConfig';
@@ -42,6 +42,7 @@ import {
 } from '../../../lib/composables/useFireEmergencyEventList';
 import type { DesignModule } from '../../../utils/designAssets';
 import { useAccidentRescueNavigation } from '../../../lib/composables/useAccidentRescueNavigation';
+import { useShellRoute } from '../../../lib/composables/useShellRoute';
 import {
   fireEmergencyListTab,
   setFireEmergencyListTab,
@@ -60,8 +61,8 @@ const props = withDefaults(
 
 const activeListTab = fireEmergencyListTab;
 const createModalOpen = ref(false);
-const route = useRoute();
 const router = useRouter();
+const shellRoute = useShellRoute();
 
 function openCreateModal() {
   createModalOpen.value = true;
@@ -167,10 +168,10 @@ function updatePageSize() {
 }
 
 onMounted(() => {
-  if (isFireEmergency.value && route.query.create === 'event') {
+  if (isFireEmergency.value && shellRoute.query.value.create === 'event') {
     setFireEmergencyListTab('event');
     openCreateModal();
-    const query = { ...route.query };
+    const query = { ...shellRoute.query.value };
     delete query.create;
     void router.replace({ query });
   }

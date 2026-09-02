@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import AppHeader from '../components/layout/AppHeader.vue';
 import VideoWallSidebar from '../components/video-wall/VideoWallSidebar.vue';
 import VideoWallGrid from '../components/video-wall/VideoWallGrid.vue';
@@ -13,18 +13,19 @@ import {
   showAllEventVideosOnWall,
   type EventVideoKind,
 } from '../components/video-wall/videoWallStore';
+import { useShellRoute } from '../lib/composables/useShellRoute';
 
 const router = useRouter();
-const route = useRoute();
+const shellRoute = useShellRoute();
 const eventContext = computed(() => activeEventVideoContext.value);
 
 watch(
-  () => route.fullPath,
-  () => {
-    const eventType = route.query.eventType;
-    const eventId = route.query.eventId;
-    const eventTitle = route.query.eventTitle;
-    const from = route.query.from;
+  () => shellRoute.query.value,
+  (query) => {
+    const eventType = query.eventType;
+    const eventId = query.eventId;
+    const eventTitle = query.eventTitle;
+    const from = query.from;
     if (
       (eventType === 'accident' || eventType === 'weather') &&
       eventId &&
@@ -46,9 +47,10 @@ watch(
 );
 
 function goBack() {
-  const from = typeof route.query.from === 'string' ? route.query.from : '';
-  if (from) {
-    const eventId = typeof route.query.eventId === 'string' ? route.query.eventId : undefined;
+  const from = shellRoute.query.value.from;
+  if (typeof from === 'string' && from) {
+    const eventIdRaw = shellRoute.query.value.eventId;
+    const eventId = typeof eventIdRaw === 'string' ? eventIdRaw : undefined;
     void router.push({ name: from, query: eventId ? { eventId } : undefined });
     return;
   }

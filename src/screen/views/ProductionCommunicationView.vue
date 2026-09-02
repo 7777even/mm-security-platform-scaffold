@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import MapPageShell from '../components/map/MapPageShell.vue';
 import ProductionMap from '../components/map/ProductionMap.vue';
 import CommunicationDeviceListPanel from '../components/panels/production/CommunicationDeviceListPanel.vue';
@@ -13,9 +13,10 @@ import {
   switchCommunicationTab,
 } from '../lib/composables/useCommunicationDevices';
 import type { CommunicationTab } from '../lib/data/communicationDeviceMock';
+import { useShellRoute } from '../lib/composables/useShellRoute';
 
-const route = useRoute();
 const router = useRouter();
+const shellRoute = useShellRoute();
 const oneKeyOpen = ref(false);
 const singleOpen = ref(false);
 
@@ -26,7 +27,7 @@ const tabMap: Record<string, CommunicationTab> = {
 };
 
 watch(
-  () => route.query.tab,
+  () => shellRoute.query.value.tab,
   (tab) => {
     if (typeof tab === 'string' && tabMap[tab]) {
       switchCommunicationTab(tabMap[tab]);
