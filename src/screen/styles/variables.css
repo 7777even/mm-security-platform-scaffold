@@ -1,0 +1,24 @@
+:root {
+  --bg-primary: #001630;
+  --bg-panel: rgb(0 35 75 / 72%);
+  --bg-panel-header: linear-gradient(90deg, rgb(0 80 160 / 45%) 0%, rgb(0 40 90 / 20%) 100%);
+  --border-glow: rgb(0 180 255 / 45%);
+  --border-panel: rgb(0 140 220 / 25%);
+  --text-primary: #fff;
+  --text-secondary: #8795b0;
+  --text-muted: #d8e4f4;
+  --accent-blue: #00b4ff;
+  --accent-cyan: #6acab2;
+  --accent-gold: #eca641;
+  --accent-red: #ff5a4a;
+  --accent-red-light: #ffc4c4;
+  --accent-green: #3dd68c;
+  --accent-purple: #b07aff;
+  --header-height: 77px;
+  --footer-height: 67px;
+  --sidebar-width: 419px;
+  --sidebar-width-left: 338px;
+  --sidebar-width-right: 419px;
+  --font-display: 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  --font-body: 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans SC', sans-serif;
+}
