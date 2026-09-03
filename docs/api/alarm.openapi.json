@@ -1,0 +1,93 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "告警服务 API（alarm）",
+    "version": "0.1.0-stub",
+    "description": "结构桩（stub）：按 Controller 分组，待补充真实接口契约。字段需含中文 description，接口需含 summary+description 与成功响应 example（见 docs/api/README.md 四条铁律）。"
+  },
+  "servers": [
+    {
+      "url": "https://gateway.example.com/alarm",
+      "description": "告警网关（生产环境 gateway-bypass=false 强制 HMAC 签名）"
+    }
+  ],
+  "tags": [
+    { "name": "AlarmController", "description": "告警查询与确认" },
+    { "name": "AlarmRuleController", "description": "告警规则配置" }
+  ],
+  "paths": {
+    "/alarms/{deviceCode}": {
+      "get": {
+        "tags": ["AlarmController"],
+        "summary": "按设备编码查询当前告警",
+        "description": "依据 20 位中石化 MDM 设备编码查询该设备当前活动告警列表。前端只监不控，本接口不得下发硬控指令（零下行控制红线）。",
+        "parameters": [
+          {
+            "name": "deviceCode",
+            "in": "path",
+            "required": true,
+            "description": "20 位中石化 MDM 设备物理主键编码",
+            "schema": { "type": "string", "minLength": 20, "maxLength": 20 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AlarmListResponse" },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "deviceCode": "10000000000000000001",
+                    "alarms": [
+                      {
+                        "alarmId": "A-20260903-001",
+                        "level": "high",
+                        "message": "温度越限",
+                        "occurredAt": "2026-09-03T10:00:00+08:00"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AlarmListResponse": {
+        "type": "object",
+        "description": "告警列表响应（经 B3 包络解包后取 data）",
+        "properties": {
+          "deviceCode": { "type": "string", "description": "20 位中石化 MDM 设备编码" },
+          "alarms": {
+            "type": "array",
+            "description": "当前活动告警集合",
+            "items": { "$ref": "#/components/schemas/Alarm" }
+          }
+        }
+      },
+      "Alarm": {
+        "type": "object",
+        "description": "单条告警",
+        "properties": {
+          "alarmId": { "type": "string", "description": "告警唯一标识" },
+          "level": {
+            "type": "string",
+            "description": "告警等级：low / medium / high / critical，着色见 UI 规范映射表"
+          },
+          "message": { "type": "string", "description": "告警正文描述" },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "告警发生时间（ISO8601，含时区）"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "GIS 一张图 API（gis）",
+    "version": "0.1.0-stub",
+    "description": "结构桩（stub）：按 Controller 分组，待补充真实接口契约。设备物理主键固定 20 位 MDM 编码（AGENTS.md §3）。"
+  },
+  "servers": [
+    { "url": "https://gateway.example.com/gis", "description": "GIS 网关（生产环境强制签名头）" }
+  ],
+  "tags": [
+    { "name": "GisLayerController", "description": "地图图层" },
+    { "name": "GisMarkerController", "description": "设备标记" }
+  ],
+  "paths": {
+    "/gis/layers": {
+      "get": {
+        "tags": ["GisLayerController"],
+        "summary": "获取可见图层列表",
+        "description": "返回当前视图下可加载的地图图层元信息（id / 名称 / 类型）。前端只读，不下行控制图层开关。",
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LayerListResponse" },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "layers": [{ "layerId": "pipe-line", "name": "管廊线", "type": "vector" }]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gis/markers/{deviceCode}": {
+      "get": {
+        "tags": ["GisMarkerController"],
+        "summary": "按设备编码查询标记点位",
+        "description": "依据 20 位中石化 MDM 设备编码查询其在地图上的标记点位与状态。",
+        "parameters": [
+          {
+            "name": "deviceCode",
+            "in": "path",
+            "required": true,
+            "description": "20 位中石化 MDM 设备物理主键编码",
+            "schema": { "type": "string", "minLength": 20, "maxLength": 20 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarkerResponse" },
+                "example": {
+                  "code": 0,
+                  "data": {
+                    "deviceCode": "10000000000000000001",
+                    "lon": 113.26,
+                    "lat": 23.13,
+                    "status": "online"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LayerListResponse": {
+        "type": "object",
+        "description": "图层列表响应",
+        "properties": {
+          "layers": {
+            "type": "array",
+            "description": "图层元信息集合",
+            "items": { "$ref": "#/components/schemas/Layer" }
+          }
+        }
+      },
+      "Layer": {
+        "type": "object",
+        "description": "单个图层元信息",
+        "properties": {
+          "layerId": { "type": "string", "description": "图层唯一标识" },
+          "name": { "type": "string", "description": "图层中文名称" },
+          "type": { "type": "string", "description": "图层类型：vector / raster / tile" }
+        }
+      },
+      "MarkerResponse": {
+        "type": "object",
+        "description": "标记点位响应",
+        "properties": {
+          "deviceCode": { "type": "string", "description": "20 位中石化 MDM 设备编码" },
+          "lon": { "type": "number", "description": "经度（WGS84）" },
+          "lat": { "type": "number", "description": "纬度（WGS84）" },
+          "status": { "type": "string", "description": "设备状态：online / offline / alarm" }
+        }
+      }
+    }
+  }
+}

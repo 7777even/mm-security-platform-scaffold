@@ -1,0 +1,89 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "认证与权限 API（auth）",
+    "version": "0.1.0-stub",
+    "description": "结构桩（stub）：按 Controller 分组，待补充真实接口契约。令牌走 HttpOnly Cookie / 内存态，禁止 localStorage 明文（AGENTS.md §3）。"
+  },
+  "servers": [
+    { "url": "https://gateway.example.com/auth", "description": "认证网关（生产环境强制签名头）" }
+  ],
+  "tags": [
+    { "name": "AuthController", "description": "登录与令牌" },
+    { "name": "PermissionController", "description": "权限码与角色" }
+  ],
+  "paths": {
+    "/auth/permissions": {
+      "get": {
+        "tags": ["PermissionController"],
+        "summary": "获取当前用户权限码集合",
+        "description": "返回当前登录用户的权限码列表，用于前端按钮级权限（v-permission / usePermission）。不涉及硬控写操作。",
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PermissionResponse" },
+                "example": {
+                  "code": 0,
+                  "data": { "role": "duty-dispatcher", "perms": ["fire-alarm:ack", "device:view"] }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/token/refresh": {
+      "post": {
+        "tags": ["AuthController"],
+        "summary": "刷新访问令牌",
+        "description": "用刷新凭证换取新访问令牌；令牌内存态，不落 localStorage。命中防重放签名（timestamp/nonce/signature）。",
+        "responses": {
+          "200": {
+            "description": "刷新成功",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TokenResponse" },
+                "example": {
+                  "code": 0,
+                  "data": { "accessToken": "<opaque-memory-token>", "expiresIn": 1800 }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PermissionResponse": {
+        "type": "object",
+        "description": "权限码响应（经 B3 包络解包后取 data）",
+        "properties": {
+          "role": {
+            "type": "string",
+            "description": "当前角色：总指挥/值班调度/属地班长/内操/外操"
+          },
+          "perms": {
+            "type": "array",
+            "description": "权限码集合",
+            "items": { "type": "string", "description": "权限码，如 fire-alarm:ack" }
+          }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "description": "令牌响应",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "访问令牌（内存态持有，禁止持久化到 localStorage）"
+          },
+          "expiresIn": { "type": "integer", "description": "有效期（秒）" }
+        }
+      }
+    }
+  }
+}
