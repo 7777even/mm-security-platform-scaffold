@@ -1,12 +1,22 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
-import ClipImage from '../../common/ClipImage.vue';
+import {
+  UserFilled,
+  Box,
+  Avatar,
+  Van,
+  OfficeBuilding,
+  FirstAidKit,
+  Warning,
+  Document,
+  MapLocation,
+  Connection,
+} from '@element-plus/icons-vue';
 import {
   eventCommandAuxiliaryItems,
   rescueAuxiliaryStats,
 } from '@/services/map-data/accidentRescueMock';
-import { rescueAuxiliaryIconClips } from '@/utils/accidentRescueClipConfig';
 
 const props = withDefaults(
   defineProps<{
@@ -30,6 +40,15 @@ const total = computed(() => items.value.reduce((sum, item) => sum + Number(item
 const items = computed(() =>
   props.layout === 'eventCommand' ? eventCommandAuxiliaryItems : rescueAuxiliaryStats,
 );
+
+/* 与 rescueAuxiliaryStats.iconIndex 一一对应（0..7）：
+   应急专家/应急物资/救援队伍/装备车辆/应急场所/医疗机构/应急车辆/消防设施 */
+const RESCUE_ICONS = [UserFilled, Box, Avatar, Van, OfficeBuilding, FirstAidKit, Van, Warning];
+
+/* eventCommandAuxiliaryItems：岗位应急处置卡/危险化学品知识库/疏散路线图/应急预案/生产工艺流程 */
+const KNOWLEDGE_ICONS = [Document, Box, MapLocation, Document, Connection];
+
+const iconList = computed(() => (props.layout === 'eventCommand' ? KNOWLEDGE_ICONS : RESCUE_ICONS));
 </script>
 
 <template>
@@ -57,7 +76,9 @@ const items = computed(() =>
     >
       <div v-for="stat in items" :key="stat.label" class="aux-item">
         <div class="aux-item__icon-wrap">
-          <ClipImage v-bind="rescueAuxiliaryIconClips[stat.iconIndex]" class="aux-item__icon" />
+          <span class="aux-item__icon" aria-hidden="true">
+            <component :is="iconList[stat.iconIndex]" />
+          </span>
         </div>
         <div class="aux-item__text">
           <div class="aux-item__value">{{ stat.value }}</div>
@@ -164,6 +185,20 @@ const items = computed(() =>
 .aux-grid--drill .aux-item__icon-wrap {
   background: rgb(72 48 18 / 65%);
   border-color: rgb(200 140 50 / 28%);
+}
+
+.aux-item__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: var(--color-accent);
+}
+
+.aux-item__icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentcolor;
 }
 
 .aux-item__text {

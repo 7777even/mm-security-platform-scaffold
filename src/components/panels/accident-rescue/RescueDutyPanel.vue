@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
-import ClipImage from '../../common/ClipImage.vue';
 import { rescueDutyPersons } from '@/services/map-data/accidentRescueMock';
-import { rescueDutyAvatarClips } from '@/utils/accidentRescueClipConfig';
+import { UserFilled } from '@element-plus/icons-vue';
 
 withDefaults(
   defineProps<{
@@ -51,10 +50,11 @@ const leader = computed(
 
         <div class="duty-watch__list">
           <div v-for="person in rescueDutyPersons" :key="person.id" class="duty-card">
-            <ClipImage
-              v-bind="rescueDutyAvatarClips[person.avatarIndex]"
-              class="duty-card__avatar"
-            />
+            <div class="duty-card__avatar" aria-hidden="true">
+              <span class="duty-card__avatar-icon">
+                <UserFilled />
+              </span>
+            </div>
             <div class="duty-card__info">
               <div class="duty-card__head">
                 <span class="duty-card__name">{{ person.name }}</span>
@@ -184,6 +184,31 @@ const leader = computed(
   background: rgb(0 18 40 / 55%);
   border: 1px solid rgb(0 110 190 / 32%);
   border-radius: 2px;
+}
+
+.duty-card__avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-accent-faint);
+  border: 1px solid var(--color-accent-glow);
+  color: var(--color-accent);
+}
+
+.duty-card__avatar-icon {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+}
+
+.duty-card__avatar-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentcolor;
 }
 
 .duty-card__head {

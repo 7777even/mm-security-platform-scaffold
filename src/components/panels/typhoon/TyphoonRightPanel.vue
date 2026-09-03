@@ -2,9 +2,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
-import ClipImage from '../../common/ClipImage.vue';
-import { rescueAuxiliaryIconClips } from '@/utils/accidentRescueClipConfig';
-import { rescueDutyAvatarClips } from '@/utils/accidentRescueClipConfig';
+import { UserFilled, Document, Box, MapLocation } from '@element-plus/icons-vue';
 import type { TyphoonEmergencyIncident } from '@/services/map-data/typhoonEmergencyMock';
 import floodCctvGridUrl from '@/assets/map/semantic-scenes/typhoon-flood-cctv-grid.png';
 import SurveillanceVideoDialog from '../../common/SurveillanceVideoDialog.vue';
@@ -25,6 +23,9 @@ const visibleDutyPersons = computed(() =>
     ? props.incident.dutyPersons.slice(0, 2)
     : props.incident.dutyPersons.slice(2, 4),
 );
+
+/* 与 incident.auxiliaryItems 顺序一致：应急预案 / 危化品知识库 / 疏散路线图 / 专项预案 */
+const AUX_ICONS = [Document, Box, MapLocation, Document];
 
 function openVideo(videoId?: string) {
   selectedVideo.value =
@@ -145,10 +146,11 @@ defineExpose({ openVideo });
 
         <div class="tw-duty__list">
           <div v-for="person in visibleDutyPersons" :key="person.id" class="tw-duty-card">
-            <ClipImage
-              v-bind="rescueDutyAvatarClips[person.avatarIndex]"
-              class="tw-duty-card__avatar"
-            />
+            <span class="tw-duty-card__avatar" aria-hidden="true">
+              <span class="tw-duty-card__avatar-icon">
+                <UserFilled />
+              </span>
+            </span>
             <div class="tw-duty-card__info">
               <div class="tw-duty-card__head">
                 <span class="tw-duty-card__name">{{ person.name }}</span>
@@ -164,10 +166,9 @@ defineExpose({ openVideo });
         <div class="tw-aux-grid">
           <div v-for="item in incident.auxiliaryItems" :key="item.id" class="tw-aux-item">
             <div class="tw-aux-item__icon-wrap">
-              <ClipImage
-                v-bind="rescueAuxiliaryIconClips[item.iconIndex]"
-                class="tw-aux-item__icon"
-              />
+              <span class="tw-aux-item__icon" aria-hidden="true">
+                <component :is="AUX_ICONS[item.iconIndex] ?? Document" />
+              </span>
             </div>
             <div class="tw-aux-item__text">
               <div class="tw-aux-item__count" :class="`tw-aux-item__count--${item.countTone}`">
@@ -322,8 +323,17 @@ defineExpose({ openVideo });
 }
 
 .tw-aux-item__icon {
-  width: 36px;
-  height: 36px;
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: var(--color-accent);
+}
+
+.tw-aux-item__icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentcolor;
 }
 
 .tw-aux-item__count {
@@ -372,9 +382,28 @@ defineExpose({ openVideo });
 }
 
 .tw-duty-card__avatar {
+  flex-shrink: 0;
   width: 40px;
   height: 40px;
-  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-accent-faint);
+  border: 1px solid var(--color-accent-glow);
+  color: var(--color-accent);
+}
+
+.tw-duty-card__avatar-icon {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+}
+
+.tw-duty-card__avatar-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentcolor;
 }
 
 .tw-duty-card__head {
@@ -563,11 +592,6 @@ defineExpose({ openVideo });
   padding: 6px 9px;
   border-color: rgb(0 126 202 / 30%);
   background: linear-gradient(135deg, rgb(3 31 59 / 82%), rgb(2 20 40 / 72%));
-}
-
-.tw-support .tw-aux-item__icon {
-  width: 32px;
-  height: 32px;
 }
 
 .tw-support .tw-aux-item__count {

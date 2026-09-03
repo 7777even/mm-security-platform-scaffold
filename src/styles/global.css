@@ -340,16 +340,6 @@ html {
   justify-content: center;
 }
 
-.alarm-list-item__thumb-text {
-  font-family: var(--font-family-num);
-  font-size: var(--font-size-time);
-  font-weight: 600;
-  letter-spacing: 1px;
-  color: var(--color-text-strong);
-  text-shadow: 0 0 8px rgb(0 0 0 / 60%);
-  z-index: var(--z-base);
-}
-
 .alarm-list-item__thumb-icon {
   position: absolute;
   top: 4px;

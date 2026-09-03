@@ -3,7 +3,7 @@
 
   视觉构成（自左向右）：
     1) 3px 等级色边（alarm-1..4，对齐 §13.1）
-    2) 缩略图区 96×72，左上角类型图标 + 中央 现场图 占位
+    2) 缩略图区 96×72，左上角类型图标 + mock 监控抓拍现场图（cameraThumbByIndex 缺省填充）
     3) 内容区：
        - 标题 + 状态标签（待处理/已确认/已派单/已闭环）
        - 位置 · 时间
@@ -13,11 +13,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { AlarmItem, AlarmStatus, AlarmType } from '@/services/alarm';
+import { cameraThumbByIndex } from '@/services/map-data/fireImages';
 
 const props = withDefaults(
   defineProps<{
     alarm: AlarmItem;
-    /** 自定义缩略图 URL；缺省时按等级渐变 + 类型图标占位 */
+    /** 自定义缩略图 URL；缺省时按告警编号稳定取 mock 监控抓拍图 */
     thumbnail?: string;
     /** 是否渲染底部快捷操作行 */
     showActions?: boolean;
@@ -61,6 +62,13 @@ const status = computed(() => props.alarm.status);
 const typeIcon = computed(() => TYPE_ICON[props.alarm.type] ?? '⚠');
 const typeLabel = computed(() => TYPE_LABEL[props.alarm.type] ?? '报警');
 const title = computed(() => `${typeLabel.value}报警 · ${props.alarm.deviceCode}`);
+
+/** 缩略图：外部传入优先；缺省按告警编号稳定取 mock 监控抓拍图（cameraThumbByIndex），不留文字占位 */
+const thumbSrc = computed(() => {
+  if (props.thumbnail) return props.thumbnail;
+  const seed = Array.from(props.alarm.alarmId).reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+  return cameraThumbByIndex(seed);
+});
 const tsText = computed(() => formatTs(props.alarm.ts));
 const canDispatch = computed(() => status.value === 'ACTIVE' || status.value === 'ACKED');
 const canCall = computed(() => status.value !== 'CLOSED');
@@ -77,15 +85,12 @@ function formatTs(ts: string): string {
   <article :class="rootClass" :aria-label="`${typeLabel}报警 ${alarm.alarmId}`">
     <div class="alarm-list-item__thumb" aria-hidden="true">
       <img
-        v-if="thumbnail"
-        :src="thumbnail"
+        :src="thumbSrc"
         :alt="`${title} 现场图`"
         class="alarm-list-item__thumb-img"
+        loading="lazy"
       />
-      <template v-else>
-        <span class="alarm-list-item__thumb-icon">{{ typeIcon }}</span>
-        <span class="alarm-list-item__thumb-text">现场图</span>
-      </template>
+      <span class="alarm-list-item__thumb-icon">{{ typeIcon }}</span>
     </div>
 
     <div class="alarm-list-item__body">
