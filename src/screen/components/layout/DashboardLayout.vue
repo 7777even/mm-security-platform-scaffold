@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import AppHeader from './AppHeader.vue';
 import SystemMessageBar from './SystemMessageBar.vue';
 import type { DesignModule } from '../../utils/designAssets';
 
@@ -16,8 +15,6 @@ defineProps<{
 
 <template>
   <div class="dashboard-layout__ui">
-    <AppHeader :module="module" :active-nav="activeNav" :title="headerTitle" />
-
     <main class="dashboard-layout__main">
       <slot />
     </main>

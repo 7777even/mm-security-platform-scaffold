@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import AppHeader from '../components/layout/AppHeader.vue';
 import VideoWallSidebar from '../components/video-wall/VideoWallSidebar.vue';
 import VideoWallGrid from '../components/video-wall/VideoWallGrid.vue';
 import VideoLinkageConfigDialog from '../components/video-wall/VideoLinkageConfigDialog.vue';
@@ -60,8 +59,6 @@ function goBack() {
 
 <template>
   <div class="video-wall-page">
-    <AppHeader module="tv" active-nav="tv" />
-
     <div class="video-wall-page__title-bar">
       <div class="video-wall-page__heading">
         <h2 class="video-wall-page__title">视频墙</h2>

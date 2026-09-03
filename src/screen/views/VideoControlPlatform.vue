@@ -1,6 +1,5 @@
 ﻿<script setup lang="ts">
 import { ref } from 'vue';
-import AppHeader from '../components/layout/AppHeader.vue';
 import VideoControlSidebar from '../components/video-control/VideoControlSidebar.vue';
 import VideoControlGrid from '../components/video-control/VideoControlGrid.vue';
 import VideoControlBottomBar from '../components/video-control/VideoControlBottomBar.vue';
@@ -12,8 +11,6 @@ const layout = ref<GridLayout>('3x3');
 
 <template>
   <div class="video-control-page">
-    <AppHeader module="tv" active-nav="tv" />
-
     <div class="video-control-page__body">
       <VideoControlSidebar />
 
