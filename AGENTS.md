@@ -12,7 +12,7 @@
 - **改代码但不改业务能力 / 接口契约 / 权限语义，且 L1 四门槛全满足** → **L1**：说明范围 → 直接改 → 跑最小验证（§2 矩阵对应行）→ 输出结果。
 - **改代码但属依赖 / 构建 / 脚手架 / lint / 非业务技术债，或 L1 门槛缺一** → **L2**：说明方案与影响 → 执行 → 跑受影响目标验证。
 - **改业务能力**（页面能力 / 交互规则 / 状态流转 / 权限语义）→ **L3**：openspec 提案 → 人工确认 → TDD 实施 → 验收 → 归档。
-- **高风险**（跨端协议 / Cesium 内核 / wujie 壳 / token 体系 / 构建部署链路 / 权限模型）→ **L4**：按 L3 执行，且实施前取得人工确认。
+- **高风险**（跨端协议 / Cesium 内核 / wujie 壳 / token 体系 / 构建部署链路 / 权限模型；具体硬门禁清单见 §8）→ **L4**：按 L3 执行，且实施前取得人工确认。
 
 ### 1.2 L1 四条门槛（缺一即升 L2 / L3）
 
@@ -171,3 +171,70 @@
 | `docs/**`                                                   | `docs/AGENTS.md`                                               |
 
 分层文件与本文件冲突时按 §1.3 仲裁：**根 `AGENTS.md` 高于分层 `AGENTS.md`**，分层文件只能加严、不得放宽。新增分层文件时必须在本表登记。三类目录职责见 §4。
+
+## 7. L3 / L4 四件套、QA/Retro 即刻记录与模板体系
+
+### 7.1 L3 / L4 强制 OpenSpec 四件套
+
+L3 / L4 改动动手前必须完成并闭环以下四件套（位于 `openspec/changes/<name>/`），且经末尾「人工确认关卡」确认后才允许写代码：
+
+- `proposal.md`（Why / What / Capabilities / Impact + 人工确认关卡）
+- `design.md`（架构、决策 ADR、风险、依赖）
+- `tasks.md`（≤2h 可勾选任务，[TDD] 先写失败测试；任务状态只回填此处，禁止在 `engineering/` 另立清单）
+- `spec-delta.md`（新增 / 修改 / 移除 三段，与 `spec.md` 同构）
+
+四者须闭环：`proposal` 的 Capabilities ↔ `spec-delta` 的 Requirement ↔ `tasks` 的验收标准一一对应；人工确认（L3 须过、L4 实施前须过）后方可动手。禁止 L1 / L2 建立 OpenSpec Change。
+
+### 7.2 QA / Retro 即刻记录
+
+L3 / L4 任务完成后**即刻**写 `engineering/qa/` 与 `engineering/retro/`，不允许攒到最后补；L0–L2 不写。
+
+- QA：范围、验收口径、实际执行命令与用例数、未运行项、结论；**截图证据是结论必要附件**（UI 改动附页面截图、关键验证附终端输出快照，置于同目录引用文件名）。
+- Retro：做得好 / 问题 / 原因 / 改进方案四段式。
+
+### 7.3 模板体系（位于 `templates/`）
+
+新建上述四件套与 QA/Retro 时，复制对应模板填充，避免格式漂移：
+
+| 模板                                         | 用途                   |
+| -------------------------------------------- | ---------------------- |
+| `templates/_openspec-proposal_template.md`   | 四件套 · proposal      |
+| `templates/_openspec-design_template.md`     | 四件套 · design        |
+| `templates/_openspec-tasks_template.md`      | 四件套 · tasks         |
+| `templates/_openspec-spec-delta_template.md` | 四件套 · spec-delta    |
+| `templates/_qa_template.md`                  | engineering/qa 记录    |
+| `templates/_retro_template.md`               | engineering/retro 记录 |
+| `templates/api-contract-writing-guide.md`    | §3 API 契约编写手册    |
+
+`templates/README.md` 为索引与用法说明。
+
+## 8. L4 硬门禁清单
+
+以下任一类改动命中即升 **L4**（按 §1.1 取得人工确认后才实施），不得按 L1 / L2 直接动手：
+
+- **微前端壳层**：`wujieBridge` / `subappRouter` / `wujieTokens` 接口变更。
+- **设计令牌真源**：`src/styles/tokens.css` 变量重命名 / 删除 / 层级重构（含 z-index 五层 token、状态着色映射）。
+- **http 拦截器**：`src/services/http.ts` 的拦截器签名、认证头、错误码映射改动。
+- **主题挂载机制**：`data-theme` / `data-skin` / `data-elder` 挂载逻辑变更。
+- **三端共享 composable 破坏性变更**：`src/composables/` 等跨端公共能力的破坏性 API 调整。
+- **依赖与框架**：生产依赖新增 / UI 库更换 / 微前端框架更换。
+
+> 以上任一项同时触及 §3 API 契约或 §6 红线的，按 §1.3 仲裁以高阶规则为准。
+
+## 9. Review 结论三选一
+
+任何代码评审 / 变更评审的结论必须为以下三者之一，**禁止含糊带过**：
+
+- **通过**：无需修改，可直接合入。
+- **需修改**：明确指出修改点，修改后无需再全员评审。
+- **需人工决策**：存在高风险 / 规范冲突 / 范围扩散等需拍板事项，转交人工确认（对应 L4 关卡）。
+
+> 不得出现「基本可以」「再看下」「问题不大」等模糊结论；评审人须从三选一中明确给出一项。
+
+## 10. 测试金字塔起步（长期）
+
+测试策略基线见 §2.2，长期保持以下约束，不漂移：
+
+- **不照搬 training 的全量测试金字塔 / Testcontainers / 162+16 例**；按项目节奏增量扩充。
+- 起步基线只做「关键 composable + 移动端 bridge + http 拦截器」的前端 Vitest 集成测试。
+- 坚持 **先红后绿（TDD）** + **回归闭环**（`npm test` 为回归门禁）；新增 / 修改能力标注 `[TDD]` 先写失败测试。
