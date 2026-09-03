@@ -90,7 +90,7 @@ watch(src, () => {
   position: absolute;
   inset: 0;
   padding: var(--mgmt-content-pad);
-  z-index: 1;
+  z-index: var(--z-local-1);
   background: var(--card-mgmt);
 }
 
