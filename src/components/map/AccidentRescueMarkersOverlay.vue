@@ -209,7 +209,7 @@ function monitoringIcon(category: string): MapMarkerIconName {
 /* ---------- 路线起终点 ---------- */
 .acc-route-marker {
   position: absolute;
-  z-index: 5;
+  z-index: var(--z-marker);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -271,7 +271,7 @@ function monitoringIcon(category: string): MapMarkerIconName {
 /* ---------- 监测点 / 疏散人员 ---------- */
 .acc-point-marker {
   position: absolute;
-  z-index: 6;
+  z-index: var(--z-local-6);
   display: flex;
   flex-direction: column;
   align-items: center;

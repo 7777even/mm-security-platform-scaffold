@@ -524,12 +524,12 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 4;
+  z-index: var(--z-local-4);
 }
 
 .hazard-marker {
   position: absolute;
-  z-index: 5;
+  z-index: var(--z-marker);
   display: flex;
   flex-direction: column;
   align-items: center;

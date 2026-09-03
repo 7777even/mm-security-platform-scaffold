@@ -106,7 +106,7 @@ const activeTab = ref<(typeof tabs)[number]['key']>('basic');
   position: absolute;
   right: 14px;
   top: 13px;
-  z-index: 4;
+  z-index: var(--z-local-4);
   width: 28px;
   height: 25px;
   padding: 0;

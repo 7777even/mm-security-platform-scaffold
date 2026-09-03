@@ -105,7 +105,7 @@ watch(
 .risk-video-wall {
   position: fixed;
   inset: 0;
-  z-index: 1900;
+  z-index: var(--z-overlay);
   display: grid;
   place-items: center;
   font-family: var(--font-body, sans-serif);

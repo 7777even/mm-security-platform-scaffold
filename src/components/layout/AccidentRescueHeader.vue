@@ -194,7 +194,7 @@ onUnmounted(() => {
   position: absolute;
   left: 20px;
   top: 12px;
-  z-index: 1;
+  z-index: var(--z-local-1);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -271,7 +271,7 @@ onUnmounted(() => {
   left: 50%;
   top: 5px;
   transform: translateX(-50%);
-  z-index: 1;
+  z-index: var(--z-local-1);
   font-size: 36px;
   font-weight: 500;
   color: var(--color-text-strong);
@@ -288,7 +288,7 @@ onUnmounted(() => {
   position: absolute;
   right: 36px;
   top: 12px;
-  z-index: 1;
+  z-index: var(--z-local-1);
   display: flex;
   align-items: center;
   gap: 18px;

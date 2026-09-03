@@ -45,20 +45,20 @@ const { cleanMode } = useMapCleanMode();
 .map-page-shell__overlays {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: var(--z-base);
   pointer-events: none;
 }
 
 .map-page-shell__floating {
   position: absolute;
   inset: 0;
-  z-index: 6;
+  z-index: var(--z-local-6);
   pointer-events: none;
 }
 
 .map-page-shell__ui {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-local-2);
   height: 100%;
   pointer-events: none;
 }

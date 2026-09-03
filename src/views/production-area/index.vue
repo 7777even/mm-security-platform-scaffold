@@ -132,7 +132,7 @@ onMounted(() => {
   left: 18px;
   right: 455px;
   top: 14px;
-  z-index: 4;
+  z-index: var(--z-local-4);
 }
 
 .production-area__left {
@@ -141,7 +141,7 @@ onMounted(() => {
   top: 96px;
   bottom: 18px;
   width: 338px;
-  z-index: 4;
+  z-index: var(--z-local-4);
   pointer-events: auto;
 }
 
@@ -171,7 +171,7 @@ onMounted(() => {
   position: absolute;
   left: 18px;
   bottom: 18px;
-  z-index: 5;
+  z-index: var(--z-marker);
   height: 36px;
   padding: 0 18px;
   border: 1px solid color-mix(in srgb, var(--map-border) 45%, transparent);

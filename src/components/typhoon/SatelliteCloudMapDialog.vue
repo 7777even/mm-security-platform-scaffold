@@ -860,7 +860,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
 .scm-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2200;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: stretch;
   justify-content: center;
@@ -923,7 +923,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
   height: 82%;
   max-height: calc(100% - 58px - 112px);
   width: 320px;
-  z-index: 1200;
+  z-index: var(--z-local-1200);
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgb(0 150 236 / 28%);
@@ -936,7 +936,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
 .scm-map {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: var(--z-base);
   background: #dce8ef;
   pointer-events: auto;
 }
@@ -1011,7 +1011,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
   position: absolute;
   left: 14px;
   top: 58px;
-  z-index: 1210;
+  z-index: var(--z-local-1210);
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid rgb(0 150 236 / 28%);
@@ -1046,7 +1046,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
   border: 1px solid rgb(0 150 236 / 28%);
   background: rgb(0 18 40 / 82%);
   backdrop-filter: blur(6px);
-  z-index: 2;
+  z-index: var(--z-local-2);
   pointer-events: none;
 }
 
@@ -1108,7 +1108,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
   top: 56px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 3;
+  z-index: var(--z-local-3);
   padding: 8px 14px;
   border-radius: 8px;
   font-size: 12px;
@@ -1137,7 +1137,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
   color: #fff;
   font-size: 12px;
   font-family: var(--font-body);
-  z-index: 2;
+  z-index: var(--z-local-2);
   box-shadow: 0 8px 24px rgb(0 0 0 / 28%);
   cursor: pointer;
 }
@@ -1156,7 +1156,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
   border: 1px solid rgb(0 150 236 / 28%);
   background: rgb(0 18 40 / 82%);
   backdrop-filter: blur(6px);
-  z-index: 1300;
+  z-index: var(--z-local-1300);
   pointer-events: auto;
 }
 
@@ -1168,7 +1168,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
   position: absolute;
   top: 17px;
   left: 338px;
-  z-index: 1290;
+  z-index: var(--z-local-1290);
   min-height: 32px;
   display: flex;
   align-items: center;
@@ -1192,7 +1192,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
 
 .scm-float--range {
   right: 14px;
-  z-index: 6;
+  z-index: var(--z-local-6);
 }
 
 .scm-float--clarity {
@@ -1257,7 +1257,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
   border: 1px solid rgb(0 150 236 / 28%);
   background: rgb(0 18 40 / 82%);
   backdrop-filter: blur(6px);
-  z-index: 2;
+  z-index: var(--z-local-2);
   pointer-events: none;
 }
 
@@ -1294,7 +1294,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
   left: 14px;
   right: 14px;
   bottom: 14px;
-  z-index: 1250;
+  z-index: var(--z-local-1250);
   display: grid;
   grid-template-columns: 180px 40px minmax(0, 1fr);
   gap: 12px;

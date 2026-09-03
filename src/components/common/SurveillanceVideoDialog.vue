@@ -239,7 +239,7 @@ watch(
 .surveillance-dialog {
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  z-index: var(--z-overlay);
   display: grid;
   place-items: center;
   font-family: var(--font-body, sans-serif);

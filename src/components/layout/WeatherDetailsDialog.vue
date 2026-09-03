@@ -240,7 +240,7 @@ const weeklyLowPoints = computed(() =>
 .weather-dialog {
   position: fixed;
   inset: 0;
-  z-index: 10020;
+  z-index: var(--z-overlay);
   display: grid;
   place-items: center;
   background: var(--map-mask-bg);
@@ -554,7 +554,7 @@ dd {
 
 .weekly-forecast .daily-list {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-local-1);
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 10px;
@@ -620,7 +620,7 @@ dd {
 
 .weekly-temperature-chart {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-local-2);
   left: 14px;
   right: 14px;
   top: 105px;

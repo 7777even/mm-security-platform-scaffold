@@ -197,7 +197,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
 .plan-switch-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1250;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -398,7 +398,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
 .plan-switch__table th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: var(--z-local-1);
   padding: 8px 10px;
   text-align: left;
   color: #8aa4c0;

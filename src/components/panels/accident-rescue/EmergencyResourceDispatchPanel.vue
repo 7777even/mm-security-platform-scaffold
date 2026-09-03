@@ -390,7 +390,7 @@ function confirmDispatch() {
 .dispatch-dialog-mask {
   position: fixed;
   inset: 0;
-  z-index: 2600;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;

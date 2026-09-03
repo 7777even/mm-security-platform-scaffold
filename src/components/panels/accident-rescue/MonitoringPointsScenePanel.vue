@@ -311,7 +311,7 @@ function stageAlarmCount(id: string) {
 .mp-scene {
   position: absolute;
   inset: calc(var(--header-height, 105px) + 18px) 18px 18px;
-  z-index: 40;
+  z-index: var(--z-toast);
   display: grid;
   grid-template-columns: 410px minmax(0, 1fr) 410px;
   gap: 14px;
@@ -677,7 +677,7 @@ function stageAlarmCount(id: string) {
 }
 
 .mp-timeline-item__dot {
-  z-index: 1;
+  z-index: var(--z-local-1);
   width: 9px;
   height: 9px;
   margin-top: 13px;
@@ -905,7 +905,7 @@ function stageAlarmCount(id: string) {
 
 .mp-chart-tooltip {
   position: absolute;
-  z-index: 4;
+  z-index: var(--z-local-4);
   display: flex;
   min-width: 61px;
   flex-direction: column;

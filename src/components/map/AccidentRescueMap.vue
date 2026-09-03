@@ -342,7 +342,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 .accident-rescue-map__depth {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-local-1);
   pointer-events: none;
   background: var(--map-vignette-rescue-bg);
 }
@@ -350,7 +350,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 .accident-rescue-map__route {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: var(--z-local-2);
   width: 100%;
   height: 100%;
   pointer-events: none;
@@ -388,7 +388,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   --gate-pin-size: 20px;
 
   position: absolute;
-  z-index: 4;
+  z-index: var(--z-local-4);
   width: 121px;
   height: 96px;
   pointer-events: none;
@@ -482,7 +482,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 
 .emergency-pin-marker {
   position: absolute;
-  z-index: 5;
+  z-index: var(--z-marker);
   pointer-events: none;
 }
 
@@ -748,7 +748,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
 
 .vehicle-marker {
   position: absolute;
-  z-index: 6;
+  z-index: var(--z-local-6);
   width: 0;
   height: 0;
   pointer-events: none;
@@ -839,7 +839,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   flex-direction: column;
   align-items: flex-end;
   gap: 12px;
-  z-index: 6;
+  z-index: var(--z-local-6);
   pointer-events: auto;
 }
 

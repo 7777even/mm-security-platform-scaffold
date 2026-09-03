@@ -62,7 +62,7 @@ const process = useEmergencyProcess();
 :global(.pd-mask) {
   position: fixed;
   inset: 0;
-  z-index: 1900;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;

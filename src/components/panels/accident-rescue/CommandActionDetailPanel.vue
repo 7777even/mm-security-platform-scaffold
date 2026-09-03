@@ -336,7 +336,7 @@ function closePreview() {
   position: absolute;
   right: 14px;
   top: 13px;
-  z-index: 4;
+  z-index: var(--z-local-4);
   width: 28px;
   height: 25px;
   padding: 0;
@@ -692,7 +692,7 @@ function closePreview() {
 
 .command-detail__media-play {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-local-2);
   left: 50%;
   top: 45%;
   transform: translate(-50%, -50%);
@@ -708,7 +708,7 @@ function closePreview() {
 
 .command-detail__media-type {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-local-2);
   left: 5px;
   top: 5px;
   padding: 1px 4px;
@@ -720,7 +720,7 @@ function closePreview() {
 
 .command-detail__media-name {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-local-2);
   left: 5px;
   right: 34px;
   bottom: 5px;
@@ -734,7 +734,7 @@ function closePreview() {
 
 .command-detail__media-duration {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-local-2);
   right: 5px;
   bottom: 5px;
   color: #d8e8f8;
@@ -821,7 +821,7 @@ function closePreview() {
 
 .command-media-preview {
   position: fixed;
-  z-index: 9999;
+  z-index: var(--z-overlay);
   inset: 0;
   display: grid;
   place-items: center;

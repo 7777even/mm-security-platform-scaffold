@@ -106,7 +106,7 @@ function rowClass(node: MapLayerNode) {
   position: absolute;
   right: calc(100% + 8px);
   top: 0;
-  z-index: 60;
+  z-index: var(--z-local-60);
   width: 320px;
   max-height: calc(100vh - var(--header-height) - 90px);
   display: flex;

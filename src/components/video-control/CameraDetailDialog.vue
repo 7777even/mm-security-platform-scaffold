@@ -135,7 +135,7 @@ function runControl(label: string): void {
   position: absolute;
   top: 8px;
   left: 8px;
-  z-index: 1;
+  z-index: var(--z-local-1);
   font-size: var(--font-size-caption);
   padding: 2px 8px;
   border-radius: 3px;

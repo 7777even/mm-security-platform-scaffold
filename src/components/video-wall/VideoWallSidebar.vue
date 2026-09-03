@@ -1265,7 +1265,7 @@ const saveBind = () => {
 
 .context-menu {
   position: fixed;
-  z-index: 1000;
+  z-index: var(--z-overlay);
   background: rgb(20 30 45 / 95%);
   border: 1px solid rgb(0 180 255 / 50%);
   border-radius: 2px;
@@ -1290,7 +1290,7 @@ const saveBind = () => {
   position: fixed;
   inset: 0;
   background: rgb(0 0 0 / 60%);
-  z-index: 2000;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1399,7 +1399,7 @@ const saveBind = () => {
   justify-content: center;
   gap: 6px;
   background: linear-gradient(180deg, rgb(0 28 58 / 95%) 0%, rgb(0 12 28 / 98%) 100%);
-  z-index: 1;
+  z-index: var(--z-local-1);
 }
 
 .eagle-eye-placeholder__grid {
@@ -1414,7 +1414,7 @@ const saveBind = () => {
 
 .map-text {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-local-2);
   color: #7cdbff;
   font-size: 13px;
   font-weight: 600;
@@ -1423,7 +1423,7 @@ const saveBind = () => {
 
 .map-text-sub {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-local-2);
   color: rgb(124 219 255 / 55%);
   font-size: 11px;
 }
@@ -1434,7 +1434,7 @@ const saveBind = () => {
   height: 12px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  z-index: 2;
+  z-index: var(--z-local-2);
   box-shadow: 0 0 8px rgb(255 255 255 / 50%);
 }
 
@@ -1468,7 +1468,7 @@ const saveBind = () => {
   bottom: 15px;
   left: 15px;
   right: 15px;
-  z-index: 10;
+  z-index: var(--z-chrome);
 }
 </style>
 

@@ -157,7 +157,7 @@ function handleRowClick(p: EvacuationPerson) {
 .evac-people__table th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: var(--z-local-1);
   padding: 10px 12px;
   text-align: left;
   color: rgb(138 164 192 / 95%);

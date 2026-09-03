@@ -135,7 +135,7 @@ const toggleExpand = () => {
   border: none;
   border-top: 1px solid rgb(0 130 210 / 35%);
   padding: 15px;
-  z-index: 20;
+  z-index: var(--z-raised);
 }
 
 .header {

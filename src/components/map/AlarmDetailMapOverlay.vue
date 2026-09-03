@@ -57,7 +57,7 @@ onMounted(() => {
 <style scoped>
 .alarm-detail-map-marker {
   position: absolute;
-  z-index: 6;
+  z-index: var(--z-local-6);
   width: 22px;
   height: 22px;
   transform: translate(-50%, -50%);

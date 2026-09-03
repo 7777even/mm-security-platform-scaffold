@@ -167,7 +167,7 @@ const speedOptions = [
   background: rgb(0 18 40 / 42%);
   backdrop-filter: blur(6px);
   pointer-events: auto;
-  z-index: 1400;
+  z-index: var(--z-overlay);
 }
 
 .rr-row {

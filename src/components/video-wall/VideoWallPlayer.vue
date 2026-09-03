@@ -376,7 +376,7 @@ onUnmounted(() => {
   background: #0a0a0a;
   color: #7cdbff;
   font-size: 13px;
-  z-index: 10;
+  z-index: var(--z-chrome);
 }
 
 .spinner {
@@ -423,7 +423,7 @@ onUnmounted(() => {
   );
   pointer-events: none;
   opacity: 0.8;
-  z-index: 2;
+  z-index: var(--z-local-2);
   position: absolute;
 }
 
@@ -436,7 +436,7 @@ onUnmounted(() => {
   height: 100%;
   background: radial-gradient(circle, rgb(0 0 0 / 0%) 60%, rgb(0 0 0 / 40%) 100%);
   pointer-events: none;
-  z-index: 1;
+  z-index: var(--z-local-1);
 }
 
 /* AI detection target styles */
@@ -447,7 +447,7 @@ onUnmounted(() => {
   box-shadow:
     0 0 6px rgb(0 255 102 / 20%),
     inset 0 0 6px rgb(0 255 102 / 20%);
-  z-index: 3;
+  z-index: var(--z-local-3);
   transition: all 0.5s ease-in-out;
 }
 
@@ -468,7 +468,7 @@ onUnmounted(() => {
   position: absolute;
   top: 8px;
   left: 12px;
-  z-index: 5;
+  z-index: var(--z-marker);
 }
 
 .camera-name {
@@ -485,7 +485,7 @@ onUnmounted(() => {
   position: absolute;
   top: 8px;
   right: 12px;
-  z-index: 5;
+  z-index: var(--z-marker);
   text-align: right;
   display: flex;
   flex-direction: column;
@@ -553,7 +553,7 @@ onUnmounted(() => {
   border: 1.5px solid #00b4ff;
   opacity: 0.4;
   pointer-events: none;
-  z-index: 2;
+  z-index: var(--z-local-2);
 }
 
 .top-left {

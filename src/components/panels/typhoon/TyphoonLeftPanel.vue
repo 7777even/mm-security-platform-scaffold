@@ -1045,7 +1045,7 @@ const waterChartOption = computed(() => ({
 .tw-edit-mask {
   position: fixed;
   inset: 0;
-  z-index: 2600;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1877,7 +1877,7 @@ const waterChartOption = computed(() => ({
 
 .tw-weather-banner__content {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-local-1);
   min-width: 0;
 }
 
@@ -1918,7 +1918,7 @@ const waterChartOption = computed(() => ({
 
 .tw-weather-banner__cloud {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-local-2);
   right: 14px;
   top: 13px;
   height: 25px;
@@ -1933,7 +1933,7 @@ const waterChartOption = computed(() => ({
 
 .tw-weather-banner__pager {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-local-2);
   right: 15px;
   bottom: 14px;
   display: flex;

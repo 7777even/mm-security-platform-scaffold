@@ -6690,7 +6690,7 @@ watch(
   left: 50%;
   bottom: 24px;
   transform: translateX(-50%);
-  z-index: 20;
+  z-index: var(--z-raised);
   margin: 0;
   padding: 8px 16px;
   border-radius: 6px;
@@ -6704,7 +6704,7 @@ watch(
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  z-index: 20;
+  z-index: var(--z-raised);
   margin: 0;
   padding: 12px 20px;
   border-radius: 6px;

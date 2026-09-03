@@ -425,7 +425,7 @@ const scrollClass = computed(() => (props.theme === 'drill' ? 'dr-scroll' : 'ar-
 
 .dynamics-preview {
   position: fixed;
-  z-index: 10000;
+  z-index: var(--z-overlay);
   inset: 0;
   display: grid;
   place-items: center;

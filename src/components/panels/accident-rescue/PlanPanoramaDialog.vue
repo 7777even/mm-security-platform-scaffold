@@ -558,7 +558,7 @@ onUnmounted(() => {
 :global(.pano-mask) {
   position: fixed;
   inset: 0;
-  z-index: 1300;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -886,7 +886,7 @@ onUnmounted(() => {
   right: -13px;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 3;
+  z-index: var(--z-local-3);
   color: #38bdf8;
   font-size: 15px;
   text-shadow: 0 0 8px rgb(56 189 248 / 60%);
@@ -993,7 +993,7 @@ onUnmounted(() => {
 
 :global(.pano-ctx) {
   position: fixed;
-  z-index: 2100;
+  z-index: var(--z-overlay);
   min-width: 170px;
   padding: 5px;
   border: 1px solid #475569;
@@ -1103,7 +1103,7 @@ onUnmounted(() => {
   padding: 8px 10px;
   background: #1e293b;
   border: 1px solid #334155;
-  z-index: 2;
+  z-index: var(--z-local-2);
 }
 
 .pano-resource__name {
@@ -1196,7 +1196,7 @@ onUnmounted(() => {
   box-sizing: border-box;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
-  z-index: 1;
+  z-index: var(--z-local-1);
 }
 
 .pano-card--pending {
@@ -1418,7 +1418,7 @@ onUnmounted(() => {
 :global(.pano-plan-selector) {
   position: absolute;
   inset: 0;
-  z-index: 30;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;

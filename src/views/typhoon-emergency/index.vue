@@ -153,7 +153,7 @@ onUnmounted(() => {
 <style scoped>
 .typhoon-page__ui {
   position: relative;
-  z-index: 3;
+  z-index: var(--z-local-3);
   display: flex;
   flex-direction: column;
   height: 100%;

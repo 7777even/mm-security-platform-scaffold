@@ -84,7 +84,7 @@ const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(
 
 .tw-risk-marker {
   position: absolute;
-  z-index: 4;
+  z-index: var(--z-local-4);
   pointer-events: none;
 }
 
@@ -225,7 +225,7 @@ const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(
   font-size: 11px;
   line-height: 18px;
   text-align: center;
-  z-index: 2;
+  z-index: var(--z-local-2);
 }
 
 @keyframes tw-risk-pin-breathe {

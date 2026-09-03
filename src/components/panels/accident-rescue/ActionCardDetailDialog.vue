@@ -208,7 +208,7 @@ watch(
 :global(.action-detail-mask) {
   position: fixed;
   inset: 0;
-  z-index: 1400;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -493,7 +493,7 @@ watch(
   top: 48px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1500;
+  z-index: var(--z-overlay);
   display: inline-flex;
   align-items: center;
   gap: 8px;

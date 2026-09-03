@@ -152,7 +152,7 @@ onUnmounted(() => {
   border-radius: 2px;
   background: rgb(0 18 40 / 96%);
   box-shadow: 0 8px 24px rgb(0 0 0 / 35%);
-  z-index: 20;
+  z-index: var(--z-raised);
 }
 
 .area-top__menu-item {

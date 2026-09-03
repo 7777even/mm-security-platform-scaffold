@@ -281,7 +281,7 @@ const nodeLabel = (id: string) => process.nodeConfigs.value[id]?.nodeName ?? id;
 :global(.nodecfg-mask) {
   position: fixed;
   inset: 0;
-  z-index: 1600;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;

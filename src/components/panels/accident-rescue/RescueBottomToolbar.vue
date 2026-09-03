@@ -100,7 +100,7 @@ function handleItemClick(id: string) {
   display: flex;
   align-items: flex-end;
   gap: 34px;
-  z-index: 5;
+  z-index: var(--z-marker);
   pointer-events: auto;
   transition:
     opacity 0.25s ease,

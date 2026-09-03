@@ -149,7 +149,7 @@ const isVehicle = computed(() => props.mode === 'vehicle');
 .security-track-map__depth {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-local-1);
   pointer-events: none;
   background:
     radial-gradient(
@@ -177,7 +177,7 @@ const isVehicle = computed(() => props.mode === 'vehicle');
 .security-track-map__route {
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: var(--z-local-3);
   width: 100%;
   height: 100%;
   overflow: visible;
@@ -204,7 +204,7 @@ const isVehicle = computed(() => props.mode === 'vehicle');
 
 .track-end-marker {
   position: absolute;
-  z-index: 4;
+  z-index: var(--z-local-4);
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
@@ -234,7 +234,7 @@ const isVehicle = computed(() => props.mode === 'vehicle');
 
 .track-entity-marker {
   position: absolute;
-  z-index: 5;
+  z-index: var(--z-marker);
   transform: translate(-50%, -50%);
   pointer-events: auto;
 }

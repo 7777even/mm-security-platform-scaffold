@@ -1348,14 +1348,14 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
   right: 14px;
   height: 2px;
   background: #334155;
-  z-index: 1;
+  z-index: var(--z-local-1);
 }
 
 .ppm__phase-band {
   position: absolute;
   top: 0;
   bottom: 0;
-  z-index: 0;
+  z-index: var(--z-base);
   border-radius: 5px;
   pointer-events: none;
   transition: box-shadow 0.2s ease;
@@ -1394,7 +1394,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 
 .ppm__node {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-local-2);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1998,7 +1998,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 
 .ppm__dot-mini {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-local-2);
   align-self: center;
   width: 10px;
   height: 10px;
@@ -2114,7 +2114,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 .ppm-plan-overlay {
   position: fixed;
   inset: 0;
-  z-index: 21000;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -97,7 +97,7 @@ function goBack() {
   position: absolute;
   left: 19px;
   top: calc(var(--header-height) + 16px);
-  z-index: 10;
+  z-index: var(--z-chrome);
   height: 34px;
   padding: 0 14px;
   border: 1px solid color-mix(in srgb, var(--map-border) 35%, transparent);
@@ -120,7 +120,7 @@ function goBack() {
   top: 112px;
   height: calc(100% - 112px - 154px);
   pointer-events: auto;
-  z-index: 12;
+  z-index: var(--z-local-12);
 }
 
 .comm-view__drawer--left {

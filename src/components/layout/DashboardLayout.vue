@@ -31,7 +31,7 @@ defineProps<{
 <style scoped>
 .dashboard-layout__ui {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-local-2);
   display: flex;
   flex-direction: column;
   height: 100%;

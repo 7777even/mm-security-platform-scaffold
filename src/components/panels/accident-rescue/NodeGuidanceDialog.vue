@@ -116,7 +116,7 @@ const process = useEmergencyProcess();
 :global(.guidance-mask) {
   position: fixed;
   inset: 0;
-  z-index: 1500;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
