@@ -1,6 +1,6 @@
 ## Status
 
-进行中 · 2026-09-03 启动
+已完成 · 2026-09-03 归档
 
 ## 1. 提案与计划
 
@@ -27,4 +27,4 @@
 - [x] 4.1 `npm run type-check` 0 error（AGENTS 为文档，仅对新增 spec 校验）。
 - [x] 4.2 `npx eslint apps/mobile/bridges/bridges.spec.ts` 0 error（含 h5.ts / index.ts）。
 - [x] 4.3 按 scope 拆分提交：`docs:` AGENTS 重构 与 `test(mobile):` 新增移动端桥接层 Vitest 集成测试。
-- [ ] 4.4 归档 openspec/changes → archive。
+- [x] 4.4 归档 openspec/changes → archive。
