@@ -1,6 +1,6 @@
 # AGENTS.md — AI 编码必读
 
-面向 AI 助手 / 自动化编码的项目级约束入口。**生成或修改任何 UI 代码前，必须先读完本文与目标端规范文档，再动手。**
+面向 AI 助手 / 自动化编码的项目级约束入口。**动手前先按 §7.2 判定改动等级（L0–L4）；L1 及以上在生成或修改 UI 代码前，必须读完本文 §1–§6 与目标端规范文档，再动手。**
 
 ## 1. 项目概览
 
@@ -48,13 +48,64 @@
 - 提交前钩子（husky + lint-staged）会执行 eslint / prettier / stylelint，遵循现有 `.prettierrc.json`、`.stylelintrc.json` 配置，不新增例外。
 - 性能基线与验收记录见 `docs/perf/`；架构决策与规格见 `openspec/`。
 
-## 7. 硬性前置流程（三端通用：superpowers + openspec）
+## 7. AI 协同执行流程（三端通用）
 
-**任何端的代码改动（大屏 screen / 后台 mgmt / 移动 mobile，含新增、修改、重构）在动手前都必须走以下流程，禁止当作"简单编辑"直接改文件：**
+### 7.1 规则优先级仲裁
 
-1. **superpowers 纪律先于一切动作**：动手前先按 `using-superpowers` 规则核查并调用相关 skill——创意 / UI / 行为类改动先走 `brainstorming` 澄清意图与方案；多步任务先 `writing-plans` 写计划；关键逻辑走 `test-driven-development`（先红后绿）；完成前必须 `verification-before-completion`（跑通验证再声称完成）。即"先想清 / 先规划 / 先测试 / 后动手 / 验完再交付"。
-2. **openspec spec-driven 流程**：改动若对应既有 capability，按 `openspec/specs/` 实现；若是新能力或破坏性变更，先在 `openspec/changes/<name>/` 建 `proposal.md`（含 Why / What Changes / Capabilities / Impact，≤500 字、聚焦单一变更），并拆可勾选任务清单（单条 ≤2h，[TDD] 任务先写失败测试）；实现完成并验证后归档至 `openspec/archive/`。`openspec/config.yaml` 的 proposal / tasks 规则为强制门禁，不得跳过。
-3. **三端一致适用**：大屏、后台、移动端任一端的改动都适用上述 1–2，不因为任何端"体量小"或"只是页面"而豁免。
+规则冲突时从高到低执行，低阶规则不得覆盖高阶：
+
+1. 平台安全策略与人工当场指令。
+2. 本文档（含 §3 红线、§6 工程约定）与目标端 `docs/UI规范-*.md`。
+3. 已确认的 `openspec/changes/<name>/` 与 `openspec/specs/`。
+4. 当前 Change 的 `tasks.md` 中正在执行的 Task。
+5. Skill / 插件自带的工作方法（含 superpowers）。
+
+任何 skill 或插件不得绕过上级规则、自行扩大需求、新增平行任务源或改写既有契约。
+
+### 7.2 效率分级 L0–L4
+
+动手前先判定等级，并在回复中用一句话说明判定与理由。**分级只决定流程重量，不豁免 §3 红线、§2 目标端规范和 §6 提交规范。**
+
+| 级  | 适用                                                                                        | 流程                                            |
+| --- | ------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| L0  | 解释、评审、状态汇报、只读检查、文本润色                                                    | 直接完成；不建文件、不起子 Agent、不调 openspec |
+| L1  | 微小修改（四条门槛须同时满足）                                                              | 说明范围 → 直接改 → 跑最小验证 → 输出结果       |
+| L2  | 依赖调整、构建配置、脚手架、lint / 格式化、非业务技术债                                     | 说明方案与影响 → 执行 → 跑受影响目标的验证      |
+| L3  | 业务能力（新增或改变页面能力、交互规则、状态流转、权限语义）                                | openspec → 人工确认 → TDD 实施 → 验收 → 归档    |
+| L4  | 高风险（跨端协议、Cesium / 地图内核、wujie 微前端壳、token 体系、构建与部署链路、权限模型） | 按 L3 执行，且实施前取得人工确认                |
+
+**L1 四条门槛**（缺一即升为 L2 或 L3）：① 不新增或改变业务能力、接口契约、权限语义；② 改动不超过 3 个文件；③ 目标明确、可逆，验证可在 5 分钟内完成；④ 不新增生产依赖。L1 / L2 禁止创建 openspec Change、计划文档或子 Agent。
+
+L3 / L4 的 openspec 流程：改动若对应既有 capability，按 `openspec/specs/` 实现；若是新能力或破坏性变更，先在 `openspec/changes/<name>/` 建 `proposal.md`（含 Why / What Changes / Capabilities / Impact，≤500 字、聚焦单一变更），并拆可勾选任务清单（单条 ≤2h，[TDD] 任务先写失败测试）；实现完成并验证后归档至 `openspec/archive/`。`openspec/config.yaml` 的 proposal / tasks 规则为强制门禁，不得跳过。
+
+### 7.3 最小验证矩阵
+
+| 改动范围                                             | 必跑验证                                         |
+| ---------------------------------------------------- | ------------------------------------------------ |
+| 文档、规范、AGENTS                                   | `git diff --check`                               |
+| 单端单文件组件或样式                                 | `npx eslint <path>` 或 `npm run type-check`      |
+| 跨端公共服务、`tokens.css`、`src/composables/`       | `npm run type-check` + `npx eslint <受影响路径>` |
+| 关键路径 `deviceCode` / `usePermission` / `realtime` | `npx vitest run <spec 路径>`                     |
+| 构建配置、依赖、`vite.config.ts`、多入口             | `npm run build`                                  |
+| `subapps/**`                                         | `npm run build:subapps`                          |
+| L3 / L4                                              | 按 `tasks.md` 验收标准全量，不得以 L1 / L2 降级  |
+
+禁止为形式化验证在每次 L1 / L2 后连跑 lint + type-check + build + build:subapps 四套；只跑矩阵中对应的一行。
+
+环境注记：本机 `vite build` 清空 `dist/` 会触发批量删除守卫而失败，验证编译是否通过时用 `npx vite build --emptyOutDir=false`，或指到全新的 `--outDir`。
+
+### 7.4 单一任务源
+
+实施任务的唯一真源是 `openspec/changes/<name>/tasks.md`。
+
+- 会话内的进度跟踪工具只作临时备忘，不得写入仓库；任务状态只回填到 `tasks.md` 的勾选框。
+- 禁止在 `openspec/` 之外建立第二套需求规格或任务清单（含 skill 自动生成的计划文件、持久化的待办列表）。
+- superpowers 定位为**可组合的工程辅助，而非常驻流程**：沿用其 `test-driven-development`（先红后绿）、`systematic-debugging`、`verification-before-completion` 的方法要求；其 `brainstorming`、`writing-plans`、子 Agent 调度与第二套 Review，在已确认 Change 的 `proposal.md` / `tasks.md` 已覆盖同一职责时不得重复启用。
+- L0 / L1 / L2 不默认起子 Agent、不写计划文档；仅在任务复杂度或用户要求达到阈值时升级为 L3。
+
+### 7.5 三端一致适用
+
+大屏、后台、移动端任一端的 L3 / L4 改动都执行同一流程，不因某端"体量小"或"只是页面"而豁免；反过来，任一端的 L0–L2 改动也不得反向升级为 L3。
 
 ## 8. 品牌规范对齐（中石化 / 《石化智云 UI 规范》）
 
@@ -67,3 +118,32 @@
 5. **移动端户外高反差皮肤**：强光 / 户外锁死 `data-skin="outdoor"` 纯黑白高反差皮肤（WCAG AAA，对比 >7:1），停用渐变 / 投影 / 毛玻璃 / 浅灰线；状态标签 / 警情通知改为**高饱和纯色色块 + 白字 + 2px 黑硬描边**（`.tag` 类 `border: var(--mb-border-w) solid var(--tag-stroke)`，户外 `--tag-stroke:#000; --mb-border-w:2px`）。落点：移动端 §6 + `src/styles/tokens.css` 户外块。
 6. **适老 / 高易用性**：移动端「我的 → 适老与无障碍」一键适老 + 细项调节，与户外高对比可叠加；适老行高弹升至 `1.8` 倍字号（`--mb-line-height` 覆写），只放大字号 / 控件 / 间距，不改变流程与字段；后台适老同步放大侧栏 / 筛选 / 行高 / 主按钮。落点：移动端 §7、后台 §6。
 7. **代码基线（HTML5 / 缩进）**：前端代码（Vue / HTML / TS / CSS）统一 **2 空格缩进**；根 HTML 必须 `<!DOCTYPE html>` + `UTF-8` 字符集。由 `.prettierrc.json`（`tabWidth:2`）+ `index.html` 实际保证，提交前 prettier / stylelint 钩子兜底，禁止新增例外（见 §6）。
+
+## 9. 分层规则与目录职责
+
+### 9.1 分层 AGENTS 与读取链
+
+改哪个目录，就从根往下读到那一层，**不必全读**：
+
+| 目标目录                                                    | 读取链                                                         |
+| ----------------------------------------------------------- | -------------------------------------------------------------- |
+| `apps/mgmt/**`                                              | 根 §1–§8 → `apps/mgmt/AGENTS.md` → `docs/UI规范-后台管理端.md` |
+| `apps/mobile/**`                                            | 根 §1–§8 → `apps/mobile/AGENTS.md` → `docs/UI规范-移动端.md`   |
+| `src/screen/**`（大屏存量）                                 | 根 §1–§8 → `src/screen/AGENTS.md` → `docs/UI规范-大屏端.md`    |
+| `subapps/**`（wujie 子应用）                                | 根 §1–§8 → `subapps/AGENTS.md` → `docs/UI规范-大屏端.md`       |
+| 大屏壳其余部分（`src/` 非 screen、`src/styles/tokens.css`） | 根 §1–§8 → `docs/UI规范-大屏端.md`                             |
+| `docs/**`                                                   | `docs/AGENTS.md`                                               |
+
+分层文件与本文件冲突时按 §7.1 仲裁：**根 `AGENTS.md` 高于分层 `AGENTS.md`**，分层文件只能加严、不得放宽。新增分层文件时必须在本表登记。
+
+### 9.2 三类目录，职责不重叠
+
+| 目录           | 回答的问题           | 特征                                 |
+| -------------- | -------------------- | ------------------------------------ |
+| `docs/`        | 系统**现在**是什么样 | 长期共识，跨版本有效，改了要同步代码 |
+| `openspec/`    | 系统**将要**怎么变   | 唯一业务规格来源                     |
+| `engineering/` | 这次**做得怎么样**   | 短期过程记录：计划、QA、复盘         |
+
+- 短期开发记录放 `engineering/`，**不放 `docs/`**；QA 结果、发布检查、复盘同理。
+- 实施任务只在 `openspec/changes/<name>/tasks.md`（见 §7.4）。
+- 详见 `docs/AGENTS.md` 与 `engineering/README.md`。
