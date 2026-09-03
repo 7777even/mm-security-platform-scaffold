@@ -568,7 +568,7 @@ watch(
         <div
           v-else
           class="video-placeholder"
-          :style="{ backgroundImage: `url(${cameraThumbByIndex(cell.id)})` }"
+          :style="{ backgroundImage: `url(${cameraThumbByIndex(cell.row * 100 + cell.col)})` }"
         >
           <span class="video-placeholder__label">通道 {{ cell.id }}</span>
         </div>
