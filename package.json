@@ -9,6 +9,7 @@
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "type-check": "vue-tsc -p tsconfig.app.json --noEmit",
+    "build:subapps": "node scripts/build-subapps.mjs",
     "lint": "eslint . --ext .js,.ts,.vue",
     "lint:fix": "eslint . --ext .js,.ts,.vue --fix",
     "format": "prettier --write \"src/**/*.{ts,vue,js,css,json,md}\"",

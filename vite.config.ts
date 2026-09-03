@@ -5,7 +5,8 @@ import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 import { fileURLToPath, URL } from 'node:url';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, extname } from 'node:path';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { compression } from 'vite-plugin-compression2';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
@@ -30,6 +31,62 @@ const csp = [
 
 // Cesium 静态资源输出目录（供构建/开发期访问；生产由部署服务器按同路径托管）
 const CESIUM_BASE_URL = '/cesium';
+
+// dev 目录回退（仅 serve 生效）：默认 appType 'spa' 会把无扩展名请求回退到根 index.html，
+// 导致 /apps/mgmt/ 这类独立应用目录 404 / 误入主壳。此插件将 /apps/<name>[/...] 重写
+// 到 /apps/<name>/index.html；带文件扩展名的请求（静态资源）不重写。
+// 生产环境由 nginx rewrite 承担同样职责（deploy/csp.conf 同源部署）。
+// 子应用 dev 直传：wujie 子应用经 build:subapps 打成 IIFE 包，落到 subapps/<name>/dist/index.html。
+// 该 HTML 是「经典 <script>」入口，wujie 才能执行。dev 下 /subapps/<name>/ 默认会被 SPA 回退到
+// 主壳 index.html（module script，wujie 不会执行 → 大屏中间空白）。此 pre-middleware 在 Vite
+// 回退前把 /subapps/<name>/(/index.html) 重写为直读 subapps/<name>/dist/index.html，绕开 Vite HTML transform
+// 与 /@vite/client 注入。dist 下的静态资源（subapp.iife.js / style.css 及切图等）也由本中间件直读 dist 目录托管，
+// 不依赖 Vite 静态中间件（经验证 Vite 不会 serving subapps/ 下产物，会回退成主壳 SPA HTML → 子应用脚本变空）。
+function serveSubappDist(): Plugin {
+  const rootDir = fileURLToPath(new URL('.', import.meta.url));
+  const MIME: Record<string, string> = {
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'text/javascript; charset=utf-8',
+    '.mjs': 'text/javascript; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.map': 'application/json; charset=utf-8',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.svg': 'image/svg+xml',
+    '.webp': 'image/webp',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
+    '.ttf': 'font/ttf',
+  };
+  const isFile = (p: string) => existsSync(p) && statSync(p).isFile();
+  return {
+    name: 'serve-subapp-dist',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const raw = req.url ?? '';
+        const pathPart = raw.split('?')[0];
+        const m = pathPart.match(/^\/subapps\/([^/]+)(\/.*)?$/);
+        if (!m) return next();
+        const name = m[1];
+        let sub = m[2] ?? '';
+        if (sub === '' || sub === '/') sub = '/index.html';
+        // 优先 dist 产物；dist 不存在时回退到子应用源码目录（dev 兼容未构建的子应用）
+        const distFile = join(rootDir, 'subapps', name, 'dist', sub);
+        const srcFile = join(rootDir, 'subapps', name, sub);
+        const file = isFile(distFile) ? distFile : isFile(srcFile) ? srcFile : '';
+        if (!file) return next();
+        const ext = extname(file).toLowerCase();
+        res.setHeader('Content-Type', MIME[ext] || 'application/octet-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.end(readFileSync(file));
+      });
+    },
+  };
+}
 
 // dev 目录回退（仅 serve 生效）：默认 appType 'spa' 会把无扩展名请求回退到根 index.html，
 // 导致 /apps/mgmt/ 这类独立应用目录 404 / 误入主壳。此插件将 /apps/<name>[/...] 重写
@@ -63,6 +120,7 @@ export default defineConfig({
   // 避免 vite 优化/清理依赖缓存时抛异常导致 dev server 崩溃
   cacheDir: join(tmpdir(), 'mm-safety-vite-cache'),
   plugins: [
+    serveSubappDist(),
     appsHtmlFallback(),
     vue(),
     // Element Plus 按需自动引入（B4 性能优化：组件+样式均按需，从 es/components 子路径导入实现 tree-shake）
