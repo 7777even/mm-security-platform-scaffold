@@ -12,7 +12,7 @@ export class H5LocationBridge implements LocationBridge {
 
   async getPosition(): Promise<GeoPosition> {
     return new Promise((resolve, reject) => {
-      if (!('geolocation' in navigator)) {
+      if (!navigator.geolocation) {
         reject(new Error('[bridges] 当前环境不支持 geolocation'));
         return;
       }
@@ -31,7 +31,7 @@ export class H5LocationBridge implements LocationBridge {
   }
 
   startWatch(onPosition: (pos: GeoPosition) => void): void {
-    if (this.watchId !== null || !('geolocation' in navigator)) return;
+    if (this.watchId !== null || !navigator.geolocation) return;
     this.watchId = navigator.geolocation.watchPosition(
       (pos) =>
         onPosition({
