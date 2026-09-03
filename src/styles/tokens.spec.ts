@@ -62,3 +62,28 @@ describe('tokens.css 大屏块（fire-monitoring 视觉迁移）', () => {
     expect(tokenCss).toContain('--primary-mobile: #1677ff');
   });
 });
+
+describe('tokens.css z-index 五层单调递增（item 15）', () => {
+  function zValue(name: string): number {
+    return Number(tokenValue(`z-${name}`));
+  }
+
+  it('五层 z-index 变量均存在', () => {
+    for (const k of ['base', 'marker', 'chrome', 'overlay', 'toast']) {
+      expect(tokenValue(`z-${k}`), `--z-${k} 应存在`).toBeTruthy();
+    }
+  });
+
+  it('z-index 五层严格单调递增并锚定基线 0<5<10<30<40', () => {
+    const base = zValue('base');
+    const marker = zValue('marker');
+    const chrome = zValue('chrome');
+    const overlay = zValue('overlay');
+    const toast = zValue('toast');
+    expect(base).toBeLessThan(marker);
+    expect(marker).toBeLessThan(chrome);
+    expect(chrome).toBeLessThan(overlay);
+    expect(overlay).toBeLessThan(toast);
+    expect([base, marker, chrome, overlay, toast]).toEqual([0, 5, 10, 30, 40]);
+  });
+});
