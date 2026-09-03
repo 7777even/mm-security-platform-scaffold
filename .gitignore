@@ -3,6 +3,7 @@ dist
 dist*
 .verify-tmp
 .verify-out
+/archive/
 .migration-tmp
 # fire-monitoring 迁移源副本与冒烟截图（用户验收后手动删除）
 .tmp-migrate/
