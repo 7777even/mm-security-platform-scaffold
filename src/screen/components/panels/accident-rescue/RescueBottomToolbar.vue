@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import ClipImage from '../../common/ClipImage.vue';
+import { computed, ref, type Component } from 'vue';
 import {
-  bottomToolbarItems,
-  eventCommandToolbarIconIndices,
-  eventCommandToolbarItems,
-} from '../../../lib/data/accidentRescueMock';
-import { bottomToolbarIconClips } from '../../../utils/accidentRescueClipConfig';
+  Phone,
+  VideoCamera,
+  Location,
+  LocationFilled,
+  Compass,
+  FirstAidKit,
+  Box,
+} from '@element-plus/icons-vue';
+import { bottomToolbarItems, eventCommandToolbarItems } from '../../../lib/data/accidentRescueMock';
 
 const props = withDefaults(
   defineProps<{
@@ -26,9 +29,16 @@ const items = computed(() =>
   props.layout === 'eventCommand' ? eventCommandToolbarItems : bottomToolbarItems,
 );
 
-const iconIndices = computed(() =>
-  props.layout === 'eventCommand' ? eventCommandToolbarIconIndices : items.value.map((_, i) => i),
-);
+/* 底部工具栏图标：按按钮 label 语义映射（rescue 与 eventCommand 共用 label） */
+const TOOLBAR_ICONS: Record<string, Component> = {
+  应急通讯: Phone,
+  现场监控: VideoCamera,
+  监测点位: Location,
+  应急疏散: Compass,
+  人员定位: LocationFilled,
+  应急消防设施: FirstAidKit,
+  应急资源: Box,
+};
 
 const emit = defineEmits<{
   action: [id: string];
@@ -60,7 +70,7 @@ function handleItemClick(id: string) {
     </button>
 
     <button
-      v-for="(item, index) in items"
+      v-for="item in items"
       :key="item.id"
       type="button"
       class="rescue-bottom-toolbar__item"
@@ -69,10 +79,9 @@ function handleItemClick(id: string) {
       @click="handleItemClick(item.id)"
     >
       <span class="rescue-bottom-toolbar__icon-wrap">
-        <ClipImage
-          v-bind="bottomToolbarIconClips[iconIndices[index]]"
-          class="rescue-bottom-toolbar__icon"
-        />
+        <span class="rescue-bottom-toolbar__icon" aria-hidden="true">
+          <component :is="TOOLBAR_ICONS[item.label] ?? Phone" />
+        </span>
       </span>
       <span class="rescue-bottom-toolbar__label">{{ item.label }}</span>
     </button>
@@ -168,6 +177,20 @@ function handleItemClick(id: string) {
   justify-content: center;
   width: 52px;
   height: 52px;
+}
+
+.rescue-bottom-toolbar__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--color-accent);
+}
+
+.rescue-bottom-toolbar__icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentcolor;
 }
 
 .rescue-bottom-toolbar__label {

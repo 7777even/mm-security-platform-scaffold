@@ -3,8 +3,9 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { ProductionAlarmItem } from '../../lib/data/productionMock';
 import ClipImage from './ClipImage.vue';
+import { User, Warning, UserFilled } from '@element-plus/icons-vue';
 import OneKeyBroadcastDialog from '../panels/production/OneKeyBroadcastDialog.vue';
-import { alarmIconClips, alarmThumbClips } from '../../utils/productionClipConfig';
+import { alarmThumbClips } from '../../utils/productionClipConfig';
 import { showToast } from '../../lib/composables/useToast';
 import { productionAlarmToDetail } from '../../lib/data/alarmDetailMock';
 import { useAlarmDetailPanel } from '../../lib/composables/useAlarmDetailPanel';
@@ -16,6 +17,10 @@ const props = defineProps<{
 const router = useRouter();
 const { openAlarmDetail } = useAlarmDetailPanel();
 const broadcastOpen = ref(false);
+
+/* 与 productionAlarms.iconIndex 一一对应：
+   0 人员跌倒 → User / 1 违规进入 → Warning / 2 人员聚集 → UserFilled / 3 有毒气体超标 → Warning */
+const ALARM_ICONS = [User, Warning, UserFilled, Warning];
 
 function openDetail() {
   openAlarmDetail(productionAlarmToDetail(props.alarm));
@@ -38,11 +43,14 @@ function openControl() {
 
 <template>
   <article class="alarm-card" @click="openDetail">
-    <ClipImage
-      v-bind="alarmIconClips[alarm.iconIndex]"
+    <span
       class="alarm-card__icon"
+      :class="`alarm-card__icon--${alarm.titleColor}`"
+      aria-hidden="true"
       @click.stop="openDetail"
-    />
+    >
+      <component :is="ALARM_ICONS[alarm.iconIndex] ?? User" />
+    </span>
 
     <div class="alarm-card__body">
       <div class="alarm-card__head">
@@ -105,7 +113,34 @@ function openControl() {
 }
 
 .alarm-card__icon {
+  flex-shrink: 0;
+  width: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: zoom-in;
+}
+
+.alarm-card__icon svg {
+  width: 26px;
+  height: 26px;
+  fill: currentcolor;
+}
+
+.alarm-card__icon--warning {
+  color: var(--color-alarm-3);
+}
+
+.alarm-card__icon--danger {
+  color: var(--color-alarm-1);
+}
+
+.alarm-card__icon--orange {
+  color: var(--color-alarm-2);
+}
+
+.alarm-card__icon--purple {
+  color: var(--color-alarm-4);
 }
 
 .alarm-card__body {

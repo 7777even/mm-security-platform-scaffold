@@ -296,7 +296,7 @@ function closeDetail() {
   padding: 0 0 0 8px;
   border: none;
   background: transparent;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   font-size: 11px;
   font-family: var(--font-body);
   line-height: 1;
@@ -384,7 +384,7 @@ function closeDetail() {
   border: none;
   border-radius: 2px;
   background: transparent;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   font-size: 11px;
   line-height: 1;
   font-family: var(--font-body);
@@ -540,7 +540,7 @@ function closeDetail() {
 
 :global(.plan-detail__section-title) {
   margin: 0 0 6px;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   font-size: 12px;
   line-height: 1.2;
   font-weight: 500;

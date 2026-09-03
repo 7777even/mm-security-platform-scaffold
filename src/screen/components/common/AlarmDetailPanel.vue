@@ -706,7 +706,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
 
 .alarm-detail__value {
   font-size: 13px;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   word-break: break-all;
 }
 
@@ -894,7 +894,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   font-size: 12px;
   cursor: pointer;
 }

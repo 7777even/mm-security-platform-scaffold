@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
-import ClipImage from '../../common/ClipImage.vue';
 import { safetyKnowledgeItems } from '../../../lib/data/preliminaryMock';
 import { fireSafetyKnowledgeItems } from '../../../lib/data/fireEmergencyMock';
-import { knowledgeIconClips } from '../../../utils/preliminaryClipConfig';
-import { fireKnowledgeRowClips } from '../../../utils/fireEmergencyClipConfig';
+import { Document, WarningFilled, Guide } from '@element-plus/icons-vue';
 import type { DesignModule } from '../../../utils/designAssets';
 
 const props = withDefaults(
@@ -29,12 +27,8 @@ const knowledgeRows = computed(() =>
   ),
 );
 
-function knowledgeIconClip(rowIndex: number, iconIndex: number) {
-  if (props.module === 'fireEmergency') {
-    return fireKnowledgeRowClips[rowIndex]?.[iconIndex] ?? fireKnowledgeRowClips[0][0];
-  }
-  return knowledgeIconClips[iconIndex];
-}
+/* 与 iconIndex 一一对应：处置卡 / 危险化学品 / 疏散路线图 */
+const KNOWLEDGE_ICONS = [Document, WarningFilled, Guide];
 </script>
 
 <template>
@@ -42,12 +36,9 @@ function knowledgeIconClip(rowIndex: number, iconIndex: number) {
     <div class="knowledge-grid">
       <div v-for="(row, rowIndex) in knowledgeRows" :key="rowIndex" class="knowledge-row">
         <div v-for="item in row" :key="item.key" class="knowledge-card">
-          <div class="knowledge-card__icon-wrap">
-            <ClipImage
-              v-bind="knowledgeIconClip(rowIndex, item.iconIndex)"
-              class="knowledge-card__icon"
-            />
-          </div>
+          <span class="knowledge-card__icon" aria-hidden="true">
+            <component :is="KNOWLEDGE_ICONS[item.iconIndex]" />
+          </span>
           <div class="knowledge-card__text">
             <div class="knowledge-card__line1">{{ item.line1 }}</div>
             <div class="knowledge-card__line2">
@@ -100,20 +91,17 @@ function knowledgeIconClip(rowIndex: number, iconIndex: number) {
   border-left: 1px solid rgb(0 100 180 / 28%);
 }
 
-.knowledge-card__icon-wrap {
-  flex-shrink: 0;
-  width: 48px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgb(0 28 58 / 65%);
-  border: 1px solid rgb(0 110 190 / 32%);
-  border-radius: 4px;
-}
-
 .knowledge-card__icon {
   flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: var(--color-accent);
+}
+
+.knowledge-card__icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentcolor;
 }
 
 .knowledge-card__text {

@@ -264,7 +264,7 @@ function submit() {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   font-size: 13px;
   cursor: pointer;
 }

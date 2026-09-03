@@ -1,14 +1,25 @@
 <script setup lang="ts">
-import SpriteImage from './SpriteImage.vue';
-import { rescueIconSprites, type RescueIconKey } from '../../utils/spriteConfig';
+import { computed } from 'vue';
+import { UserFilled, Box, Avatar, Van } from '@element-plus/icons-vue';
 
-defineProps<{
+export type RescueIconKey = 'squad' | 'person' | 'vehicle' | 'equipment';
+
+const RESCUE_ICONS: Record<RescueIconKey, typeof UserFilled> = {
+  squad: Avatar,
+  person: UserFilled,
+  vehicle: Van,
+  equipment: Box,
+};
+
+const props = defineProps<{
   value: number | string;
   label: string;
   unit?: string;
   iconType: RescueIconKey;
   clickable?: boolean;
 }>();
+
+const IconComp = computed(() => RESCUE_ICONS[props.iconType]);
 
 const emit = defineEmits<{
   click: [];
@@ -22,7 +33,9 @@ const emit = defineEmits<{
     @click="clickable ? emit('click') : undefined"
   >
     <div class="stat-card__icon-wrap" aria-hidden="true">
-      <SpriteImage class="stat-card__icon" :sprite="rescueIconSprites[iconType]" />
+      <span class="stat-card__icon">
+        <component :is="IconComp" />
+      </span>
     </div>
     <div class="stat-card__content">
       <div class="stat-card__metric">
@@ -71,13 +84,20 @@ const emit = defineEmits<{
   border-radius: 2px;
   background: var(--stat-card-icon-bg);
   border: 1px solid var(--stat-card-border);
-  overflow: visible; /* 避免图标被裁切 */
+  overflow: visible;
 }
 
-.stat-card :deep(.stat-card__icon) {
-  /* sprite 本身会 overflow:hidden，这里缩放以避免被自身裁切 */
-  transform: scale(0.92);
-  transform-origin: center;
+.stat-card__icon {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  color: var(--color-accent);
+}
+
+.stat-card__icon :deep(svg) {
+  width: 100%;
+  height: 100%;
+  fill: currentcolor;
 }
 
 .stat-card__content {

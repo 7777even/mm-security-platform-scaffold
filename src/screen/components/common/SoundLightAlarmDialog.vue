@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import type { AlarmItem } from '../../lib/data/mock';
+import { cameraThumbByIndex } from '@/services/map-data/fireImages';
 
 const props = defineProps<{
   open: boolean;
@@ -17,6 +18,16 @@ const emit = defineEmits<{
 const muted = ref(false);
 let alarmAudio: HTMLAudioElement | null = null;
 const FIRE_ALARM_BELL_AUDIO_URL = '/audio/fire-alarm-bell.mp3';
+
+/** 现场图：外部传入优先；缺省按告警位置+时间稳定取 mock 监控抓拍图（cameraThumbByIndex），不留"暂无现场图片"空态 */
+const resolvedImage = computed(() => {
+  if (props.imageUrl) return props.imageUrl;
+  const seed = Array.from(`${props.alarm.location}${props.alarm.time}`).reduce(
+    (sum, ch) => sum + ch.charCodeAt(0),
+    0,
+  );
+  return cameraThumbByIndex(seed);
+});
 
 function stopAlarmSound() {
   if (alarmAudio) {
@@ -111,21 +122,12 @@ onBeforeUnmount(stopAlarmSound);
 
           <div class="sound-light-alarm__content">
             <div class="sound-light-alarm__main">
-              <div
-                class="sound-light-alarm__image-wrap"
-                :class="{ 'sound-light-alarm__image-wrap--empty': !imageUrl }"
-              >
+              <div class="sound-light-alarm__image-wrap">
                 <img
-                  v-if="imageUrl"
-                  :src="imageUrl"
+                  :src="resolvedImage"
                   :alt="`${alarm.location}报警现场图片`"
                   class="sound-light-alarm__image"
                 />
-                <div v-else class="sound-light-alarm__image-empty">
-                  <span aria-hidden="true">▧</span>
-                  <strong>暂无现场图片</strong>
-                  <small>请结合附近监控核实现场情况</small>
-                </div>
                 <span class="sound-light-alarm__image-label">报警抓拍</span>
               </div>
               <dl class="sound-light-alarm__details">
@@ -330,39 +332,6 @@ onBeforeUnmount(stopAlarmSound);
   font-size: 12px;
 }
 
-.sound-light-alarm__image-wrap--empty {
-  border-style: dashed;
-  border-color: rgb(139 159 184 / 34%);
-  background: linear-gradient(145deg, rgb(35 45 62 / 85%), rgb(17 25 39 / 90%));
-}
-
-.sound-light-alarm__image-empty {
-  height: 100%;
-  min-height: 196px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  color: #aeb9c9;
-  text-align: center;
-}
-
-.sound-light-alarm__image-empty span {
-  font-size: 32px;
-  color: #76869c;
-}
-
-.sound-light-alarm__image-empty strong {
-  color: #d6dce6;
-  font-size: 15px;
-}
-
-.sound-light-alarm__image-empty small {
-  color: #8795a9;
-  font-size: 12px;
-}
-
 .sound-light-alarm__details {
   display: grid;
   gap: 17px;
@@ -509,8 +478,7 @@ onBeforeUnmount(stopAlarmSound);
   }
 
   .sound-light-alarm__image-wrap,
-  .sound-light-alarm__image,
-  .sound-light-alarm__image-empty {
+  .sound-light-alarm__image {
     min-height: 150px;
   }
 }

@@ -340,7 +340,7 @@ function handleExit() {
   border: 1px solid rgb(0 120 210 / 45%);
   border-radius: 4px;
   background: rgb(0 22 48 / 90%);
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   font-size: 12px;
   font-family: var(--font-body);
   box-sizing: border-box;

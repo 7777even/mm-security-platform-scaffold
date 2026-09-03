@@ -1675,7 +1675,7 @@ const currentWorkOrderDetail = computed(() => {
 
 .ffm__card-param b {
   font-weight: 600;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   white-space: nowrap;
 }
 
@@ -1741,7 +1741,7 @@ const currentWorkOrderDetail = computed(() => {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
 }
 
 .ffm__table th {
@@ -1956,7 +1956,7 @@ const currentWorkOrderDetail = computed(() => {
 
 .ffm__info-value {
   font-size: 13px;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   word-break: break-all;
 }
 

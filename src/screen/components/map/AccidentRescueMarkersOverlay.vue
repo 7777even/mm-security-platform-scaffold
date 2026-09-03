@@ -306,7 +306,7 @@ function monitoringIcon(category: string): MapMarkerIconName {
 
 .acc-point-marker__name {
   font-size: 11px;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
 }

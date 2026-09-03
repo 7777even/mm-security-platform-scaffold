@@ -621,7 +621,7 @@ const emit = defineEmits<{
 }
 
 .incident-warning__label {
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   font-size: 14px;
   line-height: 32px;
 }
@@ -631,7 +631,7 @@ const emit = defineEmits<{
   display: flex;
   flex-wrap: wrap;
   gap: 18px;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   font-size: 14px;
   line-height: 32px;
 }
@@ -674,7 +674,7 @@ const emit = defineEmits<{
 .incident-warning__btn--ghost {
   border: 1px solid var(--map-facility-btn-border);
   background: var(--map-facility-btn-bg);
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
 }
 
 .incident-warning__btn--primary {

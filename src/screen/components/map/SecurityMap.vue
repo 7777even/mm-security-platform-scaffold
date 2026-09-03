@@ -790,7 +790,7 @@ function handleGateControlMarkerClick(id: number) {
   border-radius: 2px;
   background: var(--map-device-label-bg);
   border: 1px solid rgb(0 140 220 / 28%);
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   font-size: 11px;
   white-space: nowrap;
   font-family: var(--font-body);

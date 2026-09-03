@@ -14,6 +14,7 @@ import {
 } from './videoWallStore';
 import { videoWallBus } from './videoWallBus';
 import VideoWallPlayer from './VideoWallPlayer.vue';
+import { cameraThumbByIndex } from '@/services/map-data/fireImages';
 
 const pages = ref<VideoPage[]>(
   currentLayout.value
@@ -564,7 +565,13 @@ watch(
           :video-id="cell.videoId"
           :video-name="cell.videoName || ''"
         />
-        <div v-else class="video-placeholder">通道 {{ cell.id }}</div>
+        <div
+          v-else
+          class="video-placeholder"
+          :style="{ backgroundImage: `url(${cameraThumbByIndex(cell.id)})` }"
+        >
+          <span class="video-placeholder__label">通道 {{ cell.id }}</span>
+        </div>
       </div>
     </div>
 
@@ -1023,9 +1030,22 @@ watch(
   box-shadow: inset 0 0 10px rgb(0 180 255 / 30%);
 }
 
+/* 未绑定码流的通道：mock 监控抓拍图打底（cameraThumbByIndex），左下角通道角标 */
 .video-placeholder {
-  color: rgb(255 255 255 / 30%);
-  font-size: 16px;
+  display: flex;
+  align-items: flex-end;
+  background-color: var(--color-panel-soft);
+  background-size: cover;
+  background-position: center;
+}
+
+.video-placeholder__label {
+  margin: 6px;
+  padding: 2px 8px;
+  border-radius: var(--radius-md);
+  background: var(--glass-bg);
+  color: var(--color-text-muted);
+  font-size: 12px;
 }
 
 .video-content {

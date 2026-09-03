@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
-import ClipImage from '../../common/ClipImage.vue';
 import { dutyWatchPersons } from '../../../lib/data/preliminaryMock';
 import { fireDutyWatchPersons } from '../../../lib/data/fireEmergencyMock';
-import { dutyAvatarClips } from '../../../utils/preliminaryClipConfig';
-import { fireDutyAvatarClips } from '../../../utils/fireEmergencyClipConfig';
+import { UserFilled } from '@element-plus/icons-vue';
 import type { DesignModule } from '../../../utils/designAssets';
 
 const props = withDefaults(
@@ -19,9 +17,6 @@ const shift = ref<'day' | 'night'>('day');
 
 const persons = computed(() =>
   props.module === 'fireEmergency' ? fireDutyWatchPersons : dutyWatchPersons,
-);
-const avatarClips = computed(() =>
-  props.module === 'fireEmergency' ? fireDutyAvatarClips : dutyAvatarClips,
 );
 </script>
 
@@ -39,7 +34,11 @@ const avatarClips = computed(() =>
 
       <div class="duty-watch__list">
         <div v-for="person in persons" :key="person.id" class="duty-card">
-          <ClipImage v-bind="avatarClips[person.avatarIndex]" class="duty-card__avatar" />
+          <div class="duty-card__avatar" aria-hidden="true">
+            <span class="duty-card__avatar-icon">
+              <UserFilled />
+            </span>
+          </div>
           <div class="duty-card__info">
             <div class="duty-card__head">
               <span class="duty-card__name">{{ person.name }}</span>
@@ -129,6 +128,27 @@ const avatarClips = computed(() =>
 
 .duty-card__avatar {
   flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-accent-faint);
+  border: 1px solid var(--color-accent-glow);
+  color: var(--color-accent);
+}
+
+.duty-card__avatar-icon {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+}
+
+.duty-card__avatar-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentcolor;
 }
 
 .duty-card__info {

@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
-import ClipImage from '../../common/ClipImage.vue';
 import { rescueForceStats } from '../../../lib/data/preliminaryMock';
 import { fireRescueForceStats } from '../../../lib/data/fireEmergencyMock';
-import { rescueIconClips } from '../../../utils/preliminaryClipConfig';
-import { fireRescueIconClips } from '../../../utils/fireEmergencyClipConfig';
+import {
+  UserFilled,
+  Box,
+  Avatar,
+  Van,
+  OfficeBuilding,
+  FirstAidKit,
+  Warning,
+} from '@element-plus/icons-vue';
 import type { DesignModule } from '../../../utils/designAssets';
 
 const props = withDefaults(
@@ -18,16 +24,19 @@ const props = withDefaults(
 const stats = computed(() =>
   props.module === 'fireEmergency' ? fireRescueForceStats : rescueForceStats,
 );
-const iconClips = computed(() =>
-  props.module === 'fireEmergency' ? fireRescueIconClips : rescueIconClips,
-);
+
+/* 与 rescueForceStats.iconIndex 一一对应；iconIndex 0..7
+   应急专家 / 应急物资 / 救援队伍 / 装备车辆 / 应急场所 / 医疗机构 / 应急车辆 / 消防设施 */
+const RESCUE_ICONS = [UserFilled, Box, Avatar, Van, OfficeBuilding, FirstAidKit, Van, Warning];
 </script>
 
 <template>
   <PreliminarySidePanel title="应急力量救援" variant="rescue" :module="module">
     <div class="rescue-grid">
       <div v-for="stat in stats" :key="stat.label" class="rescue-item">
-        <ClipImage v-bind="iconClips[stat.iconIndex]" class="rescue-item__icon" />
+        <span class="rescue-item__icon" aria-hidden="true">
+          <component :is="RESCUE_ICONS[stat.iconIndex]" />
+        </span>
         <div class="rescue-item__text">
           <div class="rescue-item__value">{{ stat.value }}</div>
           <div class="rescue-item__label">{{ stat.label }}</div>
@@ -62,6 +71,15 @@ const iconClips = computed(() =>
 
 .rescue-item__icon {
   flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  color: var(--color-accent);
+}
+
+.rescue-item__icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentcolor;
 }
 
 .rescue-item__text {

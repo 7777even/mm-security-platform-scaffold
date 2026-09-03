@@ -112,9 +112,9 @@ function rowClass(node: MapLayerNode) {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid var(--map-layer-border);
+  border: 1px solid var(--panel-border);
   border-radius: 4px;
-  background: var(--color-text-strong);
+  background: var(--glass-bg);
   box-shadow: 0 10px 28px var(--map-layer-shadow);
   pointer-events: auto;
   font-size: 13px;
@@ -126,16 +126,16 @@ function rowClass(node: MapLayerNode) {
   gap: 6px;
   flex-shrink: 0;
   padding: 8px 10px;
-  border-bottom: 1px solid var(--map-layer-divider);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .map-layer-panel__collapse {
-  color: #2c3e50;
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 
 .map-layer-panel__root {
-  color: var(--map-layer-text);
+  color: var(--color-text);
   font-weight: 600;
 }
 
@@ -145,7 +145,7 @@ function rowClass(node: MapLayerNode) {
   height: 24px;
   border: none;
   background: transparent;
-  color: #6b7a8d;
+  color: var(--color-text-muted);
   font-size: 18px;
   cursor: pointer;
 }
@@ -153,7 +153,7 @@ function rowClass(node: MapLayerNode) {
 .map-layer-panel__wireframe {
   flex-shrink: 0;
   padding: 6px 10px;
-  border-bottom: 1px dashed var(--map-layer-divider);
+  border-bottom: 1px dashed var(--color-border);
 }
 
 .map-layer-panel__list {
@@ -180,7 +180,7 @@ function rowClass(node: MapLayerNode) {
   border: none;
   border-radius: 3px;
   background: transparent;
-  color: #333;
+  color: var(--color-text);
   font-size: 13px;
   font-family: var(--font-body);
   text-align: left;
@@ -190,7 +190,7 @@ function rowClass(node: MapLayerNode) {
 
 .map-layer-panel__group:hover,
 .map-layer-panel__leaf:hover {
-  background: var(--map-layer-hover-bg);
+  background: var(--row-alt-bg);
 }
 
 .map-layer-panel__group--expanded .map-layer-panel__arrow {
@@ -200,14 +200,14 @@ function rowClass(node: MapLayerNode) {
 .map-layer-panel__arrow {
   width: 12px;
   flex-shrink: 0;
-  color: var(--map-layer-text-muted);
+  color: var(--color-text-muted);
   font-size: 10px;
   transition: transform 0.18s ease;
 }
 
 .map-layer-panel__icon {
   flex-shrink: 0;
-  color: var(--map-layer-text-muted);
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 
@@ -230,11 +230,11 @@ function rowClass(node: MapLayerNode) {
 }
 
 .map-layer-panel__row--active {
-  background: var(--map-layer-active-bg);
+  background: var(--color-accent-soft);
 }
 
 .map-layer-panel__row--active .map-layer-panel__label {
-  color: var(--map-layer-active-fg);
+  color: var(--color-accent);
   font-weight: 600;
 }
 
@@ -242,7 +242,7 @@ function rowClass(node: MapLayerNode) {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
-  accent-color: var(--map-layer-active-fg);
+  accent-color: var(--color-accent);
   cursor: pointer;
 }
 
@@ -251,23 +251,23 @@ function rowClass(node: MapLayerNode) {
   gap: 8px;
   flex-shrink: 0;
   padding: 8px 10px;
-  border-top: 1px solid var(--map-layer-divider);
+  border-top: 1px solid var(--color-border);
 }
 
 .map-layer-panel__action {
   flex: 1;
   height: 26px;
-  border: 1px solid #b8cfe8;
+  border: 1px solid var(--btn-border);
   border-radius: 3px;
-  background: #f4f8fd;
-  color: var(--map-layer-action-fg);
+  background: var(--btn-bg);
+  color: var(--color-text);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
 }
 
 .map-layer-panel__action:hover {
-  border-color: var(--map-layer-border);
-  background: var(--map-layer-active-bg);
+  border-color: var(--panel-border);
+  background: var(--color-accent-soft);
 }
 </style>

@@ -1,7 +1,6 @@
 ﻿<script setup lang="ts">
 import PanelCard from '../../common/PanelCard.vue';
-import ClipImage from '../../common/ClipImage.vue';
-import { riskLevelClips, riskTagIconClip } from '../../../utils/productionClipConfig';
+import { Warning } from '@element-plus/icons-vue';
 import { riskSummary, riskWarnings } from '../../../lib/data/productionMock';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
@@ -14,17 +13,17 @@ const visibleRiskWarnings = areaScopedItems(riskWarnings);
     <div class="risk-panel">
       <div class="risk-panel__summary">
         <div class="risk-summary-item risk-summary-item--red">
-          <ClipImage v-bind="riskLevelClips[0]" />
+          <span class="risk-summary-item__icon" aria-hidden="true"><Warning /></span>
           <span class="risk-summary-item__label">红色预警</span>
           <span class="risk-summary-item__value">{{ scaleAreaCount(riskSummary.red) }}</span>
         </div>
         <div class="risk-summary-item risk-summary-item--orange">
-          <ClipImage v-bind="riskLevelClips[1]" />
+          <span class="risk-summary-item__icon" aria-hidden="true"><Warning /></span>
           <span class="risk-summary-item__label">橙色预警</span>
           <span class="risk-summary-item__value">{{ scaleAreaCount(riskSummary.orange) }}</span>
         </div>
         <div class="risk-summary-item risk-summary-item--yellow">
-          <ClipImage v-bind="riskLevelClips[2]" />
+          <span class="risk-summary-item__icon" aria-hidden="true"><Warning /></span>
           <span class="risk-summary-item__label">黄色预警</span>
           <span class="risk-summary-item__value">{{ scaleAreaCount(riskSummary.yellow) }}</span>
         </div>
@@ -34,7 +33,7 @@ const visibleRiskWarnings = areaScopedItems(riskWarnings);
         <div v-for="item in visibleRiskWarnings" :key="item.id" class="risk-card">
           <div class="risk-card__head">
             <div class="risk-card__tag">
-              <ClipImage v-bind="riskTagIconClip" />
+              <span class="risk-card__tag-icon" aria-hidden="true"><Warning /></span>
               <span class="risk-card__tag-text">{{ item.levelLabel }}</span>
             </div>
             <span class="risk-card__location">{{ item.location }}</span>
@@ -99,6 +98,31 @@ const visibleRiskWarnings = areaScopedItems(riskWarnings);
   white-space: nowrap;
 }
 
+.risk-summary-item__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+}
+
+.risk-summary-item__icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentcolor;
+}
+
+.risk-summary-item--red .risk-summary-item__icon {
+  color: var(--color-danger);
+}
+
+.risk-summary-item--orange .risk-summary-item__icon {
+  color: var(--color-alarm-2);
+}
+
+.risk-summary-item--yellow .risk-summary-item__icon {
+  color: var(--color-alarm-3);
+}
+
 .risk-summary-item__value {
   font-size: 26px;
   font-weight: 700;
@@ -148,6 +172,20 @@ const visibleRiskWarnings = areaScopedItems(riskWarnings);
   padding: 3px 10px 3px 6px;
   background: linear-gradient(180deg, var(--color-warning) 0%, #c88a10 100%);
   border-radius: 2px;
+}
+
+.risk-card__tag-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-strong);
+}
+
+.risk-card__tag-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentcolor;
 }
 
 .risk-card__tag-text {

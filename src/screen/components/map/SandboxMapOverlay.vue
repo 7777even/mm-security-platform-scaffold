@@ -429,7 +429,7 @@ function handleOverlayClick(event: MouseEvent) {
   border: 1px solid rgb(0 148 236 / 50%);
   border-radius: 4px;
   background: linear-gradient(180deg, rgb(6 40 76 / 94%), rgb(3 24 50 / 94%));
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   font-size: 11px;
   font-family: var(--font-body);
   white-space: nowrap;

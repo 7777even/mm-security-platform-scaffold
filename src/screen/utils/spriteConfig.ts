@@ -38,12 +38,6 @@ function sprite(
 }
 
 export const sprites = {
-  /** 从 94×126 卡片顶部裁出图标区（上移裁掉顶部边框线） */
-  rescueSquad: sprite('image_0011.png', 60, 48, 94, 126, { clip: 'icon-top', posY: -14 }),
-  rescuePerson: sprite('image_0012.png', 60, 48, 94, 126, { clip: 'icon-top', posY: -14 }),
-  rescueVehicle: sprite('image_0013.png', 60, 48, 94, 126, { clip: 'icon-top', posY: -14 }),
-  rescueEquipment: sprite('image_0014.png', 61, 48, 61, 48, { clip: 'contain' }),
-
   /** 从 108×73 / 106×73 设备格左侧裁出图标区 */
   equipmentIcons: [
     sprite('image_0015.png', 48, 56, 108, 73, { clip: 'icon-left', posX: -4 }),
@@ -79,12 +73,3 @@ export const sprites = {
   /** 底部消息条左侧铃铛：从 979×52 条带裁出（posX 必须为 0，否则左侧光晕被裁切） */
   systemBell: sprite('image_0001.png', 58, 46, 979, 52, { clip: 'none', posX: 0, posY: 0 }),
 } as const;
-
-export type RescueIconKey = 'squad' | 'person' | 'vehicle' | 'equipment';
-
-export const rescueIconSprites: Record<RescueIconKey, SpriteSpec> = {
-  squad: sprites.rescueSquad,
-  person: sprites.rescuePerson,
-  vehicle: sprites.rescueVehicle,
-  equipment: sprites.rescueEquipment,
-};

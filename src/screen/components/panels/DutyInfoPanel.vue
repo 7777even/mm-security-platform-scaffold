@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
 import StatCard from '../common/StatCard.vue';
-import { getAssets } from '../../utils/designAssets';
+import { UserFilled } from '@element-plus/icons-vue';
 import { dutyPersons, rescueStats } from '../../lib/data/mock';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 import {
@@ -24,7 +24,6 @@ import {
 import { closeSpecialOperationView } from '../../lib/composables/useSpecialOperationView';
 
 const shift = ref<'day' | 'night'>('day');
-const assets = getAssets('fire');
 const { areaScopedItems, scaleAreaCount } = usePlantArea();
 const scopedDutyPersons = areaScopedItems(dutyPersons);
 const visibleDutyPersons = computed(() => {
@@ -88,7 +87,7 @@ function handleStatClick(label: string) {
     <div class="duty-list">
       <div v-for="person in visibleDutyPersons" :key="person.id" class="duty-card">
         <div class="duty-card__icon-wrap" aria-hidden="true">
-          <img class="duty-card__avatar" :src="assets.userAvatar" alt="" />
+          <span class="duty-card__avatar"><UserFilled /></span>
         </div>
         <div class="duty-card__info">
           <div class="duty-card__head">
@@ -282,9 +281,16 @@ function handleStatClick(label: string) {
 
 .duty-card__avatar {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  color: var(--color-accent);
+}
+
+.duty-card__avatar :deep(svg) {
+  width: 100%;
+  height: 100%;
+  fill: currentcolor;
 }
 
 .duty-card__info {

@@ -286,7 +286,7 @@ const alarmHistory = computed(() => [
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
 }
 
 .object-dialog__table th {

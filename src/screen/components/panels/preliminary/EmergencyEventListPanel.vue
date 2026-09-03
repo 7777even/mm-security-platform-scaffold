@@ -2,9 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
-import ClipImage from '../../common/ClipImage.vue';
-import { eventListIconClip } from '../../../utils/preliminaryClipConfig';
-import { fireEventListIconClip } from '../../../utils/fireEmergencyClipConfig';
+import { Phone } from '@element-plus/icons-vue';
 import {
   selectedPreliminaryEventId,
   selectPreliminaryEvent,
@@ -165,22 +163,8 @@ function eventCardIconSrc(event: EmergencyEventItem) {
   return (event.kind ?? 'event') === 'drill' ? FIRE_DRILL_LIST_ICON : FIRE_EVENT_LIST_ICON;
 }
 
-function iconClip(rowIndex: number) {
-  return isFireEmergency.value ? fireEventListIconClip(rowIndex) : eventListIconClip(rowIndex);
-}
-
 const itemsRef = ref<HTMLElement | null>(null);
 
-function pageEventIconIndex(eventId: number) {
-  let index = 0;
-  for (const group of pagedGroups.value) {
-    for (const event of group.events) {
-      if (event.id === eventId) return index;
-      index += 1;
-    }
-  }
-  return 0;
-}
 let resizeObserver: ResizeObserver | null = null;
 
 function updatePageSize() {
@@ -297,11 +281,9 @@ onUnmounted(() => {
               :src="eventCardIconSrc(event)"
               alt=""
             />
-            <ClipImage
-              v-else
-              v-bind="iconClip(pageEventIconIndex(event.id))"
-              class="event-card__icon"
-            />
+            <span v-else class="event-card__icon" aria-hidden="true">
+              <Phone />
+            </span>
             <div class="event-card__main">
               <div class="event-card__head">
                 <h4 class="event-card__title">{{ event.title }}</h4>
@@ -647,6 +629,19 @@ onUnmounted(() => {
   flex-shrink: 0;
   width: 40px;
   height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+}
+
+.event-card__icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentcolor;
+}
+
+.event-card__icon img {
   object-fit: contain;
 }
 

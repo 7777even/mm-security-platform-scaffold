@@ -477,7 +477,7 @@ function goToPage(page: number) {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
 }
 
 .linkage-dialog__table th {
@@ -585,7 +585,7 @@ function goToPage(page: number) {
   margin: 0 0 8px;
   padding-left: 8px;
   border-left: 3px solid var(--color-accent);
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   font-size: 14px;
   font-weight: 500;
 }

@@ -502,7 +502,7 @@ function openSelectedWorkOrder() {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
 }
 
 .patrol__table th {
@@ -720,7 +720,7 @@ function openSelectedWorkOrder() {
 
 .patrol__info-value {
   font-size: 13px;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
   word-break: break-all;
 }
 

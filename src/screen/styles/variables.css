@@ -8,15 +8,13 @@
   --text-secondary: var(--color-text-muted);
   --text-muted: var(--color-text);
   --accent-blue: var(--color-accent);
-  --accent-cyan: #6acab2;
-  --accent-gold: #eca641;
   --accent-red: var(--color-danger);
   --accent-red-light: var(--map-popup-red-text);
   --accent-green: var(--color-success);
-  --accent-purple: #b07aff;
+  --accent-gold: var(--color-accent-gold);
   --header-height: 77px;
   --footer-height: 67px;
-  --sidebar-width: 419px;
+  --sidebar-width: var(--layout-aside-w);
   --sidebar-width-left: 338px;
   --sidebar-width-right: 419px;
   --font-display: 'Microsoft YaHei', 'Noto Sans SC', sans-serif;

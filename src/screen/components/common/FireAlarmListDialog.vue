@@ -428,7 +428,7 @@ const dialogActions: DialogAction[] = [
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
 }
 
 .fire-alarm-list__table th {

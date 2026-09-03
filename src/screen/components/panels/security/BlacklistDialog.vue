@@ -234,7 +234,7 @@ function removePerson(item: BlacklistPersonItem) {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  color: var(--map-layer-divider);
+  color: var(--color-text-muted);
 }
 
 .blacklist__table th {
