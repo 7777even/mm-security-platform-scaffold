@@ -182,12 +182,35 @@
 
   --layout-header-line: rgb(0 180 255 / 45%); /* 顶栏底部光带 */
 
-  /* §5.1 Z-index 五层 */
+  /* §5.1 Z-index 五层(全局跨组件唯一契约) */
   --z-base: 0; /* L0 地图底图 */
   --z-marker: 5; /* L1 地图标注 */
   --z-chrome: 10; /* L2 顶/侧/消息栏 */
-  --z-overlay: 30; /* L3 Drawer / Dialog */
+  --z-overlay: 30; /* L3 Drawer / Dialog(根) */
   --z-toast: 40; /* L4 Toast / 紧急浮层 */
+  --z-raised: 20; /* 抬高的栏/工具条,介于 chrome 与 overlay 之间 */
+
+  /* 局部子层级:仅用于自包含 stacking context 内部的相对排序,不跨组件;由 scripts/fix-zindex.mjs 维护 */
+
+  /* === Z-LOCAL-START === */
+  --z-local-1: 1;
+  --z-local-2: 2;
+  --z-local-3: 3;
+  --z-local-4: 4;
+  --z-local-6: 6;
+  --z-local-8: 8;
+  --z-local-9: 9;
+  --z-local-12: 12;
+  --z-local-14: 14;
+  --z-local-16: 16;
+  --z-local-60: 60;
+  --z-local-1200: 1200;
+  --z-local-1210: 1210;
+  --z-local-1250: 1250;
+  --z-local-1290: 1290;
+  --z-local-1300: 1300;
+
+  /* === Z-LOCAL-END === */
 
   /* §6.3 图标尺寸 */
   --icon-xs: 12px;
@@ -361,9 +384,11 @@
   --map-mask-bg: rgb(
     0 8 20 / 76%
   ); /* 二级弹窗遮罩底（源 WeatherDetailsDialog rgb(0,8,20,.76) / SurveillanceVideoDialog rgb(0,7,18,.78)） */
+
   --map-dialog-border: rgb(
     32 198 255 / 66%
   ); /* 二级弹窗外框亮青描边（源 WeatherDetailsDialog rgb(32,198,255,.66) / SurveillanceVideoDialog rgb(26,177,255,.72)） */
+
   --map-dialog-bg: linear-gradient(
     145deg,
     rgb(4 27 53 / 98%),
@@ -373,18 +398,23 @@
   --map-dialog-glow: rgb(
     0 157 255 / 30%
   ); /* 二级弹窗外辉光（源 WeatherDetailsDialog rgb(0,157,255,.3)） */
+
   --map-dialog-ring: rgb(
     0 93 165 / 35%
   ); /* 二级弹窗外圈投影（源 SurveillanceVideoDialog rgb(0,93,165,.35)） */
+
   --map-dialog-inner-glow: rgb(
     0 111 190 / 8%
   ); /* 二级弹窗内发光投影（源 SurveillanceVideoDialog rgb(0,111,190,.8%)） */
+
   --map-head-line: rgb(
     54 169 225 / 28%
   ); /* 弹窗头部/指标列分隔线（源 WeatherDetailsDialog rgb(54,169,225,.28)） */
+
   --map-ctrl-border: rgb(
     76 188 241 / 35%
   ); /* 弹窗控件按钮描边（源 rgb(76,188,241,.35)，同族 rgb(26,152,221,.42)/rgb(36,170,236,.42)/rgb(27,143,207,.36)） */
+
   --map-ctrl-bg: #061e38; /* 弹窗控件深蓝底（源 WeatherDetailsDialog #061e38，同族 #082442） */
   --map-ctrl-line: #155e8e; /* 弹窗页签深蓝实色描边（源 WeatherDetailsDialog #155e8e） */
   --map-ctrl-active-bg: linear-gradient(
@@ -395,12 +425,15 @@
   --map-ctrl-veil: rgb(
     0 75 124 / 24%
   ); /* 深蓝控件半透底（源 SurveillanceVideoDialog rgb(0,75,124,.24)，同族 rgb(1,54,88,.55)） */
+
   --map-ctrl-veil-strong: rgb(
     0 72 120 / 42%
   ); /* 深蓝控件半透底·加浓（源 VideoWallPage rgb(0,72,120,.42)） */
+
   --map-tab-selected-bg: rgb(
     0 90 160 / 50%
   ); /* 页签/主按钮选中中蓝底（源 major-hazard/detail 与 production-communication 同值 rgb(0,90,160,.5)） */
+
   --map-tab-active-bg: linear-gradient(
     180deg,
     rgb(0 130 220 / 96%),
@@ -415,19 +448,24 @@
   --map-chart-grid: rgb(
     95 157 194 / 18%
   ); /* 天气图表网格线（源 WeatherDetailsDialog rgb(95,157,194,.18)） */
+
   --map-timeline-track: rgb(
     120 160 186 / 28%
   ); /* 视频时间轴轨道（源 SurveillanceVideoDialog rgb(120,160,186,.28)） */
+
   --map-air-green-bg: rgb(
     65 183 99 / 10%
   ); /* 空气质量浅绿底（源 WeatherDetailsDialog rgb(65,183,99,.1)） */
+
   --map-air-green-text: #9ec5ad; /* 空气质量灰绿次字（源 WeatherDetailsDialog #9ec5ad） */
   --map-tip-warning-border: rgb(
     255 166 48 / 32%
   ); /* 安全提示橙描边（源 rgb(255,166,48,.32)，同族 rgb(255,169,48,.28)） */
+
   --map-tip-warning-bg: rgb(
     255 143 21 / 8%
   ); /* 安全提示浅橙底（源 WeatherDetailsDialog rgb(255,143,21,.8%)） */
+
   --map-week-item-bg: linear-gradient(
     180deg,
     rgb(16 113 127 / 38%),
@@ -444,9 +482,11 @@
   --map-card-bg: rgb(
     4 25 49 / 72%
   ); /* 弹窗内信息卡深蓝底（源 WeatherDetailsDialog rgb(4,25,49,.72)） */
+
   --map-tab-bg: rgb(
     3 24 49 / 94%
   ); /* 事件处置左栏页签条底（源 accident-rescue/index rgb(3,24,49,.94)） */
+
   --map-tab-panel-bg: linear-gradient(
     180deg,
     rgb(3 30 59 / 96%),
@@ -473,9 +513,11 @@
   --map-scene-toggle-bg: rgb(
     15 23 42 / 92%
   ); /* 场景栏收起/展开钮底（源 accident-rescue/index rgb(15,23,42,.92)） */
+
   --map-scene-toggle-bg-hover: rgb(
     30 41 59 / 95%
   ); /* 场景栏收起/展开钮 hover 底（源 accident-rescue/index rgb(30,41,59,.95)） */
+
   --map-ptz-bg: radial-gradient(
     circle,
     rgb(13 100 155 / 50%),
@@ -485,6 +527,7 @@
   --map-offline-veil: rgb(
     40 8 12 / 88%
   ); /* 视频离线提示暗红底（源 SurveillanceVideoDialog rgb(40,8,12,.88)） */
+
   --map-video-page-bg: #000a18; /* 视频墙/视频控制页近黑蓝底（源 video-wall、video-control #000a18，同族 #020b14） */
   --map-video-main-bg: linear-gradient(
     180deg,
@@ -495,9 +538,11 @@
   --map-event-badge-border: rgb(
     255 163 57 / 52%
   ); /* 视频墙事件徽标橙描边（源 video-wall rgb(255,163,57,.52)） */
+
   --map-event-badge-bg: rgb(
     112 56 8 / 44%
   ); /* 视频墙事件徽标暗橙底（源 video-wall rgb(112,56,8,.44)） */
+
   --map-event-badge-fg: #ffba67; /* 视频墙事件徽标橙字（源 video-wall #ffba67） */
 
   /* 图层控制面板（MapLayerPanel 浅色浮层，独立浅色小体系） */
@@ -602,6 +647,7 @@
   --map-vehicle-veil: rgb(
     18 72 120 / 95%
   ); /* 车辆面板蓝基色（源 rgb(18,72,120,.95)，渐变端/气泡尖角共用） */
+
   --map-info-panel-glow: rgb(0 120 220 / 8%); /* 信息面板内发光（源 rgb(0,120,220,.8%)） */
   --map-info-panel-alarm-glow: rgb(255 90 90 / 6%); /* 告警面板内发光（源 rgb(255,90,90,.6%)） */
   --map-popup-text-blue: #c4dcff; /* 地图气泡正文字浅蓝（源 AccidentRescueMap 车辆行 / ProductionMap 人员气泡同值） */
