@@ -1,0 +1,21 @@
+# 终端输出快照 — 二级子应用切换保活（L3 验证，替代页面截图）
+# 生成环境：agent 沙箱（Windows PowerShell）；本环境经探测无可用浏览器（Edge/Chrome/Chromium 均不存在，无 playwright/puppeteer）
+# 依据：AGENTS.md §6「关键验证附终端输出快照」+ QA 模板「未运行项须说明原因，禁止把未执行写成通过」
+# 命令执行时间：2026-09-04
+
+== npm run type-check (vue-tsc -p tsconfig.app.json --noEmit) ==
+> mm-security-platform-frontend-scaffold@0.1.0 type-check
+> vue-tsc -p tsconfig.app.json --noEmit
+
+
+EXITCODE=0
+
+== npx eslint src/components/layout/AppLayout.vue src/shell/WujieHost.vue ==
+（无 lint 输出，表示 0 error）
+
+EXITCODE=0
+
+== 浏览器可用性探测（决定页面截图是否可行）==
+PS> Get-Command msedge,chrome,chromium,google-chrome -ErrorAction SilentlyContinue
+结果: NO_SYSTEM_BROWSER
+结论: 本环境无可用浏览器，无法渲染子应用并生成「切回后子应用挂载」页面截图。
