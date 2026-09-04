@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import WujieVue from 'wujie-vue3';
 import { useAuthStore } from '@/stores/auth';
@@ -53,21 +53,31 @@ const subappName = computed(() => {
   return `${slug}::${path}?${sorted}`;
 });
 
-// 关键：WujieHost 在路由切换时被 RouterView :key=fullPath 重建，所以旧的 wujie 实例
-// 不会被 wujie-vue3 自动 destroy。必须在组件销毁时显式拆掉，避免 Cesium/WebGL 泄漏。
-// 注意：必须在 setup 顶部捕获「挂载时」的 subappName（plain const）—— 因为本组件被
-// 销毁时，vue-router 已把 route 更新到下一条，subappName 这个 computed 也会跟着重算成
-// 下一条路由的 name，销毁的就是还没创建的「未来」实例。mountName 在 setup 时定下值，
-// 整个组件生命周期不变，正是这个 WujieHost 启动的那个 wujie sandbox 的 key。
-// 队列中的 start 竞态：若子应用 main.ts 的 startApp 仍处于 Promise 等待（脚本下载 / 沙箱初始化未完成）
-// 时，组件被 RouterView 重建触发 destroyApp(mountName)，wujie 全局 map 里可能尚无该 name
-// 记录，destroyApp 对未启动实例是幂等 no-op；新一次 startApp 会在新组件 mountName 下重新入队，
-// 不会产生「销毁正在初始化的实例导致 iframe 泄露」的隐患。仅在开发期若发现 destroyApp 后
-// document.querySelectorAll('iframe').length > 1 才需要回头排查这里（详见 task-12 报告 §11）。
-const mountName = subappName.value;
+// 切换生命周期（双保险，替代原 :key=fullPath 重建 + mountName 兜底）：
+// AppLayout 现已对二级子应用页使用稳定挂载槽 key（'subapp-slot'），WujieHost 在子应用间
+// 复用而非随路由重建，从而避开 wujie 全局 window.__WUJIE_QUEUE[name] 的跨实例同名 startApp
+// 竞态（切走再切回 → 0 实例，见 Change wujie-subapp-switch-race）。
+// 1) watch(subappName)：name 变化时（子应用→子应用）显式 destroyApp(prev) 清理旧沙箱；
+//    WujieVue 内部 $watch(name+url) 会自动 startApp 新实例。
+// 2) onBeforeUnmount：组件真正卸载（子应用→非子应用导致 key 变化）时兜底清理当前记账户的
+//    活跃沙箱。activeName 实时记账当前 name（含 immediate 首次进入），destroyApp 对未注册
+//    name（如切到非子应用时的 'subapp::<path>'）为幂等 no-op，重复清理安全。
+const activeName = ref<string | null>(null);
+
+watch(
+  subappName,
+  (cur, prev) => {
+    if (prev && prev !== cur) {
+      WujieVue.destroyApp(prev);
+    }
+    activeName.value = cur;
+  },
+  { immediate: true },
+);
+
 onBeforeUnmount(() => {
-  if (mountName) {
-    WujieVue.destroyApp(mountName);
+  if (activeName.value) {
+    WujieVue.destroyApp(activeName.value);
   }
 });
 

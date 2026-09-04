@@ -37,6 +37,13 @@ const menuRoutes = computed(() =>
   }),
 );
 
+// 二级子应用页（meta.subapp && meta.hidden，如 /fire/rescue、/emergency/drill）：
+// 这些是自带顶栏的全屏大屏视图（Cesium 一张图 + rescue-header / 演练页头），
+// 若再叠加主壳的 §7 顶栏与 §11.2 消息栏，页面上就会出现「两个顶部栏」。
+// 一级模块页（/fire、/emergency…，由 menu.ts 装配、无 hidden）依赖主壳导航做模块切换，
+// 必须保留壳层，故仅对二级详情页收起。
+const isFullscreenSubapp = computed(() => route.meta.subapp === true && route.meta.hidden === true);
+
 function tick(): void {
   const d = new Date();
   const pad = (n: number): string => String(n).padStart(2, '0');
@@ -66,8 +73,8 @@ onUnmounted(() => {
 
 <template>
   <div class="screen">
-    <!-- §7 顶部导航栏 -->
-    <header class="header">
+    <!-- §7 顶部导航栏（二级子应用全屏页收起：其自带 rescue-header 等页头，叠加会出现两个顶栏） -->
+    <header v-if="!isFullscreenSubapp" class="header">
       <div class="brand" title="返回首页" @click="goHome">
         <svg
           class="logo"
@@ -158,15 +165,17 @@ onUnmounted(() => {
     </header>
 
     <!-- 主路由出口（大屏视图铺满，无内边距；视图内部自行控制边距）
-         必须按路由 fullPath 加 key：各模块路由共用同一 WujieHost 组件引用，
-         Vue Router 默认会复用实例，导致 wujie 子应用不随路径切换而重新挂载；
-         key 强制每条路由新建实例，wujie 才能干净地 startApp 对应子应用。 -->
+         二级子应用页用稳定挂载槽 key（'subapp-slot'），使 WujieHost 在子应用间
+         复用而非随 fullPath 重建——否则 wujie 全局 window.__WUJIE_QUEUE[name] 的
+         跨实例同名 startApp 竞态会导致切走再切回后子应用 0 实例（见 Change
+         wujie-subapp-switch-race）。一级模块页 / 主应用页仍按 fullPath 重建。
+         子应用随路径切换的重新挂载由 WujieHost 内 WujieVue 的 $watch(name+url) 完成。 -->
     <main class="content">
-      <RouterView :key="route.fullPath" />
+      <RouterView :key="isFullscreenSubapp ? 'subapp-slot' : route.fullPath" />
     </main>
 
-    <!-- §11.2 底部消息栏 -->
-    <BottomMessageBar />
+    <!-- §11.2 底部消息栏（二级子应用全屏页收起，让出完整视口给 Cesium 一张图） -->
+    <BottomMessageBar v-if="!isFullscreenSubapp" />
   </div>
 </template>
 
