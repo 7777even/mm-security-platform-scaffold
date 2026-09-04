@@ -1,0 +1,26 @@
+---
+description: 前端脚手架的 API 契约红线——零下行控制、B3 响应包络、20 位 MDM 设备编码、HMAC 防重放签名、令牌内存态、services/adapter 分层。任何涉及接口调用、services、http 拦截器的改动前必读。
+alwaysApply: true
+---
+
+# API 契约规则
+
+（提炼自 `openspec/config.yaml` + `src/services/http.ts` + `guardHardControl` + `deviceCode`）
+
+1. **零下行控制红线**：前端只监不控，`services` **不得定义硬控写接口**；任何出站请求命中硬控路径由 `guardHardControl` 在 http 拦截器统一拦截。
+2. **B3 统一响应包络**：所有响应经 `unwrapBody<T>` 解包，`code=0` 返回 `data`，非 0 抛业务错误；service 调用方只消费 `data`。
+3. **20 位中石化 MDM 设备编码**：设备物理主键固定 20 位 MDM 编码，禁止自创物理主键。
+4. **防重放签名**：生产环境（gateway-bypass=false）http 拦截器强制 HMAC-SHA256 签名头（timestamp / nonce / signature）；Dev 可经 gateway-bypass 挂起。
+5. **令牌内存态**：访问令牌走 HttpOnly Cookie / 内存态（`getAccessToken`），**禁止 localStorage 明文**。
+6. **目录与分层**：按功能模块为第一级；`services` 与 `adapter` 分离，跨端公共服务置于 `src/`。
+
+## 接口协作须知
+
+- 本仓库是**纯前端脚手架，无后端**；AI 不得自创 API 契约或后端服务。接口以已确认 openspec Change + 本条契约规则为准。
+- 权限显隐用 `v-permission` 指令（`src/directives/permission.ts`），数据权限由服务端过滤。
+- 移动端原生能力只经 `apps/mobile/bridges/` 桥接实例访问，禁止直调 `navigator.geolocation` / Web Storage 写死。
+
+## L4 硬门禁（命中即升 L4，实施前须人工确认）
+
+- `src/services/http.ts` 拦截器签名、认证头、错误码映射改动。
+- 令牌/签名体系、防重放相关改动，或任何 §3 契约语义变化。

@@ -1,0 +1,58 @@
+---
+description: 安全管控指挥系统前端脚手架的核心 AI 约束入口——改动分级 L0–L4、openspec 唯一规格源、验证矩阵、提交规范、完成标准与范围边界。修改任何代码/文档前必须先读本规则与根 AGENTS.md。
+alwaysApply: true
+---
+
+# 前端脚手架核心 AI 约束
+
+本仓库是安全管控指挥系统**前端基座**（Vue3 + TS + Vite + Pinia + wujie 微前端 + Cesium 一张图）。三端：大屏可视化（`:root`）、后台管理（`data-theme="mgmt"`）、移动端（`data-theme="mobile"`，独立入口 `apps/`）。
+
+完整约束以根 `AGENTS.md` 为准。以下是 AI 动手前必须在脑中建立的优先级与红线。
+
+## 1. 先判级，再动手（L0–L4）
+
+- **L0 问答/只读**：直接完成；不建文件、不起子 Agent、不调 openspec。
+- **L1 微小修改**（四门槛全满足：不改业务能力/接口契约/权限语义、≤3 文件、5 分钟内可验证、不新增生产依赖）：直接改 + 最小验证。
+- **L2 工程维护**（依赖/构建/脚手架/lint/非业务技术债，或 L1 门槛缺一）：说明方案与影响 → 执行 → 跑受影响目标验证。
+- **L3 业务能力**（页面能力/交互规则/状态流转/权限语义）：openspec 提案 → 人工确认 → TDD → 验收 → 归档。
+- **L4 高风险**（wujie 壳层 / `tokens.css` 真源 / `http.ts` 拦截器 / 主题挂载 / 跨端 composable 破坏性 / 依赖框架更换）：按 L3 且**实施前取得人工确认**。
+- L1/L2 **禁止**创建 openspec Change、计划文档或子 Agent。
+
+## 2. 唯一规格源（禁止平行体系）
+
+- 业务规格与任务真源：`openspec/changes/<name>/`（proposal/design/tasks/spec-delta，tasks.md 是唯一任务真源，状态只回填勾选框）。
+- 系统现状 `docs/`、短期过程 `engineering/`，职责不混；禁止在 `openspec/` 之外建第二套需求/任务/issue 体系。
+
+## 3. 最小验证矩阵（只跑对应一行）
+
+- 文档/规范/AGENTS：`git diff --check`
+- 单端单文件组件或样式：`npx eslint <path>` 或 `npm run type-check`
+- `tokens.css` / `src/composables/`：`npm run type-check` + `npx eslint <path>`
+- 关键路径 deviceCode/usePermission/realtime：`npx vitest run <spec>`
+- 构建配置/依赖/vite.config/多入口：`npm run build`（dist 清空触发守卫 → `npx vite build --emptyOutDir=false`）
+- `subapps/**`：`npm run build:subapps`
+- L3/L4：按 tasks.md 验收全量
+- 禁止 L1/L2 后连跑 lint+type-check+build+build:subapps 四套。
+
+## 4. 提交与完成标准
+
+- 提交：`type(scope): 描述`；scope 固定 `screen/mgmt/mobile/shared/docs/chore`；跨端按影响面拆多提交（共享先行）；单行成句、禁分点列表；禁提交临时输出。
+- 完成（L3/L4）：验收标准达成 + 回归全绿 + 文档同步 + 提交按 scope 拆分。
+- Review 结论三选一：通过 / 需修改 / 需人工决策（禁止"基本可以"等模糊结论）。
+
+## 5. 范围边界
+
+- 纯前端脚手架，**无后端**；AI 不得引入后端/DB/自创 API 契约。
+- AI 负责分析/设计/编码/测试/Review/文档；业务确认、架构决策、权限确认、最终合并由人负责；AI 禁操作生产、改生产数据、自造业务规则、自建权限模型、自改 DB 结构、未确认引依赖。
+
+## 6. 分层 AGENTS 读取链（§6.8）
+
+改哪读哪，向下读到对应层：
+
+- `apps/mgmt` → `apps/mgmt/AGENTS.md` + `docs/UI规范-后台管理端.md`
+- `apps/mobile` → `apps/mobile/AGENTS.md` + `docs/UI规范-移动端.md`
+- `src/screen` → `src/screen/AGENTS.md` + `docs/UI规范-大屏端.md`
+- `subapps` → `subapps/AGENTS.md` + `docs/UI规范-大屏端.md`
+- `docs` → `docs/AGENTS.md`
+
+根 `AGENTS.md` 高于分层，分层只能加严、不得放宽。与根冲突时以 §1.3 仲裁为准。
