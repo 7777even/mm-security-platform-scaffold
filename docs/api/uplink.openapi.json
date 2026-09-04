@@ -141,8 +141,13 @@
       "FieldReportMedia": {
         "type": "object",
         "properties": {
-          "type": { "type": "string", "enum": ["image", "video"], "example": "image" },
-          "name": { "type": "string", "example": "scene-01.jpg" },
+          "type": {
+            "type": "string",
+            "enum": ["image", "video"],
+            "description": "媒体类型",
+            "example": "image"
+          },
+          "name": { "type": "string", "description": "文件名", "example": "scene-01.jpg" },
           "size": { "type": "integer", "description": "字节大小", "example": 204800 }
         }
       }

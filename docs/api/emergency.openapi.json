@@ -54,6 +54,7 @@
         "tags": ["emergency"],
         "operationId": "getClosedCases",
         "summary": "近期已结案列表",
+        "description": "返回近期已闭环处置的应急事件列表，供复盘检索。",
         "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
         "responses": {
           "200": {
@@ -96,6 +97,7 @@
         "tags": ["emergency"],
         "operationId": "getDutyRoster",
         "summary": "应急值班值守表",
+        "description": "返回当前应急值班值守排班表，含部门切换与成员信息。",
         "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
         "responses": {
           "200": {
@@ -141,6 +143,7 @@
         "tags": ["emergency"],
         "operationId": "getEmergencyPhones",
         "summary": "应急电话通讯录",
+        "description": "返回消防/医疗/公安等应急联络电话通讯录。",
         "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
         "responses": {
           "200": {
@@ -180,6 +183,7 @@
         "tags": ["emergency"],
         "operationId": "getEmergencyKnowledge",
         "summary": "应急生产安全知识",
+        "description": "返回应急生产安全知识点列表，支持按分类检索。",
         "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
         "responses": {
           "200": {
@@ -253,7 +257,11 @@
       "ClosedCaseList": {
         "type": "object",
         "properties": {
-          "cases": { "type": "array", "items": { "$ref": "#/components/schemas/ClosedCase" } }
+          "cases": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ClosedCase" },
+            "description": "已结案事件列表"
+          }
         }
       },
       "ClosedCase": {
@@ -279,17 +287,21 @@
             "description": "可切换的部门列表（含「全部」）"
           },
           "shift": { "$ref": "#/components/schemas/DutyShift" },
-          "members": { "type": "array", "items": { "$ref": "#/components/schemas/DutyMember" } }
+          "members": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DutyMember" },
+            "description": "值班成员列表"
+          }
         }
       },
       "DutyMember": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "example": "d1" },
-          "name": { "type": "string", "example": "杨恒明" },
+          "id": { "type": "string", "description": "成员唯一 ID", "example": "d1" },
+          "name": { "type": "string", "description": "姓名", "example": "杨恒明" },
           "phone": { "type": "string", "description": "联系电话", "example": "13792536966" },
           "role": { "$ref": "#/components/schemas/DutyRole" },
-          "department": { "type": "string", "example": "全部" },
+          "department": { "type": "string", "description": "所属部门", "example": "全部" },
           "shift": { "$ref": "#/components/schemas/DutyShift" }
         }
       },
@@ -298,17 +310,22 @@
       "EmergencyPhoneBook": {
         "type": "object",
         "properties": {
-          "entries": { "type": "array", "items": { "$ref": "#/components/schemas/EmergencyPhone" } }
+          "entries": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmergencyPhone" },
+            "description": "通讯录条目列表"
+          }
         }
       },
       "EmergencyPhone": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "example": "ph1" },
-          "name": { "type": "string", "example": "消防报警" },
-          "number": { "type": "string", "example": "119" },
+          "id": { "type": "string", "description": "通讯录条目 ID", "example": "ph1" },
+          "name": { "type": "string", "description": "名称/单位", "example": "消防报警" },
+          "number": { "type": "string", "description": "联系电话", "example": "119" },
           "category": {
             "type": "string",
+            "description": "分类",
             "enum": ["消防", "医疗", "公安", "厂内应急", "保卫值班", "应急通讯", "智能联动"],
             "example": "消防"
           }
@@ -317,16 +334,24 @@
       "KnowledgeList": {
         "type": "object",
         "properties": {
-          "items": { "type": "array", "items": { "$ref": "#/components/schemas/KnowledgeItem" } }
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/KnowledgeItem" },
+            "description": "知识条目列表"
+          }
         }
       },
       "KnowledgeItem": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "example": "k1" },
-          "title": { "type": "string", "example": "岗位应急处置卡" },
+          "id": { "type": "string", "description": "知识条目 ID", "example": "k1" },
+          "title": { "type": "string", "description": "标题", "example": "岗位应急处置卡" },
           "count": { "type": "integer", "description": "知识条目数", "example": 158 },
-          "icon": { "type": "string", "example": "Document" }
+          "icon": {
+            "type": "string",
+            "description": "图标名（Element Plus icon 名）",
+            "example": "Document"
+          }
         }
       }
     }

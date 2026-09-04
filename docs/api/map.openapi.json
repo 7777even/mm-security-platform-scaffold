@@ -119,11 +119,13 @@
         "properties": {
           "type": {
             "type": "string",
+            "description": "固定为 FeatureCollection",
             "enum": ["FeatureCollection"],
             "example": "FeatureCollection"
           },
           "features": {
             "type": "array",
+            "description": "要素数组",
             "items": {
               "type": "object",
               "properties": {
