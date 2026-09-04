@@ -39,6 +39,10 @@ const defaultChemicalFields: IncidentDetailField[] = [
 const defaultArchives: FacilityArchiveFile[] = [
   { id: '1', name: '顺丁橡胶装置SIL定级报告终版.pdf' },
   { id: '2', name: '【含7个重大危险源】高端重大危险源评估报告.pdf' },
+  { id: '3', name: '乙烯装置HAZOP分析报告.pdf' },
+  { id: '4', name: '消防设施年度检测报告.pdf' },
+  { id: '5', name: '应急预案备案登记表.pdf' },
+  { id: '6', name: '特种设备定期检验证书.pdf' },
 ];
 
 export function resolveFacilityDetail(facilityName?: string): FacilityDetailInfo {

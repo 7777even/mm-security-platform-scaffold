@@ -279,6 +279,39 @@ export const fireEmergencyDrillEventGroups: EmergencyEventGroup[] = [
       }),
     ],
   },
+  {
+    id: 'drill-comprehensive',
+    label: '综合演练',
+    events: [
+      drillWithPosition({
+        id: 105,
+        areaCode: 'chemical',
+        title: '危化品事故综合演练',
+        location: '化工区中央大道',
+        description: '多部门协同的危化品事故综合应急处置演练',
+        time: '2026-03-12 10:30:00',
+        reported: true,
+        status: 'done',
+        statusLabel: '演练结束',
+        endedAt: '2026-03-12 12:00:00',
+        left: '47.2%',
+        top: '31.5%',
+      }),
+      drillWithPosition({
+        id: 106,
+        areaCode: 'port',
+        title: '港区溢油应急演练',
+        location: '水东港区码头',
+        description: '码头油品泄漏溢油围控回收应急演练',
+        time: '2026-03-11 15:00:00',
+        reported: false,
+        status: 'pending',
+        statusLabel: '待演练',
+        left: '58.0%',
+        top: '47.0%',
+      }),
+    ],
+  },
 ];
 
 export const fireEmergencyAllEventGroups: EmergencyEventGroup[] = [
