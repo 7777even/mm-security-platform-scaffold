@@ -163,11 +163,15 @@ export interface components {
     };
     FieldReportMedia: {
       /**
+       * @description 媒体类型
        * @example image
        * @enum {string}
        */
       type?: 'image' | 'video';
-      /** @example scene-01.jpg */
+      /**
+       * @description 文件名
+       * @example scene-01.jpg
+       */
       name?: string;
       /**
        * @description 字节大小

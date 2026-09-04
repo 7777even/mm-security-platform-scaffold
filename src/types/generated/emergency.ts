@@ -26,7 +26,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 近期已结案列表 */
+    /**
+     * 近期已结案列表
+     * @description 返回近期已闭环处置的应急事件列表，供复盘检索。
+     */
     get: operations['getClosedCases'];
     put?: never;
     post?: never;
@@ -43,7 +46,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 应急值班值守表 */
+    /**
+     * 应急值班值守表
+     * @description 返回当前应急值班值守排班表，含部门切换与成员信息。
+     */
     get: operations['getDutyRoster'];
     put?: never;
     post?: never;
@@ -60,7 +66,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 应急电话通讯录 */
+    /**
+     * 应急电话通讯录
+     * @description 返回消防/医疗/公安等应急联络电话通讯录。
+     */
     get: operations['getEmergencyPhones'];
     put?: never;
     post?: never;
@@ -77,7 +86,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 应急生产安全知识 */
+    /**
+     * 应急生产安全知识
+     * @description 返回应急生产安全知识点列表，支持按分类检索。
+     */
     get: operations['getEmergencyKnowledge'];
     put?: never;
     post?: never;
@@ -164,6 +176,7 @@ export interface components {
       icon?: string;
     };
     ClosedCaseList: {
+      /** @description 已结案事件列表 */
       cases?: components['schemas']['ClosedCase'][];
     };
     ClosedCase: {
@@ -188,12 +201,19 @@ export interface components {
       /** @description 可切换的部门列表（含「全部」） */
       departments?: string[];
       shift?: components['schemas']['DutyShift'];
+      /** @description 值班成员列表 */
       members?: components['schemas']['DutyMember'][];
     };
     DutyMember: {
-      /** @example d1 */
+      /**
+       * @description 成员唯一 ID
+       * @example d1
+       */
       id?: string;
-      /** @example 杨恒明 */
+      /**
+       * @description 姓名
+       * @example 杨恒明
+       */
       name?: string;
       /**
        * @description 联系电话
@@ -201,7 +221,10 @@ export interface components {
        */
       phone?: string;
       role?: components['schemas']['DutyRole'];
-      /** @example 全部 */
+      /**
+       * @description 所属部门
+       * @example 全部
+       */
       department?: string;
       shift?: components['schemas']['DutyShift'];
     };
@@ -216,35 +239,56 @@ export interface components {
      */
     DutyShift: '白班' | '夜班';
     EmergencyPhoneBook: {
+      /** @description 通讯录条目列表 */
       entries?: components['schemas']['EmergencyPhone'][];
     };
     EmergencyPhone: {
-      /** @example ph1 */
+      /**
+       * @description 通讯录条目 ID
+       * @example ph1
+       */
       id?: string;
-      /** @example 消防报警 */
+      /**
+       * @description 名称/单位
+       * @example 消防报警
+       */
       name?: string;
-      /** @example 119 */
+      /**
+       * @description 联系电话
+       * @example 119
+       */
       number?: string;
       /**
+       * @description 分类
        * @example 消防
        * @enum {string}
        */
       category?: '消防' | '医疗' | '公安' | '厂内应急' | '保卫值班' | '应急通讯' | '智能联动';
     };
     KnowledgeList: {
+      /** @description 知识条目列表 */
       items?: components['schemas']['KnowledgeItem'][];
     };
     KnowledgeItem: {
-      /** @example k1 */
+      /**
+       * @description 知识条目 ID
+       * @example k1
+       */
       id?: string;
-      /** @example 岗位应急处置卡 */
+      /**
+       * @description 标题
+       * @example 岗位应急处置卡
+       */
       title?: string;
       /**
        * @description 知识条目数
        * @example 158
        */
       count?: number;
-      /** @example Document */
+      /**
+       * @description 图标名（Element Plus icon 名）
+       * @example Document
+       */
       icon?: string;
     };
   };

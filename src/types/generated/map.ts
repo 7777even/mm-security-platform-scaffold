@@ -88,10 +88,12 @@ export interface components {
     /** @description GeoJSON FeatureCollection（WGS84 经纬度，单位度）。alarm 要素 properties 含 alarmId/level/name/status/type；device 要素含 deviceCode/name/status。 */
     GeoJsonFeatureCollection: {
       /**
+       * @description 固定为 FeatureCollection
        * @example FeatureCollection
        * @enum {string}
        */
       type?: 'FeatureCollection';
+      /** @description 要素数组 */
       features?: {
         /** @example Feature */
         type?: string;
