@@ -1,0 +1,334 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "应急资源 Emergency API",
+    "version": "1.0.0",
+    "x-base-path": "/api/v1",
+    "x-contract": "B3",
+    "description": "应急力量 / 结案 / 值班值守 / 应急通讯录 / 安全知识接口（代码真实契约）。契约源：src/services/emergency.ts、closedCases.ts、duty.ts、emergencyPhone.ts、knowledge.ts。"
+  },
+  "servers": [{ "url": "/api/v1", "description": "默认 baseURL（VITE_API_BASE 可覆盖）" }],
+  "security": [{ "bearerAuth": [], "replaySign": [] }],
+  "tags": [{ "name": "emergency", "description": "应急资源" }],
+  "paths": {
+    "/emergency/strength": {
+      "get": {
+        "tags": ["emergency"],
+        "operationId": "getEmergencyStrength",
+        "summary": "应急力量统计",
+        "description": "按维度统计应急资源数量。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=EmergencyStrength）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/EmergencyStrength" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "resources": [
+                      { "kind": "应急专家", "count": 47, "icon": "UserFilled" },
+                      { "kind": "应急物资", "count": 3510, "icon": "Box" }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/emergency/closed-cases": {
+      "get": {
+        "tags": ["emergency"],
+        "operationId": "getClosedCases",
+        "summary": "近期已结案列表",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=ClosedCaseList）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/ClosedCaseList" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "cases": [
+                      {
+                        "caseId": "C-2026-081",
+                        "title": "A 装置反应釜温度异常",
+                        "location": "装置区 03 单元",
+                        "closedAt": "2026-09-04T07:45:00.000Z",
+                        "handler": "王斌"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/emergency/duty": {
+      "get": {
+        "tags": ["emergency"],
+        "operationId": "getDutyRoster",
+        "summary": "应急值班值守表",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DutyRoster）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/DutyRoster" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "departments": ["全部"],
+                    "shift": "白班",
+                    "members": [
+                      {
+                        "id": "d1",
+                        "name": "杨恒明",
+                        "phone": "13792536966",
+                        "role": "值班领导",
+                        "department": "全部",
+                        "shift": "白班"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/emergency/phones": {
+      "get": {
+        "tags": ["emergency"],
+        "operationId": "getEmergencyPhones",
+        "summary": "应急电话通讯录",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=EmergencyPhoneBook）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/EmergencyPhoneBook" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "entries": [
+                      { "id": "ph1", "name": "消防报警", "number": "119", "category": "消防" },
+                      { "id": "ph2", "name": "医疗急救", "number": "120", "category": "医疗" }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/emergency/knowledge": {
+      "get": {
+        "tags": ["emergency"],
+        "operationId": "getEmergencyKnowledge",
+        "summary": "应急生产安全知识",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=KnowledgeList）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/KnowledgeList" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "items": [
+                      { "id": "k1", "title": "岗位应急处置卡", "count": 158, "icon": "Document" }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EmergencyStrength": {
+        "type": "object",
+        "properties": {
+          "resources": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmergencyResource" },
+            "description": "按维度统计的应急资源"
+          }
+        }
+      },
+      "EmergencyResource": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "应急专家",
+              "应急物资",
+              "救援队伍",
+              "装备车辆",
+              "应急场所",
+              "医疗机构",
+              "应急车辆",
+              "消防设施"
+            ],
+            "description": "资源类别",
+            "example": "应急专家"
+          },
+          "count": { "type": "integer", "description": "数量", "example": 47 },
+          "icon": {
+            "type": "string",
+            "description": "图标名（Element Plus icon 名）",
+            "example": "UserFilled"
+          }
+        }
+      },
+      "ClosedCaseList": {
+        "type": "object",
+        "properties": {
+          "cases": { "type": "array", "items": { "$ref": "#/components/schemas/ClosedCase" } }
+        }
+      },
+      "ClosedCase": {
+        "type": "object",
+        "properties": {
+          "caseId": { "type": "string", "description": "结案 ID", "example": "C-2026-081" },
+          "title": { "type": "string", "description": "事件标题" },
+          "location": { "type": "string", "description": "事发位置" },
+          "closedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "结案时间（ISO8601）"
+          },
+          "handler": { "type": "string", "description": "处置人" }
+        }
+      },
+      "DutyRoster": {
+        "type": "object",
+        "properties": {
+          "departments": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "可切换的部门列表（含「全部」）"
+          },
+          "shift": { "$ref": "#/components/schemas/DutyShift" },
+          "members": { "type": "array", "items": { "$ref": "#/components/schemas/DutyMember" } }
+        }
+      },
+      "DutyMember": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "d1" },
+          "name": { "type": "string", "example": "杨恒明" },
+          "phone": { "type": "string", "description": "联系电话", "example": "13792536966" },
+          "role": { "$ref": "#/components/schemas/DutyRole" },
+          "department": { "type": "string", "example": "全部" },
+          "shift": { "$ref": "#/components/schemas/DutyShift" }
+        }
+      },
+      "DutyRole": { "type": "string", "enum": ["值班领导", "值班员"], "example": "值班领导" },
+      "DutyShift": { "type": "string", "enum": ["白班", "夜班"], "example": "白班" },
+      "EmergencyPhoneBook": {
+        "type": "object",
+        "properties": {
+          "entries": { "type": "array", "items": { "$ref": "#/components/schemas/EmergencyPhone" } }
+        }
+      },
+      "EmergencyPhone": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "ph1" },
+          "name": { "type": "string", "example": "消防报警" },
+          "number": { "type": "string", "example": "119" },
+          "category": {
+            "type": "string",
+            "enum": ["消防", "医疗", "公安", "厂内应急", "保卫值班", "应急通讯", "智能联动"],
+            "example": "消防"
+          }
+        }
+      },
+      "KnowledgeList": {
+        "type": "object",
+        "properties": {
+          "items": { "type": "array", "items": { "$ref": "#/components/schemas/KnowledgeItem" } }
+        }
+      },
+      "KnowledgeItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "k1" },
+          "title": { "type": "string", "example": "岗位应急处置卡" },
+          "count": { "type": "integer", "description": "知识条目数", "example": 158 },
+          "icon": { "type": "string", "example": "Document" }
+        }
+      }
+    }
+  }
+}

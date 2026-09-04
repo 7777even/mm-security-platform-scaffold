@@ -1,92 +1,314 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "告警服务 API（alarm）",
-    "version": "0.1.0-stub",
-    "description": "结构桩（stub）：按 Controller 分组，待补充真实接口契约。字段需含中文 description，接口需含 summary+description 与成功响应 example（见 docs/api/README.md 四条铁律）。"
+    "title": "报警 / 应急事件 Alarm API",
+    "version": "1.0.0",
+    "x-base-path": "/api/v1",
+    "x-contract": "B3",
+    "description": "报警与应急事件的查询与 CRUD（代码真实契约，由 stub 升级）。契约源：src/services/alarm.ts、src/services/emergencyEventStore.ts。"
   },
-  "servers": [
-    {
-      "url": "https://gateway.example.com/alarm",
-      "description": "告警网关（生产环境 gateway-bypass=false 强制 HMAC 签名）"
-    }
-  ],
-  "tags": [
-    { "name": "AlarmController", "description": "告警查询与确认" },
-    { "name": "AlarmRuleController", "description": "告警规则配置" }
-  ],
+  "servers": [{ "url": "/api/v1", "description": "默认 baseURL（VITE_API_BASE 可覆盖）" }],
+  "security": [{ "bearerAuth": [], "replaySign": [] }],
+  "tags": [{ "name": "alarm", "description": "报警 / 应急事件" }],
   "paths": {
-    "/alarms/{deviceCode}": {
+    "/alarms": {
       "get": {
-        "tags": ["AlarmController"],
-        "summary": "按设备编码查询当前告警",
-        "description": "依据 20 位中石化 MDM 设备编码查询该设备当前活动告警列表。前端只监不控，本接口不得下发硬控指令（零下行控制红线）。",
+        "tags": ["alarm"],
+        "operationId": "listAlarms",
+        "summary": "分页查询报警/事件",
+        "description": "分页返回报警与应急事件列表。前端只读订阅，不下行控制。",
         "parameters": [
-          {
-            "name": "deviceCode",
-            "in": "path",
-            "required": true,
-            "description": "20 位中石化 MDM 设备物理主键编码",
-            "schema": { "type": "string", "minLength": 20, "maxLength": 20 }
-          }
+          { "$ref": "./_shared.json#/components/parameters/page" },
+          { "$ref": "./_shared.json#/components/parameters/size" },
+          { "$ref": "./_shared.json#/components/parameters/lang" }
         ],
         "responses": {
           "200": {
-            "description": "查询成功",
+            "description": "B3 成功包络（data=分页 AlarmItem）",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/AlarmListResponse" },
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "allOf": [
+                            { "$ref": "./_shared.json#/components/schemas/PageResult" },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "list": {
+                                  "type": "array",
+                                  "items": { "$ref": "#/components/schemas/AlarmItem" }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
                 "example": {
                   "code": 0,
+                  "message": "ok",
                   "data": {
-                    "deviceCode": "10000000000000000001",
-                    "alarms": [
+                    "list": [
                       {
-                        "alarmId": "A-20260903-001",
-                        "level": "high",
-                        "message": "温度越限",
-                        "occurredAt": "2026-09-03T10:00:00+08:00"
+                        "alarmId": "AE-2026-001",
+                        "level": 2,
+                        "type": "SOS",
+                        "status": "DISPATCHED",
+                        "deviceCode": "WX-EXT-001",
+                        "location": "全厂范围",
+                        "ts": "2026-06-25T08:12:00.000Z",
+                        "description": "台风沙潮向台防灾工作",
+                        "category": "WEATHER",
+                        "warned": true,
+                        "title": "台风沙潮向台防灾工作"
                       }
-                    ]
+                    ],
+                    "total": 9,
+                    "page": 1,
+                    "size": 5
                   }
                 }
               }
             }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["alarm"],
+        "operationId": "createAlarm",
+        "summary": "创建应急事件",
+        "description": "新增一条应急事件（仅上行写，非硬控指令）。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/EmergencyEventPayload" }
+            }
           }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=创建后的 AlarmItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/AlarmItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "alarmId": "AE-2026-010",
+                    "level": 2,
+                    "type": "FIRE",
+                    "status": "ACTIVE",
+                    "deviceCode": "DT-A-3012",
+                    "location": "为厂区-A装置东北角",
+                    "ts": "2026-09-04T08:00:00.000Z",
+                    "description": "A装置1#机-第二层防异常报警",
+                    "category": "FIRE_PHONE",
+                    "warned": true,
+                    "title": "A装置电话报警"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "./_shared.json#/components/responses/BadRequest" },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/alarms/{alarmId}": {
+      "put": {
+        "tags": ["alarm"],
+        "operationId": "updateAlarm",
+        "summary": "更新应急事件",
+        "description": "按 alarmId 更新应急事件（仅上行写）。",
+        "parameters": [
+          {
+            "name": "alarmId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "报警/事件 ID（如 AE-2026-001）",
+            "example": "AE-2026-001"
+          },
+          { "$ref": "./_shared.json#/components/parameters/lang" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/EmergencyEventPayload" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=更新后的 AlarmItem；不存在返回 null）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/AlarmItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "alarmId": "AE-2026-001",
+                    "level": 3,
+                    "type": "FIRE",
+                    "status": "ACKED",
+                    "deviceCode": "DT-A-3012",
+                    "location": "为厂区-A装置东北角",
+                    "ts": "2026-03-17T14:21:54.000Z",
+                    "description": "A装置1#机-第二层防异常报警",
+                    "category": "FIRE_PHONE",
+                    "warned": true,
+                    "title": "A装置电话报警"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      },
+      "delete": {
+        "tags": ["alarm"],
+        "operationId": "deleteAlarm",
+        "summary": "删除应急事件",
+        "description": "按 alarmId 删除应急事件（仅上行写）。",
+        "parameters": [
+          {
+            "name": "alarmId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "报警/事件 ID",
+            "example": "AE-2026-001"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data={ok:boolean}）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/DeleteResult" } }
+                    }
+                  ]
+                },
+                "example": { "code": 0, "message": "ok", "data": { "ok": true } }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
         }
       }
     }
   },
   "components": {
     "schemas": {
-      "AlarmListResponse": {
+      "AlarmItem": {
         "type": "object",
-        "description": "告警列表响应（经 B3 包络解包后取 data）",
+        "description": "报警/应急事件实体。",
         "properties": {
-          "deviceCode": { "type": "string", "description": "20 位中石化 MDM 设备编码" },
-          "alarms": {
-            "type": "array",
-            "description": "当前活动告警集合",
-            "items": { "$ref": "#/components/schemas/Alarm" }
-          }
+          "alarmId": { "type": "string", "description": "事件唯一 ID", "example": "AE-2026-001" },
+          "level": { "$ref": "#/components/schemas/AlarmLevel" },
+          "type": { "$ref": "#/components/schemas/AlarmType" },
+          "status": { "$ref": "#/components/schemas/AlarmStatus" },
+          "deviceCode": {
+            "type": "string",
+            "description": "关联设备编码（20 位 MDM 物理主键，禁止自创）",
+            "example": "DT-A-3012"
+          },
+          "location": {
+            "type": "string",
+            "description": "事发位置",
+            "example": "为厂区-A装置东北角"
+          },
+          "ts": { "type": "string", "format": "date-time", "description": "事件时间戳（ISO8601）" },
+          "description": { "type": "string", "description": "事件描述" },
+          "category": { "$ref": "#/components/schemas/EmergencyCategory" },
+          "warned": { "type": "boolean", "description": "是否预警" },
+          "title": { "type": "string", "description": "事件名称" },
+          "planId": { "type": "string", "description": "关联应急预案 ID（可选）" }
         }
       },
-      "Alarm": {
+      "EmergencyEventPayload": {
         "type": "object",
-        "description": "单条告警",
+        "description": "创建/更新应急事件的入参（不含 alarmId/ts 等系统字段）。",
         "properties": {
-          "alarmId": { "type": "string", "description": "告警唯一标识" },
-          "level": {
-            "type": "string",
-            "description": "告警等级：low / medium / high / critical，着色见 UI 规范映射表"
+          "level": { "$ref": "#/components/schemas/AlarmLevel" },
+          "type": { "$ref": "#/components/schemas/AlarmType" },
+          "status": {
+            "$ref": "#/components/schemas/AlarmStatus",
+            "description": "可选，缺省后端置 ACTIVE"
           },
-          "message": { "type": "string", "description": "告警正文描述" },
-          "occurredAt": {
+          "deviceCode": {
             "type": "string",
-            "format": "date-time",
-            "description": "告警发生时间（ISO8601，含时区）"
-          }
-        }
+            "description": "关联设备编码（20 位 MDM）",
+            "example": "DT-A-3012"
+          },
+          "location": { "type": "string", "description": "事发位置" },
+          "description": { "type": "string", "description": "事件描述" }
+        },
+        "required": ["level", "type", "deviceCode", "location", "description"]
+      },
+      "DeleteResult": {
+        "type": "object",
+        "properties": { "ok": { "type": "boolean", "description": "删除是否成功" } }
+      },
+      "AlarmLevel": {
+        "type": "integer",
+        "description": "报警等级 1-4（1 最高）",
+        "enum": [1, 2, 3, 4],
+        "example": 2
+      },
+      "AlarmStatus": {
+        "type": "string",
+        "enum": ["ACTIVE", "ACKED", "DISPATCHED", "CLOSED"],
+        "description": "ACTIVE=活动 / ACKED=已确认 / DISPATCHED=已派发 / CLOSED=已闭环",
+        "example": "DISPATCHED"
+      },
+      "AlarmType": {
+        "type": "string",
+        "enum": ["FIRE", "GAS", "TEMP", "CCTV", "SOS"],
+        "description": "FIRE=消防 / GAS=气体 / TEMP=温度 / CCTV=视频 / SOS=应急",
+        "example": "FIRE"
+      },
+      "EmergencyCategory": {
+        "type": "string",
+        "enum": ["WEATHER", "FIRE_PHONE", "STORAGE_FIRE", "OTHER"],
+        "description": "应急事件分组：极端天气 / 消防电话报警 / 储罐消防报警 / 其他",
+        "example": "FIRE_PHONE"
       }
     }
   }

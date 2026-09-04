@@ -1,0 +1,71 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "实时监视 Realtime API（WebSocket）",
+    "version": "1.0.0",
+    "x-contract": "WS",
+    "description": "监测预警实时中枢（仅订阅只读监视流）。契约源：src/services/realtime.ts、src/services/ws.ts。",
+    "x-redline": "零下行控制红线：客户端仅消费 alarm.push 等只读监视数据，公开面只暴露 connect/close 生命周期，不提供任何硬控写端点（消防泵/应急广播/逃生门禁等）。"
+  },
+  "servers": [
+    {
+      "url": "/ws/alarm",
+      "description": "默认 WS 地址（VITE_ALARM_WS_URL 可覆盖；生产建议 wss://）"
+    }
+  ],
+  "security": [{ "bearerAuth": [], "replaySign": [] }],
+  "tags": [{ "name": "realtime", "description": "实时监视（WebSocket）" }],
+  "paths": {
+    "/ws/alarm": {
+      "get": {
+        "tags": ["realtime"],
+        "operationId": "subscribeAlarmPush",
+        "summary": "订阅报警实时推送",
+        "description": "建立 WebSocket 连接，仅接收服务端下发的只读监视消息（topic=alarm.push）。客户端不发送任何硬控指令。",
+        "x-websocket": {
+          "connection": "WebSocket；默认地址 VITE_ALARM_WS_URL 或 /ws/alarm；心跳 15s（客户端发 {type:'ping',ts}），指数退避重连（1s·2^n，上限 30s）。",
+          "messages": [
+            {
+              "direction": "server→client",
+              "name": "alarm.push",
+              "description": "报警实时推送，payload 即一条 AlarmItem。",
+              "payload": { "$ref": "./alarm.openapi.json#/components/schemas/AlarmItem" },
+              "example": {
+                "topic": "alarm.push",
+                "payload": {
+                  "alarmId": "AE-2026-011",
+                  "level": 1,
+                  "type": "FIRE",
+                  "status": "ACTIVE",
+                  "deviceCode": "DT-B-3008",
+                  "location": "为厂区-B装置西侧",
+                  "ts": "2026-09-04T08:05:00.000Z",
+                  "description": "烟感探测报警铃持续报警",
+                  "category": "FIRE_PHONE",
+                  "warned": true,
+                  "title": "B装置烟感触发"
+                }
+              }
+            },
+            {
+              "direction": "client→server",
+              "name": "ping",
+              "description": "心跳保活（非业务消息）。",
+              "payload": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "example": "ping" },
+                  "ts": { "type": "integer", "description": "毫秒时间戳", "example": 1717488000000 }
+                }
+              }
+            }
+          ]
+        },
+        "responses": {
+          "101": { "description": "WebSocket 协议切换成功（连接建立）" },
+          "401": { "description": "未认证（令牌缺失/失效）" }
+        }
+      }
+    }
+  }
+}

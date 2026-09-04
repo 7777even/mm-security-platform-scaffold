@@ -1,0 +1,178 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "态势大屏 Dashboard API",
+    "version": "1.0.0",
+    "x-base-path": "/api/v1",
+    "x-contract": "B3",
+    "description": "大屏态势总览 / 报警趋势 / 风险热力图接口（代码真实契约）。契约源：src/services/alarm.ts、src/services/map.ts。"
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "默认 baseURL（VITE_API_BASE 可覆盖，见 src/services/http.ts）"
+    }
+  ],
+  "security": [{ "bearerAuth": [], "replaySign": [] }],
+  "tags": [{ "name": "dashboard", "description": "大屏态势" }],
+  "paths": {
+    "/dashboard/overview": {
+      "get": {
+        "tags": ["dashboard"],
+        "operationId": "getDashboardOverview",
+        "summary": "态势总览",
+        "description": "返回大屏顶部态势指标。前端只读订阅，不下行控制。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DashboardOverview）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/DashboardOverview" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "activeAlarm": 9,
+                    "deviceOnline": 312,
+                    "deviceTotal": 320,
+                    "riskIndex": 3.4,
+                    "onlineWorkstation": 26,
+                    "ts": "2026-09-04T08:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/dashboard/alarm-trend": {
+      "get": {
+        "tags": ["dashboard"],
+        "operationId": "getAlarmTrend",
+        "summary": "报警趋势（按小时）",
+        "description": "返回近 24 小时每小时报警数。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=AlarmTrendPoint[]）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/AlarmTrendPoint" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    { "hour": "07:00", "count": 3 },
+                    { "hour": "08:00", "count": 12 }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/dashboard/risk-heatmap": {
+      "get": {
+        "tags": ["dashboard"],
+        "operationId": "getRiskHeatmap",
+        "summary": "风险热力图（按区域评分）",
+        "description": "返回各厂区区域风险评分。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=RiskHeatItem[]）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/RiskHeatItem" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    { "zone": "罐区", "score": 4.2 },
+                    { "zone": "装置区", "score": 3.1 }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DashboardOverview": {
+        "type": "object",
+        "properties": {
+          "activeAlarm": { "type": "integer", "description": "当前活动报警数" },
+          "deviceOnline": { "type": "integer", "description": "在线设备数" },
+          "deviceTotal": { "type": "integer", "description": "设备总数" },
+          "riskIndex": { "type": "number", "description": "综合风险指数" },
+          "onlineWorkstation": { "type": "integer", "description": "在线工位/工作站数" },
+          "ts": { "type": "string", "format": "date-time", "description": "数据时间戳（ISO8601）" }
+        }
+      },
+      "AlarmTrendPoint": {
+        "type": "object",
+        "properties": {
+          "hour": { "type": "string", "description": "小时标签，如 '08:00'", "example": "08:00" },
+          "count": { "type": "integer", "description": "该小时报警数", "example": 12 }
+        }
+      },
+      "RiskHeatItem": {
+        "type": "object",
+        "properties": {
+          "zone": {
+            "type": "string",
+            "description": "区域名（罐区/装置区/装卸区/公用工程/行政办公）",
+            "example": "罐区"
+          },
+          "score": { "type": "number", "description": "风险评分", "example": 4.2 }
+        }
+      }
+    }
+  }
+}

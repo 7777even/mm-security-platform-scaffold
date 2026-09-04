@@ -1,0 +1,151 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "上行数据 Uplink API",
+    "version": "1.0.0",
+    "x-base-path": "/api/v1",
+    "x-contract": "B3（field-reports 除外）",
+    "description": "前端上行写接口：审计埋点、防爆手机现场采集回传。契约源：src/services/audit.ts、src/services/offlineOutbox.ts。",
+    "x-redline": "只监不控：本域仅上行业务数据（审计日志 / 现场采集），不含任何下行硬控写端点（消防泵/应急广播/门禁等）。"
+  },
+  "servers": [{ "url": "/api/v1", "description": "默认 baseURL（VITE_API_BASE 可覆盖）" }],
+  "security": [{ "bearerAuth": [], "replaySign": [] }],
+  "tags": [{ "name": "uplink", "description": "上行数据" }],
+  "paths": {
+    "/audit/log": {
+      "post": {
+        "tags": ["uplink"],
+        "operationId": "reportAudit",
+        "summary": "上报操作审计事件",
+        "description": "批量上报前端操作审计（登录/路由查看/指令查看等），异步尽力落库，不阻断业务（D1 C-2 等保二级「安全审计」）。走 http.ts，B3 包络；客户端忽略响应体。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/AuditEventBatch" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data 可为空对象，客户端忽略）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    { "type": "object", "properties": { "data": { "nullable": true } } }
+                  ]
+                },
+                "example": { "code": 0, "message": "ok", "data": null }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/field-reports": {
+      "post": {
+        "tags": ["uplink"],
+        "operationId": "submitFieldReport",
+        "summary": "提交现场采集回传（防爆手机）",
+        "description": "防爆手机端离线优先回传的现场采集数据（图文/视频）。注意：该端点经原生 fetch 直连（src/services/offlineOutbox.ts createHttpSubmit），**不走 http.ts B3 包络**，仅以 HTTP 状态判断成功（res.ok）。T7 契约待对齐。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/FieldReportItem" } }
+          }
+        },
+        "responses": {
+          "204": { "description": "回传成功（无响应体）" },
+          "400": { "description": "请求非法" },
+          "401": { "description": "未认证" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuditEvent": {
+        "type": "object",
+        "properties": {
+          "action": { "type": "string", "description": "操作动作标识", "example": "route.view" },
+          "module": { "type": "string", "description": "所属模块（可选）", "example": "dashboard" },
+          "detail": {
+            "type": "object",
+            "description": "扩展上下文（可选，additionalProperties）",
+            "additionalProperties": true
+          },
+          "at": {
+            "type": "integer",
+            "description": "事件时间戳（毫秒，可选，缺省服务端取当前）",
+            "example": 1717488000000
+          }
+        },
+        "required": ["action"]
+      },
+      "AuditEventBatch": {
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AuditEvent" },
+            "description": "审计事件批次"
+          }
+        },
+        "required": ["events"]
+      },
+      "FieldReportItem": {
+        "type": "object",
+        "description": "现场采集回传项（防爆手机离线队列上行）。",
+        "properties": {
+          "id": { "type": "string", "description": "回传项 ID（UUID）", "example": "r-abc123" },
+          "kind": {
+            "type": "string",
+            "enum": ["field-report", "task-ack"],
+            "description": "类型：现场采集报告 / 任务确认",
+            "example": "field-report"
+          },
+          "title": { "type": "string", "description": "标题", "example": "A2 区火情处置" },
+          "note": { "type": "string", "description": "备注（可选）" },
+          "deviceCode": {
+            "type": "string",
+            "description": "关联 20 位 MDM 设备编码（可选）",
+            "example": "DT-A-3012"
+          },
+          "media": {
+            "type": "array",
+            "description": "附件媒体（可选）",
+            "items": { "$ref": "#/components/schemas/FieldReportMedia" }
+          },
+          "createdAt": {
+            "type": "integer",
+            "description": "创建时间戳（毫秒）",
+            "example": 1717488000000
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "syncing", "done", "failed"],
+            "description": "回传状态",
+            "example": "done"
+          },
+          "attempts": { "type": "integer", "description": "已尝试次数", "example": 1 },
+          "lastError": { "type": "string", "description": "最近错误（可选）" },
+          "syncedAt": {
+            "type": "integer",
+            "description": "同步完成时间戳（毫秒，可选）",
+            "example": 1717488060000
+          }
+        },
+        "required": ["id", "kind", "title", "createdAt", "status", "attempts"]
+      },
+      "FieldReportMedia": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["image", "video"], "example": "image" },
+          "name": { "type": "string", "example": "scene-01.jpg" },
+          "size": { "type": "integer", "description": "字节大小", "example": 204800 }
+        }
+      }
+    }
+  }
+}

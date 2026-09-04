@@ -1,0 +1,155 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "地图点位 Map API",
+    "version": "1.0.0",
+    "x-base-path": "/api/v1",
+    "x-contract": "B3",
+    "description": "一张图报警/设备点位与风险区域接口，返回 GeoJSON（WGS84 经纬度）（代码真实契约）。契约源：src/services/map.ts、src/services/geo.ts。",
+    "x-geo": "坐标系统一 WGS84（单位度），Polygon 取外环；前端经 geo.ts parseWkt/renderGeoJson 渲染到 Cesium。"
+  },
+  "servers": [{ "url": "/api/v1", "description": "默认 baseURL（VITE_API_BASE 可覆盖）" }],
+  "security": [{ "bearerAuth": [], "replaySign": [] }],
+  "tags": [{ "name": "map", "description": "地图点位" }],
+  "paths": {
+    "/map/alarms": {
+      "get": {
+        "tags": ["map"],
+        "operationId": "getMapAlarmPoints",
+        "summary": "地图报警点位（GeoJSON）",
+        "description": "返回报警点位 GeoJSON FeatureCollection。前端只读，不下行控制。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=GeoJSON FeatureCollection，要素 properties 含 alarmId/level/name/status/type）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/GeoJsonFeatureCollection" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "type": "FeatureCollection",
+                    "features": [
+                      {
+                        "type": "Feature",
+                        "properties": {
+                          "alarmId": "AE-2026-001",
+                          "level": 2,
+                          "name": "罐区-01 烟感报警",
+                          "status": "ACTIVE",
+                          "type": "FIRE"
+                        },
+                        "geometry": { "type": "Point", "coordinates": [110.921, 21.663] }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/map/devices": {
+      "get": {
+        "tags": ["map"],
+        "operationId": "getMapDevicePoints",
+        "summary": "地图设备点位（GeoJSON）",
+        "description": "返回设备点位 GeoJSON FeatureCollection。前端只读，不下行控制。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=GeoJSON FeatureCollection，要素 properties 含 deviceCode/name/status）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/GeoJsonFeatureCollection" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "type": "FeatureCollection",
+                    "features": [
+                      {
+                        "type": "Feature",
+                        "properties": {
+                          "deviceCode": "DT-A-3012",
+                          "name": "罐区-01 烟感",
+                          "status": "ONLINE"
+                        },
+                        "geometry": { "type": "Point", "coordinates": [110.921, 21.663] }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GeoJsonFeatureCollection": {
+        "type": "object",
+        "description": "GeoJSON FeatureCollection（WGS84 经纬度，单位度）。alarm 要素 properties 含 alarmId/level/name/status/type；device 要素含 deviceCode/name/status。",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["FeatureCollection"],
+            "example": "FeatureCollection"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "type": "string", "example": "Feature" },
+                "properties": {
+                  "type": "object",
+                  "description": "业务属性（alarm 或 device 字段，additionalProperties 容忍后端扩展）",
+                  "additionalProperties": true
+                },
+                "geometry": {
+                  "type": "object",
+                  "description": "GeoJSON 几何（Point/LineString/Polygon/Multi*）",
+                  "properties": {
+                    "type": { "type": "string", "example": "Point" },
+                    "coordinates": {
+                      "type": "array",
+                      "description": "坐标数组；Point=[lng,lat]，Polygon 为嵌套环",
+                      "items": { "type": "number" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

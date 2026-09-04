@@ -1,0 +1,125 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MM 安全管控平台 - 共享契约组件（_shared）",
+    "version": "1.0.0",
+    "description": "跨域复用的 OpenAPI 组件库（非独立 API 文档），被各 docs/api/*.openapi.json 通过相对 $ref 引用。单一真源：AGENTS.md §3 + src/types/index.ts + src/services/http.ts + src/services/requestSigner.ts。",
+    "x-kind": "shared-components"
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "访问令牌仅存于前端内存态（src/services/token.ts：setAccessToken/getAccessToken，绝不落 localStorage），经 Authorization: Bearer <token> 下发。刷新令牌由后端种入 HttpOnly Cookie，浏览器随请求自动发送，前端 JS 不可读（XSS 防护红线，AGENTS.md §3.5）。"
+      },
+      "replaySign": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Signature",
+        "description": "防重放动态签名（详设 V1.5 §3.3）：HMAC-SHA256(Token, METHOD\\npath\\ntimestamp\\nnonce)，随 X-Timestamp / X-Nonce / X-Signature 三头下发；有效窗口严格 10s；网关对超窗/Nonce 重复一律丢弃。生产(gateway-bypass=false)强制启用，Dev 可经 VITE_SECURITY_GATEWAY_BYPASS=true 挂起（src/services/requestSigner.ts isSigningEnabled）。"
+      }
+    },
+    "parameters": {
+      "page": {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "schema": { "type": "integer", "minimum": 1, "default": 1 },
+        "description": "页码（从 1 开始）"
+      },
+      "size": {
+        "name": "size",
+        "in": "query",
+        "required": false,
+        "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 20 },
+        "description": "每页条数"
+      },
+      "lang": {
+        "name": "Accept-Language",
+        "in": "header",
+        "required": false,
+        "schema": { "type": "string", "default": "zh-CN", "enum": ["zh-CN", "en-US"] },
+        "description": "i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7）"
+      }
+    },
+    "headers": {
+      "X-Timestamp": {
+        "description": "毫秒级时间戳字符串（防重放签名）",
+        "schema": { "type": "string", "example": "1717488000000" }
+      },
+      "X-Nonce": {
+        "description": "单次随机数 UUID，防重放",
+        "schema": { "type": "string", "example": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d" }
+      },
+      "X-Signature": {
+        "description": "HMAC-SHA256 签名串",
+        "schema": { "type": "string", "example": "a3f5c9..." }
+      }
+    },
+    "schemas": {
+      "ApiResponse": {
+        "type": "object",
+        "description": "B3 统一响应包络：code=0 成功，非 0 抛业务错误（src/services/http.ts unwrapBody）。各接口用 allOf 覆盖 data 的具体结构。",
+        "properties": {
+          "code": { "type": "integer", "description": "业务状态码；0 表示成功", "example": 0 },
+          "message": {
+            "type": "string",
+            "description": "提示文案（后端按 Accept-Language 翻译）",
+            "example": "ok"
+          },
+          "data": { "description": "业务数据负载；结构随接口而定（见各接口 data 覆盖）" },
+          "traceId": {
+            "type": "string",
+            "description": "链路追踪 ID（可选）",
+            "example": "a1b2c3d4"
+          }
+        },
+        "required": ["code", "message", "data"]
+      },
+      "PageResult": {
+        "type": "object",
+        "description": "B3 统一分页包络（嵌于 data）。",
+        "properties": {
+          "list": { "type": "array", "items": { "type": "object" }, "description": "当前页数据" },
+          "total": { "type": "integer", "description": "总条数" },
+          "page": { "type": "integer", "description": "当前页" },
+          "size": { "type": "integer", "description": "每页条数" }
+        },
+        "required": ["list", "total", "page", "size"]
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "description": "业务错误包络（code != 0）。",
+        "properties": {
+          "code": { "type": "integer", "example": 40001 },
+          "message": { "type": "string", "example": "参数校验失败" },
+          "data": { "nullable": true, "description": "错误上下文（可选）" },
+          "traceId": { "type": "string", "example": "a1b2c3d4" }
+        },
+        "required": ["code", "message"]
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "未认证 / 令牌失效",
+        "content": {
+          "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } }
+        }
+      },
+      "BadRequest": {
+        "description": "参数校验失败",
+        "content": {
+          "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } }
+        }
+      },
+      "Forbidden": {
+        "description": "无权限（含命中零下行控制硬控拦截，由 http 拦截器 guardHardControl 统一拦截）",
+        "content": {
+          "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } }
+        }
+      }
+    }
+  }
+}
