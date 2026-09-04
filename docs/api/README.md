@@ -39,11 +39,38 @@
 
 ## 工具链（AI 与自动化消费）
 
-- **相对 `$ref` 解析**：多数工具（Swagger UI、openapi-generator、openapi-typescript）原生支持跨文件 `$ref`。若所用工具不支持，先内联：
+### 1. 生成 TS 类型（本仓库标准做法）
+
+统一由脚本 `scripts/gen-api-types.mjs` 处理「`_shared.json` 跨文件 `$ref` 合并 + 类型生成」，**不要**直接对单文件跑 `openapi-typescript`（会因 `_shared` 跨文件引用解析失败）：
+
+```bash
+npm run gen:api-types          # 生成 src/types/generated/<domain>.ts + index.ts
+```
+
+脚本逻辑（对齐 AGENTS.md §3）：
+
+- 读取 `_shared.json`，把其 `components`（schemas / responses / parameters / securitySchemes）整体合并进每个域文档；
+- 把 `./_shared.json#/components/...` 改写为内部 `#/components/...` 引用，使契约自洽；
+- 调用 `openapi-typescript` 生成 `src/types/generated/<domain>.ts`（每域一个文件，B3 包络 + 域类型一并产出）；
+- 生成 `src/types/generated/index.ts`，以**命名空间**重导出各域（`import type { Alarm } from '@/types/generated'`，再取 `Alarm.components['schemas']['AlarmItem']`），避免各域 `paths`/`components` 同名冲突。
+
+> 生成物为自动代码，**请勿手改**；契约变更后重跑本命令并一并提交。
+
+### 2. 其他消费方式
+
+- **相对 `$ref` 解析**：Swagger UI、openapi-generator 原生支持跨文件 `$ref`。若某工具不支持，先内联（二选一）：
   - `npx @redocly/openapi-cli bundle docs/api/<domain>.openapi.json -o bundled.json`
-  - 或 `npx swagger-cli bundle docs/api/<domain>.openapi.json -o bundled.json`
-- **生成 TS 类型**：`npx openapi-typescript docs/api/alarm.openapi.json -o src/types/api-alarm.ts`（B3 包络 + 域类型一并产出）。
-- **生成 Mock / 客户端**：`openapi-generator-cli` 或 `openapi-typescript` + `typhon-ts` 可按契约生成调用方与桩数据。
+  - `npx swagger-cli bundle docs/api/<domain>.openapi.json -o bundled.json`
+- **生成 Mock / 客户端**：`openapi-generator-cli` 或 `openapi-typescript` + `typhon-ts` 可按契约生成调用方与桩数据（后端未就绪时前端联调用）。
+
+## 变更四同步（契约 ↔ 代码 一致性闭环）
+
+新增 / 修改接口时，按以下顺序同步，避免契约与实现漂移：
+
+1. **OpenSpec**：业务变更先走 `opsx-*` / `.cursor/skills/openspec-*`，提案与 tasks 落地（`openspec/changes/`）。
+2. **docs/api**：更新对应 `<domain>.openapi.json`（遵循四条铁律），共享语义改 `_shared.json`。
+3. **类型生成**：跑 `npm run gen:api-types`，把契约变化反映到 `src/types/generated/`。
+4. **调用方**：`src/services/*` 消费新类型（`import type { Xxx } from '@/types/generated'`），或据此调整 axios 适配层。
 
 > 单一真源优先级：`src/services/*`（实际调用）↔ `docs/api/*.openapi.json`（机器可读契约）互为镜像；AGENTS.md §3 是散文约束，本目录是其机器可读投影。改 AGENTS §3 须同步此处。
 

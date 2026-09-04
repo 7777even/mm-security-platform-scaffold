@@ -19,6 +19,7 @@ export default tseslint.config(
       '**/.migration-tmp/**',
       '.tmp-migrate/**',
       '.tmp-ui-redesign/**',
+      'src/types/generated/**',
       '.workbuddy/**',
       '.superpowers/**',
       '*.config.ts',
