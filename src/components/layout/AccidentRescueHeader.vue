@@ -16,13 +16,6 @@ const props = withDefaults(
     endedAt?: string;
     /** 左上角事件标题风格：应急事件红 / 应急演练琥珀 / 极端天气青 */
     theme?: 'event' | 'drill' | 'weather';
-    /** 极端天气详情页：头部右侧气象指标 */
-    weatherMetrics?: {
-      temperature: string;
-      windSpeed: string;
-      humidity: string;
-      windDirection: string;
-    };
   }>(),
   { theme: 'event' },
 );
@@ -119,21 +112,34 @@ onUnmounted(() => {
     </div>
 
     <div class="rescue-header__right">
-      <WeatherEntry :icon="assets.weatherIcon" />
+      <WeatherEntry />
       <div class="datetime">
         <div class="datetime__time">{{ currentTime }}</div>
         <div class="datetime__date">{{ currentDate }}</div>
       </div>
       <div ref="userAreaRef" class="user-area">
         <button type="button" class="user" @click.stop="toggleUserMenu">
-          <img class="user__avatar" :src="assets.userAvatar" alt="" />
+          <div class="user__avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-3.3 0-9 1.7-9 5v1h18v-1c0-3.3-5.7-5-9-5Z"
+              />
+            </svg>
+          </div>
           <span class="user__name">管理员</span>
-          <img
+          <svg
             class="user__arrow"
             :class="{ 'user__arrow--open': userMenuOpen }"
-            :src="assets.userArrow"
-            alt=""
-          />
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
         </button>
         <UserMenuDropdown
           ref="userMenuRef"
@@ -149,7 +155,7 @@ onUnmounted(() => {
 <style scoped>
 .rescue-header {
   position: relative;
-  height: var(--header-height);
+  height: var(--layout-header-h);
   flex-shrink: 0;
   overflow: hidden;
 
@@ -284,79 +290,97 @@ onUnmounted(() => {
   text-shadow: 0 0 16px color-mix(in srgb, var(--accent-gold) 35%, transparent);
 }
 
+/* 与主壳 AppLayout .header-right 对齐：右侧内距 --space-lg、垂直居中、同层级 --z-chrome */
 .rescue-header__right {
   position: absolute;
-  right: 36px;
-  top: 12px;
-  z-index: var(--z-local-1);
+  right: var(--space-lg);
+  top: 0;
+  bottom: 0;
+  z-index: var(--z-chrome);
   display: flex;
   align-items: center;
-  gap: 18px;
-}
-
-.weather {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.weather__icon {
-  width: 23px;
-  height: 16px;
-}
-
-.weather__temp {
-  font-size: 18px;
-  color: var(--color-text-strong);
-}
-
-.weather-metrics {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.weather-metrics__item {
-  font-size: 13px;
-  color: color-mix(in srgb, var(--color-text-strong) 92%, transparent);
+  gap: var(--space-lg);
+  flex-shrink: 0;
   white-space: nowrap;
 }
 
+/* 时间竖排与主壳 .time-stack 同构：左对齐 + min-width 防秒跳抖动 */
+.datetime {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  line-height: 1;
+  min-width: 160px;
+  flex-shrink: 0;
+}
+
 .datetime__time {
-  font-size: 18px;
+  font-family: var(--font-family-num);
+  font-size: var(--font-size-keynum);
+  font-weight: 700;
+  letter-spacing: 1px;
   color: var(--color-text-strong);
-  text-align: right;
+  text-shadow: 0 0 10px var(--color-accent-glow);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .datetime__date {
-  font-size: 11px;
-  color: var(--color-text-strong);
-  text-align: right;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-helper);
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.user-area {
+  position: relative;
+  flex-shrink: 0;
 }
 
 .user {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   padding: 0;
   border: none;
   background: transparent;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .user__avatar {
-  width: 33px;
-  height: 33px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-accent-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px var(--color-accent-glow);
+  flex-shrink: 0;
+}
+
+.user__avatar svg {
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-strong);
 }
 
 .user__name {
-  font-size: 14px;
-  color: var(--color-text-muted);
+  font-size: var(--font-size-body);
+  color: var(--color-text);
+  font-weight: 500;
+  letter-spacing: 1px;
+  white-space: nowrap;
 }
 
 .user__arrow {
-  width: 10px;
-  height: 5px;
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
   transition: transform 0.2s ease;
 }
 
