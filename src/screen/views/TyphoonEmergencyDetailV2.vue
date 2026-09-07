@@ -91,7 +91,6 @@ function openPointVideo(point: RiskPoint) {
         :incident-title="incident.title"
         :started-at="incident.startedAt"
         :ended-at="incident.endedAt"
-        :weather-metrics="incident.weatherMetrics"
       />
 
       <section class="weather-v2__status" aria-label="事件态势摘要">

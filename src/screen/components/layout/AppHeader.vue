@@ -135,21 +135,34 @@ onUnmounted(() => {
     </div>
 
     <div class="app-header__right">
-      <WeatherEntry :icon="assets.weatherIcon" />
+      <WeatherEntry />
       <div class="datetime">
         <div class="datetime__time">{{ currentTime }}</div>
         <div class="datetime__date">{{ currentDate }}</div>
       </div>
       <div ref="userAreaRef" class="user-area">
         <button type="button" class="user" @click.stop="toggleUserMenu">
-          <img class="user__avatar" :src="assets.userAvatar" alt="" />
+          <div class="user__avatar" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-3.3 0-9 1.7-9 5v1h18v-1c0-3.3-5.7-5-9-5Z"
+              />
+            </svg>
+          </div>
           <span class="user__name">管理员</span>
-          <img
+          <svg
             class="user__arrow"
             :class="{ 'user__arrow--open': userMenuOpen }"
-            :src="assets.userArrow"
-            alt=""
-          />
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
         </button>
         <UserMenuDropdown
           ref="userMenuRef"
@@ -388,7 +401,7 @@ onUnmounted(() => {
 .user {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   padding: 0;
   border: none;
   background: transparent;
@@ -397,20 +410,35 @@ onUnmounted(() => {
 }
 
 .user__avatar {
-  width: 33px;
-  height: 33px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-accent-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px var(--color-accent-glow);
   flex-shrink: 0;
 }
 
+.user__avatar svg {
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-strong);
+}
+
 .user__name {
-  font-size: 14px;
-  color: var(--color-text-muted);
+  font-size: var(--font-size-body);
+  color: var(--color-text);
+  font-weight: 500;
+  letter-spacing: 1px;
   white-space: nowrap;
 }
 
 .user__arrow {
-  width: 10px;
-  height: 5px;
+  width: var(--icon-sm);
+  height: var(--icon-sm);
+  color: var(--color-text-muted);
   flex-shrink: 0;
   transition: transform 0.2s ease;
 }

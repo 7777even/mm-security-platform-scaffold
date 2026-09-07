@@ -44,6 +44,7 @@ declare module 'vue' {
     DeviceDetailDialog: typeof import('./src/components/production-communication/DeviceDetailDialog.vue')['default']
     DeviceListDialog: typeof import('./src/components/video-control/DeviceListDialog.vue')['default']
     DutyPanel: typeof import('./src/components/dashboard/DutyPanel.vue')['default']
+    ElIcon: typeof import('element-plus/es')['ElIcon']
     EmergencyAddressBookDialog: typeof import('./src/components/panels/accident-rescue/EmergencyAddressBookDialog.vue')['default']
     EmergencyEventCrudPanel: typeof import('./src/components/dashboard/EmergencyEventCrudPanel.vue')['default']
     EmergencyKnowledgePanel: typeof import('./src/components/dashboard/EmergencyKnowledgePanel.vue')['default']

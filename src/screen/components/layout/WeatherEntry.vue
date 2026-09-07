@@ -3,7 +3,6 @@ import { ref } from 'vue';
 import WeatherDetailsDialog from './WeatherDetailsDialog.vue';
 import { currentWeather } from '../../lib/data/weatherMock';
 
-defineProps<{ icon: string }>();
 const open = ref(false);
 </script>
 
@@ -15,8 +14,18 @@ const open = ref(false);
     aria-label="查看天气详情"
     @click="open = true"
   >
-    <img :src="icon" alt="" /><span>{{ currentWeather.temperature }}℃</span
-    ><small>{{ currentWeather.condition }}</small
+    <svg
+      class="weather-entry__icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.6"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 5.4 10.5 4 4 0 0 0 7 18Z" /></svg
+    ><span>{{ currentWeather.temperature }}℃</span><small>{{ currentWeather.condition }}</small
     ><i>›</i>
   </button>
   <WeatherDetailsDialog :open="open" @close="open = false" />
@@ -27,10 +36,10 @@ const open = ref(false);
   height: 38px;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: var(--space-sm);
   padding: 0 9px;
   border: 1px solid transparent;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--color-text-strong);
   cursor: pointer;
@@ -38,31 +47,36 @@ const open = ref(false);
 }
 
 .weather-entry:hover {
-  border-color: rgb(55 190 255 / 35%);
-  background: rgb(12 92 145 / 20%);
-  box-shadow: 0 0 12px rgb(0 155 255 / 12%);
+  border-color: var(--color-accent-glow);
+  background: var(--color-accent-soft);
+  box-shadow: 0 0 12px var(--color-accent-faint);
 }
 
-.weather-entry img {
-  width: 23px;
-  height: 16px;
+.weather-entry__icon {
+  width: var(--icon-md);
+  height: var(--icon-md);
+  color: var(--color-accent-2);
+  filter: drop-shadow(0 0 4px var(--color-accent-glow));
+  flex-shrink: 0;
 }
 
 .weather-entry span {
-  font-size: 17px;
+  font-size: var(--font-size-body);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .weather-entry small {
-  font-size: 12px;
-  color: #8db2ca;
+  font-size: var(--font-size-helper);
+  color: var(--color-text-muted);
   white-space: nowrap;
 }
 
 .weather-entry i {
   font-style: normal;
-  font-size: 18px;
-  color: #5d91b5;
+  font-size: var(--icon-md);
+  color: var(--color-text-muted);
   transform: rotate(90deg);
 }
 </style>

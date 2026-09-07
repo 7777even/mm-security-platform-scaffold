@@ -8,12 +8,25 @@ import { satelliteCloudReflectivityLegend } from '@/services/map-data/satelliteC
 import type { SatelliteCloudMapMode } from '@/services/map-data/satelliteCloudMapMock';
 import { plantAreaBoundaryRings, plantAreaDefinitions } from '@/services/map-data/plantAreas';
 import { createTyphoonEyeMarker } from '@/utils/typhoonEyeMarker';
-import { buildJmaFdTileUrl, type JmaHimawariBand } from '@/services/weather/jmaHimawariApi';
+import {
+  FY4B_BOUNDS,
+  fy4bImageUrlByBackstep,
+  FY4B_MAX_BACKOFF,
+} from '@/services/weather/fengyunApi';
 import { buildRainViewerTileUrl, RAINVIEWER_TILE_SIZE } from '@/services/weather/rainViewerApi';
+import { resolveTileSource, type WeatherTileSourceId } from '@/services/weather/weatherTileSources';
+import {
+  CHINA_RADAR_BOUNDS,
+  chinaRadarImageUrlByBackstep,
+  CHINA_RADAR_MAX_BACKOFF,
+} from '@/services/weather/chinaRadarApi';
 import TyphoonHistoryPanel from './TyphoonHistoryPanel.vue';
 import '@/styles/accidentRescueScroll.css';
 
-const SATELLITE_MAX_ZOOM = 5;
+/**
+ * 气象图层最大可下钻层级：风云真彩为整图叠加（860×540），放大过深会明显发虚。
+ */
+const SATELLITE_MAX_ZOOM = 6;
 const WEATHER_MAX_ZOOM = 10;
 const WEATHER_FRAME_INTERVAL = 1500;
 const WEATHER_LAYER_LOAD_TIMEOUT = 6000;
@@ -34,21 +47,28 @@ const {
   loading,
   error,
   rainViewerHost,
+  radarSource,
+  rainViewerKey,
   timelineTicks,
   timelineLabelTicks,
   currentTick,
+  radarCoverageHint,
   progress,
   sourceLabel,
   sourceDate,
   currentTimeLabel,
   timeRange,
+  frameIndex,
   mapCenter,
   mapZoom,
   loadWeatherData,
   setTimeRange,
+  setRadarSource,
   setProgress,
   stepFrame,
   resetPlayback,
+  startAutoRefresh,
+  stopAutoRefresh,
 } = useSatelliteCloudMap();
 
 const {
@@ -68,16 +88,36 @@ const {
 
 let map: L.Map | null = null;
 let baseLayer: L.TileLayer | null = null;
-let satelliteLayer: L.TileLayer | null = null;
-let radarLayer: L.TileLayer | null = null;
 let typhoonLayerGroup: L.FeatureGroup | null = null;
 let plantLayerGroup: L.LayerGroup | null = null;
 let playTimer: ReturnType<typeof setTimeout> | null = null;
 let weatherSwapVersion = 0;
+let weatherSyncVersion = 0;
+let currentSatelliteSourceId: WeatherTileSourceId | null = null;
+
+/**
+ * 气象图层双缓冲：front 为当前显示，back 为空闲实例。
+ * 切帧时先把新帧装进 back（opacity 0，不打断画面），加载完成后再交换并让旧帧退居 back。
+ * 这样既避免 setUrl 直接清屏造成的空窗闪烁，也避免每帧重建 DOM 容器。
+ */
+interface WeatherBuffer {
+  front: L.TileLayer | null;
+  back: L.TileLayer | null;
+}
+const satelliteBuffer: WeatherBuffer = { front: null, back: null };
+const radarBuffer: WeatherBuffer = { front: null, back: null };
+let chinaRadarOverlay: L.ImageOverlay | null = null;
+const chinaRadarBackstep = ref(0);
+const lastChinaTickTime = ref(0);
+let satelliteOverlay: L.ImageOverlay | null = null;
+const satelliteBackstep = ref(0);
+const lastSatTickTime = ref(0);
+
 const playing = ref(false);
 const weatherFrameLoading = ref(false);
 const weatherOpacity = ref(0.72);
 const viewScope = ref<'plant' | 'track'>('plant');
+const resolutionCapped = ref(false);
 
 const progressPercent = computed(() => `${Math.max(0, Math.min(1, progress.value)) * 100}%`);
 const typhoonPathVisible = computed(() => mapMode.value === 'typhoonPath');
@@ -91,13 +131,17 @@ const radarOpacity = computed(() => {
 
 const modeSourceLabel = computed(() => {
   if (mapMode.value === 'satellite') return sourceLabel.value;
-  if (mapMode.value === 'vector') return '降雨雷达 · 矢量底图';
+  if (mapMode.value === 'vector') {
+    return radarSource.value === 'china'
+      ? '降雨雷达（中央气象台）· 矢量底图'
+      : '降雨雷达（RainViewer）· 矢量底图';
+  }
   if (typhoonTrack.value) return `台风数据服务 · ${typhoonTrack.value.name}`;
   return '台风路径数据';
 });
 
 const modeDescription = computed(() => {
-  if (mapMode.value === 'satellite') return '实景影像 + 红外卫星云层｜用于识别大范围云系覆盖';
+  if (mapMode.value === 'satellite') return '风云四号B 真彩云图｜用于识别大范围云系覆盖';
   if (mapMode.value === 'vector') return '浅色地图 + 降雨雷达｜用于判断降雨位置与强度';
   return '实景影像 + 台风实况及多机构预报路径';
 });
@@ -125,27 +169,17 @@ const typhoonAgencyLegend = computed(() => {
 });
 
 function createVectorBaseLayer() {
-  return L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution:
-      '<a href="https://www.openstreetmap.org/copyright">开放街图</a> · <a href="https://carto.com/attributions">矢量底图</a>',
-    subdomains: 'abcd',
-    maxZoom: 19,
-  });
-}
-
-function createSatelliteLayer(basetime: string, validtime: string, band: JmaHimawariBand) {
-  const urlTemplate = buildJmaFdTileUrl(basetime, validtime, band, 0, 0, 0).replace(
-    '/0/0/0.jpg',
-    '/{z}/{x}/{y}.jpg',
+  // CARTO 已对无 key 请求返回"API key required"报错瓦片、Esri 浅灰画布缺少参照特征；
+  // 换高德中文矢量底图：免 key、国内 CDN、路网/城市/中文标注齐全。
+  // 注意高德为 GCJ-02 坐标，与 WGS-84 叠加层存在约 500m 系统偏移，全国/城市级视图下可忽略。
+  return L.tileLayer(
+    'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+    {
+      attribution: '<a href="https://www.amap.com/" target="_blank" rel="noopener">高德地图</a>',
+      subdomains: '1234',
+      maxZoom: 18,
+    },
   );
-  return L.tileLayer(urlTemplate, {
-    opacity: weatherOpacity.value,
-    className: 'scm-satellite-tiles',
-    maxNativeZoom: SATELLITE_MAX_ZOOM,
-    maxZoom: SATELLITE_MAX_ZOOM,
-    attribution:
-      '<a href="https://www.jma.go.jp/bosai/himawari/" target="_blank" rel="noopener">日本气象厅葵花卫星</a>',
-  });
 }
 
 function createImageryBaseLayer() {
@@ -225,22 +259,43 @@ function drawPlantOverview() {
   }
 }
 
-function createRadarLayer(path: string) {
-  const urlTemplate = buildRainViewerTileUrl(
+function buildRadarUrl(path: string): string {
+  return buildRainViewerTileUrl(
     rainViewerHost.value,
     path,
     0,
     0,
     0,
     RAINVIEWER_TILE_SIZE,
+    rainViewerKey.value || undefined,
   ).replace('/0/0/0/', '/{z}/{x}/{y}/');
-  return L.tileLayer(urlTemplate, {
-    opacity: radarOpacity.value,
-    maxZoom: 10,
-    maxNativeZoom: 7,
-    attribution:
-      '<a href="https://www.rainviewer.com/" target="_blank" rel="noopener">降雨雷达数据</a>',
-  });
+}
+
+function currentZoom(): number {
+  return map ? map.getZoom() : mapZoom;
+}
+
+function refreshZoomDerivedState() {
+  const resolved = resolveTileSource(currentZoom());
+  resolutionCapped.value = resolved.capped;
+  return resolved;
+}
+
+function createWeatherTileLayer(
+  url: string,
+  options: { maxNativeZoom: number; className?: string; attribution: string },
+): L.TileLayer {
+  return L.tileLayer(url, {
+    opacity: 0,
+    className: options.className,
+    maxNativeZoom: options.maxNativeZoom,
+    maxZoom: WEATHER_MAX_ZOOM,
+    // 关闭淡入：瓦片从 opacity 0 淡入会在切帧瞬间露出底图，是「一闪一闪」的直接来源
+    fadeAnimation: false,
+    keepBuffer: 4,
+    attribution: options.attribution,
+    // fadeAnimation / keepBuffer 属 GridLayerOptions，leaflet 类型未透传到 TileLayerOptions，此处断言
+  } as L.TileLayerOptions);
 }
 
 function waitForTileLayer(layer: L.TileLayer): Promise<boolean> {
@@ -259,23 +314,304 @@ function waitForTileLayer(layer: L.TileLayer): Promise<boolean> {
   });
 }
 
+/** 国内雷达为 imageOverlay，加载完成/失败均结算（失败交由 recoverChinaRadar 回退） */
+function waitForImageOverlay(layer: L.ImageOverlay): Promise<boolean> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (loaded: boolean) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      layer.off('load', onLoad);
+      layer.off('error', onError);
+      resolve(loaded);
+    };
+    const onLoad = () => finish(true);
+    const onError = () => finish(false);
+    const timeout = setTimeout(() => finish(false), WEATHER_LAYER_LOAD_TIMEOUT);
+    layer.once('load', onLoad);
+    layer.once('error', onError);
+  });
+}
+
+/** 国内雷达瓦片缺失时回退到更早时次（最多 CHINA_RADAR_MAX_BACKOFF 次） */
+function recoverChinaRadar() {
+  if (chinaRadarBackstep.value < CHINA_RADAR_MAX_BACKOFF) {
+    chinaRadarBackstep.value += 1;
+    void syncWeatherLayers();
+  }
+}
+
+function removeChinaRadarOverlay() {
+  if (chinaRadarOverlay) {
+    chinaRadarOverlay.off('error', recoverChinaRadar);
+    chinaRadarOverlay.remove();
+    chinaRadarOverlay = null;
+  }
+}
+
+/** 把国内雷达拼图（imageOverlay）同步到当前时次，加载成功后淡入 */
+function syncChinaRadarOverlay(baseUnixMs: number): Promise<boolean> {
+  if (!map) return Promise.resolve(false);
+  const url = chinaRadarImageUrlByBackstep(baseUnixMs, chinaRadarBackstep.value);
+  const previous = chinaRadarOverlay;
+  const next = L.imageOverlay(url, CHINA_RADAR_BOUNDS, {
+    opacity: 0,
+    interactive: false,
+    attribution:
+      '<a href="https://www.nmc.cn/publish/radar/china-colorful.html" target="_blank" rel="noopener">中央气象台雷达</a>',
+  });
+  next.on('error', recoverChinaRadar);
+  next.addTo(map);
+  chinaRadarOverlay = next;
+  const promise = waitForImageOverlay(next);
+  void promise.then((loaded) => {
+    if (loaded && chinaRadarOverlay === next) {
+      next.setOpacity(radarOpacity.value);
+    }
+    if (chinaRadarOverlay === next && previous && previous !== next) {
+      previous.remove();
+    }
+  });
+  return promise;
+}
+
+/** 风云云图帧缺失（夜间无新帧等）时回退到更早时次（最多 FY4B_MAX_BACKOFF 次） */
+function recoverSatellite() {
+  if (satelliteBackstep.value < FY4B_MAX_BACKOFF) {
+    satelliteBackstep.value += 1;
+    void syncWeatherLayers();
+  }
+}
+
+function removeFengyunOverlay() {
+  if (satelliteOverlay) {
+    satelliteOverlay.off('error', recoverSatellite);
+    satelliteOverlay.remove();
+    satelliteOverlay = null;
+  }
+}
+
+/** 把风云真彩云图（imageOverlay）同步到当前时次，加载成功后淡入 */
+function syncFengyunOverlay(baseUnixMs: number): Promise<boolean> {
+  if (!map) return Promise.resolve(false);
+  const url = fy4bImageUrlByBackstep(baseUnixMs, satelliteBackstep.value);
+  const previous = satelliteOverlay;
+  const next = L.imageOverlay(url, FY4B_BOUNDS, {
+    opacity: 0,
+    interactive: false,
+    attribution:
+      '<a href="https://www.nmc.cn/publish/satellite/fy4b-visible.htm" target="_blank" rel="noopener">风云四号B · 中央气象台</a>',
+  });
+  next.on('error', recoverSatellite);
+  next.addTo(map);
+  satelliteOverlay = next;
+  const promise = waitForImageOverlay(next);
+  void promise.then((loaded) => {
+    if (loaded && satelliteOverlay === next) {
+      next.setOpacity(weatherOpacity.value);
+    }
+    if (satelliteOverlay === next && previous && previous !== next) {
+      previous.remove();
+    }
+  });
+  return promise;
+}
+
+/**
+ * 把 url 装进 buffer.back 并等待其加载完成，完成后与 front 交换显隐。
+ * 返回 false 表示本次交换已被更新的切换取代（调用方不应改动状态）。
+ */
+async function swapWeatherLayer(
+  buffer: WeatherBuffer,
+  url: string,
+  options: { maxNativeZoom: number; className?: string; attribution: string; opacity: number },
+): Promise<boolean> {
+  const activeMap = map;
+  if (!activeMap) return false;
+
+  const version = ++weatherSwapVersion;
+  let next = buffer.back;
+
+  if (next) {
+    // noRedraw=true：先只换 URL，避免立刻清屏造成空窗
+    next.setUrl(url, true);
+    (next.options as L.TileLayerOptions).maxNativeZoom = options.maxNativeZoom;
+  } else {
+    next = createWeatherTileLayer(url, options);
+  }
+
+  next.setOpacity(0);
+  next.addTo(activeMap);
+  next.redraw();
+
+  const loaded = await waitForTileLayer(next);
+
+  if (version !== weatherSwapVersion || map !== activeMap) {
+    next.remove();
+    buffer.back = next;
+    return false;
+  }
+
+  // 超时也照常提交：宁可看到渐进加载的新帧，也不要画面长期停在旧帧（既有的「没有变化」问题）
+  const previous = buffer.front;
+  // 旧 front 退居 back：压到 0 透明度常驻，下次切帧直接复用，避免整层重建造成的空窗
+  previous?.setOpacity(0);
+  next.setOpacity(options.opacity);
+  buffer.front = next;
+  buffer.back = previous;
+
+  return loaded;
+}
+
+function retireWeatherBuffer(buffer: WeatherBuffer) {
+  buffer.front?.remove();
+  buffer.back?.remove();
+  buffer.front = null;
+  buffer.back = null;
+}
+
+async function syncWeatherLayers() {
+  if (!map) return;
+  const syncVersion = ++weatherSyncVersion;
+  const finishLoading = () => {
+    // 只有仍是最新一次切换时才复位加载态，避免被并发切换覆盖成永久 true
+    if (syncVersion === weatherSyncVersion) weatherFrameLoading.value = false;
+  };
+
+  const resolved = refreshZoomDerivedState();
+
+  if (typhoonPathVisible.value) {
+    retireWeatherBuffer(satelliteBuffer);
+    retireWeatherBuffer(radarBuffer);
+    removeChinaRadarOverlay();
+    removeFengyunOverlay();
+    currentSatelliteSourceId = null;
+    updateTyphoonOverlay();
+    finishLoading();
+    return;
+  }
+
+  const tick = currentTick.value;
+  if (!tick) {
+    retireWeatherBuffer(satelliteBuffer);
+    retireWeatherBuffer(radarBuffer);
+    removeChinaRadarOverlay();
+    removeFengyunOverlay();
+    finishLoading();
+    return;
+  }
+
+  if (tick.time !== lastChinaTickTime.value) {
+    chinaRadarBackstep.value = 0;
+    lastChinaTickTime.value = tick.time;
+  }
+  if (tick.time !== lastSatTickTime.value) {
+    satelliteBackstep.value = 0;
+    lastSatTickTime.value = tick.time;
+  }
+
+  currentSatelliteSourceId = resolved.id;
+
+  const jobs: Array<Promise<boolean>> = [];
+
+  if (isSatelliteMode.value) {
+    // 风云四号B 真彩云图（中央气象台，国内可达）。夜间无新帧时回退更早白天帧。
+    jobs.push(syncFengyunOverlay(tick.time * 1000));
+  } else {
+    retireWeatherBuffer(satelliteBuffer);
+  }
+
+  if (radarSource.value === 'china') {
+    retireWeatherBuffer(radarBuffer);
+    jobs.push(syncChinaRadarOverlay(tick.time * 1000));
+  } else {
+    removeChinaRadarOverlay();
+    if (tick.rainViewerPath) {
+      jobs.push(
+        swapWeatherLayer(radarBuffer, buildRadarUrl(tick.rainViewerPath), {
+          maxNativeZoom: 7,
+          attribution:
+            '<a href="https://www.rainviewer.com/" target="_blank" rel="noopener">降雨雷达数据</a>',
+          opacity: radarOpacity.value,
+        }),
+      );
+    } else {
+      retireWeatherBuffer(radarBuffer);
+    }
+  }
+
+  if (!jobs.length) {
+    finishLoading();
+    clearTyphoonLayers();
+    return;
+  }
+
+  weatherFrameLoading.value = true;
+  await Promise.all(jobs);
+  finishLoading();
+
+  clearTyphoonLayers();
+
+  void preloadNextFrame();
+}
+
+/** 把下一帧预先装进 back 缓冲（常驻、opacity 0），使播放推进时无需等待网络（双缓冲预取） */
+async function preloadNextFrame() {
+  if (!map || !playing.value) return;
+  const ticks = timelineTicks.value;
+  const nextIndex = frameIndex.value + 1;
+  if (nextIndex >= ticks.length) return;
+  const nextTick = ticks[nextIndex]!;
+
+  if (isSatelliteMode.value) {
+    // 国内整图源无瓦片缓冲，用 Image 预热浏览器缓存实现等效预取
+    const img = new Image();
+    img.src = fy4bImageUrlByBackstep(nextTick.time * 1000, satelliteBackstep.value);
+  }
+  if (radarSource.value === 'china') {
+    const img = new Image();
+    img.src = chinaRadarImageUrlByBackstep(nextTick.time * 1000, chinaRadarBackstep.value);
+  } else if (radarSource.value === 'rainviewer' && nextTick.rainViewerPath && radarBuffer.back) {
+    radarBuffer.back.setOpacity(0);
+    radarBuffer.back.setUrl(buildRadarUrl(nextTick.rainViewerPath), true);
+    radarBuffer.back.redraw();
+    void waitForTileLayer(radarBuffer.back);
+  }
+}
+
 function applyMapZoomLimit() {
   if (!map) return;
   const maxZoom = isSatelliteMode.value ? SATELLITE_MAX_ZOOM : WEATHER_MAX_ZOOM;
   map.setMaxZoom(maxZoom);
   if (map.getZoom() > maxZoom) map.setZoom(maxZoom, { animate: true });
+  refreshZoomDerivedState();
+}
+
+function handleZoomEnd() {
+  const resolved = refreshZoomDerivedState();
+  // 与官方一致：拼图在 z≥9 已无意义（约 2km/px），隐藏避免糊块误导
+  const radarEl = chinaRadarOverlay?.getElement();
+  if (radarEl) radarEl.style.opacity = map && map.getZoom() >= 9 ? '0' : '';
+  if (!typhoonPathVisible.value && resolved.id !== currentSatelliteSourceId) {
+    void syncWeatherLayers();
+  }
 }
 
 function destroyMap() {
   weatherSwapVersion += 1;
   weatherFrameLoading.value = false;
   if (map) {
+    map.off('zoomend', handleZoomEnd);
     map.remove();
     map = null;
   }
+  retireWeatherBuffer(satelliteBuffer);
+  retireWeatherBuffer(radarBuffer);
+  removeChinaRadarOverlay();
+  removeFengyunOverlay();
   baseLayer = null;
-  satelliteLayer = null;
-  radarLayer = null;
+  currentSatelliteSourceId = null;
   clearTyphoonLayers();
   plantLayerGroup = null;
 }
@@ -399,90 +735,6 @@ function updateTyphoonOverlay() {
   if (viewScope.value === 'track') focusTyphoonTrack();
 }
 
-async function syncWeatherLayers() {
-  if (!map) return;
-
-  const activeMap = map;
-  const swapVersion = ++weatherSwapVersion;
-
-  if (typhoonPathVisible.value) {
-    if (satelliteLayer) {
-      satelliteLayer.remove();
-      satelliteLayer = null;
-    }
-    if (radarLayer) {
-      radarLayer.remove();
-      radarLayer = null;
-    }
-    updateTyphoonOverlay();
-    return;
-  }
-
-  if (!currentTick.value) return;
-
-  const tick = currentTick.value;
-
-  const previousSatelliteLayer = satelliteLayer;
-  const previousRadarLayer = radarLayer;
-  let nextSatelliteLayer: L.TileLayer | null = null;
-  let nextRadarLayer: L.TileLayer | null = null;
-  let satelliteLoad: Promise<boolean> | null = null;
-  let radarLoad: Promise<boolean> | null = null;
-
-  if (isSatelliteMode.value) {
-    // 红外云图在昼夜条件下都能稳定呈现云系，适合应急值守连续查看。
-    nextSatelliteLayer = createSatelliteLayer(tick.jmaBasetime, tick.jmaValidtime, 'B13/TBB');
-    nextSatelliteLayer.setOpacity(0);
-    satelliteLoad = waitForTileLayer(nextSatelliteLayer);
-    nextSatelliteLayer.addTo(activeMap);
-  }
-
-  if (!typhoonPathVisible.value && tick.rainViewerPath) {
-    if (isSatelliteMode.value || isVectorMode.value) {
-      nextRadarLayer = createRadarLayer(tick.rainViewerPath);
-      nextRadarLayer.setOpacity(0);
-      radarLoad = waitForTileLayer(nextRadarLayer);
-      nextRadarLayer.addTo(activeMap);
-    }
-  }
-
-  weatherFrameLoading.value = Boolean(satelliteLoad || radarLoad);
-  const [satelliteLoaded, radarLoaded] = await Promise.all([
-    satelliteLoad ?? Promise.resolve(true),
-    radarLoad ?? Promise.resolve(true),
-  ]);
-  if (swapVersion !== weatherSwapVersion || map !== activeMap) {
-    nextSatelliteLayer?.remove();
-    nextRadarLayer?.remove();
-    return;
-  }
-
-  if (nextSatelliteLayer && (satelliteLoaded || !previousSatelliteLayer)) {
-    nextSatelliteLayer.setOpacity(weatherOpacity.value);
-    previousSatelliteLayer?.remove();
-    satelliteLayer = nextSatelliteLayer;
-  } else if (nextSatelliteLayer) {
-    nextSatelliteLayer?.remove();
-  } else {
-    previousSatelliteLayer?.remove();
-    satelliteLayer = null;
-  }
-
-  if (nextRadarLayer && (radarLoaded || !previousRadarLayer)) {
-    nextRadarLayer.setOpacity(radarOpacity.value);
-    previousRadarLayer?.remove();
-    radarLayer = nextRadarLayer;
-  } else if (nextRadarLayer) {
-    nextRadarLayer.remove();
-  } else {
-    previousRadarLayer?.remove();
-    radarLayer = null;
-  }
-  weatherFrameLoading.value = false;
-
-  clearTyphoonLayers();
-}
-
 async function initMap() {
   if (!mapContainerRef.value || map) return;
 
@@ -494,12 +746,14 @@ async function initMap() {
     attributionControl: true,
   });
   map.attributionControl.setPrefix(false);
+  map.on('zoomend', handleZoomEnd);
 
   syncBaseLayer();
   drawPlantOverview();
 
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
+  refreshZoomDerivedState();
   void syncWeatherLayers();
   requestAnimationFrame(() => {
     map?.invalidateSize();
@@ -514,9 +768,11 @@ watch(
       await Promise.all([loadWeatherData(), initializeTyphoonData()]);
       await nextTick();
       await initMap();
+      startAutoRefresh();
       return;
     }
 
+    stopAutoRefresh();
     stopPlayback();
     destroyMap();
     resetPlayback();
@@ -547,7 +803,14 @@ watch([currentTick, rainViewerHost], () => {
   }
 });
 
-watch([mapMode, radarOpacity], () => {
+watch(radarSource, () => {
+  if (props.open && map && currentTick.value) {
+    void syncWeatherLayers();
+  }
+});
+
+// 仅底图类型真的变化时才重建底图；透明度变化不再触发整层重建（消除拖滑块的整屏闪烁）
+watch(mapMode, () => {
   if (!props.open || !map) return;
   syncBaseLayer();
   applyMapZoomLimit();
@@ -555,7 +818,6 @@ watch([mapMode, radarOpacity], () => {
     void syncWeatherLayers();
     return;
   }
-  radarLayer?.setOpacity(radarOpacity.value);
   if (currentTick.value) {
     void syncWeatherLayers();
   } else {
@@ -563,7 +825,13 @@ watch([mapMode, radarOpacity], () => {
   }
 });
 
+watch(radarOpacity, () => {
+  if (!props.open || !map) return;
+  radarBuffer.front?.setOpacity(radarOpacity.value);
+});
+
 onUnmounted(() => {
+  stopAutoRefresh();
   stopPlayback();
   destroyMap();
 });
@@ -588,6 +856,11 @@ function scheduleNextFrame() {
       scheduleNextFrame();
       return;
     }
+    // 到达末帧即停止，不再回绕到 24 小时前
+    if (frameIndex.value >= timelineTicks.value.length - 1) {
+      stopPlayback();
+      return;
+    }
     stepFrame(1);
     scheduleNextFrame();
   }, WEATHER_FRAME_INTERVAL);
@@ -600,6 +873,11 @@ function togglePlayback() {
   }
 
   if (timelineTicks.value.length < 2) return;
+
+  // 已停在末帧时先回到起点，否则一按播放就立刻结束
+  if (frameIndex.value >= timelineTicks.value.length - 1) {
+    setProgress(0);
+  }
 
   playing.value = true;
   scheduleNextFrame();
@@ -625,8 +903,9 @@ function onMapModeChange(mode: SatelliteCloudMapMode) {
 function onOpacityChange(event: Event) {
   const value = Number((event.target as HTMLInputElement).value);
   weatherOpacity.value = value;
-  satelliteLayer?.setOpacity(value);
-  radarLayer?.setOpacity(radarOpacity.value);
+  satelliteBuffer.front?.setOpacity(value);
+  satelliteOverlay?.setOpacity(value);
+  radarBuffer.front?.setOpacity(radarOpacity.value);
 }
 
 function onTimeRangeChange(range: '24h' | '6h' | 'current') {
@@ -725,6 +1004,10 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
               {{ modeDescription }}
             </div>
 
+            <div v-if="resolutionCapped && !typhoonPathVisible" class="scm-status scm-capped-hint">
+              已达 10 分钟级卫星源最高分辨率（≈2 km/px）
+            </div>
+
             <div v-if="!typhoonPathVisible" class="scm-float scm-float--range">
               <button
                 v-for="opt in ['24h', '6h', 'current'] as const"
@@ -735,6 +1018,27 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
                 @click="onTimeRangeChange(opt)"
               >
                 {{ opt === 'current' ? '当前' : opt === '24h' ? '24小时' : '6小时' }}
+              </button>
+            </div>
+
+            <div v-if="!typhoonPathVisible" class="scm-float scm-float--radarsrc">
+              <button
+                type="button"
+                class="scm-seg scm-seg--compact"
+                :class="{ 'scm-seg--active': radarSource === 'china' }"
+                @click="setRadarSource('china')"
+              >
+                国内雷达
+              </button>
+              <button
+                type="button"
+                class="scm-seg scm-seg--compact"
+                :class="{ 'scm-seg--active': radarSource === 'rainviewer' }"
+                :disabled="!rainViewerKey"
+                :title="!rainViewerKey ? '全球雷达需配置 VITE_RAINVIEWER_KEY' : ''"
+                @click="setRadarSource('rainviewer')"
+              >
+                全球雷达
               </button>
             </div>
 
@@ -816,6 +1120,9 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
               <div class="scm-timeline__meta">
                 <div class="scm-timeline__source">
                   {{ modeSourceLabel }}<span v-if="weatherFrameLoading"> · 正在预载下一帧</span>
+                  <span v-if="radarCoverageHint" class="scm-timeline__hint">
+                    · {{ radarCoverageHint }}</span
+                  >
                 </div>
                 <div class="scm-timeline__date">{{ sourceDate }}</div>
               </div>
@@ -1125,6 +1432,10 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
   border-color: rgb(255 92 92 / 35%);
 }
 
+.scm-capped-hint {
+  color: rgb(200 212 232 / 95%);
+}
+
 .scm-plant-return {
   position: absolute;
   left: 18px;
@@ -1191,6 +1502,12 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
 }
 
 .scm-float--range {
+  right: 14px;
+  z-index: var(--z-local-6);
+}
+
+.scm-float--radarsrc {
+  top: 104px;
   right: 14px;
   z-index: var(--z-local-6);
 }
@@ -1314,6 +1631,10 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
 .scm-timeline__source {
   font-size: 12px;
   color: rgb(255 255 255 / 92%);
+}
+
+.scm-timeline__hint {
+  color: rgb(200 212 232 / 95%);
 }
 
 .scm-timeline__date {

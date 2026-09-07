@@ -118,7 +118,6 @@ onUnmounted(() => {
         :incident-title="incident.title"
         :started-at="incident.startedAt"
         :ended-at="incident.endedAt"
-        :weather-metrics="incident.weatherMetrics"
       />
 
       <main class="typhoon-page__main">

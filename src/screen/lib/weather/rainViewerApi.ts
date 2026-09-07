@@ -23,8 +23,10 @@ export function buildRainViewerTileUrl(
   x: number,
   y: number,
   size: 256 | 512 = 512,
+  key?: string,
 ): string {
-  return `${host}${path}/${size}/${z}/${x}/${y}/2/1_1.png`;
+  const base = `${host}${path}/${size}/${z}/${x}/${y}/2/1_1.png`;
+  return key ? `${base}?key=${encodeURIComponent(key)}` : base;
 }
 
 export function pickNearestRainViewerFrame(

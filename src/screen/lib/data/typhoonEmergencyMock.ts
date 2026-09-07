@@ -145,13 +145,6 @@ export interface TyphoonLiveVideo {
   deviceCode: string;
 }
 
-export interface TyphoonWeatherMetrics {
-  temperature: string;
-  windSpeed: string;
-  humidity: string;
-  windDirection: string;
-}
-
 export interface TyphoonEmergencyIncident {
   eventId: number;
   title: string;
@@ -161,7 +154,6 @@ export interface TyphoonEmergencyIncident {
   startedAt: string;
   endedAt?: string;
   status: 'processing' | 'pending' | 'done';
-  weatherMetrics: TyphoonWeatherMetrics;
   monitoringObjects: TyphoonMonitorObject[];
   meteorologySummary: string;
   riskWarnings: TyphoonRiskWarning[];
@@ -191,12 +183,6 @@ const defaultTyphoonIncident: TyphoonEmergencyIncident = {
   status: 'processing',
   /** 桦加沙：2025年登陆阳江一带，贴近茂名防台场景 */
   typhoonApiCode: '202518',
-  weatherMetrics: {
-    temperature: '20.1℃',
-    windSpeed: '2.4m/s',
-    humidity: '43.36%rh',
-    windDirection: '东北风',
-  },
   monitoringObjects: [
     {
       id: 'outlet',
