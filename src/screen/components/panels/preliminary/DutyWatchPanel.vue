@@ -1,10 +1,19 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
 import { dutyWatchPersons } from '../../../lib/data/preliminaryMock';
 import { fireDutyWatchPersons } from '../../../lib/data/fireEmergencyMock';
 import { UserFilled } from '@element-plus/icons-vue';
+import { fetchDutyRoster } from '@/services/duty';
 import type { DesignModule } from '../../../utils/designAssets';
+
+interface DutyWatchPerson {
+  id: string | number;
+  name: string;
+  role: string;
+  phone: string;
+  shift?: string;
+}
 
 const props = withDefaults(
   defineProps<{
@@ -15,9 +24,33 @@ const props = withDefaults(
 
 const shift = ref<'day' | 'night'>('day');
 
-const persons = computed(() =>
-  props.module === 'fireEmergency' ? fireDutyWatchPersons : dutyWatchPersons,
-);
+// 应急指挥屏（fireEmergency 模块）直连真后端 /emergency/duty；preliminary 模块保留内置 mock。
+const allRealPersons = ref<DutyWatchPerson[]>([]);
+const persons = computed<DutyWatchPerson[]>(() => {
+  if (props.module !== 'fireEmergency') {
+    return (
+      props.module === 'preliminary' ? dutyWatchPersons : fireDutyWatchPersons
+    ) as DutyWatchPerson[];
+  }
+  const dayNight = shift.value === 'day' ? '白班' : '夜班';
+  return allRealPersons.value.filter((p) => (p.shift ?? '白班') === dayNight);
+});
+
+onMounted(async () => {
+  if (props.module !== 'fireEmergency') return;
+  try {
+    const roster = await fetchDutyRoster();
+    allRealPersons.value = roster.members.map((m) => ({
+      id: m.id,
+      name: m.name,
+      role: m.role,
+      phone: m.phone,
+      shift: m.shift,
+    }));
+  } catch {
+    // 保留空，模板回退无卡片（services 层已对非法响应回落 dev mock）
+  }
+});
 </script>
 
 <template>

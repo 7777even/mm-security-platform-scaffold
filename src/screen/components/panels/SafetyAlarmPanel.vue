@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
 import AlarmCard from '../common/AlarmCard.vue';
 import FireAlarmListDialog from '../common/FireAlarmListDialog.vue';
 import FireFacilityMonitoringDialog from '../common/FireFacilityMonitoringDialog.vue';
 import SurveillanceVideoDialog from '../common/SurveillanceVideoDialog.vue';
-import { alarms } from '../../lib/data/mock';
+import type { AlarmItem } from '../../lib/data/mock';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
+import { fetchAlarmPage } from '@/services/alarm';
+import { toScreenAlarm } from '../../lib/adapters/alarmAdapter';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
 import { showToast } from '../../lib/composables/useToast';
 import fireAreaScene from '../../assets/semantic-scenes/fire-alarm-pipe-rack.png';
@@ -173,8 +175,20 @@ const selectedAreaId = ref('');
 const demoAlarmEnabled = ref(true);
 const areaSearch = ref('');
 
-const { selectedPlantArea, selectedPlantAreaDefinition, areaScopedItems } = usePlantArea();
-const visibleAlarms = areaScopedItems(alarms);
+const { selectedPlantArea, selectedPlantAreaDefinition, filterByPlantArea } = usePlantArea();
+// 实时报警：直连真后端 /alarms（services 层在缺 VITE_API_BASE 时回落 dev mock），
+// 经 toScreenAlarm 适配为 AlarmCard 所需的本地形状。厂区过滤沿用既有 filterByPlantArea。
+const realAlarms = ref<AlarmItem[]>([]);
+const visibleAlarms = computed(() => filterByPlantArea(realAlarms.value));
+
+onMounted(async () => {
+  try {
+    const res = await fetchAlarmPage(1, 20);
+    realAlarms.value = res.list.map((a, i) => toScreenAlarm(a, i));
+  } catch {
+    // 真实接口异常时保持空列表（面板降级为「消防态势平稳」），不阻断其它模块
+  }
+});
 const hasActiveAlarm = computed(() => demoAlarmEnabled.value && visibleAlarms.value.length > 0);
 const visibleFireAreas = computed(() => {
   if (selectedPlantArea.value === 'all') return fireAreas;
@@ -195,7 +209,7 @@ function openAlarmList() {
 
 function toggleDemoAlarm() {
   demoAlarmEnabled.value = !demoAlarmEnabled.value;
-  showToast(demoAlarmEnabled.value ? '已切换为有报警演示状态' : '已切换为无报警演示状态');
+  showToast(demoAlarmEnabled.value ? '已显示实时报警' : '已隐藏实时报警');
 }
 
 function selectArea(area: FireAreaSummary) {
@@ -250,9 +264,9 @@ function callPersonnel(area: FireAreaSummary) {
         </div>
 
         <div class="fire-status__demo">
-          <span>演示状态</span>
+          <span>实时报警</span>
           <button type="button" class="demo-switch" @click="toggleDemoAlarm">
-            {{ hasActiveAlarm ? '切换为无报警' : '切换为有报警' }}
+            {{ hasActiveAlarm ? '隐藏实时报警' : '显示实时报警' }}
           </button>
         </div>
       </section>

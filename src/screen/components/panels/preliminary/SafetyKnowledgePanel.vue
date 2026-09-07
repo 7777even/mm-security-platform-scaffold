@@ -1,10 +1,19 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
 import { safetyKnowledgeItems } from '../../../lib/data/preliminaryMock';
 import { fireSafetyKnowledgeItems } from '../../../lib/data/fireEmergencyMock';
 import { Document, WarningFilled, Guide } from '@element-plus/icons-vue';
+import { fetchEmergencyKnowledge } from '@/services/knowledge';
 import type { DesignModule } from '../../../utils/designAssets';
+
+interface KnowledgePanelItem {
+  iconIndex: number;
+  line1: string;
+  line2: string;
+  count: number;
+  countTone: string;
+}
 
 const props = withDefaults(
   defineProps<{
@@ -13,9 +22,31 @@ const props = withDefaults(
   { module: 'preliminary' },
 );
 
-const items = computed(() =>
-  props.module === 'fireEmergency' ? fireSafetyKnowledgeItems : safetyKnowledgeItems,
+// 应急指挥屏（fireEmergency 模块）直连真后端 /emergency/knowledge；preliminary 模块保留内置 mock。
+const realItems = ref<KnowledgePanelItem[]>([]);
+const items = computed<KnowledgePanelItem[]>(() =>
+  props.module === 'fireEmergency'
+    ? realItems.value
+    : ((props.module === 'preliminary'
+        ? safetyKnowledgeItems
+        : fireSafetyKnowledgeItems) as KnowledgePanelItem[]),
 );
+
+onMounted(async () => {
+  if (props.module !== 'fireEmergency') return;
+  try {
+    const knowledge = await fetchEmergencyKnowledge();
+    realItems.value = knowledge.items.map((it, i) => ({
+      iconIndex: i,
+      line1: it.title,
+      line2: '知识条目',
+      count: it.count,
+      countTone: i % 2 === 0 ? 'lime' : 'cyan',
+    }));
+  } catch {
+    // 保留空，模板回退无卡片
+  }
+});
 
 /** 设计稿：三行相同内容，每行 393×65，行间距 11px */
 const knowledgeRows = computed(() =>

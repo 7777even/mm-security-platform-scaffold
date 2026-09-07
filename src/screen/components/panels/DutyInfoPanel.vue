@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
 import StatCard from '../common/StatCard.vue';
 import { UserFilled } from '@element-plus/icons-vue';
-import { dutyPersons, rescueStats } from '../../lib/data/mock';
+import { dutyPersons, rescueStats, type DutyPerson } from '../../lib/data/mock';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
+import { fetchDutyRoster } from '@/services/duty';
 import {
   openFireBrigadeView,
   closeFireBrigadeView,
@@ -24,14 +25,32 @@ import {
 import { closeSpecialOperationView } from '../../lib/composables/useSpecialOperationView';
 
 const shift = ref<'day' | 'night'>('day');
-const { areaScopedItems, scaleAreaCount } = usePlantArea();
-const scopedDutyPersons = areaScopedItems(dutyPersons);
+const { filterByPlantArea, scaleAreaCount } = usePlantArea();
+// 值班人员：直连真后端 /emergency/duty（services 缺 VITE_API_BASE 时回落 dev mock）。
+// 厂区过滤沿用既有 filterByPlantArea；真实数据未加载时回退到内置 mock 不空屏。
+const realDutyPersons = ref<DutyPerson[]>([]);
+const dutySource = computed(() =>
+  realDutyPersons.value.length ? realDutyPersons.value : dutyPersons,
+);
+const scopedDutyPersons = computed(() => filterByPlantArea(dutySource.value));
 const visibleDutyPersons = computed(() => {
-  const leader = dutyPersons.find((person) => person.role === '值班领导');
+  const leader = dutySource.value.find((person) => person.role === '值班领导');
   const staff = scopedDutyPersons.value.find((person) => person.role !== '值班领导');
-  return [leader, staff].filter((person): person is (typeof dutyPersons)[number] =>
-    Boolean(person),
-  );
+  return [leader, staff].filter((person): person is DutyPerson => Boolean(person));
+});
+
+onMounted(async () => {
+  try {
+    const roster = await fetchDutyRoster();
+    realDutyPersons.value = roster.members.map((m, i) => ({
+      id: i + 1,
+      name: m.name,
+      phone: m.phone,
+      role: m.role,
+    }));
+  } catch {
+    // 真实接口异常时保留内置 mock 兜底
+  }
 });
 
 function handleStatClick(label: string) {

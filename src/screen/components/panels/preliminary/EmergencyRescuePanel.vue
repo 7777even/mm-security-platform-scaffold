@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
 import { rescueForceStats } from '../../../lib/data/preliminaryMock';
 import { fireRescueForceStats } from '../../../lib/data/fireEmergencyMock';
@@ -12,7 +12,14 @@ import {
   FirstAidKit,
   Warning,
 } from '@element-plus/icons-vue';
+import { fetchEmergencyStrength } from '@/services/emergency';
 import type { DesignModule } from '../../../utils/designAssets';
+
+interface RescueStat {
+  label: string;
+  value: number;
+  iconIndex: number;
+}
 
 const props = withDefaults(
   defineProps<{
@@ -21,9 +28,27 @@ const props = withDefaults(
   { module: 'preliminary' },
 );
 
-const stats = computed(() =>
-  props.module === 'fireEmergency' ? fireRescueForceStats : rescueForceStats,
+// 应急指挥屏（fireEmergency 模块）直连真后端 /emergency/strength；preliminary 模块保留内置 mock。
+const realStats = ref<RescueStat[]>([]);
+const stats = computed<RescueStat[]>(() =>
+  props.module === 'fireEmergency'
+    ? realStats.value
+    : ((props.module === 'preliminary' ? rescueForceStats : fireRescueForceStats) as RescueStat[]),
 );
+
+onMounted(async () => {
+  if (props.module !== 'fireEmergency') return;
+  try {
+    const strength = await fetchEmergencyStrength();
+    realStats.value = strength.resources.map((r, i) => ({
+      label: r.kind,
+      value: r.count,
+      iconIndex: i,
+    }));
+  } catch {
+    // 保留空，模板回退无卡片
+  }
+});
 
 /* 与 rescueForceStats.iconIndex 一一对应；iconIndex 0..7
    应急专家 / 应急物资 / 救援队伍 / 装备车辆 / 应急场所 / 医疗机构 / 应急车辆 / 消防设施 */
