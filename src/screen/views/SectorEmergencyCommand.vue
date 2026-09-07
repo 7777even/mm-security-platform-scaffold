@@ -5,6 +5,7 @@ import DashboardLayout from '../components/layout/DashboardLayout.vue';
 import MapPageShell from '../components/map/MapPageShell.vue';
 import FireEmergencyMap from '../components/map/FireEmergencyMap.vue';
 import EmergencyEventListPanel from '../components/panels/preliminary/EmergencyEventListPanel.vue';
+import EmergencyClosedCasesPanel from '../components/panels/preliminary/EmergencyClosedCasesPanel.vue';
 import DutyWatchPanel from '../components/panels/preliminary/DutyWatchPanel.vue';
 import EmergencyRescuePanel from '../components/panels/preliminary/EmergencyRescuePanel.vue';
 import SafetyKnowledgePanel from '../components/panels/preliminary/SafetyKnowledgePanel.vue';
@@ -32,6 +33,7 @@ onUnmounted(() => {
       <div class="sector-emergency-body">
         <aside class="sidebar sidebar--left sidebar--left-emergency">
           <EmergencyEventListPanel module="fireEmergency" show-event-tabs />
+          <EmergencyClosedCasesPanel />
         </aside>
 
         <aside class="sidebar sidebar--right sidebar--right-emergency">
@@ -75,7 +77,8 @@ onUnmounted(() => {
   width: 414px;
   height: 897px;
   max-height: calc(100% - 5px);
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 7px;
   flex-shrink: 0;
   align-self: flex-start;
 }
