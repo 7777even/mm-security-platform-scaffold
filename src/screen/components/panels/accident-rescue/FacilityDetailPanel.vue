@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
-import type { FacilityDetailInfo } from '../../../lib/data/facilityDetailMock';
+import type { FacilityDetailInfo } from '@/services/hazard';
 import { closeFacilityDetail } from '../../../lib/composables/useFacilityDetail';
 
 defineProps<{

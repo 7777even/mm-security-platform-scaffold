@@ -46,9 +46,9 @@ import {
   resolveMonitoringAlarms,
   resolveMonitoringPoints,
   type MonitoringPoint,
-} from '../lib/data/monitoringPointsMock';
+} from '@/services/hazard';
 import { useMapControls } from '../lib/composables/useMapControls';
-import { resolveFacilityDetail } from '../lib/data/facilityDetailMock';
+import { resolveFacilityDetail } from '@/services/hazard';
 import { facilityDetailOpen, closeFacilityDetail } from '../lib/composables/useFacilityDetail';
 import {
   commandDrawerVisible,

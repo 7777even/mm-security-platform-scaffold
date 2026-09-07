@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import PanelCard from '../../common/PanelCard.vue';
-import { gateControls, type GateControlItem } from '../../../lib/data/securityGateControlMock';
+import { gateControls, type GateControlItem } from '@/services/security';
 import {
   closeGateControlList,
   gateControlCurrentPage,

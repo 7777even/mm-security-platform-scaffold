@@ -12,7 +12,7 @@ import {
   entryLineTrend,
   entrySummary,
   type EntryTab,
-} from '../../../lib/data/securityMock';
+} from '@/services/security';
 import { openEntryCaptureList } from '../../../lib/composables/useEntryCaptureListView';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 

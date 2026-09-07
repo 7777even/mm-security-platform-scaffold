@@ -6,7 +6,7 @@ import { LineChart } from 'echarts/charts';
 import { GridComponent, TooltipComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import PanelCard from '../../common/PanelCard.vue';
-import { alarmTrendData } from '../../../lib/data/securityMock';
+import { alarmTrendData } from '@/services/security';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const { scaleAreaCount } = usePlantArea();

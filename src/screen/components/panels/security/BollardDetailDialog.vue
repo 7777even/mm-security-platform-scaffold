@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { BollardItem } from '../../../lib/data/securityBollardMock';
+import type { BollardItem } from '@/services/security';
 
 const props = defineProps<{
   open: boolean;

@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
 import MapMarkerIcon, { type MapMarkerIconName } from './MapMarkerIcon.vue';
-import type { MonitoringPoint } from '../../lib/data/monitoringPointsMock';
+import type { MonitoringPoint } from '@/services/hazard';
 import type { EvacuationPerson } from '../../lib/data/evacuationPeopleMock';
 import type { EmergencyDispatchResource } from '../../lib/data/accidentRescueMock';
 

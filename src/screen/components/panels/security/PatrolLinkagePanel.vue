@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import PanelCard from '../../common/PanelCard.vue';
-import { patrolZones } from '../../../lib/data/securityMock';
+import { patrolZones } from '@/services/security';
 import { openPatrolCameraListView } from '../../../lib/composables/usePatrolCameraListView';
 import { openPatrolLinkage } from '../../../lib/composables/usePatrolLinkage';
 

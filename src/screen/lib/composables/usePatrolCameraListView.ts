@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue';
-import { patrolCameraPageSize, patrolCameras } from '../data/securityCameraMock';
+import { patrolCameraPageSize, patrolCameras } from '@/services/security';
 import router from '../../../router';
 import { prepareAutoFillCameras } from '../../components/video-wall/videoWallStore';
 import { usePlantArea } from './usePlantArea';

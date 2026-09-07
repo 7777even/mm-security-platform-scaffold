@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import PanelCard from '../../common/PanelCard.vue';
-import {
-  countPlayableCameras,
-  patrolCameras,
-  type PatrolCameraItem,
-} from '../../../lib/data/securityCameraMock';
+import { countPlayableCameras, patrolCameras, type PatrolCameraItem } from '@/services/security';
 import {
   closePatrolCameraListView,
   goToPatrolCameraPage,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import type { MonitoringAlarm, MonitoringPoint } from '../../../lib/data/monitoringPointsMock';
+import type { MonitoringAlarm, MonitoringPoint } from '@/services/hazard';
 
 const props = defineProps<{
   open: boolean;

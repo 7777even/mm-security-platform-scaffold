@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { getSharedMap } from './sharedCesiumBridge';
 import { openSecuritySearchDetail } from './useSecuritySearchDetail';
 import { openSearchPanelForMode } from './useSecuritySearchPanel';
-import { resolveSecurityTrackWaypoints, type SecurityTrackMode } from '../data/securityTrackMock';
+import { resolveSecurityTrackWaypoints, type SecurityTrackMode } from '@/services/security';
 
 export const securityTrackActive = ref(false);
 export const securityTrackMode = ref<SecurityTrackMode>('vehicle');

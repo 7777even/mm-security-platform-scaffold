@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SecurityToolbarIconKey } from '../../lib/data/securityMock';
+import type { SecurityToolbarIconKey } from '@/services/security';
 
 defineProps<{
   name: SecurityToolbarIconKey;

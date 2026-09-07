@@ -3,7 +3,7 @@ import type { FireAlarmItem } from '@/services/alarm';
 import type { FacilityAlarmItem } from './fireFacilityMonitoringMock';
 import { fireFacilityFaults } from './fireFacilityMonitoringMock';
 import type { ProductionAlarmItem } from './productionMock';
-import type { PatrolAlarmItem } from './securityMock';
+import type { PatrolAlarmItem } from '@/services/security';
 import fireAlarmPipeRack from '../../assets/semantic-scenes/fire-alarm-pipe-rack.png';
 import securityPerimeterIntrusion from '../../assets/semantic-scenes/security-perimeter-intrusion.png';
 import chemicalFactoryPipes from '../../assets/mock-cameras/chemical_factory_pipes_1782731393637.png';

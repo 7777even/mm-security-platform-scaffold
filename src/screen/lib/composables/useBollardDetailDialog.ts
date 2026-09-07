@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue';
-import { bollards, type BollardItem } from '../data/securityBollardMock';
+import { bollards, type BollardItem } from '@/services/security';
 
 export const bollardDetailOpen = ref(false);
 export const bollardDetailId = ref<number | null>(null);

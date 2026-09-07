@@ -4,10 +4,7 @@ import { useAccidentRescueRoute } from '../../lib/composables/useAccidentRescueR
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
 import { forwardWheelToCesiumMap } from '../../lib/composables/useMapOverlayWheelPassthrough';
-import {
-  resolveSecurityTrackWaypoints,
-  type SecurityTrackMode,
-} from '../../lib/data/securityTrackMock';
+import { resolveSecurityTrackWaypoints, type SecurityTrackMode } from '@/services/security';
 
 const props = defineProps<{
   mode: SecurityTrackMode;

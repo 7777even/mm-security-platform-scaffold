@@ -6,7 +6,7 @@ import MapPageShell from '../components/map/MapPageShell.vue';
 import PanelCard from '../components/common/PanelCard.vue';
 import { useWorldMarkerScreenPositions } from '../lib/composables/useCesiumScreenAnchor';
 import { getSharedMap, onSharedMapReady } from '../lib/composables/sharedCesiumBridge';
-import { levelTone, resolveMajorHazardDetail, type HazardLevel } from '../lib/data/majorHazardMock';
+import { levelTone, resolveMajorHazardDetail, type HazardLevel } from '@/services/hazard';
 
 const props = defineProps<{
   hazardId: string;

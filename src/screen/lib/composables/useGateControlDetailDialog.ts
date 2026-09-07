@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue';
-import { gateControls, type GateControlItem } from '../data/securityGateControlMock';
+import { gateControls, type GateControlItem } from '@/services/security';
 
 export const gateControlDetailOpen = ref(false);
 export const gateControlDetailId = ref<number | null>(null);

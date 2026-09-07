@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue';
-import { gateControlPageSize, gateControls } from '../data/securityGateControlMock';
+import { gateControlPageSize, gateControls } from '@/services/security';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();

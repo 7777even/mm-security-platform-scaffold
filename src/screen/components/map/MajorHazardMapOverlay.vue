@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
-import { levelTone, majorHazards, type MajorHazardItem } from '../../lib/data/majorHazardMock';
+import { levelTone, majorHazards, type MajorHazardItem } from '@/services/hazard';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 import { resolvePlantAreaWorldPosition } from '../../lib/data/plantAreas';
 

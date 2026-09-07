@@ -12,7 +12,7 @@ import {
   securityGates,
   securityMapControls,
   securityMapToolbarItems,
-} from '../../lib/data/securityMock';
+} from '@/services/security';
 import { useMapControls } from '../../lib/composables/useMapControls';
 import { useBoundaryGateScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import {

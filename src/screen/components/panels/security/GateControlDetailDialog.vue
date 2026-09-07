@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { GateControlItem } from '../../../lib/data/securityGateControlMock';
+import type { GateControlItem } from '@/services/security';
 
 const props = defineProps<{
   open: boolean;

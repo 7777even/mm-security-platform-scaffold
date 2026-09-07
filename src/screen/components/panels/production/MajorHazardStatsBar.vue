@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { majorHazards } from '../../../lib/data/majorHazardMock';
+import { majorHazards } from '@/services/hazard';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();

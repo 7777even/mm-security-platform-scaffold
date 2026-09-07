@@ -7,7 +7,7 @@ import MajorHazardMapOverlay from '../components/map/MajorHazardMapOverlay.vue';
 import MajorHazardStatsBar from '../components/panels/production/MajorHazardStatsBar.vue';
 import MajorHazardListPanel from '../components/panels/production/MajorHazardListPanel.vue';
 import { getSharedMap, onSharedMapReady } from '../lib/composables/sharedCesiumBridge';
-import { majorHazards } from '../lib/data/majorHazardMock';
+import { majorHazards } from '@/services/hazard';
 import { usePlantArea } from '../lib/composables/usePlantArea';
 import { resolvePlantAreaWorldPosition } from '../lib/data/plantAreas';
 

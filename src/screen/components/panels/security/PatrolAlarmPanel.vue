@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import PanelCard from '../../common/PanelCard.vue';
-import { patrolAlarms } from '../../../lib/data/securityMock';
+import { patrolAlarms } from '@/services/security';
 import { patrolAlarmToDetail } from '../../../lib/data/alarmDetailMock';
 import { useAlarmDetailPanel } from '../../../lib/composables/useAlarmDetailPanel';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';

@@ -8,7 +8,7 @@ import {
   majorHazards,
   type HazardLevel,
   type MajorHazardItem,
-} from '../../../lib/data/majorHazardMock';
+} from '@/services/hazard';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const router = useRouter();

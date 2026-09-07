@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import PanelCard from '../../common/PanelCard.vue';
-import { bollards, type BollardItem } from '../../../lib/data/securityBollardMock';
+import { bollards, type BollardItem } from '@/services/security';
 import {
   bollardCurrentPage,
   bollardPagedItems,

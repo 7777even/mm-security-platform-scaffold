@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import SecuritySearchResultCard from './SecuritySearchResultCard.vue';
-import { personSearchResults, vehicleSearchResults } from '../../../lib/data/securitySearchMock';
+import { personSearchResults, vehicleSearchResults } from '@/services/security';
 import {
   closeSearchPanel,
   securitySearchPanelMode,

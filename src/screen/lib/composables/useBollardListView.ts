@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue';
-import { bollardPageSize, bollards } from '../data/securityBollardMock';
+import { bollardPageSize, bollards } from '@/services/security';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();

@@ -6,7 +6,7 @@ import {
   resolveSecurityTrackTimeRange,
   resolveSecurityTrackVehicleDetail,
   type SecurityTrackMode,
-} from '../../../lib/data/securityTrackMock';
+} from '@/services/security';
 
 const props = defineProps<{
   open: boolean;

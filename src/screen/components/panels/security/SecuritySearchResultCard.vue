@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { PersonSearchResult, VehicleSearchResult } from '../../../lib/data/securitySearchMock';
+import type { PersonSearchResult, VehicleSearchResult } from '@/services/security';
 import {
   selectPersonSearchResult,
   selectVehicleSearchResult,

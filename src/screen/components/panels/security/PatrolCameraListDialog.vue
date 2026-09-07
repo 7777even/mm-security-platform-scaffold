@@ -5,7 +5,7 @@ import {
   patrolCameraPageSize,
   patrolCameras,
   type PatrolCameraItem,
-} from '../../../lib/data/securityCameraMock';
+} from '@/services/security';
 
 const props = defineProps<{
   open: boolean;

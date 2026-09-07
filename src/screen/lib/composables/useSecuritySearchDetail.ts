@@ -4,7 +4,7 @@ import {
   getVehicleSearchDetail,
   type PersonSearchDetail,
   type VehicleSearchDetail,
-} from '../data/securitySearchMock';
+} from '@/services/security';
 
 export const selectedVehicleSearchId = ref<number | null>(null);
 export const selectedPersonSearchId = ref<number | null>(null);
