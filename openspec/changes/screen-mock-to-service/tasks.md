@@ -32,8 +32,13 @@
 
 ## 4. P1 · 安全防恐 + 重大危险源（store 打底 / 需补 service）
 
-- [ ] 新建 `services/security.ts`（camera/gate/track/search 等 GET），`securityEventStore` 打底；接线 `security*` 系列面板。
-- [ ] 新建 `services/hazard.ts`；接线 `majorHazardMock`/`monitoringPointsMock`/`facilityDetailMock` 及 `MajorHazardMapOverlay` 地图引用。
+- [x] 结构对齐审计：screen `lib/data/*` 安全/重大危险源 mock 实为 `services/map-data/*` 共享 fixture 的 screen 端重复副本（securityMock/securitySearchMock/securityTrackMock/majorHazardMock/monitoringPointsMock/facilityDetailMock 在 map-data 已有同导出共享版；非 screen 的 `MajorHazardMapOverlay`/`src/views/major-hazard/*`/mgmt 已消费 map-data 版）。唯一仅存 screen 端的是 `securityCameraMock`/`securityGateControlMock`/`securityBollardMock`（map-data 无）。结论：接线=screen 改指向新建 `@/services/security`+`@/services/hazard`（统一 import 面，dev 降级复用 map-data fixture + 内联 camera/gate/bollard），随后删 screen 旧副本；不必再造平行 data 层。
+- [x] 新建 `services/security.ts`：`export *` 复用 `map-data/{securityMock,securitySearchMock,securityTrackMock}` + 内联 camera/gate/bollard（原仅 screen 端），加 `fetchPatrolCameras/fetchGateControls/fetchBollards/fetchVehicleSearch/fetchPersonSearch` B3 GET 降级封装；新建 `services/securityEventStore.ts`（本地 in-memory + dev 兜底 `patrolAlarms`，CRUD 打底）；`npm run type-check` 0 error。
+- [x] 新建 `services/hazard.ts`：`export *` 复用 `map-data/{majorHazardMock,monitoringPointsMock,facilityDetailMock}` + `fetchMajorHazards/fetchMajorHazardDetail/fetchMonitoringPoints/fetchMonitoringAlarms/fetchFacilityDetail` B3 GET 降级封装；`npm run type-check` 0 error。
+- [ ] 接线 security* 系列面板：composable 抽象层（`usePatrolCameraListView`/`useGateControlListView`/`useBollardListView`/`useGateControlDetailDialog`/`useBollardDetailDialog`/`useSecuritySearchDetail`/`useSecurityTrackView`/`useSecuritySearchPanel`）与直接 import 的面板（`EntryExitStatsPanel`/`PatrolAlarmPanel`/`AlarmTrendPanel`/`PatrolLinkagePanel`/`PatrolCameraList*`/`GateControl*`/`Bollard*`/`SecuritySearch*`/`SecurityTrackScenePanel`/`SecurityMap`/`SecurityTrackMapOverlay`/`SecurityToolbarIcon`）改从 `@/services/security` 取数；`alarmDetailMock`(`PatrolAlarmItem`)/`geo/securityTrackRoute`(`SecurityTrackMode`) 内部引用一并改指向服务。
+- [ ] 接线 hazard 系列：screen `MajorHazardListView`/`MajorHazardDetailView`/`MajorHazardMapOverlay`/`MajorHazardStatsBar`/`MajorHazardListPanel`/`AccidentEmergencyRescue`(`monitoringPointsMock`+`facilityDetailMock`)/`MonitoringPointsScenePanel`/`FacilityDetailPanel` 改从 `@/services/hazard` 取数。
+- [ ] `grep` 确认 `src/screen/lib/data/{security*,majorHazard*,monitoringPointsMock,facilityDetailMock}` import 清零后删除这些旧副本（map-data/* 共享版保留）。
+- [ ] [TDD] 补 `services/security.spec.ts`/`services/hazard.spec.ts` 关键路径（各 fetch 在 dev 降级返回 fixture、真实调用走 request 分支）；`npm test` 绿。
 
 ## 5. P2 · 生产 / 工业电视 / 生产通信（需新建 service）
 
