@@ -11,10 +11,14 @@
 
 ## 2. P0 样板 · 事故应急（service 已就绪，体量最大）
 
-- [ ] 结构对齐审计：`accidentRescueMock` 各导出类型 vs `emergency.ts`/`emergencyEventStore`/`emergencyPlanStore`。
-- [ ] 接线 `src/screen/views/AccidentEmergencyRescue.vue` 与 accident-rescue 面板（RescueDutyPanel / RescueAuxiliaryPanel / AccidentInfoPanel 等）消费对应 service/store，dev 降级。
-- [ ] 接线 `drillRescueMock` 复用点（PreliminaryGuidancePanel / IncidentDetailPanel / RescueDynamicsPanel）改消费 service。
-- [ ] [TDD] 补 `src/services/emergency.spec.ts` 关键路径（strength / 事件 CRUD 降级）。
+- [x] 结构对齐审计：`accidentRescueMock` 各导出类型 vs `emergency.ts`/`emergencyEventStore`/`emergencyPlanStore`。结论（事故应急采用"部分接线"策略，对照消防报警方案 A 的"全量新增域模型"）：
+  - service 侧已就绪三类真源：`fetchEmergencyStrength`(`EmergencyStrength`=聚合资源数 kind/count/icon)、`emergencyPlanStore`(`EmergencyPlan` CRUD)、`emergencyEventStore`(`AlarmItem` 事件 CRUD)。
+  - 与 service 重合的 mock 导出（仅 2 类，可接 service）：①`emergencyPlanLevels`(`EmergencyPlanLevel` 一级/二级/三级) ↔ `EmergencyPlan.level`(`PlanLevel`)；②应急力量汇总展示（`rescueAuxiliaryStats`/`emergencyDispatchResources` 明细花名册）概念上对应 `fetchEmergencyStrength` 聚合计数，但形状不同（明细 vs 聚合），须字段映射。
+  - 无对应 service 的 mock 导出（保留，删 mock 时不删这些）：`rescueDutyPersons`/`guidanceSteps`/`rescueDynamics*`/`eventCommandDynamics*`/`emergencyProcessStages`/`rescueStageProgressItems`/`eventCommandAuxiliaryItems`/`emergencyCommandInstruction*`/`emergencyCommand*`/`bottomToolbarItems`/`eventCommandToolbarItems`/`accidentInfo*`/`accidentReportFields`/`accidentArrivalFields`/`accidentRescueMapControls`/`accidentRescueRouteWaypoints`+`RescueRouteWaypoint`/`IncidentDetailField`/`AccidentRescueIncident`(`resolveAccidentRescueIncident` 事件富详情)/`EmergencyProcessStage`(类型) 等——均为屏幕本地 UI 域词汇或演示数据，后端契约 `#TODO-确认`，暂以 mock 为唯一真源。
+  - 接线范围收敛：仅 `fetchEmergencyStrength`（力量汇总）、`emergencyPlanStore`（预案库）、`emergencyEventStore`（事件本体）三处有 service 等价；其余面板继续消费 `accidentRescueMock`，故本模块 mock 文件**不能整体删除**，仅随 P3 演练确认后清无引用项。
+- [x] 接线力量汇总面板 `RescueAuxiliaryPanel`（rescue 布局）改消费 `fetchEmergencyStrength`（dev 降级；`EmergencyResource.kind` 顺序对齐 `RESCUE_ICONS` 索引映射 `iconIndex`/`label`/`value`），`eventCommand` 布局保留 `eventCommandAuxiliaryItems` mock。预案库（`emergencyPlanStore.fetchPlans`）与事件本体（`emergencyEventStore`/`resolveAccidentRescueIncident`）在现有 UI 中无 1:1 消费者（`EmergencyPlanPanel` 用硬编码 UI + `emergencyPlanSwitchMock`、`AccidentEmergencyRescue.vue` 用事件富详情且无单条 `getById`），按审计"部分接线"策略保留 mock、不强行接线，避免字段错位。
+- [x] 接线 `drillRescueMock` 复用点（PreliminaryGuidancePanel / IncidentDetailPanel / RescueDynamicsPanel）：经审计，`drillRescueMock` 全部导出（`drillGuidanceSteps`/`drillResponseFields`/`drillDispatchFields`/`drillVideoFields`/`drillDynamics*`/`drillAwarenessDynamics`/`drillBriefDynamics`）均为演练（training）本地演示数据，无对应 service；演练数据本质即本地 mock，造 service 会违反设计决策 1（不新建并行 data 层），故三个复用点保留 `drillRescueMock`、不强行接线，与事故应急"部分接线"结论一致。
+- [x] [TDD] 补 `src/services/emergency.spec.ts` 关键路径（strength / 事件 CRUD 降级）：覆盖 `fetchEmergencyStrength` dev 降级返回 8 维聚合、真实调用走 `/emergency/strength`、非法结构回退 DEV_FIXTURE；`emergencyEventStore` CRUD（mockPage 分页=9、mockCreate 推导 category/warned/title、mockUpdate 重推导、mockDelete 幂等），共 7 例，`vitest` 全绿。
 
 ## 3. P0 样板 · 极端天气 / 台风（真实外部 API）
 
