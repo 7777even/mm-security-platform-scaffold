@@ -6,6 +6,7 @@ import MapPageShell from '../components/map/MapPageShell.vue';
 import MajorHazardMapOverlay from '../components/map/MajorHazardMapOverlay.vue';
 import MajorHazardStatsBar from '../components/panels/production/MajorHazardStatsBar.vue';
 import MajorHazardListPanel from '../components/panels/production/MajorHazardListPanel.vue';
+import RiskHeatmapPanel from '../components/panels/production/RiskHeatmapPanel.vue';
 import { getSharedMap, onSharedMapReady } from '../lib/composables/sharedCesiumBridge';
 import { majorHazards } from '@/services/hazard';
 import { usePlantArea } from '../lib/composables/usePlantArea';
@@ -56,6 +57,7 @@ watch(selectedPlantArea, () => void flyToHazards());
 
         <aside class="hazard-list-page__right">
           <MajorHazardListPanel />
+          <RiskHeatmapPanel />
         </aside>
 
         <button type="button" class="hazard-list-page__back" @click="goBack">返回</button>
@@ -96,6 +98,9 @@ watch(selectedPlantArea, () => void flyToHazards());
   flex-shrink: 0;
   align-self: stretch;
   max-height: calc(100% - 8px);
+  display: grid;
+  grid-template-rows: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 12px;
 }
 
 .hazard-list-page__right > :deep(.panel-card) {

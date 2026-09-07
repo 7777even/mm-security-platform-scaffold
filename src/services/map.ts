@@ -103,15 +103,24 @@ export async function fetchDevicePoints(): Promise<MapPoint[]> {
   }
 }
 
+/** 真实后端 zone 名称可能带后缀（如「罐区A」），按前缀匹配落到同类区域围栏，避免真后端数据被过滤丢弃 */
+function resolveZonePolygon(zone: string): [number, number][] | undefined {
+  if (ZONE_COORDS[zone]) return ZONE_COORDS[zone];
+  const byPrefix = Object.keys(ZONE_COORDS).find((k) => zone.startsWith(k));
+  return byPrefix ? ZONE_COORDS[byPrefix] : undefined;
+}
+
 export async function fetchRiskZones(): Promise<RiskZone[]> {
   try {
     const zones = await request<{ zone: string; score: number }[]>({
       url: '/dashboard/risk-heatmap',
       method: 'GET',
     });
-    return zones
-      .filter((z) => ZONE_COORDS[z.zone])
-      .map((z) => ({ name: z.zone, score: z.score, polygon: ZONE_COORDS[z.zone] }));
+    return zones.map((z) => ({
+      name: z.zone,
+      score: z.score,
+      polygon: resolveZonePolygon(z.zone),
+    }));
   } catch (err) {
     logger.warn('[map] fetchRiskZones 失败，回退静态兜底', (err as Error)?.message);
     return FALLBACK_RISK_ZONES;
