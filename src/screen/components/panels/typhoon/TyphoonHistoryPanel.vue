@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue';
-import type { IstrongTyphoonSummary } from '../../../lib/weather/istrongcloudTyphoonApi';
+import type { IstrongTyphoonSummary } from '@/services/weather/istrongcloudTyphoonApi';
 
 const props = defineProps<{
   loading: boolean;

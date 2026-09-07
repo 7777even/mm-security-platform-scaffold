@@ -2,13 +2,12 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
-import { useSatelliteCloudMap } from '../../../lib/composables/useSatelliteCloudMap';
 import {
-  formatTyphoonPopupHtml,
-  useTyphoonTrackMap,
-} from '../../../lib/composables/useTyphoonTrackMap';
-import { satelliteCloudReflectivityLegend } from '../../../lib/data/satelliteCloudMapMock';
-import type { SatelliteCloudMapMode } from '../../../lib/data/satelliteCloudMapMock';
+  useSatelliteCloudMap,
+  type SatelliteCloudMapMode,
+} from '@/composables/useSatelliteCloudMap';
+import { formatTyphoonPopupHtml, useTyphoonTrackMap } from '@/composables/useTyphoonTrackMap';
+import { satelliteCloudReflectivityLegend } from '@/services/weather/weatherLegend';
 import { plantAreaBoundaryRings, plantAreaDefinitions } from '../../../lib/data/plantAreas';
 import { createTyphoonEyeMarker } from '../../../lib/map/typhoonEyeMarker';
 import {
@@ -16,7 +15,7 @@ import {
   fy4bImageUrlByBackstep,
   FY4B_MAX_BACKOFF,
 } from '@/services/weather/fengyunApi';
-import { buildRainViewerTileUrl, RAINVIEWER_TILE_SIZE } from '../../../lib/weather/rainViewerApi';
+import { buildRainViewerTileUrl, RAINVIEWER_TILE_SIZE } from '@/services/weather/rainViewerApi';
 import {
   CHINA_RADAR_BOUNDS,
   chinaRadarImageUrlByBackstep,

@@ -1,5 +1,5 @@
 import L from 'leaflet';
-import type { TyphoonTrackPointInfo } from '../composables/useTyphoonTrackMap';
+import type { TyphoonTrackPointInfo } from '@/composables/useTyphoonTrackMap';
 
 export const TYPHOON_EYE_ICON_URL = '/images/台风.png';
 
