@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import SpriteImage from '../common/SpriteImage.vue';
 import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
@@ -13,6 +13,7 @@ import {
   securityMapControls,
   securityMapToolbarItems,
 } from '@/services/security';
+import { fetchAlarmPoints, fetchDevicePoints, type MapPoint } from '@/services/map';
 import { useMapControls } from '../../lib/composables/useMapControls';
 import { useBoundaryGateScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import {
@@ -189,6 +190,61 @@ watch(
 function handleGateControlMarkerClick(id: number) {
   openGateControlDetail(id);
 }
+
+// —— 真实后端点位落图（/map/alarms、/map/devices，GeoJSON FeatureCollection）——
+// 直连真后端 8787；service 内部对无后端/异常已回退静态兜底点，不白屏。
+const alarmPoints = ref<MapPoint[]>([]);
+const devicePoints = ref<MapPoint[]>([]);
+
+onMounted(async () => {
+  try {
+    const [al, dv] = await Promise.all([fetchAlarmPoints(), fetchDevicePoints()]);
+    alarmPoints.value = al;
+    devicePoints.value = dv;
+  } catch {
+    alarmPoints.value = [];
+    devicePoints.value = [];
+  }
+});
+
+function alarmLevelClass(level?: number): string {
+  if (level === 1) return 'realtime-marker--lv1';
+  if (level === 2) return 'realtime-marker--lv2';
+  if (level === 3) return 'realtime-marker--lv3';
+  return 'realtime-marker--lv0';
+}
+
+function deviceStatusClass(status?: string): string {
+  if (status === 'FAULT') return 'realtime-marker--fault';
+  if (status === 'OFFLINE') return 'realtime-marker--offline';
+  return 'realtime-marker--ok';
+}
+
+const alarmMarkerTargets = () => {
+  const height = getSharedMap()?.getBoundaryModelTopHeight?.() ?? 72;
+  return alarmPoints.value.map((p) => ({
+    key: `real-alarm-${p.id}`,
+    longitude: p.lng,
+    latitude: p.lat,
+    height,
+  }));
+};
+const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTargets, {
+  scaleWithZoom: false,
+});
+
+const deviceMarkerTargets = () => {
+  const height = getSharedMap()?.getBoundaryModelTopHeight?.() ?? 72;
+  return devicePoints.value.map((p) => ({
+    key: `real-device-${p.id}`,
+    longitude: p.lng,
+    latitude: p.lat,
+    height,
+  }));
+};
+const { styleFor: deviceStyleFor } = useWorldMarkerScreenPositions(deviceMarkerTargets, {
+  scaleWithZoom: false,
+});
 </script>
 
 <template>
@@ -342,6 +398,34 @@ function handleGateControlMarkerClick(id: number) {
       </span>
       <span class="camera-marker__stem" aria-hidden="true" />
       <span class="camera-marker__breath" aria-hidden="true" />
+    </button>
+
+    <!-- 真实后端报警点位落图（/map/alarms） -->
+    <button
+      v-for="p in alarmPoints"
+      :key="`real-alarm-${p.id}`"
+      type="button"
+      class="realtime-marker"
+      :class="alarmLevelClass(p.level)"
+      :style="alarmStyleFor(`real-alarm-${p.id}`)"
+      :title="p.name"
+    >
+      <span class="realtime-marker__pin"><MapMarkerIcon name="sensor-gas" /></span>
+      <span class="realtime-marker__breath" aria-hidden="true" />
+    </button>
+
+    <!-- 真实后端设备点位落图（/map/devices） -->
+    <button
+      v-for="p in devicePoints"
+      :key="`real-device-${p.id}`"
+      type="button"
+      class="realtime-marker realtime-marker--device"
+      :class="deviceStatusClass(p.status)"
+      :style="deviceStyleFor(`real-device-${p.id}`)"
+      :title="p.name"
+    >
+      <span class="realtime-marker__pin"><MapMarkerIcon name="device" /></span>
+      <span class="realtime-marker__breath" aria-hidden="true" />
     </button>
   </div>
 </template>
@@ -874,6 +958,101 @@ function handleGateControlMarkerClick(id: number) {
 
   50% {
     transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.realtime-marker {
+  position: absolute;
+  z-index: var(--z-marker);
+  width: 26px;
+  height: 26px;
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+}
+
+.realtime-marker__pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgb(255 255 255 / 90%);
+  color: rgb(255 255 255 / 96%);
+  background: var(--map-marker-cyan);
+  box-shadow: 0 0 10px rgb(55 207 255 / 45%);
+}
+
+.realtime-marker__pin :deep(.map-marker-icon) {
+  width: 15px;
+  height: 15px;
+}
+
+.realtime-marker__breath {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgb(55 207 255 / 95%);
+  box-shadow: 0 0 10px rgb(55 207 255 / 45%);
+  animation: realtime-breath 1.9s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.realtime-marker--lv1 .realtime-marker__pin,
+.realtime-marker--lv1 .realtime-marker__breath {
+  background: var(--color-danger);
+  box-shadow: 0 0 10px rgb(255 90 90 / 45%);
+}
+
+.realtime-marker--lv2 .realtime-marker__pin,
+.realtime-marker--lv2 .realtime-marker__breath {
+  background: var(--color-alarm-2, #ff9f43);
+  box-shadow: 0 0 10px rgb(255 159 67 / 45%);
+}
+
+.realtime-marker--lv3 .realtime-marker__pin,
+.realtime-marker--lv3 .realtime-marker__breath {
+  background: #ffd93b;
+  box-shadow: 0 0 10px rgb(255 217 59 / 45%);
+}
+
+.realtime-marker--device.realtime-marker--ok .realtime-marker__pin,
+.realtime-marker--device.realtime-marker--ok .realtime-marker__breath {
+  background: var(--map-marker-cyan);
+  box-shadow: 0 0 10px rgb(55 207 255 / 45%);
+}
+
+.realtime-marker--fault .realtime-marker__pin,
+.realtime-marker--fault .realtime-marker__breath {
+  background: var(--color-warning);
+  box-shadow: 0 0 10px rgb(240 180 41 / 40%);
+}
+
+.realtime-marker--offline .realtime-marker__pin,
+.realtime-marker--offline .realtime-marker__breath {
+  background: var(--map-device-offline, #8aa4c4);
+  box-shadow: none;
+  filter: grayscale(0.4);
+}
+
+@keyframes realtime-breath {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0.75;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.25);
     opacity: 1;
   }
 }

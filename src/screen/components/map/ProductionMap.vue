@@ -1,5 +1,5 @@
 ﻿<script setup lang="ts">
-import { watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import SpriteImage from '../common/SpriteImage.vue';
 import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
@@ -22,6 +22,7 @@ import {
 import { statusTone } from '../../lib/data/productionDeviceMock';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 import { resolvePlantAreaWorldPosition } from '../../lib/data/plantAreas';
+import { fetchAlarmPoints, type MapPoint } from '@/services/map';
 
 const { onMapControl } = useMapControls();
 const { areaScopedItems } = usePlantArea();
@@ -117,6 +118,38 @@ watch([communicationDrawerOpen, selectedDeviceId], ([open, id]) => {
     panOnly: true,
   });
 });
+
+// —— 真实后端报警点位落图（/map/alarms，GeoJSON FeatureCollection）——
+// 直连真后端 8787；service 内部对无后端/异常已回退静态兜底点，不白屏。
+const alarmPoints = ref<MapPoint[]>([]);
+
+onMounted(async () => {
+  try {
+    alarmPoints.value = await fetchAlarmPoints();
+  } catch {
+    alarmPoints.value = [];
+  }
+});
+
+function alarmLevelClass(level?: number): string {
+  if (level === 1) return 'realtime-marker--lv1';
+  if (level === 2) return 'realtime-marker--lv2';
+  if (level === 3) return 'realtime-marker--lv3';
+  return 'realtime-marker--lv0';
+}
+
+const alarmMarkerTargets = () => {
+  const height = getSharedMap()?.getBoundaryModelTopHeight?.() ?? 72.05;
+  return alarmPoints.value.map((p) => ({
+    key: `real-alarm-${p.id}`,
+    longitude: p.lng,
+    latitude: p.lat,
+    height,
+  }));
+};
+const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTargets, {
+  scaleWithZoom: false,
+});
 </script>
 
 <template>
@@ -207,6 +240,20 @@ watch([communicationDrawerOpen, selectedDeviceId], ([open, id]) => {
       </button>
       <MapCleanModeButton />
     </div>
+
+    <!-- 真实后端报警点位落图（/map/alarms） -->
+    <button
+      v-for="p in alarmPoints"
+      :key="`real-alarm-${p.id}`"
+      type="button"
+      class="realtime-marker"
+      :class="alarmLevelClass(p.level)"
+      :style="alarmStyleFor(`real-alarm-${p.id}`)"
+      :title="p.name"
+    >
+      <span class="realtime-marker__pin"><MapMarkerIcon name="sensor-gas" /></span>
+      <span class="realtime-marker__breath" aria-hidden="true" />
+    </button>
   </div>
 </template>
 
@@ -508,5 +555,81 @@ watch([communicationDrawerOpen, selectedDeviceId], ([open, id]) => {
 .map-control-btn:hover {
   opacity: 1;
   filter: brightness(1.12);
+}
+
+.realtime-marker {
+  position: absolute;
+  z-index: var(--z-marker);
+  width: 26px;
+  height: 26px;
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+}
+
+.realtime-marker__pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgb(255 255 255 / 90%);
+  color: rgb(255 255 255 / 96%);
+  background: var(--map-marker-cyan);
+  box-shadow: 0 0 10px rgb(55 207 255 / 45%);
+}
+
+.realtime-marker__pin :deep(.map-marker-icon) {
+  width: 15px;
+  height: 15px;
+}
+
+.realtime-marker__breath {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgb(55 207 255 / 95%);
+  box-shadow: 0 0 10px rgb(55 207 255 / 45%);
+  animation: realtime-breath 1.9s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.realtime-marker--lv1 .realtime-marker__pin,
+.realtime-marker--lv1 .realtime-marker__breath {
+  background: var(--color-danger);
+  box-shadow: 0 0 10px rgb(255 90 90 / 45%);
+}
+
+.realtime-marker--lv2 .realtime-marker__pin,
+.realtime-marker--lv2 .realtime-marker__breath {
+  background: var(--color-alarm-2, #ff9f43);
+  box-shadow: 0 0 10px rgb(255 159 67 / 45%);
+}
+
+.realtime-marker--lv3 .realtime-marker__pin,
+.realtime-marker--lv3 .realtime-marker__breath {
+  background: #ffd93b;
+  box-shadow: 0 0 10px rgb(255 217 59 / 45%);
+}
+
+@keyframes realtime-breath {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0.75;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.25);
+    opacity: 1;
+  }
 }
 </style>
