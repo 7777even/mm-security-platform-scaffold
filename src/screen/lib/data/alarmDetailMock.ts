@@ -1,5 +1,5 @@
 import { fireAlarmMarker, type AlarmItem } from './mock';
-import type { FireAlarmListItem } from './fireAlarmListMock';
+import type { FireAlarmItem } from '@/services/alarm';
 import type { FacilityAlarmItem } from './fireFacilityMonitoringMock';
 import { fireFacilityFaults } from './fireFacilityMonitoringMock';
 import type { ProductionAlarmItem } from './productionMock';
@@ -443,17 +443,17 @@ export function fireAlarmToDetail(alarm: AlarmItem): AlarmDetailItem {
   };
 }
 
-export function fireListItemToDetail(item: FireAlarmListItem): AlarmDetailItem {
+export function fireListItemToDetail(item: FireAlarmItem): AlarmDetailItem {
   const type = normalizeFireType(item.typeLabel);
   const images = type === '视频AI' ? SECURITY_IMAGES : FIRE_IMAGES;
   return {
-    id: `fire-list-${item.id}`,
-    alarmCode: `AL-20260820-${String(item.id).padStart(3, '0')}`,
+    id: `fire-list-${item.alarmId}`,
+    alarmCode: `AL-20260820-${String(item.alarmId).padStart(3, '0')}`,
     title: item.title,
     alarmType: type,
     source: item.source,
     level: item.level,
-    status: item.listStatus === '报警中' ? '未确认' : '已处理',
+    status: item.status === 'CLOSED' ? '已处理' : '未确认',
     falseAlarm: item.falseAlarm === '是' ? '是' : '未核实',
     time: item.time,
     objectType: item.objectType,
@@ -465,7 +465,7 @@ export function fireListItemToDetail(item: FireAlarmListItem): AlarmDetailItem {
     images,
     imageLabels:
       type === '视频AI' ? ['周界现场抓拍'] : ['告警现场', '关联装置现场', '储罐区联动画面'],
-    ...coordsFor(item.id),
+    ...coordsFor(item.alarmId),
     dispatchPersonnel: [],
     notifyApp: true,
     notifySms: false,
@@ -473,7 +473,7 @@ export function fireListItemToDetail(item: FireAlarmListItem): AlarmDetailItem {
     handleTime: '',
     attachments: [],
     timeline: baseTimeline(item.time, item.title),
-    rescueEventId: item.rescueEventId,
+    rescueEventId: item.rescueEventId ? Number(item.rescueEventId) : undefined,
     monitorId: item.onsiteMonitorId ?? item.monitorId,
     monitorLabel: item.onsiteMonitorLabel ?? item.monitorLabel,
   };

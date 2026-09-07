@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { fetchFireAlarmPage, type FireAlarmItem, type AlarmStatus } from '@/services/alarm';
+import {
+  ALARM_STATUS_META,
+  FIRE_ALARM_TYPE_OPTIONS,
+  FIRE_ALARM_STATUS_OPTIONS,
+  FIRE_ALARM_SOURCE_OPTIONS,
+  FIRE_ALARM_OBJECT_TYPE_OPTIONS,
+  FIRE_ALARM_OBJECT_OPTIONS,
+} from '../../lib/data/alarmMeta';
 import { fireListItemToDetail } from '../../lib/data/alarmDetailMock';
 import { useAlarmDetailPanel } from '../../lib/composables/useAlarmDetailPanel';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
-import {
-  fireAlarmListItems,
-  fireAlarmListStatusOptions,
-  fireAlarmListTypeOptions,
-  fireAlarmObjectOptions,
-  fireAlarmObjectTypeOptions,
-  fireAlarmSourceOptions,
-  type FireAlarmListItem,
-} from '../../lib/data/fireAlarmListMock';
 
 const props = defineProps<{
   open: boolean;
@@ -27,23 +27,47 @@ const router = useRouter();
 const { openAlarmDetail } = useAlarmDetailPanel();
 const PAGE_SIZE = 10;
 
-const typeFilter = ref(fireAlarmListTypeOptions[0]);
-const sourceFilter = ref<string>(fireAlarmSourceOptions[0]);
-const objectTypeFilter = ref(fireAlarmObjectTypeOptions[0]);
-const objectFilter = ref(fireAlarmObjectOptions[0]);
-const statusFilter = ref(fireAlarmListStatusOptions[0]);
+const typeFilter = ref<string>(FIRE_ALARM_TYPE_OPTIONS[0]);
+const sourceFilter = ref<string>(FIRE_ALARM_SOURCE_OPTIONS[0]);
+const objectTypeFilter = ref<string>(FIRE_ALARM_OBJECT_TYPE_OPTIONS[0]);
+const objectFilter = ref<string>(FIRE_ALARM_OBJECT_OPTIONS[0]);
+const statusFilter = ref<string>(FIRE_ALARM_STATUS_OPTIONS[0]);
 const timeRange = ref('');
 const currentPage = ref(1);
 const { filterByPlantArea } = usePlantArea();
 
+// 数据接入：经统一 services 层拉取（dev 无后端自动降级），不再直接 import lib/data/*Mock
+const allItems = ref<FireAlarmItem[]>([]);
+const loading = ref(false);
+
+async function loadAlarms() {
+  loading.value = true;
+  try {
+    const res = await fetchFireAlarmPage(1, 1000);
+    allItems.value = res.list;
+  } finally {
+    loading.value = false;
+  }
+}
+
 const filteredItems = computed(() =>
-  filterByPlantArea(fireAlarmListItems).filter((item) => {
-    if (typeFilter.value !== '全部类型' && item.typeLabel !== typeFilter.value) return false;
-    if (sourceFilter.value !== '全部来源' && item.source !== sourceFilter.value) return false;
-    if (objectTypeFilter.value !== '全部类型' && item.objectType !== objectTypeFilter.value)
+  filterByPlantArea(allItems.value).filter((item) => {
+    if (typeFilter.value !== FIRE_ALARM_TYPE_OPTIONS[0] && item.typeLabel !== typeFilter.value)
       return false;
-    if (objectFilter.value !== '全部对象' && item.objectName !== objectFilter.value) return false;
-    if (statusFilter.value !== '全部状态' && item.listStatus !== statusFilter.value) return false;
+    if (sourceFilter.value !== FIRE_ALARM_SOURCE_OPTIONS[0] && item.source !== sourceFilter.value)
+      return false;
+    if (
+      objectTypeFilter.value !== FIRE_ALARM_OBJECT_TYPE_OPTIONS[0] &&
+      item.objectType !== objectTypeFilter.value
+    )
+      return false;
+    if (
+      objectFilter.value !== FIRE_ALARM_OBJECT_OPTIONS[0] &&
+      item.objectName !== objectFilter.value
+    )
+      return false;
+    if (statusFilter.value !== FIRE_ALARM_STATUS_OPTIONS[0] && item.status !== statusFilter.value)
+      return false;
     if (timeRange.value.trim() && !item.time.includes(timeRange.value.trim())) return false;
     return true;
   }),
@@ -62,11 +86,17 @@ const visiblePages = computed(() => {
   return pages;
 });
 
+function statusOptionLabel(opt: string): string {
+  if (opt === '全部状态') return '告警状态';
+  return ALARM_STATUS_META[opt as AlarmStatus].label;
+}
+
 watch(
   () => props.open,
   (visible) => {
     if (!visible) return;
     resetFilters();
+    void loadAlarms();
   },
 );
 
@@ -75,15 +105,15 @@ watch(filteredItems, () => {
 });
 
 function resetFilters() {
-  typeFilter.value = fireAlarmListTypeOptions[0];
-  sourceFilter.value = fireAlarmSourceOptions.includes(
-    props.initialSource as (typeof fireAlarmSourceOptions)[number],
+  typeFilter.value = FIRE_ALARM_TYPE_OPTIONS[0];
+  sourceFilter.value = FIRE_ALARM_SOURCE_OPTIONS.includes(
+    props.initialSource as (typeof FIRE_ALARM_SOURCE_OPTIONS)[number],
   )
-    ? (props.initialSource as (typeof fireAlarmSourceOptions)[number])
-    : fireAlarmSourceOptions[0];
-  objectTypeFilter.value = fireAlarmObjectTypeOptions[0];
-  objectFilter.value = fireAlarmObjectOptions[0];
-  statusFilter.value = fireAlarmListStatusOptions[0];
+    ? (props.initialSource as (typeof FIRE_ALARM_SOURCE_OPTIONS)[number])
+    : FIRE_ALARM_SOURCE_OPTIONS[0];
+  objectTypeFilter.value = FIRE_ALARM_OBJECT_TYPE_OPTIONS[0];
+  objectFilter.value = FIRE_ALARM_OBJECT_OPTIONS[0];
+  statusFilter.value = FIRE_ALARM_STATUS_OPTIONS[0];
   timeRange.value = '';
   currentPage.value = 1;
 }
@@ -109,19 +139,19 @@ function goToPage(page: number) {
   currentPage.value = page;
 }
 
-function openDetail(item: FireAlarmListItem) {
+function openDetail(item: FireAlarmItem) {
   emit('close');
   openAlarmDetail(fireListItemToDetail(item));
 }
 
-function openVideoMonitor(item: FireAlarmListItem) {
+function openVideoMonitor(item: FireAlarmItem) {
   router.push({
     name: 'tv',
     query: { monitor: item.onsiteMonitorId, monitorLabel: item.onsiteMonitorLabel },
   });
 }
 
-function openRescue(item: FireAlarmListItem, autoStart = false) {
+function openRescue(item: FireAlarmItem, autoStart = false) {
   router.push({
     name: 'fireAccidentRescue',
     query: {
@@ -134,7 +164,7 @@ function openRescue(item: FireAlarmListItem, autoStart = false) {
 type DialogAction = {
   key: string;
   label: string;
-  handler: (item: FireAlarmListItem) => void;
+  handler: (item: FireAlarmItem) => void;
   primary?: boolean;
 };
 
@@ -144,6 +174,8 @@ const dialogActions: DialogAction[] = [
   { key: 'dispatch', label: '处置调度', handler: (item) => openRescue(item, false) },
   { key: 'emergency', label: '一键应急', handler: (item) => openRescue(item, true), primary: true },
 ];
+
+onMounted(loadAlarms);
 </script>
 
 <template>
@@ -165,28 +197,28 @@ const dialogActions: DialogAction[] = [
           <div class="fire-alarm-list__body">
             <div class="fire-alarm-list__toolbar">
               <select v-model="typeFilter" class="fire-alarm-list__select">
-                <option v-for="opt in fireAlarmListTypeOptions" :key="opt" :value="opt">
+                <option v-for="opt in FIRE_ALARM_TYPE_OPTIONS" :key="opt" :value="opt">
                   {{ opt === '全部类型' ? '告警类型' : opt }}
                 </option>
               </select>
               <select v-model="sourceFilter" class="fire-alarm-list__select">
-                <option v-for="opt in fireAlarmSourceOptions" :key="opt" :value="opt">
+                <option v-for="opt in FIRE_ALARM_SOURCE_OPTIONS" :key="opt" :value="opt">
                   {{ opt === '全部来源' ? '告警来源' : opt }}
                 </option>
               </select>
               <select v-model="objectTypeFilter" class="fire-alarm-list__select">
-                <option v-for="opt in fireAlarmObjectTypeOptions" :key="opt" :value="opt">
+                <option v-for="opt in FIRE_ALARM_OBJECT_TYPE_OPTIONS" :key="opt" :value="opt">
                   {{ opt === '全部类型' ? '告警对象类型' : opt }}
                 </option>
               </select>
               <select v-model="objectFilter" class="fire-alarm-list__select">
-                <option v-for="opt in fireAlarmObjectOptions" :key="opt" :value="opt">
+                <option v-for="opt in FIRE_ALARM_OBJECT_OPTIONS" :key="opt" :value="opt">
                   {{ opt === '全部对象' ? '告警对象' : opt }}
                 </option>
               </select>
               <select v-model="statusFilter" class="fire-alarm-list__select">
-                <option v-for="opt in fireAlarmListStatusOptions" :key="opt" :value="opt">
-                  {{ opt === '全部状态' ? '告警状态' : opt }}
+                <option v-for="opt in FIRE_ALARM_STATUS_OPTIONS" :key="opt" :value="opt">
+                  {{ statusOptionLabel(opt) }}
                 </option>
               </select>
               <input
@@ -212,6 +244,8 @@ const dialogActions: DialogAction[] = [
               </button>
             </div>
 
+            <p v-if="loading" class="fire-alarm-list__loading">数据加载中…</p>
+
             <div class="fire-alarm-list__table-wrap">
               <table class="fire-alarm-list__table">
                 <thead>
@@ -229,7 +263,7 @@ const dialogActions: DialogAction[] = [
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="item in pagedItems" :key="item.id">
+                  <tr v-for="item in pagedItems" :key="item.alarmId">
                     <td>
                       <span class="type-label" :class="`type-label--${item.typeTone}`">{{
                         item.typeLabel
@@ -245,9 +279,9 @@ const dialogActions: DialogAction[] = [
                     <td>
                       <span
                         class="status-label"
-                        :class="{ 'status-label--closed': item.listStatus === '已关闭' }"
+                        :style="{ color: ALARM_STATUS_META[item.status].color }"
                       >
-                        {{ item.listStatus }}
+                        {{ ALARM_STATUS_META[item.status].label }}
                       </span>
                     </td>
                     <td>
@@ -422,6 +456,18 @@ const dialogActions: DialogAction[] = [
   border: 1px solid rgb(0 110 190 / 22%);
   border-radius: 4px;
   background: rgb(0 16 36 / 35%);
+}
+
+.fire-alarm-list__loading {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--btn-border);
+  border-radius: 2px;
+  background: var(--btn-bg);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-family: var(--font-body);
 }
 
 .fire-alarm-list__table {
