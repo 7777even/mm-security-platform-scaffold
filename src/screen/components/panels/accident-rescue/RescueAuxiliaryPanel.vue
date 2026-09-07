@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
 import {
   UserFilled,
@@ -13,10 +13,8 @@ import {
   MapLocation,
   Connection,
 } from '@element-plus/icons-vue';
-import {
-  eventCommandAuxiliaryItems,
-  rescueAuxiliaryStats,
-} from '../../../lib/data/accidentRescueMock';
+import { eventCommandAuxiliaryItems } from '../../../lib/data/accidentRescueMock';
+import { fetchEmergencyStrength } from '@/services/emergency';
 
 const props = withDefaults(
   defineProps<{
@@ -35,10 +33,46 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{ 'update:collapsed': [value: boolean] }>();
+// 救援力量汇总：经统一 services 层拉取（fetchEmergencyStrength 内置 dev 降级），与 RESCUE_ICONS 索引顺序对齐映射
+const RESCUE_KIND_ORDER = [
+  '应急专家',
+  '应急物资',
+  '救援队伍',
+  '装备车辆',
+  '应急场所',
+  '医疗机构',
+  '应急车辆',
+  '消防设施',
+] as const;
+
+const rescueItems = ref<{ label: string; value: string; iconIndex: number }[]>([]);
+const loadingRescue = ref(false);
+
+async function loadRescueStats() {
+  loadingRescue.value = true;
+  try {
+    const { resources } = await fetchEmergencyStrength();
+    rescueItems.value = resources.map((r) => ({
+      label: r.kind,
+      value: String(r.count),
+      iconIndex: Math.max(
+        0,
+        RESCUE_KIND_ORDER.indexOf(r.kind as (typeof RESCUE_KIND_ORDER)[number]),
+      ),
+    }));
+  } finally {
+    loadingRescue.value = false;
+  }
+}
+
+onMounted(() => {
+  if (props.layout === 'rescue') void loadRescueStats();
+});
+
 const total = computed(() => items.value.reduce((sum, item) => sum + Number(item.value || 0), 0));
 
 const items = computed(() =>
-  props.layout === 'eventCommand' ? eventCommandAuxiliaryItems : rescueAuxiliaryStats,
+  props.layout === 'eventCommand' ? eventCommandAuxiliaryItems : rescueItems.value,
 );
 
 /* 与 rescueAuxiliaryStats.iconIndex 一一对应（0..7）：
