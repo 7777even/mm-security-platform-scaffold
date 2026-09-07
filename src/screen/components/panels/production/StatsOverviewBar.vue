@@ -1,16 +1,74 @@
 ﻿<script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import ProductionStatCard from '../../common/ProductionStatCard.vue';
+import { fetchDashboardOverview } from '@/services/alarm';
 import { statOverview } from '../../../lib/data/productionMock';
-import { usePlantArea } from '../../../lib/composables/usePlantArea';
+import type { StatOverviewItem } from '../../../lib/data/productionMock';
 
-const { scaleAreaCount } = usePlantArea();
-const visibleStats = computed(() =>
-  statOverview.map((item) => ({
-    ...item,
-    value: item.valueSuffix ? item.value : String(scaleAreaCount(Number(item.value))),
-  })),
-);
+const overview = ref<{
+  activeAlarm: number;
+  deviceOnline: number;
+  deviceTotal: number;
+  riskIndex: number;
+  onlineWorkstation: number;
+} | null>(null);
+
+function realStats(): StatOverviewItem[] {
+  if (!overview.value) return statOverview;
+  const o = overview.value;
+  return [
+    {
+      id: 1,
+      label: '活跃告警',
+      value: String(o.activeAlarm),
+      trend: 0,
+      trendUp: false,
+      iconIndex: 0,
+    },
+    {
+      id: 2,
+      label: '在线设备',
+      value: String(o.deviceOnline),
+      trend: 0,
+      trendUp: false,
+      iconIndex: 1,
+    },
+    {
+      id: 3,
+      label: '设备总数',
+      value: String(o.deviceTotal),
+      trend: 0,
+      trendUp: false,
+      iconIndex: 2,
+    },
+    {
+      id: 4,
+      label: '风险指数',
+      value: String(o.riskIndex),
+      trend: 0,
+      trendUp: false,
+      iconIndex: 3,
+    },
+    {
+      id: 5,
+      label: '在线工位',
+      value: String(o.onlineWorkstation),
+      trend: 0,
+      trendUp: false,
+      iconIndex: 4,
+    },
+  ];
+}
+
+const visibleStats = computed(() => realStats());
+
+onMounted(async () => {
+  try {
+    overview.value = await fetchDashboardOverview();
+  } catch {
+    // 直连真后端失败时回落内置 mock，保证 UI 可见
+  }
+});
 </script>
 
 <template>

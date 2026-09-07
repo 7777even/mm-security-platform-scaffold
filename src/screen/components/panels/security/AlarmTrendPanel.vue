@@ -1,5 +1,5 @@
 ﻿<script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 import { LineChart } from 'echarts/charts';
@@ -7,9 +7,21 @@ import { GridComponent, TooltipComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import PanelCard from '../../common/PanelCard.vue';
 import { alarmTrendData } from '@/services/security';
+import { fetchAlarmTrend } from '@/services/alarm';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const { scaleAreaCount } = usePlantArea();
+
+// 真实告警趋势（后端 /dashboard/alarm-trend，按小时分桶）；null 时回落内置 mock
+const trendPoints = ref<Array<{ hour: string; count: number }> | null>(null);
+
+onMounted(async () => {
+  try {
+    trendPoints.value = await fetchAlarmTrend();
+  } catch {
+    // 直连真后端失败时回落内置 mock，保证 UI 可见
+  }
+});
 
 use([LineChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
@@ -17,7 +29,9 @@ const chartOption = computed(() => ({
   grid: { left: 36, right: 16, top: 18, bottom: 28 },
   xAxis: {
     type: 'category',
-    data: ['4/6', '4/7', '4/8', '4/9', '4/10', '4/11', '4/12', '4/13', '4/14', '4/15'],
+    data: trendPoints.value
+      ? trendPoints.value.map((p) => p.hour)
+      : ['4/6', '4/7', '4/8', '4/9', '4/10', '4/11', '4/12', '4/13', '4/14', '4/15'],
     axisLine: { lineStyle: { color: 'rgba(83,103,132,0.5)' } },
     axisLabel: { color: '#8fa8c4', fontSize: 11 },
     axisTick: { show: false },
@@ -33,7 +47,9 @@ const chartOption = computed(() => ({
       smooth: true,
       symbol: 'circle',
       symbolSize: 6,
-      data: alarmTrendData.map(scaleAreaCount),
+      data: trendPoints.value
+        ? trendPoints.value.map((p) => p.count)
+        : alarmTrendData.map(scaleAreaCount),
       lineStyle: { color: '#00b4ff', width: 2 },
       itemStyle: { color: '#00b4ff' },
       areaStyle: {

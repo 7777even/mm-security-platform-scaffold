@@ -65,3 +65,30 @@ export function toScreenAlarm(alarm: ApiAlarmItem, index = 0): ScreenAlarmItem {
     onsiteMonitorLabel: '',
   };
 }
+
+// 生产屏告警卡片（ProductionAlarmCard）期望的本地形状与 AlarmCard 不同，
+// 同样需要把契约 AlarmItem 单向映射过去，避免改动卡片组件。
+import type { ProductionAlarmItem } from '@/screen/lib/data/productionMock';
+
+function levelToTitleColor(level: number): ProductionAlarmItem['titleColor'] {
+  if (level <= 2) return 'danger';
+  if (level === 3) return 'warning';
+  if (level === 4) return 'orange';
+  return 'purple';
+}
+
+/** 将后端 AlarmItem 映射为 ProductionAlarmCard 所需的本地形状（iconIndex 由 level 推导）。 */
+export function toProductionAlarmItem(alarm: ApiAlarmItem, index = 0): ProductionAlarmItem {
+  const type = alarm.type ?? 'SOS';
+  const level = alarm.level ?? 4;
+  return {
+    id: alarmIdAsNumber(alarm.alarmId) || index + 1,
+    title: alarm.title ?? TYPE_LABEL[type],
+    titleColor: levelToTitleColor(level),
+    location: alarm.location ?? '',
+    time: formatTs(alarm.ts),
+    description: alarm.description ?? '',
+    status: STATUS_LABEL[alarm.status ?? 'ACTIVE'],
+    iconIndex: Math.min(Math.max(level - 1, 0), 3),
+  };
+}
