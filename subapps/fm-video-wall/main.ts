@@ -1,3 +1,5 @@
+import { createPinia } from 'pinia';
+import { startRealtime } from '@/services/realtime';
 import { createApp, h } from 'vue';
 import '@/screen/style.css';
 import { createSubappRouter } from '@/shell/subappRouter';
@@ -11,5 +13,7 @@ import AppToast from '@/screen/components/common/AppToast.vue';
 const app = createApp({
   render: () => [h(ViewportSimulator, null, { default: () => h(View) }), h(AppToast)],
 });
+app.use(createPinia());
 app.use(createSubappRouter());
+startRealtime();
 app.mount('#app');

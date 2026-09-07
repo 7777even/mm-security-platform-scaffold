@@ -1,3 +1,4 @@
+import { getActivePinia } from 'pinia';
 import { RealtimeClient } from './ws';
 import { logger } from '@/utils/logger';
 import { useAlarmStore } from '@/stores/alarm';
@@ -24,11 +25,20 @@ function isAlarmItem(v: unknown): v is AlarmItem {
 // 消息分发：仅处理 alarm.push，非法负载容错忽略（不抛异常，与 ws 解析策略一致）。
 function dispatch(msg: { topic: string; payload: unknown }): void {
   if (msg.topic !== ALARM_TOPIC) return;
-  if (isAlarmItem(msg.payload)) {
-    useAlarmStore().ingestAlarm(msg.payload);
-  } else {
+  if (!isAlarmItem(msg.payload)) {
     logger.warn('[realtime] 收到非法 alarm 负载，已忽略');
+    return;
   }
+  // 子应用独立 Pinia：无活跃实例时仅建立 WS 连接（不入库），避免崩溃；
+  // 子应用需在入口创建 Pinia 后才能消费实时告警。
+  const pinia = getActivePinia();
+  if (!pinia) {
+    logger.warn(
+      '[realtime] 无活跃 Pinia，跳过 alarm 入库（子应用入口需 createPinia 才能消费实时告警）',
+    );
+    return;
+  }
+  useAlarmStore(pinia).ingestAlarm(msg.payload);
 }
 
 export interface RealtimeHubOptions {
