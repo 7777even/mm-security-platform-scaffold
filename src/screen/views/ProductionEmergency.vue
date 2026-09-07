@@ -11,6 +11,8 @@ import ProductionAlarmPanel from '../components/panels/production/ProductionAlar
 import RiskControlPanel from '../components/panels/production/RiskControlPanel.vue';
 import StatsOverviewBar from '../components/panels/production/StatsOverviewBar.vue';
 import ProductionDeviceListPanel from '../components/panels/production/ProductionDeviceListPanel.vue';
+import ProductionDeviceLedgerPanel from '../components/panels/production/ProductionDeviceLedgerPanel.vue';
+import ProductionWorkstationPanel from '../components/panels/production/ProductionWorkstationPanel.vue';
 import { productionDeviceDrawerActive } from '../lib/composables/useProductionDeviceListView';
 import { useAlarmDetailPanel } from '../lib/composables/useAlarmDetailPanel';
 
@@ -73,6 +75,8 @@ const shellDrawerActive = computed(() => productionDeviceDrawerActive.value);
         <aside class="sidebar sidebar--left sidebar--primary-left">
           <FacilitiesOverview />
           <DeviceOverview />
+          <ProductionDeviceLedgerPanel />
+          <ProductionWorkstationPanel />
         </aside>
 
         <aside class="sidebar sidebar--right sidebar--primary-right">
@@ -172,7 +176,8 @@ const shellDrawerActive = computed(() => productionDeviceDrawerActive.value);
 
 .sidebar--left {
   width: 338px;
-  grid-template-rows: 305px 391px;
+  grid-template-rows: minmax(0, 1.4fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-content: start;
   gap: 11px;
 }
 
