@@ -1,9 +1,9 @@
-export type {
-  SatelliteCloudMapMode,
-  SatelliteCloudTimeRange,
-} from '@/composables/useSatelliteCloudMap';
+/**
+ * 气象雷达基本反射率 dBZ 图例（RainViewer Universal Blue）。
+ * 原散落在 `satelliteCloudMapMock`，迁移为独立静态常量后由天气/台风对话框统一引用，
+ * 使 `satelliteCloudMapMock` 不再承载任何数据/类型，可随旧 screen 副本一并清除。
+ */
 
-/** 基本反射率 dBZ 图例（RainViewer Universal Blue） */
 export const satelliteCloudReflectivityLegend = [
   { dbz: 10, color: '#a8ecff' },
   { dbz: 15, color: '#5ad4ff' },

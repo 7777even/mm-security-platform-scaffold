@@ -2,10 +2,12 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
-import { useSatelliteCloudMap } from '@/composables/useSatelliteCloudMap';
+import {
+  useSatelliteCloudMap,
+  type SatelliteCloudMapMode,
+} from '@/composables/useSatelliteCloudMap';
 import { formatTyphoonPopupHtml, useTyphoonTrackMap } from '@/composables/useTyphoonTrackMap';
-import { satelliteCloudReflectivityLegend } from '@/services/map-data/satelliteCloudMapMock';
-import type { SatelliteCloudMapMode } from '@/services/map-data/satelliteCloudMapMock';
+import { satelliteCloudReflectivityLegend } from '@/services/weather/weatherLegend';
 import { plantAreaBoundaryRings, plantAreaDefinitions } from '@/services/map-data/plantAreas';
 import { createTyphoonEyeMarker } from '@/utils/typhoonEyeMarker';
 import { buildJmaFdTileUrl, type JmaHimawariBand } from '@/services/weather/jmaHimawariApi';
