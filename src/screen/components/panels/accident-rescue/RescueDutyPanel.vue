@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
 import { rescueDutyPersons } from '../../../lib/data/accidentRescueMock';
+import { fetchDutyRoster, type DutyMember } from '@/services/duty';
 import { UserFilled } from '@element-plus/icons-vue';
 
 withDefaults(
@@ -14,10 +15,30 @@ withDefaults(
 
 const emit = defineEmits<{ 'update:collapsed': [value: boolean] }>();
 
+// 真实值班值守：/emergency/duty（DutyMember 含真实 shift，按白班/夜班过滤）
+const realDutyMembers = ref<DutyMember[] | null>(null);
+onMounted(async () => {
+  try {
+    const roster = await fetchDutyRoster();
+    realDutyMembers.value = roster.members ?? [];
+  } catch {
+    realDutyMembers.value = null;
+  }
+});
+
 const shift = ref<'day' | 'night'>('day');
-const activePersons = computed(() => rescueDutyPersons.slice(0, shift.value === 'day' ? 4 : 2));
+const dutyShiftLabel = computed(() => (shift.value === 'day' ? '白班' : '夜班'));
+// 真实数据优先；未启动 / 异常时回落内置 mock，保证 UI 可见
+const persons = computed<DutyMember[]>(
+  () => realDutyMembers.value ?? (rescueDutyPersons as unknown as DutyMember[]),
+);
+const activePersons = computed(() =>
+  persons.value
+    .filter((person) => (person.shift ?? '白班') === dutyShiftLabel.value)
+    .slice(0, shift.value === 'day' ? 4 : 2),
+);
 const leader = computed(
-  () => rescueDutyPersons.find((person) => person.role === '值班领导') ?? rescueDutyPersons[0],
+  () => persons.value.find((person) => person.role === '值班领导') ?? persons.value[0],
 );
 </script>
 
@@ -49,7 +70,7 @@ const leader = computed(
         </div>
 
         <div class="duty-watch__list">
-          <div v-for="person in rescueDutyPersons" :key="person.id" class="duty-card">
+          <div v-for="person in persons" :key="person.id" class="duty-card">
             <div class="duty-card__avatar" aria-hidden="true">
               <span class="duty-card__avatar-icon">
                 <UserFilled />

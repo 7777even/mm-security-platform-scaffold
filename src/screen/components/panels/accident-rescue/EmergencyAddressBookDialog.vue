@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import {
-  emergencyAddressBookTree,
-  getDefaultAddressBookOrgId,
-  resolveAddressBookContacts,
-  type EmergencyAddressBookTreeNode,
-} from '../../../lib/data/emergencyAddressBookMock';
+  fetchEmergencyPhones,
+  type EmergencyPhone,
+  type EmergencyPhoneBook,
+} from '@/services/emergencyPhone';
+import type { EmergencyAddressBookTreeNode } from '../../../lib/data/emergencyAddressBookMock';
 
 const props = defineProps<{
   open: boolean;
@@ -16,13 +16,50 @@ const emit = defineEmits<{
 }>();
 
 const searchQuery = ref('');
-const selectedOrgId = ref(getDefaultAddressBookOrgId());
-const expandedIds = ref(new Set(emergencyAddressBookTree.map((node) => node.id)));
+const selectedOrgId = ref('');
+const expandedIds = ref(new Set<string>());
 
-const contacts = computed(() => resolveAddressBookContacts(selectedOrgId.value));
+// 真实应急通讯录（应急号码簿）：/emergency/phones，按 category 分组渲染
+const phoneBook = ref<EmergencyPhoneBook | null>(null);
+onMounted(async () => {
+  try {
+    phoneBook.value = await fetchEmergencyPhones();
+  } catch {
+    phoneBook.value = null;
+  }
+});
+
+const phoneEntries = computed<EmergencyPhone[]>(() => phoneBook.value?.entries ?? []);
+const categories = computed<string[]>(() =>
+  Array.from(new Set(phoneEntries.value.map((entry) => entry.category))),
+);
+
+// 组织树：单根「应急通讯录」+ 各 category 作为分组节点（复用原树节点形状）
+const emergencyAddressBookTree = computed<EmergencyAddressBookTreeNode[]>(() => [
+  {
+    id: 'root',
+    label: '应急通讯录',
+    children: categories.value.map((category) => ({ id: category, label: category })),
+  },
+]);
+
+function getDefaultAddressBookOrgId(): string {
+  return categories.value[0] ?? '';
+}
+
+const contacts = computed(() =>
+  phoneEntries.value
+    .filter((entry) => entry.category === selectedOrgId.value)
+    .map((entry) => ({
+      id: entry.id,
+      name: entry.name,
+      role: entry.category,
+      phone: entry.number,
+    })),
+);
 
 const selectedOrgLabel = computed(() => {
-  for (const root of emergencyAddressBookTree) {
+  for (const root of emergencyAddressBookTree.value) {
     const child = root.children?.find((item) => item.id === selectedOrgId.value);
     if (child) return child.label;
   }
@@ -35,8 +72,17 @@ watch(
     if (!visible) return;
     searchQuery.value = '';
     selectedOrgId.value = getDefaultAddressBookOrgId();
-    expandedIds.value = new Set(emergencyAddressBookTree.map((node) => node.id));
+    expandedIds.value = new Set(emergencyAddressBookTree.value.map((node) => node.id));
   },
+);
+
+watch(
+  categories,
+  (nextCategories) => {
+    if (!selectedOrgId.value && nextCategories.length) selectedOrgId.value = nextCategories[0];
+    expandedIds.value = new Set(emergencyAddressBookTree.value.map((node) => node.id));
+  },
+  { immediate: true },
 );
 
 function closeDialog() {
