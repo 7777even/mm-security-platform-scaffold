@@ -16,7 +16,7 @@ fire-monitoring 高保真大屏原型（15 视图 + 单例 Cesium + PanelCard �
 - `fm-tv` — `IndustrialTv.vue`（工业电视），一级路由 `/tv`
 - `fm-production` — `ProductionEmergency.vue`（生产应急），一级路由 `/production`
 - `fm-rescue` — `AccidentEmergencyRescue.vue`，二级路由 `/emergency/drill`、`/fire/rescue`
-- `fm-typhoon` — `TyphoonEmergencyDetail.vue`，二级路由 `/emergency/typhoon`
+- `fm-typhoon` — `TyphoonEmergencyDetailV3.vue`（台风详情 V1/V2 已合并，V3 最全含 ECharts 趋势），二级路由 `/emergency/typhoon`
 - `fm-production-area` — `ProductionAreaView.vue`，二级路由 `/production/area/:facilityId`（透传 `facilityId` prop）
 - `fm-major-hazard` — `MajorHazardListView` / `MajorHazardDetailView` 双视图，二级路由 `/production/hazards`、`/production/hazards/:hazardId`
 - `fm-communication` — `ProductionCommunicationView.vue`，二级路由 `/production/communication`
