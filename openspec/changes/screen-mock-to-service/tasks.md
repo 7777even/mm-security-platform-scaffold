@@ -22,8 +22,12 @@
 
 ## 3. P0 样板 · 极端天气 / 台风（真实外部 API）
 
-- [ ] 结构对齐审计：`weatherMock`/`typhoonEmergencyMock`/`satelliteCloudMapMock` vs `services/weather/*` 真实返回。
-- [ ] 接线 `src/screen/components/layout/WeatherEntry.vue`、`WeatherDetailsDialog.vue` 与台风视图消费 `services/weather/*`。
+- [x] 结构对齐审计：`weatherMock`/`typhoonEmergencyMock`/`satelliteCloudMapMock` vs `services/weather/*` 真实返回。结论（极端天气/台风为"真实外部 API 已就绪于 `src/**`，screen 侧仍 import `src/screen/lib/*` 旧副本"的迁移缺口，非缺 service）：
+  - `weatherMock`(`currentWeather`/`hourlyWeather`/`dailyWeather`=实时观测+24h+7天预报) → `services/weather/*` 全为**地图气象瓦片源**(雷达/风云/葵花/Himawari/RainViewer)，非观测/预报数据；无对应 service（真实观测需 OWM 类后端，`#TODO-确认`）→ `WeatherEntry.vue`/`WeatherDetailsDialog.vue` **保留 mock**，不强行接线（同 §2 drill 逻辑）。
+  - `satelliteCloudMapMock` → 仅导出静态 dBZ 图例 `satelliteCloudReflectivityLegend`（常量，非数据通道）；真实云图已由 `@/composables/useSatelliteCloudMap` 接 `services/weather/{rainViewerApi,fengyunApi,chinaRadarApi}` 真实外部 API（`fix-weather-tile-sources` 变更已落地）→ screen `SatelliteCloudMapDialog.vue` 重指向 `@/composables/useSatelliteCloudMap`+`@/composables/useTyphoonTrackMap`+真实 `services/weather/*`，消解旧副本依赖。
+  - `typhoonEmergencyMock`(`resolveTyphoonEmergencyIncident`=调度资源/监测对象/风险预警/地图风险点/直播视频合成的 `TyphoonEmergencyIncident`) → 台风**路径点**由 `@/services/weather/istrongcloudTyphoonApi`(`IstrongTyphoonDetail.points`)+`@/composables/useTyphoonTrackMap`（已接真实 API）提供；但 `TyphoonEmergencyIncident` 其余字段为屏幕本地演示、无 1:1 后端 → 采用"部分接线"：`TyphoonEmergencyDetail*.vue` 保留 `typhoonEmergencyMock` 合成事件，仅其内嵌卫星云图子对话框重指向真实 composable。
+  - 迁移本质：真源(`src/composables/*`+`src/services/weather/*`)已就绪；screen 侧 `SatelliteCloudMapDialog.vue` 当前混合 import 真实 `services/weather/{fengyunApi,chinaRadarApi}` 与旧副本 `src/screen/lib/{composables/useSatelliteCloudMap,composables/useTyphoonTrackMap,weather/rainViewerApi,data/satelliteCloudMapMock}`；接线=把 screen 对话框 import 重指向 `@/` 真源，随后清 `src/screen/lib` 天气/台风旧副本与 `satelliteCloudMapMock`。
+- [ ] 接线 screen 卫星云图/台风对话框改消费 `@/composables/useSatelliteCloudMap`+`@/composables/useTyphoonTrackMap`+`@/services/weather/*`（删除对 `src/screen/lib/{composables,weather,data/satelliteCloudMapMock}` 旧副本依赖）；`WeatherEntry`/`WeatherDetailsDialog`/`TyphoonEmergencyDetail*` 无对应 service，**保留**各自 mock（观测/合成事件）。
 - [ ] [TDD] 复用既有 `services/weather/*.spec.ts`（chinaRadar / fengyun / himawari）补「无 key 时降级」用例。
 
 ## 4. P1 · 安全防恐 + 重大危险源（store 打底 / 需补 service）
