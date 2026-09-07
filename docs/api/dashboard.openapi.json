@@ -99,6 +99,47 @@
         }
       }
     },
+    "/dashboard/workstations": {
+      "get": {
+        "tags": ["dashboard"],
+        "operationId": "getWorkstations",
+        "summary": "在线工位/工作站列表",
+        "description": "返回当前在线工位/工作站清单（前端只读订阅，不下行控制）。消除后端实现 /dashboard/workstations 的契约漂移。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=Workstation[]）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Workstation" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    { "id": "WS-01", "name": "中控室工位-01", "zone": "罐区A", "online": true }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
     "/dashboard/risk-heatmap": {
       "get": {
         "tags": ["dashboard"],
@@ -153,6 +194,16 @@
           "riskIndex": { "type": "number", "description": "综合风险指数" },
           "onlineWorkstation": { "type": "integer", "description": "在线工位/工作站数" },
           "ts": { "type": "string", "format": "date-time", "description": "数据时间戳（ISO8601）" }
+        }
+      },
+      "Workstation": {
+        "type": "object",
+        "description": "工位/工作站（在线清单）。",
+        "properties": {
+          "id": { "type": "string", "description": "工位 id", "example": "WS-01" },
+          "name": { "type": "string", "description": "工位名", "example": "中控室工位-01" },
+          "zone": { "type": "string", "description": "所属区域", "example": "罐区A" },
+          "online": { "type": "boolean", "description": "是否在线", "example": true }
         }
       },
       "AlarmTrendPoint": {

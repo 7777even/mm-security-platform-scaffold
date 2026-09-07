@@ -1,0 +1,192 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "设备台账 Device API",
+    "version": "1.0.0",
+    "x-base-path": "/api/v1",
+    "x-contract": "B3",
+    "description": "设备台账查询接口（代码真实契约，由后端 DeviceController 升级）。契约源：src/services/device.ts（待建）。本文件补齐此前缺失的设备域契约，消除后端实现 /devices、/devices/{code} 的漂移。",
+    "x-note": "后端返回强类型 PageResult（list/total/page/size），不再下发 mock 字段；空库返回空列表 total=0。"
+  },
+  "servers": [{ "url": "/api/v1", "description": "默认 baseURL（VITE_API_BASE 可覆盖）" }],
+  "security": [{ "bearerAuth": [], "replaySign": [] }],
+  "tags": [{ "name": "device", "description": "设备台账" }],
+  "paths": {
+    "/devices": {
+      "get": {
+        "tags": ["device"],
+        "operationId": "getDevicePage",
+        "summary": "设备台账分页查询",
+        "description": "按 status/zone/deviceCode 筛选分页。deviceCode 为 20 位 MDM 物理主键，非 20 位直接返回 301。",
+        "parameters": [
+          { "$ref": "./_shared.json#/components/parameters/page" },
+          { "$ref": "./_shared.json#/components/parameters/size" },
+          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [0, 1, 2],
+              "description": "0=离线 1=在线 2=告警"
+            },
+            "description": "按运行状态筛选"
+          },
+          {
+            "name": "zone",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "按区域模糊匹配（如 罐区A）"
+          },
+          {
+            "name": "deviceCode",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "minLength": 20, "maxLength": 20 },
+            "description": "20 位 MDM 设备编码精确查询"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=PageResult<Device>）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "allOf": [
+                            { "$ref": "./_shared.json#/components/schemas/PageResult" },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "list": {
+                                  "type": "array",
+                                  "items": { "$ref": "#/components/schemas/Device" }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "list": [
+                      {
+                        "deviceCode": "FAC2026FIREA00000001",
+                        "deviceName": "罐区A消防探头-F01",
+                        "deviceType": "FIRE",
+                        "zone": "罐区A",
+                        "status": 1,
+                        "lat": 21.5123,
+                        "lon": 110.4123
+                      }
+                    ],
+                    "total": 8,
+                    "page": 1,
+                    "size": 5
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/devices/{code}": {
+      "get": {
+        "tags": ["device"],
+        "operationId": "getDeviceByCode",
+        "summary": "按 20 位编码查询单台设备",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "minLength": 20, "maxLength": 20 },
+            "description": "20 位 MDM 设备编码"
+          },
+          { "$ref": "./_shared.json#/components/parameters/lang" }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=Device）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/Device" } }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Device": {
+        "type": "object",
+        "description": "设备台账实体（物理主键 = 20 位 MDM device_code）。",
+        "properties": {
+          "deviceCode": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 20,
+            "description": "20 位 MDM 设备编码（物理主键）",
+            "example": "FAC2026FIREA00000001"
+          },
+          "deviceName": {
+            "type": "string",
+            "description": "设备名称",
+            "example": "罐区A消防探头-F01"
+          },
+          "deviceType": {
+            "type": "string",
+            "description": "设备类型：FIRE/GAS/FLOOD/CCTV",
+            "example": "FIRE"
+          },
+          "zone": { "type": "string", "description": "所属区域", "example": "罐区A" },
+          "status": {
+            "type": "integer",
+            "description": "运行状态：0=离线 1=在线 2=告警",
+            "example": 1
+          },
+          "lat": {
+            "type": "number",
+            "format": "double",
+            "description": "纬度",
+            "example": 21.5123
+          },
+          "lon": {
+            "type": "number",
+            "format": "double",
+            "description": "经度",
+            "example": 110.4123
+          }
+        },
+        "required": ["deviceCode", "deviceName", "deviceType", "zone", "status"]
+      }
+    }
+  }
+}

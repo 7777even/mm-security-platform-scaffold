@@ -6,12 +6,130 @@
     "x-base-path": "/api/v1",
     "x-contract": "B3",
     "description": "菜单树接口（代码真实契约，由 stub 升级）。契约源：src/services/menu.ts、src/router/menu.ts。",
-    "x-auth-note": "本前端无显式登录/刷新 API：令牌由后端经 SSO/OAuth 种入 HttpOnly Cookie，前端用 token.ts 读入内存态；刷新令牌随 Cookie 自动下发。因此本文件仅含菜单读取，不含 login 端点。"
+    "x-auth-note": "本后端（mm-security-backend）提供显式凭证登录：POST /auth/login 返回 access/refresh 令牌（access 存前端内存态 token.ts，refresh 由后端种入 HttpOnly Cookie）；POST /auth/refresh 续期；GET /auth/me 取当前用户。令牌缺失/失效时后端当前返回 HTTP 200 + 业务 code=401（与下方 401 响应声明存在口径差异，待联调确认是否统一为真实 HTTP 401）。"
   },
   "servers": [{ "url": "/api/v1", "description": "默认 baseURL（VITE_API_BASE 可覆盖）" }],
   "security": [{ "bearerAuth": [], "replaySign": [] }],
   "tags": [{ "name": "auth", "description": "鉴权与菜单" }],
   "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["auth"],
+        "operationId": "login",
+        "summary": "凭证登录",
+        "description": "用户名/口令登录，返回 access + refresh 令牌。消除后端实现 /auth/login 的契约漂移。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" },
+              "example": { "username": "admin", "password": "admin@2026" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=TokenResponse）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/TokenResponse" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "accessToken": "eyJ...",
+                    "refreshToken": "eyJ...",
+                    "expiresIn": 7200,
+                    "tokenType": "Bearer"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["auth"],
+        "operationId": "refreshToken",
+        "summary": "刷新访问令牌",
+        "description": "凭 refreshToken 续期，返回新的 access + refresh。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "refreshToken": { "type": "string" } }
+              },
+              "example": { "refreshToken": "eyJ..." }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=TokenResponse）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/TokenResponse" } }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["auth"],
+        "operationId": "getCurrentUser",
+        "summary": "当前登录用户",
+        "description": "返回当前用户基本信息（username/realName/role）。",
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=CurrentUser）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/CurrentUser" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": { "username": "admin", "realName": "系统管理员", "role": "ADMIN" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
     "/auth/menus": {
       "get": {
         "tags": ["auth"],
@@ -58,6 +176,38 @@
   },
   "components": {
     "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "description": "登录请求体。",
+        "properties": {
+          "username": { "type": "string", "description": "用户名", "example": "admin" },
+          "password": { "type": "string", "description": "口令", "example": "admin@2026" }
+        },
+        "required": ["username", "password"]
+      },
+      "TokenResponse": {
+        "type": "object",
+        "description": "登录/刷新返回。access 存前端内存态，refresh 由后端种入 HttpOnly Cookie。",
+        "properties": {
+          "accessToken": { "type": "string", "description": "访问令牌（JWT，短效 2h）" },
+          "refreshToken": {
+            "type": "string",
+            "description": "刷新令牌（长效 7d，HttpOnly Cookie）"
+          },
+          "expiresIn": { "type": "integer", "description": "access 有效期（秒）", "example": 7200 },
+          "tokenType": { "type": "string", "description": "令牌类型", "example": "Bearer" }
+        },
+        "required": ["accessToken", "refreshToken", "expiresIn", "tokenType"]
+      },
+      "CurrentUser": {
+        "type": "object",
+        "description": "当前登录用户。",
+        "properties": {
+          "username": { "type": "string", "example": "admin" },
+          "realName": { "type": "string", "example": "系统管理员" },
+          "role": { "type": "string", "example": "ADMIN" }
+        }
+      },
       "MenuItem": {
         "type": "object",
         "description": "菜单项（可递归嵌套 children）。",

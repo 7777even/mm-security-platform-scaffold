@@ -2,7 +2,7 @@
 
 按业务域拆分的前后端契约（OpenAPI 3.x JSON），是接口定义的**单一真相源**。
 
-> 状态说明：本目录最初为结构桩（stub）。其中 `alarm` / `auth` 已**升级为代码真实契约**（对齐 `src/services/*` 实际端点）；`dashboard` / `emergency` / `map` / `uplink` / `realtime` 为本次新增的真实契约；`gis.openapi.json` 仍为**前瞻性桩**（描述未来 GIS 网关 `/gis/*` 形态，与已实现的 `/map/*` 端点并存，待后端落地）。
+> 状态说明：本目录最初为结构桩（stub）。其中 `alarm` / `auth` / `device` 已**升级为代码真实契约**（对齐后端 `DeviceController` / `AuthController` 实际端点，消除「实现有/契约无」漂移）；`dashboard` / `emergency` / `map` / `uplink` / `realtime` 为真实契约；`gis.openapi.json` 仍为**前瞻性桩**（描述未来 GIS 网关 `/gis/*` 形态，与已实现的 `/map/*` 端点并存，待后端落地）。后端 `scripts/check-api-contract.mjs` 已对齐 10 个端点，「实现有/契约无」归零，剩余差异均为前端超前、后端尚未实现的前瞻桩。
 
 ## 四条铁律
 
@@ -31,11 +31,12 @@
   - `alarm.openapi.json` — 报警/应急事件查询与 CRUD（真实，由 stub 升级）
   - `emergency.openapi.json` — 应急力量 / 结案 / 值班 / 通讯录 / 知识（真实）
   - `map.openapi.json` — 一张图报警/设备点位 GeoJSON（真实）
-  - `auth.openapi.json` — 菜单树（真实，由 stub 升级；无显式 login 端点）
+  - `auth.openapi.json` — 鉴权域（真实，由 stub 升级；含 login / refresh / me 与菜单树）
   - `uplink.openapi.json` — 审计埋点 / 防爆手机现场回传（真实上行）
   - `realtime.openapi.json` — 报警实时推送 WebSocket（真实，仅订阅）
   - `gis.openapi.json` — 地图图层 / 标记（**前瞻性桩**，描述未来 `/gis/*` 网关）
-  - 其他域按需新增（如 `device.openapi.json` / `rbac.openapi.json`）
+  - `device.openapi.json` — 设备台账查询（真实，与后端 `DeviceController` 对齐）
+  - 其他域按需新增（如 `rbac.openapi.json`）
 
 ## 工具链（AI 与自动化消费）
 
