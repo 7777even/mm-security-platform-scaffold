@@ -27,6 +27,12 @@ interface GeoJsonFeature {
   geometry: { type: string; coordinates: number[] | number[][] };
 }
 
+/** 后端 /map/alarms、/map/devices 返回的是标准 GeoJSON FeatureCollection（Result.data 解包后即为该对象） */
+interface GeoJsonFeatureCollection {
+  type: string;
+  features: GeoJsonFeature[];
+}
+
 // 区域静态坐标（茂名厂区示意，WGS84）；生产以真实地理围栏/GeoJSON 替换
 const ZONE_COORDS: Record<string, [number, number][]> = {
   罐区: [
@@ -78,8 +84,8 @@ export function normalizeFeature(f: GeoJsonFeature, kind: 'alarm' | 'device'): M
 
 export async function fetchAlarmPoints(): Promise<MapPoint[]> {
   try {
-    const features = await request<GeoJsonFeature[]>({ url: '/map/alarms', method: 'GET' });
-    return features.map((f) => normalizeFeature(f, 'alarm'));
+    const fc = await request<GeoJsonFeatureCollection>({ url: '/map/alarms', method: 'GET' });
+    return (fc?.features ?? []).map((f) => normalizeFeature(f, 'alarm'));
   } catch (err) {
     // 开发态无后端 / 网络异常时回退静态兜底，避免地图白屏（S1 §9.3「不白屏」）
     logger.warn('[map] fetchAlarmPoints 失败，回退静态兜底', (err as Error)?.message);
@@ -89,8 +95,8 @@ export async function fetchAlarmPoints(): Promise<MapPoint[]> {
 
 export async function fetchDevicePoints(): Promise<MapPoint[]> {
   try {
-    const features = await request<GeoJsonFeature[]>({ url: '/map/devices', method: 'GET' });
-    return features.map((f) => normalizeFeature(f, 'device'));
+    const fc = await request<GeoJsonFeatureCollection>({ url: '/map/devices', method: 'GET' });
+    return (fc?.features ?? []).map((f) => normalizeFeature(f, 'device'));
   } catch (err) {
     logger.warn('[map] fetchDevicePoints 失败，回退静态兜底', (err as Error)?.message);
     return FALLBACK_DEVICE_POINTS;

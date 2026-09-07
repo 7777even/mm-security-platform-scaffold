@@ -8,6 +8,7 @@ import MapAlarmVideoPopups from '../components/map/MapAlarmVideoPopups.vue';
 import SecurityTrackMapOverlay from '../components/map/SecurityTrackMapOverlay.vue';
 import AlarmDetailPanel from '../components/common/AlarmDetailPanel.vue';
 import EntryExitStatsPanel from '../components/panels/security/EntryExitStatsPanel.vue';
+import SecurityMonitorPointsPanel from '../components/panels/security/SecurityMonitorPointsPanel.vue';
 import SecurityStatusPanel from '../components/panels/security/SecurityStatusPanel.vue';
 import PatrolLinkagePanel from '../components/panels/security/PatrolLinkagePanel.vue';
 import AlarmTrendPanel from '../components/panels/security/AlarmTrendPanel.vue';
@@ -257,6 +258,7 @@ function setTrackSpeed(value: number) {
           <SecurityStatusPanel />
           <AlarmTrendPanel />
           <EntryExitStatsPanel />
+          <SecurityMonitorPointsPanel />
         </aside>
 
         <aside class="sidebar sidebar--right sidebar--primary-right">
@@ -303,7 +305,7 @@ function setTrackSpeed(value: number) {
 
 .sidebar--left {
   width: 419px;
-  grid-template-rows: 350px 210px minmax(0, 1fr);
+  grid-template-rows: 350px 200px minmax(0, 1fr) minmax(0, 1fr);
   gap: 11px;
 }
 
