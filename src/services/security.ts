@@ -22,6 +22,10 @@ export interface PatrolCameraItem {
 
 export const patrolCameraPageSize = 10;
 
+// ⚠️ 本地占位数据（NOT 来自后端）：patrolCameras / gateControls / bollards 当前为写死 const，
+// 被大屏 src/screen 面板直接 import。对应后端端点 /security/patrol-cameras|gate-controls|bollards
+// 尚未实现（task #15），待后端建成后由对应 fetch* 函数接管、本 const 删除。
+// 切勿将其当作真实数据展示；仅作布局/联调占位。
 export const patrolCameras: PatrolCameraItem[] = [
   {
     id: 1,
@@ -438,6 +442,18 @@ export const bollards: BollardItem[] = [
 ];
 
 /** B3 GET 封装：dev（无 VITE_API_BASE）降级到内置 fixture，生产走 request */
+/**
+ * 后端未接入降级：不再返回本地假数据，避免「假数据冒充后端」。
+ * 仅当未配置 VITE_API_BASE 的纯静态模式才使用本地 fixture/硬写死 const（见各函数首行判断）。
+ * VITE_API_BASE 已配置但请求失败/返回非预期时，返回空集合并明确告警，让 UI 显示空态，
+ * 待对应后端 controller 建成后（task #15/#16）移除告警、改用真实数据。
+ */
+function backendUnavailableWarn(domain: string, endpoint: string): void {
+  console.warn(
+    `[${domain}] 后端未接入 ${endpoint}：请求失败，已降级为空数据（待后端实现，请勿当作真实数据）`,
+  );
+}
+
 export async function fetchPatrolCameras(): Promise<PatrolCameraItem[]> {
   if (!import.meta.env.VITE_API_BASE) return patrolCameras;
   try {
@@ -445,9 +461,10 @@ export async function fetchPatrolCameras(): Promise<PatrolCameraItem[]> {
       url: '/security/patrol-cameras',
       method: 'GET',
     });
-    return Array.isArray(data) ? data : patrolCameras;
+    return Array.isArray(data) ? data : [];
   } catch {
-    return patrolCameras;
+    backendUnavailableWarn('security', '/security/patrol-cameras');
+    return [];
   }
 }
 
@@ -458,9 +475,10 @@ export async function fetchGateControls(): Promise<GateControlItem[]> {
       url: '/security/gate-controls',
       method: 'GET',
     });
-    return Array.isArray(data) ? data : gateControls;
+    return Array.isArray(data) ? data : [];
   } catch {
-    return gateControls;
+    backendUnavailableWarn('security', '/security/gate-controls');
+    return [];
   }
 }
 
@@ -468,9 +486,10 @@ export async function fetchBollards(): Promise<BollardItem[]> {
   if (!import.meta.env.VITE_API_BASE) return bollards;
   try {
     const data = await request<BollardItem[]>({ url: '/security/bollards', method: 'GET' });
-    return Array.isArray(data) ? data : bollards;
+    return Array.isArray(data) ? data : [];
   } catch {
-    return bollards;
+    backendUnavailableWarn('security', '/security/bollards');
+    return [];
   }
 }
 
@@ -481,9 +500,10 @@ export async function fetchVehicleSearch(): Promise<searchFixture.VehicleSearchR
       url: '/security/search/vehicle',
       method: 'GET',
     });
-    return Array.isArray(data) ? data : searchFixture.vehicleSearchResults;
+    return Array.isArray(data) ? data : [];
   } catch {
-    return searchFixture.vehicleSearchResults;
+    backendUnavailableWarn('security', '/security/search/vehicle');
+    return [];
   }
 }
 
@@ -494,8 +514,9 @@ export async function fetchPersonSearch(): Promise<searchFixture.PersonSearchRes
       url: '/security/search/person',
       method: 'GET',
     });
-    return Array.isArray(data) ? data : searchFixture.personSearchResults;
+    return Array.isArray(data) ? data : [];
   } catch {
-    return searchFixture.personSearchResults;
+    backendUnavailableWarn('security', '/security/search/person');
+    return [];
   }
 }

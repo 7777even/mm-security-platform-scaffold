@@ -10,6 +10,18 @@ export * from '@/services/map-data/majorHazardMock';
 export * from '@/services/map-data/monitoringPointsMock';
 export * from '@/services/map-data/facilityDetailMock';
 
+/**
+ * 后端未接入降级：不再返回本地假数据，避免「假数据冒充后端」。
+ * 仅当未配置 VITE_API_BASE 的纯静态模式才使用本地 fixture（见各函数首行判断）。
+ * VITE_API_BASE 已配置但请求失败/返回非预期时，返回空集合并明确告警，
+ * 让 UI 显示空态而非被本地 mock 撑满，待对应后端 controller 建成后（task #15/#16）移除告警改用真实数据。
+ */
+function backendUnavailableWarn(domain: string, endpoint: string): void {
+  console.warn(
+    `[${domain}] 后端未接入 ${endpoint}：请求失败，已降级为空数据（待后端实现，请勿当作真实数据）`,
+  );
+}
+
 /** B3 GET 封装：dev（无 VITE_API_BASE）降级到内置 fixture，生产走 request */
 export async function fetchMajorHazards(): Promise<majorHazardFixture.MajorHazardItem[]> {
   if (!import.meta.env.VITE_API_BASE) return majorHazardFixture.majorHazards;
@@ -18,9 +30,10 @@ export async function fetchMajorHazards(): Promise<majorHazardFixture.MajorHazar
       url: '/hazards',
       method: 'GET',
     });
-    return Array.isArray(data) ? data : majorHazardFixture.majorHazards;
+    return Array.isArray(data) ? data : [];
   } catch {
-    return majorHazardFixture.majorHazards;
+    backendUnavailableWarn('hazard', '/hazards');
+    return [];
   }
 }
 
@@ -33,9 +46,10 @@ export async function fetchMajorHazardDetail(
       url: `/hazards/${id}`,
       method: 'GET',
     });
-    return data ?? majorHazardFixture.resolveMajorHazardDetail(id);
+    return data ?? ({} as majorHazardFixture.MajorHazardDetail);
   } catch {
-    return majorHazardFixture.resolveMajorHazardDetail(id);
+    backendUnavailableWarn('hazard', `/hazards/${id}`);
+    return {} as majorHazardFixture.MajorHazardDetail;
   }
 }
 
@@ -46,9 +60,10 @@ export async function fetchMonitoringPoints(): Promise<monitoringFixture.Monitor
       url: '/monitoring/points',
       method: 'GET',
     });
-    return Array.isArray(data) ? data : monitoringFixture.resolveMonitoringPoints();
+    return Array.isArray(data) ? data : [];
   } catch {
-    return monitoringFixture.resolveMonitoringPoints();
+    backendUnavailableWarn('hazard', '/monitoring/points');
+    return [];
   }
 }
 
@@ -59,9 +74,10 @@ export async function fetchMonitoringAlarms(): Promise<monitoringFixture.Monitor
       url: '/monitoring/alarms',
       method: 'GET',
     });
-    return Array.isArray(data) ? data : monitoringFixture.resolveMonitoringAlarms();
+    return Array.isArray(data) ? data : [];
   } catch {
-    return monitoringFixture.resolveMonitoringAlarms();
+    backendUnavailableWarn('hazard', '/monitoring/alarms');
+    return [];
   }
 }
 
@@ -74,8 +90,9 @@ export async function fetchFacilityDetail(
       url: '/facilities/detail',
       method: 'GET',
     });
-    return data ?? facilityFixture.resolveFacilityDetail(name);
+    return data ?? ({} as facilityFixture.FacilityDetailInfo);
   } catch {
-    return facilityFixture.resolveFacilityDetail(name);
+    backendUnavailableWarn('hazard', '/facilities/detail');
+    return {} as facilityFixture.FacilityDetailInfo;
   }
 }
