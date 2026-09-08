@@ -11,38 +11,38 @@
 
 ## 大屏可视化端（screen / `:root`）
 
-| 能力                                                              | 状态             | OpenSpec Change                                                                  | 验收证据                                                                                                                                     |
-| ----------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| 脚手架基座重建                                                    | ✅               | `rebuild-scaffold-foundation`（archive/）                                        | `engineering/qa/` 基线记录                                                                                                                   |
-| 消防监测大屏迁移                                                  | ✅               | `screen-fire-monitoring-migration-2026-09-02`（archive/）                        | `screen-fire-monitoring-migration-docs`（archive/）                                                                                          |
-| 地图底图替换                                                      | ✅               | `screen-map-base-replace`（archive/）                                            | qa 记录 + 大屏冒烟                                                                                                                           |
-| 大屏二级页面                                                      | ✅               | `screen-secondary-pages`（archive/）                                             | qa 记录                                                                                                                                      |
-| 大屏 mock 切真实服务                                              | 🟡               | `screen-mock-to-service`（changes/，19/12）                                      | —                                                                                                                                            | 阻塞：生产/视频/通讯等域后端契约确认 |
-| 一张图工具条                                                      | ✅（全勾未归档） | `screen-map-toolbar`（changes/，6/0）                                            | qa 记录                                                                                                                                      | 归档待统一执行                       |
-| 气象源全国产化（风云四号B / 中央气象台雷达，RainViewer 静默降级） | ✅（全勾未归档） | `weather-radar-dual-source` + `fix-weather-tile-sources`（changes/，13/0、35/0） | `engineering/qa/2026-09-07-weather-radar-dual-source.md`、`2026-09-07-weather-cn-full-domestic.md`、`2026-09-07-weather-tile-sources-fix.md` | 归档待统一执行                       |
+| 能力                                                              | 状态 | OpenSpec Change                                                                | 验收证据                                                                                                                                     |
+| ----------------------------------------------------------------- | ---- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| 脚手架基座重建                                                    | ✅   | `rebuild-scaffold-foundation`（archive/）                                      | `engineering/qa/` 基线记录                                                                                                                   |
+| 消防监测大屏迁移                                                  | ✅   | `screen-fire-monitoring-migration-2026-09-02`（archive/）                      | `screen-fire-monitoring-migration-docs`（archive/）                                                                                          |
+| 地图底图替换                                                      | ✅   | `screen-map-base-replace`（archive/）                                          | qa 记录 + 大屏冒烟                                                                                                                           |
+| 大屏二级页面                                                      | ✅   | `screen-secondary-pages`（archive/）                                           | qa 记录                                                                                                                                      |
+| 大屏 mock 切真实服务                                              | 🟡   | `screen-mock-to-service`（changes/，19/12）                                    | —                                                                                                                                            | 阻塞：生产/视频/通讯等域后端契约确认 |
+| 一张图工具条                                                      | ✅   | `screen-map-toolbar`（archive/2026-09-08-）                                    | qa 记录                                                                                                                                      |                                      |
+| 气象源全国产化（风云四号B / 中央气象台雷达，RainViewer 静默降级） | ✅   | `weather-radar-dual-source`、`fix-weather-tile-sources`（archive/2026-09-08-） | `engineering/qa/2026-09-07-weather-radar-dual-source.md`、`2026-09-07-weather-cn-full-domestic.md`、`2026-09-07-weather-tile-sources-fix.md` |                                      |
 
 ## 后台管理端（mgmt / `data-theme='mgmt'`）
 
-| 能力              | 状态             | OpenSpec Change                                          | 验收证据 |
-| ----------------- | ---------------- | -------------------------------------------------------- | -------- |
-| 原型页迁移        | ✅               | `mgmt-proto-pages-migration`（archive/）                 | qa 记录  |
-| 工作台数据驱动    | ✅               | `mgmt-workbench-datadriven`（archive/）                  | qa 记录  |
-| mgmt 脚手架       | ✅（全勾未归档） | `mgmt-scaffold`（changes/，7/0）                         | qa 记录  | 归档待统一执行         |
-| mgmt 重设计迁移   | 🟡               | `mgmt-redesign-migration`（changes/，2/15）              | —        | token/组件系列任务待做 |
-| 长者模式          | ✅（全勾未归档） | `mgmt-elder-mode`（changes/，10/0）                      | qa 记录  | 归档待统一执行         |
-| TabStrip 样式对齐 | 🟡               | `mgmt-tabstrip-style-align`（changes/，11/1）            | —        | 尾项：dev 环境视觉走查 |
-| 剩余模块内联闭环  | 🟡               | `remaining-modules-inline-closed-loop`（changes/，10/1） | —        | 尾项：归档待统一执行   |
+| 能力              | 状态 | OpenSpec Change                                          | 验收证据 |
+| ----------------- | ---- | -------------------------------------------------------- | -------- |
+| 原型页迁移        | ✅   | `mgmt-proto-pages-migration`（archive/）                 | qa 记录  |
+| 工作台数据驱动    | ✅   | `mgmt-workbench-datadriven`（archive/）                  | qa 记录  |
+| mgmt 脚手架       | ✅   | `mgmt-scaffold`（archive/2026-09-08-）                   | qa 记录  |                                                                   |
+| mgmt 重设计迁移   | 🟡   | `mgmt-redesign-migration`（changes/，2/15）              | —        | token/组件系列任务待做                                            |
+| 长者模式          | ✅   | `mgmt-elder-mode`（archive/2026-09-08-）                 | qa 记录  |                                                                   |
+| TabStrip 样式对齐 | 🟡   | `mgmt-tabstrip-style-align`（changes/，11/1）            | —        | 尾项：dev 环境视觉走查                                            |
+| 剩余模块内联闭环  | 🟡   | `remaining-modules-inline-closed-loop`（changes/，10/1） | —        | 尾项：spec 回填 + 归档（本 Change 缺 spec-delta，需先补齐四件套） |
 
 ## 移动端（mobile / `data-theme='mobile'`）
 
-| 能力                                                      | 状态             | OpenSpec Change                                                                              | 验收证据                      |
-| --------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------- | ----------------------------- |
-| 移动端脚手架                                              | ✅（全勾未归档） | `mobile-scaffold`（changes/，6/0）                                                           | qa 记录                       | 归档待统一执行 |
-| 无障碍模式                                                | ✅（全勾未归档） | `mobile-accessibility-modes`（changes/，9/0）                                                | qa 记录                       | 归档待统一执行 |
-| 消息中心（列表/已读排序/筛选/未读点/滚动条/胶囊样式系列） | ✅               | `mobile-message-center*` 系列（archive/，9 个）                                              | archive/ 各 Change tasks 全勾 |
-| 个人中心与视图对齐                                        | ✅               | `mobile-profile`、`mobile-profile-parity`、`mobile-views-parity`（archive/）                 | archive/ tasks 全勾           |
-| 移动样式统一（头部/外勤瓦片/整体风格）                    | ✅               | `mobile-style-unification`、`mobile-unified-header`、`mobile-tile-outdoor-unify`（archive/） | archive/ tasks 全勾           |
-| 菜单行按钮                                                | ✅               | `mobile-menu-row-btn`（archive/）                                                            | archive/ tasks 全勾           |
+| 能力                                                      | 状态 | OpenSpec Change                                                                              | 验收证据                      |
+| --------------------------------------------------------- | ---- | -------------------------------------------------------------------------------------------- | ----------------------------- |
+| 移动端脚手架                                              | ✅   | `mobile-scaffold`（archive/2026-09-08-）                                                     | qa 记录                       |     |
+| 无障碍模式                                                | ✅   | `mobile-accessibility-modes`（archive/2026-09-08-）                                          | qa 记录                       |     |
+| 消息中心（列表/已读排序/筛选/未读点/滚动条/胶囊样式系列） | ✅   | `mobile-message-center*` 系列（archive/，9 个）                                              | archive/ 各 Change tasks 全勾 |
+| 个人中心与视图对齐                                        | ✅   | `mobile-profile`、`mobile-profile-parity`、`mobile-views-parity`（archive/）                 | archive/ tasks 全勾           |
+| 移动样式统一（头部/外勤瓦片/整体风格）                    | ✅   | `mobile-style-unification`、`mobile-unified-header`、`mobile-tile-outdoor-unify`（archive/） | archive/ tasks 全勾           |
+| 菜单行按钮                                                | ✅   | `mobile-menu-row-btn`（archive/）                                                            | archive/ tasks 全勾           |
 
 ## GIS / Cesium 一张图
 
@@ -75,4 +75,4 @@
 > 已知债务（2026-09-08 盘点）：
 >
 > 1. 本库 `openspec/archive/` 目录名尚无 `YYYY-MM-DD-` 日期前缀（后端库已实装日期前缀 + `check-openspec-hygiene.mjs` 守门）。
-> 2. 本库 `changes/` 下有 9 个 tasks 全勾未归档的 Change（见上表「全勾未归档」行），待统一执行 spec 回填 + 归档；建议将后端库 `scripts/check-openspec-hygiene.mjs` 复制进本库并接入前端 CI，杜绝再次滞留。
+> 2. ~~本库 `changes/` 下有 9 个 tasks 全勾未归档的 Change~~（已清：2026-09-08 统一回填 spec 并归档至 `archive/2026-09-08-*`；hygiene 脚本已复制进本库并接入 CI。存量 3 个进行中 Change 缺 design/spec-delta，脚本以告警提示，新提案必须齐全。）
