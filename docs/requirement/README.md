@@ -51,3 +51,4 @@
 - [../architecture/README.md](../architecture/README.md) — 架构总览（三端 / 模块边界 / 数据流）
 - [../architecture/auth-token.md](../architecture/auth-token.md) — 权限机制、零下行控制、防重放
 - [../api/README.md](../api/README.md) — 各业务域的机器可读 API 契约
+- [../../backend-scaffold/docs/requirement/scope-inventory.md](../../backend-scaffold/docs/requirement/scope-inventory.md) — 后端交付范围追溯清单（端点 × 能力域 × 前端模块），本文业务域与之互补

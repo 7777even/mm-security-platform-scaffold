@@ -1,6 +1,8 @@
 # 术语表（AI 协作统一参照）
 
 > 跨工具、跨端一致引用的术语与枚举真源。状态/等级/设备着色的**枚举文字与语义固定，三端统一**；唯渲染形式不同（大屏用语义色、后台/移动用 `.tag-*` 浅底标签）。新增状态/术语必须先提案入对应规范，禁止自造文案或色阶。与 `docs/UI规范-*.md` §状态映射表、`docs/api/_shared.json` 互为镜像。
+>
+> **后端镜像**：后端实现口径（UserContext / JwtFilter / 双轨迁移 / 错误码分段等）以 [`backend-scaffold/docs/glossary.md`](../../backend-scaffold/docs/glossary.md) 为补充，本文为枚举/色阶 canonical 真源，冲突以本文为准。
 
 ## A. 业务域（对齐 `src/services/*` 与 `views/*`）
 
