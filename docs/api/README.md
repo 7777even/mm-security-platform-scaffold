@@ -90,6 +90,8 @@ npm run gen:api-types          # 生成 src/types/generated/<domain>.ts + index.
 2. **docs/api**：更新对应 `<domain>.openapi.json`（遵循四条铁律），共享语义改 `_shared.json`。
 3. **类型生成**：跑 `npm run gen:api-types`，把契约变化反映到 `src/types/generated/`。
 4. **调用方**：`src/services/*` 消费新类型（`import type { Xxx } from '@/types/generated'`），或据此调整 axios 适配层。
+5. **契约校验守门**：后端 `scripts/check-api-contract.mjs` 跨库做「路由 + schema 字段」双层级对拍（`--strict` 进 CI），
+   任一漂移即报错；本仓 `docs/api` 是机器可读唯一真源，后端改动须跑此脚本并通知本仓重生成类型。
 
 > 单一真源优先级：`src/services/*`（实际调用）↔ `docs/api/*.openapi.json`（机器可读契约）互为镜像；AGENTS.md §3 是散文约束，本目录是其机器可读投影。改 AGENTS §3 须同步此处。
 
