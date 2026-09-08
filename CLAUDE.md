@@ -50,3 +50,17 @@
 ## 7. OpenSpec 可执行命令（可选）
 
 本仓库已启用 openspec（`schema: spec-driven`）。Cursor 侧可用 `openspec` CLI，见 `.cursor/commands/opsx-*.md`（需本地安装 `openspec` CLI）。WorkBuddy/Claude 侧直接按 `AGENTS.md` §7 四件套执行。
+
+## 8. 开工前必读（路线图 / 进度台账 / 归档纪律）
+
+L3 / L4 开工前，按序读取：
+
+1. **跨库路线图**：`../backend-scaffold/docs/architecture/roadmap.md`（能力依赖顺序与阶段完成判据；跨库共享，本库不复制）。
+2. **进度台账**：`engineering/plans/end-to-end-development-progress-tracker.md`（各能力域状态与证据）。
+3. **当前已确认 Change**：`openspec/changes/<name>/`——其 `tasks.md` 是唯一实施依据；路线图只规定依赖顺序，不授权跳过已确认范围。
+
+收尾纪律：
+
+- `tasks.md` 全勾后**同一次交付内**完成 spec 回填（→ `openspec/specs/<capability>/`）并归档到 `openspec/archive/<YYYY-MM-DD>-<name>/`（详见 AGENTS §7.1 同名纪律）。
+- 更新进度台账：状态、Change、日期、验收证据（QA 文件链接）、阻塞项、行更新时间。
+- 判据：**Mock、桩服务、占位页面、单层代码，不得作为能力「已完成」的依据**；只有端到端验收 + 回归全绿（vitest + type-check）+ 文档同步通过才可关闭。
