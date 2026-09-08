@@ -68,7 +68,7 @@ export interface paths {
     };
     /**
      * 按角色返回菜单树
-     * @description 返回前端路由/菜单树；id 与前端 MENU_ROUTE_SPECS 对齐（dashboard/fire-alarm/security-anti-terror/industrial-video/ops-monitor/extreme-weather 及 fm-* 迁移子应用）。
+     * @description 仅返回顶部导航栏菜单（5 个 fm-* 主模块）；id 与前端 MENU_ROUTE_SPECS 顶部项对齐（fm-emergency/fm-fire/fm-security/fm-tv/fm-production）。其余子应用 fm-rescue/fm-typhoon/fm-production-area/fm-major-hazard/fm-communication/fm-video-control/fm-video-wall 不进顶部导航，由前端 SECONDARY_ROUTES 二级隐藏路由承载。
      */
     get: operations['getMenus'];
     put?: never;
@@ -386,6 +386,16 @@ export interface operations {
            *           "id": "fm-security",
            *           "name": "治安防恐",
            *           "path": "/security"
+           *         },
+           *         {
+           *           "id": "fm-tv",
+           *           "name": "工业电视",
+           *           "path": "/tv"
+           *         },
+           *         {
+           *           "id": "fm-production",
+           *           "name": "生产应急",
+           *           "path": "/production"
            *         }
            *       ]
            *     }
