@@ -10,24 +10,6 @@ import { reportAudit } from '@/services/audit';
 // 权限码沿用 RBAC 表（ROLE_PERMS），守卫自动校验 meta.perm。
 const SECONDARY_ROUTES: RouteRecordRaw[] = [
   {
-    path: '/fire-alarm/records',
-    name: 'fire-alarm-records',
-    component: () => import('@/views/fire-alarm/records.vue'),
-    meta: { title: '消防报警记录', perm: 'fire-alarm:view', hidden: true },
-  },
-  {
-    path: '/dashboard/plans',
-    name: 'dashboard-plans',
-    component: () => import('@/views/dashboard/plans.vue'),
-    meta: { title: '应急预案库', perm: 'dashboard:view', hidden: true },
-  },
-  {
-    path: '/security-anti-terror/records',
-    name: 'security-anti-terror-records',
-    component: () => import('@/views/security-anti-terror/records.vue'),
-    meta: { title: '门禁事件记录', perm: 'security:view', hidden: true },
-  },
-  {
     path: '/system/users',
     name: 'system-users',
     component: () => import('@/views/system/users.vue'),
@@ -45,64 +27,6 @@ const SECONDARY_ROUTES: RouteRecordRaw[] = [
     component: () => import('@/views/mobile/fieldReport.vue'),
     meta: { title: '现场采集回传', perm: 'mobile:field-report:view', hidden: true },
   },
-  // —— fire-monitoring 迁移二级页（hidden，由一级页跳转进入）——
-  {
-    path: '/dashboard/rescue',
-    name: 'dashboard-rescue',
-    component: () => import('@/views/accident-rescue/index.vue'),
-    meta: { title: '应急演练详情', perm: 'dashboard:view', hidden: true },
-  },
-  {
-    path: '/fire-alarm/rescue',
-    name: 'fire-alarm-rescue',
-    component: () => import('@/views/accident-rescue/index.vue'),
-    meta: { title: '事故应急救援', perm: 'fire-alarm:view', hidden: true },
-  },
-  {
-    path: '/extreme-weather/typhoon',
-    name: 'extreme-weather-typhoon',
-    component: () => import('@/views/typhoon-emergency/index.vue'),
-    meta: { title: '台风应急详情', perm: 'weather:view', hidden: true },
-  },
-  {
-    path: '/ops-monitor/area/:facilityId',
-    name: 'ops-monitor-area',
-    component: () => import('@/views/production-area/index.vue'),
-    meta: { title: '生产区域详情', perm: 'ops:view', hidden: true },
-    props: true,
-  },
-  {
-    path: '/ops-monitor/hazards',
-    name: 'ops-monitor-hazards',
-    component: () => import('@/views/major-hazard/list.vue'),
-    meta: { title: '重大危险源', perm: 'ops:view', hidden: true },
-  },
-  {
-    path: '/ops-monitor/hazards/:hazardId',
-    name: 'ops-monitor-hazard-detail',
-    component: () => import('@/views/major-hazard/detail.vue'),
-    meta: { title: '重大危险源详情', perm: 'ops:view', hidden: true },
-    props: true,
-  },
-  {
-    path: '/ops-monitor/communication',
-    name: 'ops-monitor-communication',
-    component: () => import('@/views/production-communication/index.vue'),
-    meta: { title: '生产通信', perm: 'ops:view', hidden: true },
-  },
-  {
-    path: '/industrial-video/video-control',
-    name: 'industrial-video-control',
-    component: () => import('@/views/video-control/index.vue'),
-    meta: { title: '视频控制平台', perm: 'video:view', hidden: true },
-  },
-  {
-    path: '/industrial-video/video-wall',
-    name: 'industrial-video-wall',
-    component: () => import('@/views/video-wall/index.vue'),
-    meta: { title: '视频墙', perm: 'video:view', hidden: true },
-  },
-  // —— fire-monitoring 迁移二级页（fm-* 子应用，路径镜像源项目 router）——
   {
     path: '/emergency/drill',
     name: 'fm-drill',

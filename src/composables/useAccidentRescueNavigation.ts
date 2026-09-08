@@ -12,21 +12,21 @@ export function useAccidentRescueNavigation() {
 
   function goToAccidentRescue(eventId: number) {
     router.push({
-      name: 'fire-alarm-rescue',
+      name: 'fm-fire-rescue',
       query: { eventId: String(eventId) },
     });
   }
 
   function goToDrillEmergencyDetail(eventId: number) {
     router.push({
-      name: 'dashboard-rescue',
+      name: 'fm-drill',
       query: { eventId: String(eventId) },
     });
   }
 
   function goToTyphoonEmergencyDetail(eventId: number) {
     router.push({
-      name: 'extreme-weather-typhoon',
+      name: 'fm-typhoon',
       query: { eventId: String(eventId) },
     });
   }
@@ -50,7 +50,7 @@ export function useAccidentRescueNavigation() {
 
   function goToEmergencyList(kind: EmergencyEventCreateKind, eventId?: number) {
     restoreFireEmergencyListView(kind, eventId);
-    router.push({ name: 'fire-alarm' });
+    router.push({ name: 'fm-fire' });
   }
 
   return {

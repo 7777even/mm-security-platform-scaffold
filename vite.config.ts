@@ -202,20 +202,6 @@ export default defineConfig({
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         mgmtApp: fileURLToPath(new URL('./apps/mgmt/index.html', import.meta.url)),
         mobileApp: fileURLToPath(new URL('./apps/mobile/index.html', import.meta.url)),
-        dashboardSubapp: fileURLToPath(new URL('./subapps/dashboard/index.html', import.meta.url)),
-        fireAlarmSubapp: fileURLToPath(new URL('./subapps/fire-alarm/index.html', import.meta.url)),
-        securityAntiTerrorSubapp: fileURLToPath(
-          new URL('./subapps/security-anti-terror/index.html', import.meta.url),
-        ),
-        industrialVideoSubapp: fileURLToPath(
-          new URL('./subapps/industrial-video/index.html', import.meta.url),
-        ),
-        extremeWeatherSubapp: fileURLToPath(
-          new URL('./subapps/extreme-weather/index.html', import.meta.url),
-        ),
-        opsMonitorSubapp: fileURLToPath(
-          new URL('./subapps/ops-monitor/index.html', import.meta.url),
-        ),
         fmEmergencySubapp: fileURLToPath(
           new URL('./subapps/fm-emergency/index.html', import.meta.url),
         ),

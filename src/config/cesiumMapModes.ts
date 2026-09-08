@@ -195,33 +195,7 @@ export const ROUTE_CESIUM_META: Record<string, RouteCesiumMeta> = {
   'subapp-fallback': { cesium: true, mapMode: 'fire', mapFocus: FIRE_MAP_FOCUS },
   emergency: { cesium: true, mapMode: 'fire-emergency', mapFocus: FIRE_MAP_FOCUS },
   fire: { cesium: true, mapMode: 'fire', mapFocus: FIRE_MAP_FOCUS },
-  'fire-alarm-rescue': {
-    cesium: true,
-    mapMode: 'accident-rescue',
-    mapFocus: ACCIDENT_RESCUE_MAP_FOCUS,
-  },
-  'dashboard-rescue': {
-    cesium: true,
-    mapMode: 'accident-rescue',
-    mapFocus: ACCIDENT_RESCUE_MAP_FOCUS,
-  },
-  'extreme-weather-typhoon': {
-    cesium: true,
-    mapMode: 'accident-rescue',
-    mapFocus: ACCIDENT_RESCUE_MAP_FOCUS,
-  },
   production: { cesium: true, mapMode: 'production', mapFocus: PRODUCTION_MAP_FOCUS },
-  'ops-monitor-area': { cesium: true, mapMode: 'production', mapFocus: PRODUCTION_AREA_MAP_FOCUS },
-  'ops-monitor-hazards': {
-    cesium: true,
-    mapMode: 'production',
-    mapFocus: MAJOR_HAZARD_LIST_MAP_FOCUS,
-  },
-  'ops-monitor-hazard-detail': {
-    cesium: true,
-    mapMode: 'production',
-    mapFocus: MAJOR_HAZARD_DETAIL_MAP_FOCUS,
-  },
   preliminary: { cesium: true, mapMode: 'preliminary', mapFocus: PRODUCTION_MAP_FOCUS },
   security: { cesium: true, mapMode: 'security', mapFocus: SECURITY_MAP_FOCUS },
   tv: { cesium: true, mapMode: 'tv', mapFocus: DEFAULT_FOCUS },
