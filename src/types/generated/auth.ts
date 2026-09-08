@@ -30,9 +30,29 @@ export interface paths {
     put?: never;
     /**
      * 刷新访问令牌
-     * @description 凭 refreshToken 续期，返回新的 access + refresh。
+     * @description 续期 access 令牌。refresh 令牌由浏览器 HttpOnly Cookie（name=rt）自动携带，无需请求体；后端缺失/失效该 Cookie 时返回 401。返回新的 access 令牌，同时滚动下发新的 refresh Cookie。
      */
     post: operations['refreshToken'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/logout': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 登出
+     * @description 清除服务端下发的 HttpOnly refresh Cookie（rt，Max-Age=0）；前端同步清内存态 access 令牌。免鉴权。
+     */
+    post: operations['logout'];
     delete?: never;
     options?: never;
     head?: never;
@@ -138,12 +158,10 @@ export interface components {
        */
       password: string;
     };
-    /** @description 登录/刷新返回。access 存前端内存态，refresh 由后端种入 HttpOnly Cookie。 */
+    /** @description 登录/刷新返回。access 存前端内存态（token.ts）；refresh 令牌由后端经 HttpOnly Cookie（name=rt，SameSite=Lax）下发，绝不进本响应体（防 XSS 窃取），故此处无 refreshToken 字段。 */
     TokenResponse: {
       /** @description 访问令牌（JWT，短效 2h） */
       accessToken: string;
-      /** @description 刷新令牌（长效 7d，HttpOnly Cookie） */
-      refreshToken: string;
       /**
        * @description access 有效期（秒）
        * @example 7200
@@ -266,7 +284,6 @@ export interface operations {
            *       "message": "ok",
            *       "data": {
            *         "accessToken": "eyJ...",
-           *         "refreshToken": "eyJ...",
            *         "expiresIn": 7200,
            *         "tokenType": "Bearer"
            *       }
@@ -287,18 +304,7 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody: {
-      content: {
-        /**
-         * @example {
-         *       "refreshToken": "eyJ..."
-         *     }
-         */
-        'application/json': {
-          refreshToken?: string;
-        };
-      };
-    };
+    requestBody?: never;
     responses: {
       /** @description B3 成功包络（data=TokenResponse） */
       200: {
@@ -312,6 +318,28 @@ export interface operations {
         };
       };
       401: components['responses']['Unauthorized'];
+    };
+  };
+  logout: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: null;
+          };
+        };
+      };
     };
   };
   getCurrentUser: {

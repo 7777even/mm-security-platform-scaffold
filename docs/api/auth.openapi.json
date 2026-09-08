@@ -6,7 +6,7 @@
     "x-base-path": "/api/v1",
     "x-contract": "B3",
     "description": "菜单树接口（代码真实契约，由 stub 升级）。契约源：src/services/menu.ts、src/router/menu.ts。",
-    "x-auth-note": "本后端（mm-security-backend）提供显式凭证登录：POST /auth/login 返回 access/refresh 令牌（access 存前端内存态 token.ts，refresh 由后端种入 HttpOnly Cookie）；POST /auth/refresh 续期（入参 {refreshToken:string}）；GET /auth/me 取当前用户。令牌缺失/失效或凭证错误时，后端返回【真实 HTTP 401/403】（GlobalExceptionHandler 将业务码 401/403 映射为对应 HTTP 状态码），不再以 HTTP 200 + 业务 code 表达；仅在成功时返回 HTTP 200 + code=0。"
+    "x-auth-note": "本后端（mm-security-backend）提供显式凭证登录：POST /auth/login 返回 access 令牌（access 存前端内存态 token.ts），refresh 令牌由后端经 Set-Cookie 以 HttpOnly(name=rt, SameSite=Lax) 下发，绝不进响应 body（防 XSS 窃取）；POST /auth/refresh 续期（refresh 令牌由浏览器 Cookie 自动携带，无请求体）；POST /auth/logout 清除 refresh Cookie；GET /auth/me 取当前用户。令牌缺失/失效或凭证错误时，后端返回【真实 HTTP 401/403】（GlobalExceptionHandler 将业务码 401/403 映射为对应 HTTP 状态码），不再以 HTTP 200 + 业务 code 表达；仅在成功时返回 HTTP 200 + code=0。"
   },
   "servers": [{ "url": "/api/v1", "description": "默认 baseURL（VITE_API_BASE 可覆盖）" }],
   "security": [{ "bearerAuth": [], "replaySign": [] }],
@@ -46,7 +46,6 @@
                   "message": "ok",
                   "data": {
                     "accessToken": "eyJ...",
-                    "refreshToken": "eyJ...",
                     "expiresIn": 7200,
                     "tokenType": "Bearer"
                   }
@@ -63,19 +62,7 @@
         "tags": ["auth"],
         "operationId": "refreshToken",
         "summary": "刷新访问令牌",
-        "description": "凭 refreshToken 续期，返回新的 access + refresh。",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": { "refreshToken": { "type": "string" } }
-              },
-              "example": { "refreshToken": "eyJ..." }
-            }
-          }
-        },
+        "description": "续期 access 令牌。refresh 令牌由浏览器 HttpOnly Cookie（name=rt）自动携带，无需请求体；后端缺失/失效该 Cookie 时返回 401。返回新的 access 令牌，同时滚动下发新的 refresh Cookie。",
         "responses": {
           "200": {
             "description": "B3 成功包络（data=TokenResponse）",
@@ -94,6 +81,29 @@
             }
           },
           "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["auth"],
+        "operationId": "logout",
+        "summary": "登出",
+        "description": "清除服务端下发的 HttpOnly refresh Cookie（rt，Max-Age=0）；前端同步清内存态 access 令牌。免鉴权。",
+        "responses": {
+          "200": {
+            "description": "B3 成功包络",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    { "type": "object", "properties": { "data": { "type": "null" } } }
+                  ]
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -189,17 +199,13 @@
       },
       "TokenResponse": {
         "type": "object",
-        "description": "登录/刷新返回。access 存前端内存态，refresh 由后端种入 HttpOnly Cookie。",
+        "description": "登录/刷新返回。access 存前端内存态（token.ts）；refresh 令牌由后端经 HttpOnly Cookie（name=rt，SameSite=Lax）下发，绝不进本响应体（防 XSS 窃取），故此处无 refreshToken 字段。",
         "properties": {
           "accessToken": { "type": "string", "description": "访问令牌（JWT，短效 2h）" },
-          "refreshToken": {
-            "type": "string",
-            "description": "刷新令牌（长效 7d，HttpOnly Cookie）"
-          },
           "expiresIn": { "type": "integer", "description": "access 有效期（秒）", "example": 7200 },
           "tokenType": { "type": "string", "description": "令牌类型", "example": "Bearer" }
         },
-        "required": ["accessToken", "refreshToken", "expiresIn", "tokenType"]
+        "required": ["accessToken", "expiresIn", "tokenType"]
       },
       "CurrentUser": {
         "type": "object",

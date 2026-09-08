@@ -128,6 +128,8 @@ export interface components {
        * @example A2 区火情处置
        */
       title: string;
+      /** @description 提交人（服务端信任值，由后端按当前登录态覆盖，客户端传入无效——防水平越权/身份冒用）。非管理员伪报他人 reporter 将被 403 拒绝。 */
+      reporter?: string;
       /** @description 备注（可选） */
       note?: string;
       /**
