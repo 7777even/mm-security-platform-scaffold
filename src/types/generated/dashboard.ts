@@ -39,6 +39,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/dashboard/workstations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 在线工位/工作站列表
+     * @description 返回当前在线工位/工作站清单（前端只读订阅，不下行控制）。消除后端实现 /dashboard/workstations 的契约漂移。
+     */
+    get: operations['getWorkstations'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/dashboard/risk-heatmap': {
     parameters: {
       query?: never;
@@ -121,6 +141,29 @@ export interface components {
        * @description 数据时间戳（ISO8601）
        */
       ts?: string;
+    };
+    /** @description 工位/工作站（在线清单）。 */
+    Workstation: {
+      /**
+       * @description 工位 id
+       * @example WS-01
+       */
+      id?: string;
+      /**
+       * @description 工位名
+       * @example 中控室工位-01
+       */
+      name?: string;
+      /**
+       * @description 所属区域
+       * @example 罐区A
+       */
+      zone?: string;
+      /**
+       * @description 是否在线
+       * @example true
+       */
+      online?: boolean;
     };
     AlarmTrendPoint: {
       /**
@@ -274,6 +317,47 @@ export interface operations {
            */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['AlarmTrendPoint'][];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  getWorkstations: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=Workstation[]） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": [
+           *         {
+           *           "id": "WS-01",
+           *           "name": "中控室工位-01",
+           *           "zone": "罐区A",
+           *           "online": true
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['Workstation'][];
           };
         };
       };

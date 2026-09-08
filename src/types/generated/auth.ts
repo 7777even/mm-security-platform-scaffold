@@ -1,4 +1,64 @@
 export interface paths {
+  '/auth/login': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 凭证登录
+     * @description 用户名/口令登录，返回 access + refresh 令牌。消除后端实现 /auth/login 的契约漂移。
+     */
+    post: operations['login'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/refresh': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 刷新访问令牌
+     * @description 凭 refreshToken 续期，返回新的 access + refresh。
+     */
+    post: operations['refreshToken'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/me': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 当前登录用户
+     * @description 返回当前用户基本信息（username/realName/role）。
+     */
+    get: operations['getCurrentUser'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/auth/menus': {
     parameters: {
       query?: never;
@@ -64,6 +124,45 @@ export interface components {
       data?: unknown;
       /** @example a1b2c3d4 */
       traceId?: string;
+    };
+    /** @description 登录请求体。 */
+    LoginRequest: {
+      /**
+       * @description 用户名
+       * @example admin
+       */
+      username: string;
+      /**
+       * @description 口令
+       * @example admin@2026
+       */
+      password: string;
+    };
+    /** @description 登录/刷新返回。access 存前端内存态，refresh 由后端种入 HttpOnly Cookie。 */
+    TokenResponse: {
+      /** @description 访问令牌（JWT，短效 2h） */
+      accessToken: string;
+      /** @description 刷新令牌（长效 7d，HttpOnly Cookie） */
+      refreshToken: string;
+      /**
+       * @description access 有效期（秒）
+       * @example 7200
+       */
+      expiresIn: number;
+      /**
+       * @description 令牌类型
+       * @example Bearer
+       */
+      tokenType: string;
+    };
+    /** @description 当前登录用户。 */
+    CurrentUser: {
+      /** @example admin */
+      username?: string;
+      /** @example 系统管理员 */
+      realName?: string;
+      /** @example ADMIN */
+      role?: string;
     };
     /** @description 菜单项（可递归嵌套 children）。 */
     MenuItem: {
@@ -136,6 +235,120 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  login: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "username": "admin",
+         *       "password": "admin@2026"
+         *     }
+         */
+        'application/json': components['schemas']['LoginRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=TokenResponse） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "accessToken": "eyJ...",
+           *         "refreshToken": "eyJ...",
+           *         "expiresIn": 7200,
+           *         "tokenType": "Bearer"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['TokenResponse'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  refreshToken: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "refreshToken": "eyJ..."
+         *     }
+         */
+        'application/json': {
+          refreshToken?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=TokenResponse） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['TokenResponse'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  getCurrentUser: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=CurrentUser） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "username": "admin",
+           *         "realName": "系统管理员",
+           *         "role": "ADMIN"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['CurrentUser'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
   getMenus: {
     parameters: {
       query?: never;

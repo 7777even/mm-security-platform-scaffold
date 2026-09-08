@@ -3,6 +3,7 @@
 import type * as Alarm from './alarm';
 import type * as Auth from './auth';
 import type * as Dashboard from './dashboard';
+import type * as Device from './device';
 import type * as Emergency from './emergency';
 import type * as Gis from './gis';
 import type * as Map from './map';
@@ -11,6 +12,7 @@ import type * as Uplink from './uplink';
 export { Alarm };
 export { Auth };
 export { Dashboard };
+export { Device };
 export { Emergency };
 export { Gis };
 export { Map };
