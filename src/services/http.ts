@@ -43,9 +43,12 @@ export class ApiError extends Error {
 // - i18n：所有请求携带 Accept-Language，报文文案由后端按语言头翻译（§4.2.7）；
 // - Strict-XSS：出站 JSON 字符串字段统一转义（§5.2.7）；
 // - 防重放签名：生产（gateway-bypass=false）强制 HMAC-SHA256 签名头（§3.3）。
+// withCredentials=true：让浏览器自动收发后端下发的刷新令牌 HttpOnly Cookie（name=rt），
+// 续期/登出端点依赖它；后端 CORS 已 allowCredentials 且反射具体 Origin。
 const http: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE ?? '/api/v1',
   timeout: 15000,
+  withCredentials: true,
 });
 
 const ACCEPT_LANGUAGE_KEY = 'app-language';

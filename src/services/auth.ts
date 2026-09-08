@@ -10,10 +10,12 @@ export interface LoginPayload {
   password: string;
 }
 
-/** 登录/刷新返回（契约 TokenResponse）：access 存内存态，refresh 由后端种入 HttpOnly Cookie */
+/**
+ * 登录/刷新返回（契约 TokenResponse）：access 存内存态（token.ts）；
+ * refresh 令牌由后端经 HttpOnly Cookie 下发，绝不进响应 body（防 XSS 窃取），故此处无 refreshToken 字段。
+ */
 export interface TokenResponse {
   accessToken: string;
-  refreshToken: string;
   expiresIn: number;
   tokenType: string;
 }
@@ -25,14 +27,22 @@ export interface CurrentUser {
   role: string;
 }
 
-/** 凭证登录，返回 access/refresh 令牌 */
+/** 凭证登录，返回 access 令牌（refresh 经 Set-Cookie 下发） */
 export function login(payload: LoginPayload): Promise<TokenResponse> {
   return request<TokenResponse>({ url: '/auth/login', method: 'POST', data: payload });
 }
 
-/** 凭 refreshToken 续期 */
-export function refresh(refreshToken: string): Promise<TokenResponse> {
-  return request<TokenResponse>({ url: '/auth/refresh', method: 'POST', data: { refreshToken } });
+/**
+ * 续期：浏览器自动携带 HttpOnly Cookie（rt）中的 refresh 令牌，无需请求体。
+ * 返回新的 access 令牌；refresh 仍由 Set-Cookie 滚动下发。
+ */
+export function refresh(): Promise<TokenResponse> {
+  return request<TokenResponse>({ url: '/auth/refresh', method: 'POST' });
+}
+
+/** 登出：通知后端清除 HttpOnly 刷新 Cookie（前端同步清内存态在 store 层处理） */
+export function logout(): Promise<void> {
+  return request<void>({ url: '/auth/logout', method: 'POST' });
 }
 
 /** 取当前登录用户（username/realName/role） */

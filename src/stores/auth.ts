@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { setAccessToken, clearAccessToken } from '@/services/token';
+import { logout as logoutApi } from '@/services/auth';
 import { reportAudit } from '@/services/audit';
 
 // 脚手架阶段：角色权限体系先不展开，统一以单一「管理员」身份登录（待后端 IDP/RBAC 网关下发后再启用多角色）。
@@ -53,9 +54,12 @@ export const useAuthStore = defineStore('auth', () => {
     reportAudit({ action: 'login', module: roleId.value });
   }
 
+  // 主动登出：先同步清本地内存态（保持同步语义，单测友好），
+  // 再 fire-and-forget 通知后端清除 HttpOnly 刷新 Cookie（rt），后端失败不阻塞本地登出。
   function logout(): void {
     clearAccessToken();
     accessToken.value = null;
+    void logoutApi().catch(() => {});
   }
 
   function hasPerm(perm: string): boolean {
