@@ -38,5 +38,10 @@ jobs:
       - name: 契约四铁律校验
         run: node scripts/validate-api-contracts.mjs
 
+      # openspec 闭环纪律守门（与后端仓同款脚本）：changes/ 下不允许 tasks 全勾未归档、
+      # archive/ 必须带日期前缀；四件套缺失为告警（存量 Change 允许只有 proposal+tasks）。
+      - name: OpenSpec 卫生检查（全勾必归档）
+        run: node scripts/check-openspec-hygiene.mjs
+
       - name: 生产构建（vue-tsc -b && vite build）
         run: npm run build
