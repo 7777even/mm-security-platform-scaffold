@@ -1,0 +1,470 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "重大危险源 / 监测 / 设施档案 API",
+    "version": "1.0.0",
+    "x-base-path": "/api/v1",
+    "x-contract": "B3",
+    "description": "重大危险源列表与明细、监测点位与监测告警、设施档案明细接口（代码真实契约）。契约源：src/services/hazard.ts、src/services/map-data/*Mock.ts。"
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "默认 baseURL（VITE_API_BASE 可覆盖，见 src/services/http.ts）"
+    }
+  ],
+  "security": [{ "bearerAuth": [], "replaySign": [] }],
+  "tags": [{ "name": "hazard", "description": "重大危险源与监测" }],
+  "paths": {
+    "/hazards": {
+      "get": {
+        "tags": ["hazard"],
+        "operationId": "listMajorHazards",
+        "summary": "重大危险源列表",
+        "description": "返回全部重大危险源基础信息（等级、R值、监测/视频点数、企业、经纬度等），用于大屏重大危险源分布与列表。数据来自 fac_major_hazard 真实表。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=重大危险源列表）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/MajorHazardItem" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "name": "4#脱硫脱硝装置",
+                      "level": "一级",
+                      "rValue": 32,
+                      "monitorCount": 7,
+                      "videoCount": 4,
+                      "enterprise": "茂名石化",
+                      "category": "装置",
+                      "code": "370680917080",
+                      "longitude": 110.8899,
+                      "latitude": 21.6769
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hazards/{id}": {
+      "get": {
+        "tags": ["hazard"],
+        "operationId": "getMajorHazardDetail",
+        "summary": "重大危险源明细",
+        "description": "按 id 返回重大危险源完整明细：基础信息 + 投用日期/重点工艺/化工园区标识 + 联系人、档案、监测点、视频、化学品、疏散路线、应急操作等嵌套明细。数据来自 fac_major_hazard 真实表（嵌套明细为 JSON 列解析）。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "重大危险源 id"
+          },
+          { "$ref": "./_shared.json#/components/parameters/lang" }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=重大危险源明细）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/MajorHazardDetail" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "name": "4#脱硫脱硝装置",
+                    "level": "一级",
+                    "rValue": 32,
+                    "monitorCount": 7,
+                    "videoCount": 4,
+                    "enterprise": "茂名石化",
+                    "category": "装置",
+                    "code": "370680917080",
+                    "longitude": 110.8899,
+                    "latitude": 21.6769,
+                    "commissionDate": "2024-10-15",
+                    "keyProcess": true,
+                    "inChemicalPark": true,
+                    "contacts": [
+                      { "role": "主要负责人", "name": "程仁策", "phone": "13705456799" }
+                    ],
+                    "files": [{ "id": 1, "name": "SIL定级报告.pdf" }]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/monitoring/points": {
+      "get": {
+        "tags": ["hazard"],
+        "operationId": "listMonitoringPoints",
+        "summary": "监测点位列表",
+        "description": "返回全部监测点位（DCS/GDS/气体/压力/温度/液位）及状态与经纬度，用于大屏监测点位分布。数据来自 fac_monitoring_point 真实表。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=监测点位列表）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/MonitoringPoint" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": "mp-1",
+                      "name": "A-01DCS监测",
+                      "category": "DCS",
+                      "status": "normal",
+                      "lastTime": "2026-09-08T16:00:00Z",
+                      "org": "乙烯装置区",
+                      "longitude": 110.8899,
+                      "latitude": 21.6769
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/monitoring/alarms": {
+      "get": {
+        "tags": ["hazard"],
+        "operationId": "listMonitoringAlarms",
+        "summary": "监测告警列表",
+        "description": "返回监测类告警（压力/气体/温度等），含区域、时间、等级。数据来自 fac_monitoring_alarm 真实表。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=监测告警列表）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/MonitoringAlarm" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": "al-1",
+                      "title": "压力高高报",
+                      "detail": "A点压力已超过阈值，建议立即核查。",
+                      "area": "乙烯装置区",
+                      "time": "2026-09-08T15:58:00Z",
+                      "level": "high"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/facilities/detail": {
+      "get": {
+        "tags": ["hazard"],
+        "operationId": "getFacilityDetail",
+        "summary": "设施档案明细",
+        "description": "按设施名返回档案明细：基础字段、化学品字段、档案文件列表。数据来自 fac_facility_detail 真实表（JSON 列解析）。",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "设施名称，缺省取首条"
+          },
+          { "$ref": "./_shared.json#/components/parameters/lang" }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=设施档案明细）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/FacilityDetailInfo" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "facilityName": "乙烯裂解装置",
+                    "hazardSourceCode": "370680917088",
+                    "basicFields": [{ "label": "重大危险源等级", "value": "一级" }],
+                    "chemicalFields": [{ "label": "化学品名称", "value": "乙烯" }],
+                    "archives": [{ "id": "1", "name": "SIL定级报告终版.pdf" }]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MajorHazardItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "重大危险源主键" },
+          "name": { "type": "string", "description": "装置/储罐名称" },
+          "level": { "type": "string", "description": "重大危险源等级（一级/二级/三级/四级）" },
+          "rValue": { "type": "number", "description": "R 值（风险值）" },
+          "monitorCount": { "type": "integer", "description": "监测点数量" },
+          "videoCount": { "type": "integer", "description": "视频点位数量" },
+          "enterprise": { "type": "string", "description": "所属企业" },
+          "category": { "type": "string", "description": "类别（装置/储罐/仓库/管廊）" },
+          "code": { "type": "string", "description": "重大危险源编码" },
+          "longitude": { "type": "number", "description": "经度" },
+          "latitude": { "type": "number", "description": "纬度" }
+        }
+      },
+      "MajorHazardDetail": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "重大危险源主键" },
+          "name": { "type": "string", "description": "装置/储罐名称" },
+          "level": { "type": "string", "description": "重大危险源等级" },
+          "rValue": { "type": "number", "description": "R 值" },
+          "monitorCount": { "type": "integer", "description": "监测点数量" },
+          "videoCount": { "type": "integer", "description": "视频点位数量" },
+          "enterprise": { "type": "string", "description": "所属企业" },
+          "category": { "type": "string", "description": "类别" },
+          "code": { "type": "string", "description": "重大危险源编码" },
+          "longitude": { "type": "number", "description": "经度" },
+          "latitude": { "type": "number", "description": "纬度" },
+          "commissionDate": { "type": "string", "description": "投用日期" },
+          "keyProcess": { "type": "boolean", "description": "是否涉及重点监管工艺" },
+          "inChemicalPark": { "type": "boolean", "description": "是否在化工园区内" },
+          "contacts": {
+            "type": "array",
+            "description": "联系人列表",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": { "type": "string", "description": "角色" },
+                "name": { "type": "string", "description": "姓名" },
+                "phone": { "type": "string", "description": "电话" }
+              }
+            }
+          },
+          "files": {
+            "type": "array",
+            "description": "档案文件列表",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer", "description": "文件 id" },
+                "name": { "type": "string", "description": "文件名" }
+              }
+            }
+          },
+          "monitors": {
+            "type": "array",
+            "description": "监测点列表",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer", "description": "监测点 id" },
+                "name": { "type": "string", "description": "监测点名称" },
+                "status": { "type": "string", "description": "状态" }
+              }
+            }
+          },
+          "videos": {
+            "type": "array",
+            "description": "视频点位列表",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer", "description": "视频 id" },
+                "name": { "type": "string", "description": "视频名称" },
+                "status": { "type": "string", "description": "状态" }
+              }
+            }
+          },
+          "chemicals": {
+            "type": "array",
+            "description": "化学品列表",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer", "description": "化学品 id" },
+                "name": { "type": "string", "description": "化学品名称" },
+                "amount": { "type": "string", "description": "储量" }
+              }
+            }
+          },
+          "evacuationRoutes": {
+            "type": "array",
+            "description": "疏散路线列表",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer", "description": "路线 id" },
+                "name": { "type": "string", "description": "路线名称" },
+                "from": { "type": "string", "description": "起点" },
+                "via": { "type": "string", "description": "途经" },
+                "to": { "type": "string", "description": "终点" },
+                "status": { "type": "string", "description": "状态" }
+              }
+            }
+          },
+          "operations": {
+            "type": "array",
+            "description": "应急操作列表",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer", "description": "操作 id" },
+                "name": { "type": "string", "description": "操作名称" },
+                "type": { "type": "string", "description": "类型" },
+                "owner": { "type": "string", "description": "责任人" },
+                "status": { "type": "string", "description": "状态" }
+              }
+            }
+          }
+        }
+      },
+      "MonitoringPoint": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "监测点位 id" },
+          "name": { "type": "string", "description": "监测点位名称" },
+          "category": {
+            "type": "string",
+            "description": "类别（DCS/GDS/气体检测/压力/温度/液位）"
+          },
+          "status": { "type": "string", "description": "状态（normal/warning/alarm）" },
+          "lastTime": { "type": "string", "description": "最近上报时间（ISO8601）" },
+          "org": { "type": "string", "description": "所属单位/装置区" },
+          "longitude": { "type": "number", "description": "经度" },
+          "latitude": { "type": "number", "description": "纬度" }
+        }
+      },
+      "MonitoringAlarm": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "告警 id" },
+          "title": { "type": "string", "description": "告警标题" },
+          "detail": { "type": "string", "description": "告警详情" },
+          "area": { "type": "string", "description": "区域" },
+          "time": { "type": "string", "description": "告警时间（ISO8601）" },
+          "level": { "type": "string", "description": "等级（low/medium/high）" }
+        }
+      },
+      "FacilityDetailInfo": {
+        "type": "object",
+        "properties": {
+          "facilityName": { "type": "string", "description": "设施名称" },
+          "hazardSourceCode": { "type": "string", "description": "危险源编码" },
+          "basicFields": {
+            "type": "array",
+            "description": "基础字段列表（label/value）",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": { "type": "string", "description": "字段名" },
+                "value": { "type": "string", "description": "字段值" }
+              }
+            }
+          },
+          "chemicalFields": {
+            "type": "array",
+            "description": "化学品字段列表（label/value）",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": { "type": "string", "description": "字段名" },
+                "value": { "type": "string", "description": "字段值" }
+              }
+            }
+          },
+          "archives": {
+            "type": "array",
+            "description": "档案文件列表",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string", "description": "文件 id" },
+                "name": { "type": "string", "description": "文件名" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
