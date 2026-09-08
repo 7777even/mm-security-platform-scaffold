@@ -1,0 +1,42 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [feature/scaffold-rebuild, main]
+  pull_request:
+    branches: [feature/scaffold-rebuild, main]
+  workflow_dispatch:
+
+concurrency:
+  group: frontend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: 类型检查 + 单测 + 契约四铁律 + 生产构建
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出前端源码
+        uses: actions/checkout@v4
+
+      - name: 配置 Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 类型检查（vue-tsc）
+        run: npm run type-check
+
+      - name: 单元测试（vitest）
+        run: npm run test
+
+      # docs/api 四铁律：summary/description/example/字段 description 齐备 + $ref 可解析
+      - name: 契约四铁律校验
+        run: node scripts/validate-api-contracts.mjs
+
+      - name: 生产构建（vue-tsc -b && vite build）
+        run: npm run build
