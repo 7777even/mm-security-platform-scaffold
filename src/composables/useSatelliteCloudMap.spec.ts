@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, type Mock } from 'vitest';
 import type { RainViewerFrame } from '@/services/weather/rainViewerApi';
 import {
   RADAR_COVERAGE_HINT,
@@ -20,7 +20,7 @@ function radar(ms: number, path: string): RainViewerFrame {
  * getFrames 支持可变，便于同一用例在加载后切换帧集合并发起刷新。
  * 其余 URL（已弃用的 JMA 等历史外源）一律静默返回空，避免测试耦合旧实现。
  */
-function stubRainViewer(getFrames: () => RainViewerFrame[] = () => []): vi.Mock {
+function stubRainViewer(getFrames: () => RainViewerFrame[] = () => []): Mock {
   const mock = vi.fn(async (url: unknown) => {
     if (String(url).includes('rainviewer.com')) {
       return {
