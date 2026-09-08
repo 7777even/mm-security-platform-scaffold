@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue';
-import { bollards, type BollardItem } from '@/services/security';
+import { type BollardItem } from '@/services/security';
+import { bollardsData } from './useScreenSecurityData';
 
 export const bollardDetailOpen = ref(false);
 export const bollardDetailId = ref<number | null>(null);
@@ -7,7 +8,7 @@ export const bollardDetailId = ref<number | null>(null);
 export const bollardDetailItem = computed<BollardItem | null>(() => {
   const id = bollardDetailId.value;
   if (id == null) return null;
-  return bollards.find((b) => b.id === id) ?? null;
+  return bollardsData.value.find((b) => b.id === id) ?? null;
 });
 
 export function openBollardDetail(id: number) {

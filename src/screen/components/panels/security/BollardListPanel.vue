@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
-import { bollards, type BollardItem } from '@/services/security';
+import { type BollardItem } from '@/services/security';
+import { bollardsData, refreshSecurityData } from '../../../lib/composables/useScreenSecurityData';
 import {
   bollardCurrentPage,
   bollardPagedItems,
@@ -12,6 +14,8 @@ import {
   resetBollardSearch,
 } from '../../../lib/composables/useBollardListView';
 import { openBollardDetail } from '../../../lib/composables/useBollardDetailDialog';
+
+onMounted(() => void refreshSecurityData());
 
 function statusClass(status: BollardItem['status']) {
   if (status === '正常') return 'bollard-table__status--normal';
@@ -29,7 +33,7 @@ function handleRowClick(item: BollardItem) {
     <template #title>
       <div class="bollard-list__title">
         <h3 class="bollard-list__heading">液压防恐柱列表</h3>
-        <span class="bollard-list__count">共 {{ bollards.length }} 个</span>
+        <span class="bollard-list__count">共 {{ bollardsData.length }} 个</span>
       </div>
     </template>
 

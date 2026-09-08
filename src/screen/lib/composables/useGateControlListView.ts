@@ -1,5 +1,6 @@
 import { computed, ref, watch } from 'vue';
-import { gateControlPageSize, gateControls } from '@/services/security';
+import { gateControlPageSize } from '@/services/security';
+import { gateControlsData } from './useScreenSecurityData';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
@@ -12,7 +13,7 @@ export const gateControlDrawerActive = computed(() => gateControlListOpen.value)
 
 export const gateControlFilteredItems = computed(() => {
   const keyword = gateControlSearchKeyword.value.trim().toLowerCase();
-  const base = filterByPlantArea(gateControls);
+  const base = filterByPlantArea(gateControlsData.value);
   if (!keyword) return base;
   return base.filter(
     (item) =>

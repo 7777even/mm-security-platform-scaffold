@@ -22,9 +22,10 @@ export interface PatrolCameraItem {
 
 export const patrolCameraPageSize = 10;
 
-// ⚠️ 本地占位数据（NOT 来自后端）：patrolCameras / gateControls / bollards 当前为写死 const，
-// 被大屏 src/screen 面板直接 import。对应后端端点 /security/patrol-cameras|gate-controls|bollards
-// 尚未实现（task #15），待后端建成后由对应 fetch* 函数接管、本 const 删除。
+// 本地占位数据：仅作为「未配置 VITE_API_BASE 的纯静态模式」下
+// fetchPatrolCameras / fetchGateControls / fetchBollards 的 dev 回落源（见各 fetch* 函数首行判断）。
+// 生产环境 VITE_API_BASE 命中时这些 const 不会被用到。大屏 src/screen 面板已改为调用 fetch* 并消费
+// 响应式数据（useScreenSecurityData），不再直接 import 本 const。
 // 切勿将其当作真实数据展示；仅作布局/联调占位。
 export const patrolCameras: PatrolCameraItem[] = [
   {

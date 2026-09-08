@@ -1,5 +1,6 @@
 import { computed, ref, watch } from 'vue';
-import { bollardPageSize, bollards } from '@/services/security';
+import { bollardPageSize } from '@/services/security';
+import { bollardsData } from './useScreenSecurityData';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
@@ -12,7 +13,7 @@ export const bollardDrawerActive = computed(() => bollardListOpen.value);
 
 export const bollardFilteredItems = computed(() => {
   const keyword = bollardSearchKeyword.value.trim().toLowerCase();
-  const base = filterByPlantArea(bollards);
+  const base = filterByPlantArea(bollardsData.value);
   if (!keyword) return base;
   return base.filter(
     (item) =>

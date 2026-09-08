@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { majorHazards } from '@/services/hazard';
+import { computed, onMounted } from 'vue';
+import {
+  majorHazardsData,
+  refreshMajorHazards,
+} from '../../../lib/composables/useScreenHazardData';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
-const visibleHazards = computed(() => filterByPlantArea(majorHazards));
+const visibleHazards = computed(() => filterByPlantArea(majorHazardsData.value));
+
+onMounted(() => void refreshMajorHazards());
 const levels = computed(() => [
   {
     key: '一级',

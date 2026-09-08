@@ -77,7 +77,7 @@ declare module 'vue' {
     SpriteImage: typeof import('./src/components/common/SpriteImage.vue')['default']
     StatCard: typeof import('./src/components/common/StatCard.vue')['default']
     SurveillanceVideoDialog: typeof import('./src/components/common/SurveillanceVideoDialog.vue')['default']
-    SystemMessageBar: typeof import('./src/components/layout/SystemMessageBar.vue')['default']
+    SystemMessageBar: typeof import('./src/components/fire/SystemMessageBar.vue')['default']
     TyphoonRiskMapOverlay: typeof import('./src/components/map/TyphoonRiskMapOverlay.vue')['default']
     UserMenuDropdown: typeof import('./src/components/layout/UserMenuDropdown.vue')['default']
     VideoWallDialog: typeof import('./src/components/common/VideoWallDialog.vue')['default']

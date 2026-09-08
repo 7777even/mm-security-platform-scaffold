@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
-import { levelTone, majorHazards, type MajorHazardItem } from '@/services/hazard';
+import { levelTone, type MajorHazardItem } from '@/services/hazard';
+import { majorHazardsData, refreshMajorHazards } from '../../lib/composables/useScreenHazardData';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 import { resolvePlantAreaWorldPosition } from '../../lib/data/plantAreas';
 
 const router = useRouter();
 const { filterByPlantArea } = usePlantArea();
-const markers = computed(() => filterByPlantArea(majorHazards));
+const markers = computed(() => filterByPlantArea(majorHazardsData.value));
 
 const { styleFor } = useWorldMarkerScreenPositions(() => {
   const height = getSharedMap()?.getBoundaryModelTopHeight?.() ?? 72.05;
@@ -22,6 +23,8 @@ const { styleFor } = useWorldMarkerScreenPositions(() => {
 function openDetail(item: MajorHazardItem) {
   void router.push({ name: 'majorHazardDetail', params: { hazardId: String(item.id) } });
 }
+
+onMounted(() => void refreshMajorHazards());
 </script>
 
 <template>

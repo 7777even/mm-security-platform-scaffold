@@ -8,13 +8,13 @@ import MajorHazardStatsBar from '../components/panels/production/MajorHazardStat
 import MajorHazardListPanel from '../components/panels/production/MajorHazardListPanel.vue';
 import RiskHeatmapPanel from '../components/panels/production/RiskHeatmapPanel.vue';
 import { getSharedMap, onSharedMapReady } from '../lib/composables/sharedCesiumBridge';
-import { majorHazards } from '@/services/hazard';
+import { majorHazardsData, refreshMajorHazards } from '../lib/composables/useScreenHazardData';
 import { usePlantArea } from '../lib/composables/usePlantArea';
 import { resolvePlantAreaWorldPosition } from '../lib/data/plantAreas';
 
 const router = useRouter();
 const { filterByPlantArea, selectedPlantArea } = usePlantArea();
-const visibleHazards = computed(() => filterByPlantArea(majorHazards));
+const visibleHazards = computed(() => filterByPlantArea(majorHazardsData.value));
 
 async function flyToHazards() {
   const map = getSharedMap();
@@ -36,6 +36,7 @@ function goBack() {
 }
 
 onMounted(() => {
+  void refreshMajorHazards().then(() => flyToHazards());
   requestAnimationFrame(() => {
     requestAnimationFrame(() => void flyToHazards());
   });

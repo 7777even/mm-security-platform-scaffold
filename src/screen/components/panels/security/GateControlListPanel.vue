@@ -1,6 +1,11 @@
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
-import { gateControls, type GateControlItem } from '@/services/security';
+import { type GateControlItem } from '@/services/security';
+import {
+  gateControlsData,
+  refreshSecurityData,
+} from '../../../lib/composables/useScreenSecurityData';
 import {
   closeGateControlList,
   gateControlCurrentPage,
@@ -12,6 +17,8 @@ import {
   resetGateControlSearch,
 } from '../../../lib/composables/useGateControlListView';
 import { openGateControlDetail } from '../../../lib/composables/useGateControlDetailDialog';
+
+onMounted(() => void refreshSecurityData());
 
 function statusClass(status: GateControlItem['status']) {
   if (status === '正常') return 'gate-table__status--normal';
@@ -29,7 +36,7 @@ function handleRowClick(item: GateControlItem) {
     <template #title>
       <div class="gate-list__title">
         <h3 class="gate-list__heading">道闸列表</h3>
-        <span class="gate-list__count">共 {{ gateControls.length }} 个</span>
+        <span class="gate-list__count">共 {{ gateControlsData.length }} 个</span>
       </div>
     </template>
 

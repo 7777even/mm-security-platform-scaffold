@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import {
   countPlayableCameras,
   patrolCameraPageSize,
-  patrolCameras,
   type PatrolCameraItem,
 } from '@/services/security';
+import {
+  patrolCamerasData,
+  refreshSecurityData,
+} from '../../../lib/composables/useScreenSecurityData';
 
 const props = defineProps<{
   open: boolean;
@@ -21,12 +24,12 @@ const currentPage = ref(1);
 const dialogTitle = computed(() => props.title ?? '防控摄像头');
 
 const totalPages = computed(() =>
-  Math.max(1, Math.ceil(patrolCameras.length / patrolCameraPageSize)),
+  Math.max(1, Math.ceil(patrolCamerasData.value.length / patrolCameraPageSize)),
 );
 
 const pagedCameras = computed(() => {
   const start = (currentPage.value - 1) * patrolCameraPageSize;
-  return patrolCameras.slice(start, start + patrolCameraPageSize);
+  return patrolCamerasData.value.slice(start, start + patrolCameraPageSize);
 });
 
 const visiblePages = computed(() => {
@@ -35,12 +38,17 @@ const visiblePages = computed(() => {
   return pages;
 });
 
-const videoWallCount = computed(() => countPlayableCameras(patrolCameras));
+const videoWallCount = computed(() => countPlayableCameras(patrolCamerasData.value));
+
+onMounted(() => void refreshSecurityData());
 
 watch(
   () => props.open,
   (visible) => {
-    if (visible) currentPage.value = 1;
+    if (visible) {
+      currentPage.value = 1;
+      void refreshSecurityData();
+    }
   },
 );
 

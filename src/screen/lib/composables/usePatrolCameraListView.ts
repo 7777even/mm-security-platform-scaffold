@@ -1,7 +1,8 @@
 import { computed, ref, watch } from 'vue';
-import { patrolCameraPageSize, patrolCameras } from '@/services/security';
+import { patrolCameraPageSize } from '@/services/security';
 import router from '../../../router';
 import { prepareAutoFillCameras } from '../../components/video-wall/videoWallStore';
+import { patrolCamerasData } from './useScreenSecurityData';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
@@ -16,7 +17,7 @@ export const patrolCameraSearchKeyword = ref('');
 
 export const patrolCameraFilteredItems = computed(() => {
   const keyword = patrolCameraSearchKeyword.value.trim().toLowerCase();
-  const base = filterByPlantArea(patrolCameras);
+  const base = filterByPlantArea(patrolCamerasData.value);
   if (!keyword) return base;
   return base.filter(
     (item) =>
@@ -72,7 +73,9 @@ export function resetPatrolCameraSearch() {
 
 /** 视频墙巡查：把可播放摄像头填入视频墙网格后跳转，返回时保留列表状态 */
 export function openPatrolCameraListVideoWall() {
-  const cameras = filterByPlantArea(patrolCameras).filter((item) => item.status === '正常');
+  const cameras = filterByPlantArea(patrolCamerasData.value).filter(
+    (item) => item.status === '正常',
+  );
   prepareAutoFillCameras(cameras);
   void router.push({ name: 'tvVideoWall', query: { from: 'security' } });
 }

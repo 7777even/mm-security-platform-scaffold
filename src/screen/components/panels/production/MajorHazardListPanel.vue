@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
 import {
   hazardEnterpriseOptions,
   hazardLevelOptions,
-  majorHazards,
   type HazardLevel,
   type MajorHazardItem,
 } from '@/services/hazard';
+import {
+  majorHazardsData,
+  refreshMajorHazards,
+} from '../../../lib/composables/useScreenHazardData';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const router = useRouter();
@@ -20,7 +23,7 @@ const keyword = ref('');
 
 const filtered = computed(() => {
   const key = keyword.value.trim();
-  return filterByPlantArea(majorHazards).filter((item) => {
+  return filterByPlantArea(majorHazardsData.value).filter((item) => {
     if (enterprise.value !== '全部企业' && item.enterprise !== enterprise.value) return false;
     if (level.value !== '全部等级' && item.level !== level.value) return false;
     if (key && !item.name.includes(key)) return false;
@@ -42,6 +45,8 @@ function openDetail(item: MajorHazardItem) {
 function closeList() {
   void router.push({ name: 'production' });
 }
+
+onMounted(() => void refreshMajorHazards());
 </script>
 
 <template>

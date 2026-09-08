@@ -1,6 +1,11 @@
 <script setup lang="ts">
+import { computed, onMounted } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
-import { countPlayableCameras, patrolCameras, type PatrolCameraItem } from '@/services/security';
+import { countPlayableCameras, type PatrolCameraItem } from '@/services/security';
+import {
+  patrolCamerasData,
+  refreshSecurityData,
+} from '../../../lib/composables/useScreenSecurityData';
 import {
   closePatrolCameraListView,
   goToPatrolCameraPage,
@@ -13,13 +18,15 @@ import {
   resetPatrolCameraSearch,
 } from '../../../lib/composables/usePatrolCameraListView';
 
+onMounted(() => void refreshSecurityData());
+
 function statusClass(status: PatrolCameraItem['status']) {
   if (status === '正常') return 'camera-table__status--normal';
   if (status === '离线') return 'camera-table__status--offline';
   return 'camera-table__status--fault';
 }
 
-const videoWallCount = countPlayableCameras(patrolCameras);
+const videoWallCount = computed(() => countPlayableCameras(patrolCamerasData.value));
 
 function handlePlay(item: PatrolCameraItem) {
   if (item.status !== '正常') return;
@@ -32,7 +39,7 @@ function handlePlay(item: PatrolCameraItem) {
     <template #title>
       <div class="camera-list__title">
         <h3 class="camera-list__heading">联动巡查摄像头</h3>
-        <span class="camera-list__count">共 {{ patrolCameras.length }} 路</span>
+        <span class="camera-list__count">共 {{ patrolCamerasData.length }} 路</span>
       </div>
     </template>
 
