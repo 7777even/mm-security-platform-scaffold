@@ -24,6 +24,14 @@ export const ROLE_PERMS: Record<RoleId, string[]> = {
     'system:user:view',
     'system:device-code:view',
     'mobile:field-report:view',
+    // 附加 fm-* 子应用（由后端 /auth/menus 驱动渲染）
+    'rescue:view',
+    'typhoon:view',
+    'production-area:view',
+    'major-hazard:view',
+    'communication:view',
+    'video-control:view',
+    'video-wall:view',
   ],
 };
 

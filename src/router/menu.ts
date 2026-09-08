@@ -120,6 +120,63 @@ export const MENU_ROUTE_SPECS: Record<string, MenuRouteSpec> = {
     subapp: true,
     subappUrl: import.meta.env.VITE_FM_PRODUCTION_SUBAPP_URL ?? '/subapps/fm-production/',
   },
+  // —— 附加 fm-* 子应用：由后端 /auth/menus 驱动渲染（id 与后端菜单 id 对齐）——
+  'fm-rescue': {
+    title: '应急救援',
+    perm: 'rescue:view',
+    icon: OfficeBuilding,
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_FM_RESCUE_SUBAPP_URL ?? '/subapps/fm-rescue/',
+  },
+  'fm-typhoon': {
+    title: '台风应急',
+    perm: 'typhoon:view',
+    icon: Warning,
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_FM_TYPHOON_SUBAPP_URL ?? '/subapps/fm-typhoon/',
+  },
+  'fm-production-area': {
+    title: '生产区域',
+    perm: 'production-area:view',
+    icon: OfficeBuilding,
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_FM_PRODUCTION_AREA_SUBAPP_URL ?? '/subapps/fm-production-area/',
+  },
+  'fm-major-hazard': {
+    title: '重大危险源',
+    perm: 'major-hazard:view',
+    icon: Warning,
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_FM_MAJOR_HAZARD_SUBAPP_URL ?? '/subapps/fm-major-hazard/',
+  },
+  'fm-communication': {
+    title: '生产通信',
+    perm: 'communication:view',
+    icon: OfficeBuilding,
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_FM_COMMUNICATION_SUBAPP_URL ?? '/subapps/fm-communication/',
+  },
+  'fm-video-control': {
+    title: '视频控制',
+    perm: 'video-control:view',
+    icon: VideoCamera,
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_FM_VIDEO_CONTROL_SUBAPP_URL ?? '/subapps/fm-video-control/',
+  },
+  'fm-video-wall': {
+    title: '视频墙',
+    perm: 'video-wall:view',
+    icon: VideoCamera,
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    subapp: true,
+    subappUrl: import.meta.env.VITE_FM_VIDEO_WALL_SUBAPP_URL ?? '/subapps/fm-video-wall/',
+  },
 };
 
 // 降级默认菜单：fm-*（fire-monitoring 迁移版大屏）；旧 6 子应用保留在 MENU_ROUTE_SPECS，

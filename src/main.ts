@@ -46,13 +46,16 @@ import './styles/element-dark.css';
 // 渲染层埋点起点：入口 JS 开始执行（SLO 渲染层口径）
 mark('app:start');
 
-// 动态路由装配（B3 AUTH-05）：优先拉取后端菜单，mock 不可达时降级内置菜单
+// 动态路由装配（B3 AUTH-05）：优先拉取后端菜单并由其驱动路由，不可达时降级内置菜单。
+// 后端 /auth/menus 现已修正为返回 fm-* 字符串 id（与 MENU_ROUTE_SPECS 对齐），
+// buildDynamicRoutes 能正确装配；DEFAULT_MENUS 仅作后端不可达时的兜底保证不白屏。
 async function installMenus(): Promise<void> {
   try {
     const menus = await fetchMenus();
     installDynamicRoutes(router, menus);
   } catch {
     installDynamicRoutes(router, DEFAULT_MENUS);
+    logger.warn('[app] 后端菜单不可达，已用内置 DEFAULT_MENUS 兜底装配');
   }
 }
 
