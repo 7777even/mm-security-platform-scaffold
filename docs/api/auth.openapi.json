@@ -6,7 +6,7 @@
     "x-base-path": "/api/v1",
     "x-contract": "B3",
     "description": "菜单树接口（代码真实契约，由 stub 升级）。契约源：src/services/menu.ts、src/router/menu.ts。",
-    "x-auth-note": "本后端（mm-security-backend）提供显式凭证登录：POST /auth/login 返回 access/refresh 令牌（access 存前端内存态 token.ts，refresh 由后端种入 HttpOnly Cookie）；POST /auth/refresh 续期；GET /auth/me 取当前用户。令牌缺失/失效时后端当前返回 HTTP 200 + 业务 code=401（与下方 401 响应声明存在口径差异，待联调确认是否统一为真实 HTTP 401）。"
+    "x-auth-note": "本后端（mm-security-backend）提供显式凭证登录：POST /auth/login 返回 access/refresh 令牌（access 存前端内存态 token.ts，refresh 由后端种入 HttpOnly Cookie）；POST /auth/refresh 续期（入参 {refreshToken:string}）；GET /auth/me 取当前用户。令牌缺失/失效或凭证错误时，后端返回【真实 HTTP 401/403】（GlobalExceptionHandler 将业务码 401/403 映射为对应 HTTP 状态码），不再以 HTTP 200 + 业务 code 表达；仅在成功时返回 HTTP 200 + code=0。"
   },
   "servers": [{ "url": "/api/v1", "description": "默认 baseURL（VITE_API_BASE 可覆盖）" }],
   "security": [{ "bearerAuth": [], "replaySign": [] }],
