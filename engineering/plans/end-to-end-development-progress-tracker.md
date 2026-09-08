@@ -17,21 +17,21 @@
 | 消防监测大屏迁移                                                  | ✅   | `screen-fire-monitoring-migration-2026-09-02`（archive/）                      | `screen-fire-monitoring-migration-docs`（archive/）                                                                                          |
 | 地图底图替换                                                      | ✅   | `screen-map-base-replace`（archive/）                                          | qa 记录 + 大屏冒烟                                                                                                                           |
 | 大屏二级页面                                                      | ✅   | `screen-secondary-pages`（archive/）                                           | qa 记录                                                                                                                                      |
-| 大屏 mock 切真实服务                                              | 🟡   | `screen-mock-to-service`（changes/，19/12）                                    | —                                                                                                                                            | 阻塞：生产/视频/通讯等域后端契约确认 |
+| 大屏 mock 切真实服务                                              | 🟡   | `2026-09-07-screen-mock-to-service`（changes/，19/12）                         | —                                                                                                                                            | 阻塞：生产/视频/通讯等域后端契约确认 |
 | 一张图工具条                                                      | ✅   | `screen-map-toolbar`（archive/2026-09-08-）                                    | qa 记录                                                                                                                                      |                                      |
 | 气象源全国产化（风云四号B / 中央气象台雷达，RainViewer 静默降级） | ✅   | `weather-radar-dual-source`、`fix-weather-tile-sources`（archive/2026-09-08-） | `engineering/qa/2026-09-07-weather-radar-dual-source.md`、`2026-09-07-weather-cn-full-domestic.md`、`2026-09-07-weather-tile-sources-fix.md` |                                      |
 
 ## 后台管理端（mgmt / `data-theme='mgmt'`）
 
-| 能力              | 状态 | OpenSpec Change                                          | 验收证据 |
-| ----------------- | ---- | -------------------------------------------------------- | -------- |
-| 原型页迁移        | ✅   | `mgmt-proto-pages-migration`（archive/）                 | qa 记录  |
-| 工作台数据驱动    | ✅   | `mgmt-workbench-datadriven`（archive/）                  | qa 记录  |
-| mgmt 脚手架       | ✅   | `mgmt-scaffold`（archive/2026-09-08-）                   | qa 记录  |                                                                   |
-| mgmt 重设计迁移   | 🟡   | `mgmt-redesign-migration`（changes/，2/15）              | —        | token/组件系列任务待做                                            |
-| 长者模式          | ✅   | `mgmt-elder-mode`（archive/2026-09-08-）                 | qa 记录  |                                                                   |
-| TabStrip 样式对齐 | 🟡   | `mgmt-tabstrip-style-align`（changes/，11/1）            | —        | 尾项：dev 环境视觉走查                                            |
-| 剩余模块内联闭环  | 🟡   | `remaining-modules-inline-closed-loop`（changes/，10/1） | —        | 尾项：spec 回填 + 归档（本 Change 缺 spec-delta，需先补齐四件套） |
+| 能力              | 状态 | OpenSpec Change                                                     | 验收证据 |
+| ----------------- | ---- | ------------------------------------------------------------------- | -------- |
+| 原型页迁移        | ✅   | `mgmt-proto-pages-migration`（archive/）                            | qa 记录  |
+| 工作台数据驱动    | ✅   | `mgmt-workbench-datadriven`（archive/）                             | qa 记录  |
+| mgmt 脚手架       | ✅   | `mgmt-scaffold`（archive/2026-09-08-）                              | qa 记录  |                                                                   |
+| mgmt 重设计迁移   | 🟡   | `2026-09-01-mgmt-redesign-migration`（changes/，2/15）              | —        | token/组件系列任务待做                                            |
+| 长者模式          | ✅   | `mgmt-elder-mode`（archive/2026-09-08-）                            | qa 记录  |                                                                   |
+| TabStrip 样式对齐 | 🟡   | `2026-09-02-mgmt-tabstrip-style-align`（changes/，11/1）            | —        | 尾项：dev 环境视觉走查                                            |
+| 剩余模块内联闭环  | 🟡   | `2026-09-01-remaining-modules-inline-closed-loop`（changes/，10/1） | —        | 尾项：spec 回填 + 归档（本 Change 缺 spec-delta，需先补齐四件套） |
 
 ## 移动端（mobile / `data-theme='mobile'`）
 
@@ -54,11 +54,11 @@
 
 ## 子应用契约（wujie / subapps）
 
-| 能力                       | 状态 | OpenSpec Change                              | 验收证据                                                |
-| -------------------------- | ---- | -------------------------------------------- | ------------------------------------------------------- |
-| wujie 主壳与子应用注册通信 | ✅   | `change-wujie-shell`（archive/）             | qa 记录                                                 |
-| 子应用全屏                 | 🟡   | `wujie-subapp-fullscreen`（changes/，12/3）  | `engineering/qa/2026-09-04-wujie-subapp-fullscreen.md`  | 尾项：docs/UI 规范同步、QA/Retro 补记、提交拆分核对 |
-| 子应用切换竞态             | 🟡   | `wujie-subapp-switch-race`（changes/，14/1） | `engineering/qa/2026-09-04-wujie-subapp-switch-race.md` | 尾项：快切复现用例列为可接受风险未单独执行          |
+| 能力                       | 状态 | OpenSpec Change                                         | 验收证据                                                |
+| -------------------------- | ---- | ------------------------------------------------------- | ------------------------------------------------------- |
+| wujie 主壳与子应用注册通信 | ✅   | `change-wujie-shell`（archive/）                        | qa 记录                                                 |
+| 子应用全屏                 | 🟡   | `2026-09-04-wujie-subapp-fullscreen`（changes/，12/3）  | `engineering/qa/2026-09-04-wujie-subapp-fullscreen.md`  | 尾项：docs/UI 规范同步、QA/Retro 补记、提交拆分核对 |
+| 子应用切换竞态             | 🟡   | `2026-09-04-wujie-subapp-switch-race`（changes/，14/1） | `engineering/qa/2026-09-04-wujie-subapp-switch-race.md` | 尾项：快切复现用例列为可接受风险未单独执行          |
 
 ## 共享与工程基线（shared / 工程）
 
