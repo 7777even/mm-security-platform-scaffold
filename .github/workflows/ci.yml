@@ -45,3 +45,12 @@ jobs:
 
       - name: 生产构建（vue-tsc -b && vite build）
         run: npm run build
+
+      # 构建产物可追溯性对齐后端（后端上传 jacoco 报告）：仅构建成功时上传 dist/
+      - name: 上传构建产物
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: warn
