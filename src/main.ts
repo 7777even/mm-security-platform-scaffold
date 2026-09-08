@@ -33,8 +33,10 @@ import { vPermission } from './directives/permission';
 import type { WujieEventMap } from './shell/wujieBridge';
 import { useAuthStore } from './stores/auth';
 import { startRealtime } from './services/realtime';
-import http from './services/http';
+import http, { onUnauthorized } from './services/http';
+import { login } from './services/auth';
 import { installDevMock } from './mocks/devMock';
+import { logger } from './utils/logger';
 import { mark, measure } from './utils/perf';
 import { recordPerf } from './utils/perf-budget';
 import './styles/tokens.css';
@@ -52,6 +54,31 @@ async function installMenus(): Promise<void> {
   } catch {
     installDynamicRoutes(router, DEFAULT_MENUS);
   }
+}
+
+// 真实凭证登录：向后端 /auth/login 换取 JWT 并写入内存态（§5.3）。
+// 此前使用 `mock-admin-<ts>` 假令牌，后端 JwtFilter 一律判无效，导致全站接口 401。
+// 凭据取自 dev 环境变量；生产环境由 IDP SSO 下发，前端不再持有任何口令。
+// 登录失败时降级为本地 mock 令牌：页面不白屏，但接口会批量 401（已打错误日志）。
+async function ensureLogin(): Promise<void> {
+  const username = import.meta.env.VITE_DEV_USERNAME;
+  const password = import.meta.env.VITE_DEV_PASSWORD;
+  if (username && password) {
+    try {
+      const token = await login({ username, password });
+      useAuthStore().login(token.accessToken);
+      return;
+    } catch {
+      logger.error('[app] 后端登录失败，接口将以未鉴权态访问（请确认后端 :8787 已启动）');
+    }
+  }
+  useAuthStore().login();
+}
+
+// 令牌失效（401）：脚手架阶段无独立登录页，直接重新登录；生产改为跳转 SSO 登录页。
+function handleUnauthorized(): void {
+  logger.warn('[app] 收到 401 未授权，尝试重新登录');
+  void ensureLogin();
 }
 
 async function bootstrap(): Promise<void> {
@@ -86,14 +113,18 @@ async function bootstrap(): Promise<void> {
   app.use(WujieVue);
   const pinia = createPinia();
   app.use(pinia);
-  // Mock 登录：将访问令牌写入内存态，使请求拦截注入 Authorization（§5.3；正式环境由 IDP SSO 替换）
-  useAuthStore().login();
+  // 401 统一处理：令牌失效时自动重新登录（真实后端模式下生效）
+  onUnauthorized(handleUnauthorized);
 
   // 启动监测预警实时中枢（仅只读监视流订阅，零下行控制）。
-  // 开发期：显式 VITE_USE_DEV_MOCK=true 时启用自包含 mock（无需外部后端）；否则走真实 ws。
+  // 开发期：显式 VITE_USE_DEV_MOCK=true 时启用自包含 mock（无需外部后端）；
+  // 否则先向后端真实登录换取 JWT，再连真实 ws。
   if (import.meta.env.DEV && import.meta.env.VITE_USE_DEV_MOCK === 'true') {
+    // Mock 登录：令牌仅写入内存态，请求由 devMock 适配器本地应答（§5.3）
+    useAuthStore().login();
     installDevMock(http, pinia);
   } else {
+    await ensureLogin();
     startRealtime();
   }
 

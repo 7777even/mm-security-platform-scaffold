@@ -7,7 +7,7 @@ import type {
 } from 'axios';
 import { logger } from '@/utils/logger';
 import type { ApiResponse } from '@/types';
-import { getAccessToken } from '@/services/token';
+import { getAccessToken, clearAccessToken } from '@/services/token';
 import { guardHardControl } from '@/services/hardControlGuard';
 import {
   SIGN_HEADER_NONCE,
@@ -74,9 +74,29 @@ http.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   return config;
 });
 
+// 401 处理器由应用入口（main.ts / 子应用入口）注册；services 层不反向依赖 router 或 store，
+// 否则子应用（可能无独立路由实例）会引入循环依赖。
+type UnauthorizedHandler = () => void;
+let unauthorizedHandler: UnauthorizedHandler | null = null;
+
+/** 注册未授权处理器：令牌失效/缺失时触发（跳登录页或提示重新登录） */
+export function onUnauthorized(handler: UnauthorizedHandler): void {
+  unauthorizedHandler = handler;
+}
+
 http.interceptors.response.use(
   (resp: AxiosResponse) => resp,
   (error) => {
+    const status = error?.response?.status;
+    if (status === 401) {
+      // 后端已将 401/403 业务码映射为真实 HTTP 状态码（后端改动 #14），此处按 HTTP 状态判定。
+      // 清除内存态令牌，避免后续请求继续携带死令牌反复 401。
+      clearAccessToken();
+      logger.warn('[http] 401 未授权，已清除内存态令牌');
+      unauthorizedHandler?.();
+    } else if (status === 403) {
+      logger.warn('[http] 403 无权限访问该资源');
+    }
     logger.error('[http] request failed', error?.message);
     return Promise.reject(error);
   },
