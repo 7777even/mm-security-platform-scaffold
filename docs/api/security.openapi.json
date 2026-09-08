@@ -1,0 +1,393 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "安全防恐 API",
+    "version": "1.0.0",
+    "x-base-path": "/api/v1",
+    "x-contract": "B3",
+    "description": "巡逻摄像机 / 道闸 / 防恐柱 / 车辆·人员识别检索 / 门禁事件接口（代码真实契约）。契约源：src/services/security.ts、src/services/map-data/securitySearchMock.ts、src/services/securityEventStore.ts。"
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "默认 baseURL（VITE_API_BASE 可覆盖，见 src/services/http.ts）"
+    }
+  ],
+  "security": [{ "bearerAuth": [], "replaySign": [] }],
+  "tags": [{ "name": "security", "description": "安全防恐" }],
+  "paths": {
+    "/security/patrol-cameras": {
+      "get": {
+        "tags": ["security"],
+        "operationId": "listPatrolCameras",
+        "summary": "巡逻摄像机列表",
+        "description": "返回全部巡逻摄像机点位（名称、防控区域、状态、经纬度），用于安全防恐一张图与列表。数据来自 fac_patrol_camera 真实表。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=巡逻摄像机列表）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/PatrolCameraItem" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "name": "北环路1#",
+                      "zone": "路网防控",
+                      "status": "正常",
+                      "longitude": 110.88165,
+                      "latitude": 21.68112
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/security/gate-controls": {
+      "get": {
+        "tags": ["security"],
+        "operationId": "listGateControls",
+        "summary": "道闸（门禁卡口）列表",
+        "description": "返回全部道闸点位（名称、所属门、状态、经纬度），用于门禁卡口分布与列表。数据来自 fac_gate_control 真实表。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=道闸列表）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/GateControlItem" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "name": "1#门-道闸1",
+                      "location": "1#门",
+                      "status": "正常",
+                      "longitude": 110.89175,
+                      "latitude": 21.67778
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/security/bollards": {
+      "get": {
+        "tags": ["security"],
+        "operationId": "listBollards",
+        "summary": "防恐柱列表",
+        "description": "返回全部防恐柱点位（名称、所属门/区、状态、经纬度），用于防恐柱分布与列表。数据来自 fac_bollard 真实表。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=防恐柱列表）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/BollardItem" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "name": "1#门防恐柱",
+                      "zone": "1#门",
+                      "status": "正常",
+                      "longitude": 110.89175,
+                      "latitude": 21.67778
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/security/search/vehicle": {
+      "get": {
+        "tags": ["security"],
+        "operationId": "searchVehicles",
+        "summary": "车辆识别检索",
+        "description": "按 keyword 模糊匹配车牌/卡口/状态返回车辆识别记录（服务端匹配，keyword 为空返回全量）。数据来自 fac_vehicle_search 真实表。",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "检索关键字（车牌/卡口/状态，忽略大小写）"
+          },
+          { "$ref": "./_shared.json#/components/parameters/lang" }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=车辆识别结果列表）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/VehicleSearchResult" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "plate": "粤KA4543",
+                      "confidence": 80,
+                      "gate": "东门-入",
+                      "status": "入厂",
+                      "time": "2026-01-20 10:23:23"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/security/search/person": {
+      "get": {
+        "tags": ["security"],
+        "operationId": "searchPersons",
+        "summary": "人员识别检索",
+        "description": "按 keyword 模糊匹配姓名/卡口/状态返回人员识别记录（服务端匹配，keyword 为空返回全量）。数据来自 fac_person_search 真实表。",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "检索关键字（姓名/卡口/状态，忽略大小写）"
+          },
+          { "$ref": "./_shared.json#/components/parameters/lang" }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=人员识别结果列表）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/PersonSearchResult" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "name": "张三",
+                      "gate": "东门-入",
+                      "status": "入厂",
+                      "date": "2026-01-20"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/security/events": {
+      "get": {
+        "tags": ["security"],
+        "operationId": "listSecurityEvents",
+        "summary": "门禁事件列表",
+        "description": "返回全部安防门禁事件（人员、通道、卡号、车辆、进出方向、等级、时间），用于门禁事件记录查询。数据来自 fac_security_event 真实表。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=门禁事件列表）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/SecurityEvent" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "eventId": "EVT-20260907-0001",
+                      "person": "张伟",
+                      "channel": "1#门-道闸1",
+                      "cardId": "C1001",
+                      "vehicle": "粤K·12345",
+                      "direction": "进",
+                      "level": 1,
+                      "ts": "2026-09-07 08:02:11"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PatrolCameraItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "摄像机主键" },
+          "name": { "type": "string", "description": "摄像机名称" },
+          "zone": { "type": "string", "description": "防控区域（路网/门禁卡口/核心区/周界/外围）" },
+          "status": { "type": "string", "description": "状态（正常/离线/故障）" },
+          "longitude": { "type": "number", "description": "经度" },
+          "latitude": { "type": "number", "description": "纬度" }
+        }
+      },
+      "GateControlItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "道闸主键" },
+          "name": { "type": "string", "description": "道闸名称" },
+          "location": {
+            "type": "string",
+            "description": "所属门（1#门/2#门/东门/南门/西门/北门）"
+          },
+          "status": { "type": "string", "description": "状态（正常/离线/故障）" },
+          "longitude": { "type": "number", "description": "经度" },
+          "latitude": { "type": "number", "description": "纬度" }
+        }
+      },
+      "BollardItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "防恐柱主键" },
+          "name": { "type": "string", "description": "防恐柱名称" },
+          "zone": { "type": "string", "description": "所属门/区" },
+          "status": { "type": "string", "description": "状态（正常/离线/故障）" },
+          "longitude": { "type": "number", "description": "经度" },
+          "latitude": { "type": "number", "description": "纬度" }
+        }
+      },
+      "VehicleSearchResult": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "记录主键" },
+          "plate": { "type": "string", "description": "车牌号（识别失败为「未识别」）" },
+          "confidence": {
+            "type": "integer",
+            "nullable": true,
+            "description": "识别置信度（0-100，识别失败为空）"
+          },
+          "gate": { "type": "string", "description": "卡口（如 东门-入）" },
+          "status": { "type": "string", "description": "进出状态（入厂/出厂）" },
+          "time": { "type": "string", "description": "识别时间" }
+        }
+      },
+      "PersonSearchResult": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "记录主键" },
+          "name": { "type": "string", "description": "人员姓名" },
+          "gate": { "type": "string", "description": "卡口" },
+          "status": { "type": "string", "description": "进出状态（入厂/出厂）" },
+          "date": { "type": "string", "description": "日期" }
+        }
+      },
+      "SecurityEvent": {
+        "type": "object",
+        "properties": {
+          "eventId": { "type": "string", "description": "事件编号" },
+          "person": { "type": "string", "description": "持卡人姓名" },
+          "channel": { "type": "string", "description": "门禁通道" },
+          "cardId": { "type": "string", "description": "卡号" },
+          "vehicle": { "type": "string", "description": "关联车辆" },
+          "direction": { "type": "string", "description": "进出方向（进/出）" },
+          "level": { "type": "integer", "description": "权限等级（1/2/3）" },
+          "ts": { "type": "string", "description": "事件时间" }
+        }
+      }
+    }
+  }
+}

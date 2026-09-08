@@ -1,0 +1,131 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "消防报警 FireAlarm API",
+    "version": "1.0.0",
+    "x-base-path": "/api/v1",
+    "x-contract": "B3",
+    "description": "消防报警分页列表接口（代码真实契约）。契约源：src/services/alarm.ts 的 fetchFireAlarmPage / FireAlarmItem。"
+  },
+  "servers": [{ "url": "/api/v1", "description": "默认 baseURL（VITE_API_BASE 可覆盖）" }],
+  "security": [{ "bearerAuth": [], "replaySign": [] }],
+  "tags": [{ "name": "fire-alarm", "description": "消防报警" }],
+  "paths": {
+    "/fire-alarms": {
+      "get": {
+        "tags": ["fire-alarm"],
+        "operationId": "getFireAlarmPage",
+        "summary": "消防报警分页查询",
+        "description": "分页返回消防报警（火灾/烟雾/GDS/设备故障），含类型、来源、对象、等级、描述、位置、监控点、处置状态等。数据来自 fac_fire_alarm 真实表。响应 data 为 PageResult<FireAlarmItem>（list/total/page/size）。",
+        "parameters": [
+          { "$ref": "./_shared.json#/components/parameters/page" },
+          { "$ref": "./_shared.json#/components/parameters/size" },
+          { "$ref": "./_shared.json#/components/parameters/lang" }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=PageResult<FireAlarmItem>）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "allOf": [
+                            { "$ref": "./_shared.json#/components/schemas/PageResult" },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "list": {
+                                  "type": "array",
+                                  "items": { "$ref": "#/components/schemas/FireAlarmItem" }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "list": [
+                      {
+                        "alarmId": "FA-20260907-001",
+                        "typeLabel": "火灾报警",
+                        "typeTone": "fire",
+                        "source": "火灾报警",
+                        "objectType": "装置",
+                        "objectName": "蜡油加氢装置",
+                        "level": "-",
+                        "description": "蜡油加氢装置区疑似出现明火，请核实。",
+                        "location": "化工区-蜡油加氢装置区",
+                        "time": "2026-05-31 10:14:12",
+                        "falseAlarm": "未核实",
+                        "status": "ACTIVE",
+                        "rescueEventId": "1",
+                        "monitorId": "cam-a-east",
+                        "monitorLabel": "蜡油加氢东侧监控",
+                        "onsiteMonitorId": "cam-a-site",
+                        "onsiteMonitorLabel": "蜡油加氢现场监控",
+                        "title": "蜡油加氢装置火灾"
+                      }
+                    ],
+                    "total": 16,
+                    "page": 1,
+                    "size": 10
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FireAlarmItem": {
+        "type": "object",
+        "description": "消防报警条目（字段对齐前端 FireAlarmItem）",
+        "properties": {
+          "alarmId": { "type": "string", "description": "报警编号（主键）" },
+          "typeLabel": {
+            "type": "string",
+            "description": "类型标签（火灾报警/烟雾报警/GDS报警/设备故障）"
+          },
+          "typeTone": { "type": "string", "description": "类型色调（fire/smoke/gds/muted）" },
+          "source": {
+            "type": "string",
+            "description": "报警来源（火灾报警/DCS·GDS/视频识别/人工上报）"
+          },
+          "objectType": { "type": "string", "description": "对象类型（装置/储罐/仓库/管网）" },
+          "objectName": { "type": "string", "description": "对象名称" },
+          "level": { "type": "string", "description": "报警等级（-/高报/高高报等）" },
+          "description": { "type": "string", "description": "报警描述" },
+          "location": { "type": "string", "description": "报警位置" },
+          "time": { "type": "string", "description": "报警时间" },
+          "falseAlarm": { "type": "string", "description": "是否误报（未核实/是/否）" },
+          "status": {
+            "type": "string",
+            "description": "处置状态（ACTIVE 报警中 / CLOSED 已关闭）"
+          },
+          "rescueEventId": { "type": "string", "description": "关联救援事件 id（可空）" },
+          "monitorId": { "type": "string", "description": "监控点 id（可空）" },
+          "monitorLabel": { "type": "string", "description": "监控点名称（可空）" },
+          "onsiteMonitorId": { "type": "string", "description": "现场监控点 id（可空）" },
+          "onsiteMonitorLabel": { "type": "string", "description": "现场监控点名称（可空）" },
+          "title": { "type": "string", "description": "报警标题" }
+        }
+      }
+    }
+  }
+}
