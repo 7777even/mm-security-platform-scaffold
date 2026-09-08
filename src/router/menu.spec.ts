@@ -21,10 +21,12 @@ function createTestRouter() {
 
 describe('buildDynamicRoutes：菜单契约 → 路由记录', () => {
   it('映射出 path/name/meta(title+perm)', () => {
-    const routes = buildDynamicRoutes([{ id: 'dashboard', name: '应急指挥', path: '/dashboard' }]);
+    const routes = buildDynamicRoutes([
+      { id: 'fm-emergency', name: '应急指挥', path: '/emergency' },
+    ]);
     expect(routes).toHaveLength(1);
-    expect(routes[0].path).toBe('/dashboard');
-    expect(routes[0].name).toBe('dashboard');
+    expect(routes[0].path).toBe('/emergency');
+    expect(routes[0].name).toBe('fm-emergency');
     expect(routes[0].meta).toMatchObject({ title: '应急指挥', perm: 'dashboard:view' });
   });
 
@@ -40,8 +42,8 @@ describe('buildDynamicRoutes：菜单契约 → 路由记录', () => {
         name: '应急体系',
         path: '/emergency',
         children: [
-          { id: 'dashboard', name: '应急指挥', path: '/dashboard' },
-          { id: 'fire-alarm', name: '消防报警', path: '/fire-alarm' },
+          { id: 'fm-emergency', name: '应急指挥', path: '/emergency' },
+          { id: 'fm-fire', name: '消防报警', path: '/fire' },
         ],
       },
     ];
@@ -64,15 +66,15 @@ describe('installDynamicRoutes：装配到路由实例', () => {
   it('装配后新路径可被路由解析', () => {
     const router = createTestRouter();
     const count = installDynamicRoutes(router, [
-      { id: 'dashboard', name: '应急指挥', path: '/dashboard' },
+      { id: 'fm-emergency', name: '应急指挥', path: '/emergency' },
     ]);
     expect(count).toBe(1);
-    expect(router.resolve('/dashboard').name).toBe('dashboard');
+    expect(router.resolve('/emergency').name).toBe('fm-emergency');
   });
 
   it('重复装配幂等（已存在的路径不重复安装）', () => {
     const router = createTestRouter();
-    const menus: MenuItem[] = [{ id: 'dashboard', name: '应急指挥', path: '/dashboard' }];
+    const menus: MenuItem[] = [{ id: 'fm-emergency', name: '应急指挥', path: '/emergency' }];
     installDynamicRoutes(router, menus);
     const second = installDynamicRoutes(router, menus);
     expect(second).toBe(0);

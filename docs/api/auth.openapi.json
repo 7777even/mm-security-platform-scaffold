@@ -135,7 +135,7 @@
         "tags": ["auth"],
         "operationId": "getMenus",
         "summary": "按角色返回菜单树",
-        "description": "返回前端路由/菜单树；id 与前端 MENU_ROUTE_SPECS 对齐（fm-* 迁移子应用全套：fm-emergency/fm-fire/fm-security/fm-tv/fm-production 及附加 fm-rescue/fm-typhoon/fm-production-area/fm-major-hazard/fm-communication/fm-video-control/fm-video-wall）。",
+        "description": "仅返回顶部导航栏菜单（5 个 fm-* 主模块）；id 与前端 MENU_ROUTE_SPECS 顶部项对齐（fm-emergency/fm-fire/fm-security/fm-tv/fm-production）。其余子应用 fm-rescue/fm-typhoon/fm-production-area/fm-major-hazard/fm-communication/fm-video-control/fm-video-wall 不进顶部导航，由前端 SECONDARY_ROUTES 二级隐藏路由承载。",
         "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
         "responses": {
           "200": {
@@ -164,18 +164,7 @@
                     { "id": "fm-fire", "name": "消防报警", "path": "/fire" },
                     { "id": "fm-security", "name": "治安防恐", "path": "/security" },
                     { "id": "fm-tv", "name": "工业电视", "path": "/tv" },
-                    { "id": "fm-production", "name": "生产应急", "path": "/production" },
-                    { "id": "fm-rescue", "name": "应急救援", "path": "/fm-rescue" },
-                    { "id": "fm-typhoon", "name": "台风应急", "path": "/fm-typhoon" },
-                    {
-                      "id": "fm-production-area",
-                      "name": "生产区域",
-                      "path": "/fm-production-area"
-                    },
-                    { "id": "fm-major-hazard", "name": "重大危险源", "path": "/fm-major-hazard" },
-                    { "id": "fm-communication", "name": "生产通信", "path": "/fm-communication" },
-                    { "id": "fm-video-control", "name": "视频控制", "path": "/fm-video-control" },
-                    { "id": "fm-video-wall", "name": "视频墙", "path": "/fm-video-wall" }
+                    { "id": "fm-production", "name": "生产应急", "path": "/production" }
                   ]
                 }
               }

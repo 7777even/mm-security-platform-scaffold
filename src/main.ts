@@ -47,8 +47,9 @@ import './styles/element-dark.css';
 mark('app:start');
 
 // 动态路由装配（B3 AUTH-05）：优先拉取后端菜单并由其驱动路由，不可达时降级内置菜单。
-// 后端 /auth/menus 现已修正为返回 fm-* 字符串 id（与 MENU_ROUTE_SPECS 对齐），
-// buildDynamicRoutes 能正确装配；DEFAULT_MENUS 仅作后端不可达时的兜底保证不白屏。
+// 后端 /auth/menus 仅返回顶部导航的 5 个 fm-* 主模块（与 MENU_ROUTE_SPECS 顶部项对齐）；
+// 其余子应用（fm-rescue 等）走前端 SECONDARY_ROUTES 二级隐藏路由，不进顶部菜单。
+// DEFAULT_MENUS 仅作后端不可达时的兜底保证不白屏。
 async function installMenus(): Promise<void> {
   try {
     const menus = await fetchMenus();
