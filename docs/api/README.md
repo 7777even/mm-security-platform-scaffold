@@ -57,6 +57,19 @@ npm run gen:api-types          # 生成 src/types/generated/<domain>.ts + index.
 
 > 生成物为自动代码，**请勿手改**；契约变更后重跑本命令并一并提交。
 
+### 1.1 统一 B3 包络与 401 跳登录（消费方约定）
+
+- **B3 包络**：所有 REST 响应均为 `_shared.json` 的 `ApiResponse`（`{ code, message, data, traceId }`），
+  `code=0` 成功；非 0 由后端 `GlobalExceptionHandler` 统一转包络。前端 `src/services/http.ts` 的
+  `ApiError`（`code` / `data` / `traceId`）与包络一一对应，拦截器自动抽取错误为 `ApiError` 并 `unwrapBody` 抛出。
+- **401 → 登录页**：鉴权失败（JWT 过期/缺失）后端直接回 **401 + B3 包络**（不抛异常冒泡、不降级 200），
+  前端拦截器清内存令牌并触发 `onUnauthorized` → `router.push('/login')`，由 `src/views/auth/LoginView.vue`
+  处理 dev 自动登录 / 生产跳 SSO。**禁止**在 401 后又发起审计上报等二次请求制造跳登录死循环
+  （环路已由路由 `afterEach` 跳过 `/login` 兜底）。
+- **403 越权**：变更类端点需 ADMIN 角色（`@RequireAuth(role="ADMIN")`），现场回传 `reporter` 须为本人，
+  越权统一回 **403 + B3 包络**，前端按业务错误提示即可。
+- 类型重生成后若发现字段偏差，先核 `docs/api/*.openapi.json` 与后端实现是否漂移，再 `npm run gen:api-types` 同步。
+
 ### 2. 其他消费方式
 
 - **相对 `$ref` 解析**：Swagger UI、openapi-generator 原生支持跨文件 `$ref`。若某工具不支持，先内联（二选一）：
