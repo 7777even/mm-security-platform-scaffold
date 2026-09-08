@@ -16,11 +16,7 @@ const route = useRoute();
 const mapRef = ref<InstanceType<typeof MaomingPetroCesiumMap> | null>(null);
 const { selectedPlantArea } = usePlantArea();
 
-const INCIDENT_DETAIL_ROUTE_NAMES = new Set([
-  'extreme-weather-typhoon',
-  'fire-alarm-rescue',
-  'dashboard-rescue',
-]);
+const INCIDENT_DETAIL_ROUTE_NAMES = new Set(['fm-typhoon', 'fm-fire-rescue', 'fm-drill']);
 
 function shouldFlyToPlantArea(routeName: unknown) {
   return !INCIDENT_DETAIL_ROUTE_NAMES.has(String(routeName ?? ''));
@@ -54,14 +50,14 @@ function onMapReady() {
 }
 
 const SKIP_RESTORE_ROUTE_NAMES = new Set([
-  'fire-alarm-rescue',
-  'dashboard-rescue',
-  'extreme-weather-typhoon',
-  'fire-alarm',
-  'ops-monitor-area',
-  'ops-monitor-hazards',
-  'ops-monitor-hazard-detail',
-  'ops-monitor-communication',
+  'fm-fire-rescue',
+  'fm-drill',
+  'fm-typhoon',
+  'fm-fire',
+  'fm-production-area',
+  'fm-major-hazard-list',
+  'fm-major-hazard-detail',
+  'fm-communication',
 ]);
 
 watch(

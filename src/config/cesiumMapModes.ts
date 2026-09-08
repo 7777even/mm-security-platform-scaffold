@@ -193,12 +193,11 @@ export const ROUTE_CESIUM_META: Record<string, RouteCesiumMeta> = {
   // 无法命中下方真实模块名。先强制 cesium:true + fire 模式，复刻参考项目大屏展示效果。
   // 后续离线底座改造 + 正确路由映射（openspec）落地后删除此项。
   'subapp-fallback': { cesium: true, mapMode: 'fire', mapFocus: FIRE_MAP_FOCUS },
-  emergency: { cesium: true, mapMode: 'fire-emergency', mapFocus: FIRE_MAP_FOCUS },
-  fire: { cesium: true, mapMode: 'fire', mapFocus: FIRE_MAP_FOCUS },
-  production: { cesium: true, mapMode: 'production', mapFocus: PRODUCTION_MAP_FOCUS },
-  preliminary: { cesium: true, mapMode: 'preliminary', mapFocus: PRODUCTION_MAP_FOCUS },
-  security: { cesium: true, mapMode: 'security', mapFocus: SECURITY_MAP_FOCUS },
-  tv: { cesium: true, mapMode: 'tv', mapFocus: DEFAULT_FOCUS },
+  'fm-emergency': { cesium: true, mapMode: 'fire-emergency', mapFocus: FIRE_MAP_FOCUS },
+  'fm-fire': { cesium: true, mapMode: 'fire', mapFocus: FIRE_MAP_FOCUS },
+  'fm-production': { cesium: true, mapMode: 'production', mapFocus: PRODUCTION_MAP_FOCUS },
+  'fm-security': { cesium: true, mapMode: 'security', mapFocus: SECURITY_MAP_FOCUS },
+  'fm-tv': { cesium: true, mapMode: 'tv', mapFocus: DEFAULT_FOCUS },
 };
 
 export function resolveRouteCesiumMeta(routeName: string | null | undefined): RouteCesiumMeta {

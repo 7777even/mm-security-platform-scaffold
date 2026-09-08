@@ -8,9 +8,7 @@ const { plantAreaOptions, selectedPlantArea, setSelectedPlantArea } = usePlantAr
 
 const route = useRoute();
 const hiddenOnIncidentDetail = computed(() =>
-  ['extreme-weather-typhoon', 'fire-alarm-rescue', 'dashboard-rescue'].includes(
-    String(route.name ?? ''),
-  ),
+  ['fm-typhoon', 'fm-fire-rescue', 'fm-drill'].includes(String(route.name ?? '')),
 );
 
 function handleChange(event: Event) {
