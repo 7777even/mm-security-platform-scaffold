@@ -19,6 +19,24 @@ import {
 } from '@/services/requestSigner';
 import { isPlainRequestBody, strictSanitizeDeep } from '@/utils/sanitize';
 
+/**
+ * B3 统一包络错误：业务码（code!=0）或鉴权失败（401/403）时由 http 层抛出，
+ * 页面统一 catch 消费（取 code/message 展示后端文案）。后端 GlobalExceptionHandler /
+ * JwtFilter / HmacFilter 均收敛为 { code, message, data?, traceId? } 形态。
+ */
+export class ApiError extends Error {
+  readonly code: number;
+  readonly data?: unknown;
+  readonly traceId?: string;
+  constructor(code: number, message: string, data?: unknown, traceId?: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = code;
+    this.data = data;
+    this.traceId = traceId;
+  }
+}
+
 // 统一 HTTP 客户端（S1 §2.1/§3.3）；网关强制 OAuth2.0 签名拦截（详细设计 §3.3）。
 // 令牌走 HttpOnly Cookie / 内存态，禁止 localStorage 明文（S1 §5.3）。getAccessToken 由 token.ts 内存态提供。
 // 详设 V1.5 补充约定：
@@ -88,11 +106,24 @@ http.interceptors.response.use(
   (resp: AxiosResponse) => resp,
   (error) => {
     const status = error?.response?.status;
+    const body = error?.response?.data;
+    // 统一 B3 包络错误：后端（GlobalExceptionHandler / JwtFilter / HmacFilter）均收敛为
+    // { code, message, data?, traceId? } 形态，统一抽取为 ApiError 供页面消费。
+    if (body && typeof body === 'object' && typeof body.code === 'number' && 'message' in body) {
+      const apiErr = new ApiError(body.code, String(body.message), body.data, body.traceId);
+      if (status === 401) {
+        // 后端已将 401/403 业务码映射为真实 HTTP 状态码，此处按 HTTP 状态判定。
+        // 清除内存态令牌，避免后续请求继续携带死令牌反复 401。
+        clearAccessToken();
+        logger.warn('[http] 401 未授权，已清除内存态令牌');
+        unauthorizedHandler?.();
+      } else if (status === 403) {
+        logger.warn('[http] 403 无权限访问该资源');
+      }
+      return Promise.reject(apiErr);
+    }
     if (status === 401) {
-      // 后端已将 401/403 业务码映射为真实 HTTP 状态码（后端改动 #14），此处按 HTTP 状态判定。
-      // 清除内存态令牌，避免后续请求继续携带死令牌反复 401。
       clearAccessToken();
-      logger.warn('[http] 401 未授权，已清除内存态令牌');
       unauthorizedHandler?.();
     } else if (status === 403) {
       logger.warn('[http] 403 无权限访问该资源');
@@ -102,10 +133,10 @@ http.interceptors.response.use(
   },
 );
 
-/** 解包 B3 统一响应包络：code=0 返回 data，非 0 抛业务错误（B3 Mock 契约） */
+/** 解包 B3 统一响应包络：code=0 返回 data，非 0 抛 ApiError（携带后端 code/message） */
 export function unwrapBody<T>(body: ApiResponse<T>): T {
   if (body.code !== 0) {
-    throw new Error(`[http] 业务错误 ${body.code}: ${body.message}`);
+    throw new ApiError(body.code, body.message, body.data, body.traceId);
   }
   return body.data;
 }

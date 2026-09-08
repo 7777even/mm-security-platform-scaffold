@@ -63,7 +63,7 @@ async function installMenus(): Promise<void> {
 // 真实凭证登录：向后端 /auth/login 换取 JWT 并写入内存态（§5.3）。
 // 此前使用 `mock-admin-<ts>` 假令牌，后端 JwtFilter 一律判无效，导致全站接口 401。
 // 凭据取自 dev 环境变量；生产环境由 IDP SSO 下发，前端不再持有任何口令。
-// 登录失败时降级为本地 mock 令牌：页面不白屏，但接口会批量 401（已打错误日志）。
+// 登录失败时跳转登录页（不再种假令牌，避免假令牌被 JwtFilter 拒 → 全站 401 风暴）。
 async function ensureLogin(): Promise<void> {
   const username = import.meta.env.VITE_DEV_USERNAME;
   const password = import.meta.env.VITE_DEV_PASSWORD;
@@ -73,16 +73,19 @@ async function ensureLogin(): Promise<void> {
       useAuthStore().login(token.accessToken);
       return;
     } catch {
-      logger.error('[app] 后端登录失败，接口将以未鉴权态访问（请确认后端 :8787 已启动）');
+      logger.error('[app] 后端登录失败，跳转登录页（请确认后端 :8787 已启动）');
     }
   }
-  useAuthStore().login();
+  // 无凭据或登录失败：交给定向登录页处理（dev 自动重试 / 生产跳 SSO）
+  router.push({ path: '/login', query: { redirect: '/' } });
 }
 
-// 令牌失效（401）：脚手架阶段无独立登录页，直接重新登录；生产改为跳转 SSO 登录页。
+// 令牌失效（401）：统一跳登录页重新鉴权（dev 自动登录 / 生产跳 SSO）。
+// 清空内存态令牌由 http 拦截器负责；此处仅做路由跳转，杜绝静默重登循环。
 function handleUnauthorized(): void {
-  logger.warn('[app] 收到 401 未授权，尝试重新登录');
-  void ensureLogin();
+  const redirect = router.currentRoute.value.fullPath;
+  logger.warn('[app] 收到 401 未授权，跳转登录页');
+  router.push({ path: '/login', query: { redirect } });
 }
 
 async function bootstrap(): Promise<void> {

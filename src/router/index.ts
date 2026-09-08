@@ -146,6 +146,13 @@ const routes: RouteRecordRaw[] = [
     children: [...SECONDARY_ROUTES],
   },
   {
+    // 统一身份认证入口：401 跳登录落点。未鉴权时不要求 perm，独立页（不套布局壳）。
+    path: '/login',
+    name: 'login',
+    component: () => import('@/views/auth/LoginView.vue'),
+    meta: { public: true, title: '登录' },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('@/views/error/NotFound.vue'),
@@ -168,6 +175,8 @@ router.beforeEach(async (to) => {
 
 // 功能窗口切换耗时（D1 P8 ≤2s 基线）+ 路由查看审计埋点（C-2）
 router.afterEach((to) => {
+  // 登录页不打路由审计：未鉴权时 /audit/log 会 401 → 触发跳登录 → 再审计的死循环。
+  if (to.name === 'login') return;
   const ms = measure('nav', 'nav:start');
   if (ms != null) recordPerf('functionWindowMs', ms);
   reportAudit({ action: 'route-view', module: String(to.name ?? to.path) });
