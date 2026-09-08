@@ -68,6 +68,11 @@ npm run gen:api-types          # 生成 src/types/generated/<domain>.ts + index.
   （环路已由路由 `afterEach` 跳过 `/login` 兜底）。
 - **403 越权**：变更类端点需 ADMIN 角色（`@RequireAuth(role="ADMIN")`），现场回传 `reporter` 须为本人，
   越权统一回 **403 + B3 包络**，前端按业务错误提示即可。
+- **刷新令牌 HttpOnly Cookie（S1 §5.3 合规红线）**：`POST /auth/login` 响应体只含 `accessToken`，
+  refresh 令牌由后端经 `Set-Cookie` 下发为 `HttpOnly` Cookie（`name=rt`，`SameSite=Lax`），
+  **绝不进 body**（前端 JS 读不到，规避 XSS 窃取）。`src/services/http.ts` 的 axios 实例已开 `withCredentials: true`
+  自动收发该 Cookie。续期调 `refresh()`（**无参**，依赖浏览器自动携带的 `rt` Cookie）；登出 `logout()` 由
+  `stores/auth.ts` 同步清本地内存态并通知后端清除 Cookie。前端任何代码都不要尝试读取/存储 refresh 令牌。
 - 类型重生成后若发现字段偏差，先核 `docs/api/*.openapi.json` 与后端实现是否漂移，再 `npm run gen:api-types` 同步。
 
 ### 2. 其他消费方式
