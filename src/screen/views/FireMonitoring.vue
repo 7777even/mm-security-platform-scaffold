@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import DashboardLayout from '../components/layout/DashboardLayout.vue';
 import MapPageShell from '../components/map/MapPageShell.vue';
@@ -44,18 +44,28 @@ import {
 } from '../lib/composables/useSpecialOperationView';
 import { rescueDrawerActive } from '../lib/composables/useRescueDrawerActive';
 import { useAlarmDetailPanel } from '../lib/composables/useAlarmDetailPanel';
-import { alarms } from '../lib/data/mock';
 import { fireAlarmToDetail } from '../lib/data/alarmDetailMock';
+import { refreshScreenAlarms, screenAlarms } from '../lib/composables/useScreenAlarmFeed';
+import { showToast } from '../lib/composables/useToast';
 import fireAlarmSnapshot from '../assets/semantic-scenes/fire-alarm-pipe-rack.png';
 
 const { alarmDetailOpen, openAlarmDetail } = useAlarmDetailPanel();
 const router = useRouter();
 const soundLightAlarmOpen = ref(false);
-const demoSoundLightAlarm = alarms[0]!;
+// 声光报警弹窗取真实后端 /alarms 的首条；无真实报警时不开窗（不造假数据冒充后端）。
+const soundLightAlarm = computed(() => screenAlarms.value[0] ?? null);
 
-function openSoundLightAlarm() {
+async function openSoundLightAlarm() {
+  await refreshScreenAlarms();
+  if (!soundLightAlarm.value) {
+    showToast('当前无实时报警');
+    return;
+  }
   soundLightAlarmOpen.value = true;
 }
+
+// 进入消防监控页即预热真实报警源，避免点击声光报警时才首次请求。
+onMounted(() => void refreshScreenAlarms());
 
 function closeSoundLightAlarm() {
   soundLightAlarmOpen.value = false;
@@ -63,7 +73,7 @@ function closeSoundLightAlarm() {
 
 function openSoundLightAlarmDetail() {
   closeSoundLightAlarm();
-  openAlarmDetail(fireAlarmToDetail(demoSoundLightAlarm));
+  if (soundLightAlarm.value) openAlarmDetail(fireAlarmToDetail(soundLightAlarm.value));
 }
 
 function startSoundLightAlarmEmergency() {
@@ -134,8 +144,9 @@ function handleListAfterLeave() {
     <template #floating>
       <AlarmDetailPanel />
       <SoundLightAlarmDialog
+        v-if="soundLightAlarm"
         :open="soundLightAlarmOpen"
-        :alarm="demoSoundLightAlarm"
+        :alarm="soundLightAlarm"
         :image-url="fireAlarmSnapshot"
         @close="closeSoundLightAlarm"
         @detail="openSoundLightAlarmDetail"

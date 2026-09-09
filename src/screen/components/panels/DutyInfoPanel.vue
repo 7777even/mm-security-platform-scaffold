@@ -3,7 +3,8 @@ import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
 import StatCard from '../common/StatCard.vue';
 import { UserFilled } from '@element-plus/icons-vue';
-import { dutyPersons, rescueStats, type DutyPerson } from '../../lib/data/mock';
+import { dutyPersons, type DutyPerson } from '../../lib/data/mock';
+import { fetchRescueForces, type RescueForceStat } from '@/services/fireMonitoring';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 import { fetchDutyRoster } from '@/services/duty';
 import {
@@ -39,6 +40,10 @@ const visibleDutyPersons = computed(() => {
   return [leader, staff].filter((person): person is DutyPerson => Boolean(person));
 });
 
+// 消防救援力量统计：直连真后端 /fire/rescue-forces。
+// 未配置 VITE_API_BASE 时 service 回落到 dev fixture；已配置但后端失败则为空集合并告警（不造假数据）。
+const rescueStats = ref<RescueForceStat[]>([]);
+
 onMounted(async () => {
   try {
     const roster = await fetchDutyRoster();
@@ -51,6 +56,7 @@ onMounted(async () => {
   } catch {
     // 真实接口异常时保留内置 mock 兜底
   }
+  rescueStats.value = await fetchRescueForces();
 });
 
 function handleStatClick(label: string) {

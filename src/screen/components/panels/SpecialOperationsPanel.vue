@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
 
-import { specialOperations } from '../../lib/data/mock';
+import { fetchSpecialOperations, type SpecialOperationStat } from '@/services/fireMonitoring';
 
 import { openSpecialOperationView } from '../../lib/composables/useSpecialOperationView';
 
@@ -15,6 +16,17 @@ import { closeRescueVehicleView } from '../../lib/composables/useRescueVehicleVi
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 
 const { scaleAreaCount } = usePlantArea();
+
+// 特殊作业统计：直连真后端 /fire/special-operations。
+// 未配置 VITE_API_BASE 时 service 回落到 dev fixture；已配置但后端失败则为空集合并告警（不造假数据）。
+const operations = ref<SpecialOperationStat[]>([]);
+const visibleOperations = computed(() =>
+  operations.value.map((item) => ({ ...item, count: scaleAreaCount(item.count) })),
+);
+
+onMounted(async () => {
+  operations.value = await fetchSpecialOperations();
+});
 
 function handleItemClick(label: string) {
   closeFireBrigadeView();
@@ -33,7 +45,7 @@ function handleItemClick(label: string) {
   <PanelCard title="特殊作业" variant="equipment" :show-more="false">
     <div class="special-ops">
       <button
-        v-for="item in specialOperations"
+        v-for="item in visibleOperations"
         :key="item.id"
         type="button"
         class="special-ops__item"

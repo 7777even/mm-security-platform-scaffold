@@ -4,12 +4,13 @@ import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
 import FireSituationMarker from './FireSituationMarker.vue';
 import { sprites } from '../../utils/spriteConfig';
-import { alarms, fireAlarmMarker, mapControls } from '../../lib/data/mock';
+import { fireAlarmMarker, mapControls } from '../../lib/data/mock';
 import { useMapControls } from '../../lib/composables/useMapControls';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
+import { findScreenAlarm, refreshScreenAlarms } from '../../lib/composables/useScreenAlarmFeed';
 import { rescueDrawerActive } from '../../lib/composables/useRescueDrawerActive';
 import { useAlarmDetailPanel } from '../../lib/composables/useAlarmDetailPanel';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 import { getPlantAreaDefinition } from '../../lib/data/plantAreas';
 import { fireSituationMarkers } from '../../lib/data/fireSituationMapMock';
@@ -57,9 +58,12 @@ function openSituationDetail(item: FireSituationMarkerItem) {
     selectSpecialOperation(item.targetId);
     return;
   }
-  const alarm = alarms.find((entry) => entry.id === item.targetId);
+  const alarm = findScreenAlarm(item.targetId);
   if (alarm) openAlarmDetail(fireAlarmToDetail(alarm));
 }
+
+// 挂载即拉取真实后端 /alarms，供上方点位反查；失败时 findScreenAlarm 命中不到，静默不弹详情。
+onMounted(() => void refreshScreenAlarms());
 </script>
 
 <template>

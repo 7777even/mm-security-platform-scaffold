@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 import { PieChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import PanelCard from '../common/PanelCard.vue';
-import { equipmentStatus } from '../../lib/data/mock';
-import { firePatrolRecords } from '../../lib/data/firePatrolMock';
+import { fetchFireEquipmentStatus, fetchFirePatrols } from '@/services/fireMonitoring';
+import type { FireEquipmentStatus, FirePatrolRecord } from '@/services/fireMonitoring';
 import FireFacilityMonitoringDialog from '../common/FireFacilityMonitoringDialog.vue';
 import FirePatrolDialog from '../common/FirePatrolDialog.vue';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
@@ -20,9 +20,27 @@ const { facilityMonitoringOpen, openFireFacilityMonitoring, closeFireFacilityMon
 const { firePatrolOpen, openFirePatrol, closeFirePatrol } = useFirePatrolDialog();
 const { filterByPlantArea, scaleAreaCount } = usePlantArea();
 
+// 消防设施设备状态与防火巡查：直连真后端 /fire/equipment-status、/fire/patrols。
+// 未配置 VITE_API_BASE 时 service 回落到 dev fixture；已配置但后端失败则为空态并告警（不造假数据）。
+const ZERO_STATUS: FireEquipmentStatus = {
+  total: 0,
+  offline: 0,
+  fault: 0,
+  integrityRate: 0,
+  onlineRate: 0,
+};
+const equipmentStatus = ref<FireEquipmentStatus>(ZERO_STATUS);
+const patrolRecords = ref<FirePatrolRecord[]>([]);
+
+onMounted(async () => {
+  const [status, patrols] = await Promise.all([fetchFireEquipmentStatus(), fetchFirePatrols()]);
+  if (status) equipmentStatus.value = status;
+  patrolRecords.value = patrols;
+});
+
 const TODAY = '2026-08-20';
 const todayRecords = computed(() =>
-  filterByPlantArea(firePatrolRecords).filter((item) => item.patrolDate === TODAY),
+  filterByPlantArea(patrolRecords.value).filter((item) => item.patrolDate === TODAY),
 );
 const todayCompleted = computed(() => todayRecords.value.filter((item) => item.completed).length);
 const todayAbnormal = computed(
@@ -37,7 +55,7 @@ const completionRate = computed(() =>
     : 0,
 );
 const recentPatrols = computed(() =>
-  [...filterByPlantArea(firePatrolRecords)]
+  [...filterByPlantArea(patrolRecords.value)]
     .sort((a, b) => b.patrolDate.localeCompare(a.patrolDate) || a.id - b.id)
     .slice(0, 3),
 );
@@ -62,10 +80,10 @@ const attentionItems = computed(() => [
   },
 ]);
 const problemTotal = computed(
-  () => scaleAreaCount(equipmentStatus.offline) + scaleAreaCount(equipmentStatus.fault),
+  () => scaleAreaCount(equipmentStatus.value.offline) + scaleAreaCount(equipmentStatus.value.fault),
 );
 
-function abnormalCount(record: (typeof firePatrolRecords)[number]) {
+function abnormalCount(record: FirePatrolRecord) {
   return record.checkItems.filter((item) => item.result === '异常').length;
 }
 function handleMore() {
@@ -104,8 +122,10 @@ function createSegmentRingOption(value: number) {
     ],
   };
 }
-const integrityOption = computed(() => createSegmentRingOption(equipmentStatus.integrityRate));
-const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.onlineRate));
+const integrityOption = computed(() =>
+  createSegmentRingOption(equipmentStatus.value.integrityRate),
+);
+const onlineOption = computed(() => createSegmentRingOption(equipmentStatus.value.onlineRate));
 </script>
 
 <template>
