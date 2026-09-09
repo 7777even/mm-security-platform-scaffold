@@ -1,9 +1,9 @@
 import { ref } from 'vue';
 import { request } from '@/services/http';
 
-// 安全防恐门禁事件 store（B3 脚手架阶段 in-memory mock 打底；后端契约就位后整体可废弃）。
-// 后端契约（/security/events 端点、事件 CRUD）标 #TODO-确认；dev 缺 VITE_API_BASE 时以内置 fixture 兜底。
-// 消费方：src/views/security-anti-terror/records.vue。
+// 安全防恐门禁事件 store（B3 脚手架阶段 in-memory mock 打底；后端 /security/events 就绪后由真实接口驱动）。
+// dev 缺 VITE_API_BASE 时以内置 fixture 兜底；有 VITE_API_BASE 时走 /security/events 真实联调，失败回落 fixture。
+// 消费方：src/screen/components/panels/security/EntryCaptureListPanel.vue（经 useEntryCaptureListView 映射为抓拍记录形状）。
 export type AccessDirection = '进' | '出';
 export type AccessLevel = 1 | 2 | 3;
 

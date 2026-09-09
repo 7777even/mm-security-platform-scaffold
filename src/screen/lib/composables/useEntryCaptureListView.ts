@@ -1,9 +1,11 @@
 import { computed, ref, watch } from 'vue';
 import {
   ENTRY_CAPTURE_PAGE_SIZE,
-  entryCaptureItems,
+  entryCaptureItems as entryCaptureMockItems,
+  type EntryCaptureItem,
   type EntryCaptureMode,
 } from '../data/entryCaptureMock';
+import { fetchSecurityEvents, type SecurityEvent } from '@/services/securityEventStore';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
@@ -14,12 +16,42 @@ export const entryCaptureCurrentPage = ref(1);
 export const entryCaptureKeyword = ref('');
 export const entryCaptureTimeRange = ref('');
 
+// 真实数据优先：有 VITE_API_BASE 时从 /security/events 拉取门禁事件并映射为抓拍记录形状；
+// 否则回落 entryCaptureMock fixture。暴露式降级：拉取失败同样回落 fixture，绝不静默空数据。
+const entryCaptureItems = ref<EntryCaptureItem[]>(entryCaptureMockItems.map((e) => ({ ...e })));
+
+function toEntryCaptureItem(e: SecurityEvent, index: number): EntryCaptureItem {
+  const hasVehicle = !!e.vehicle && e.vehicle.trim().length > 0;
+  return {
+    id: index + 1,
+    mode: hasVehicle ? 'vehicle' : 'person',
+    title: hasVehicle ? e.vehicle : e.person,
+    gate: e.channel,
+    direction: e.direction === '进' ? '入厂' : '出厂',
+    time: e.ts,
+    statusTag: `权限L${e.level}`,
+  };
+}
+
+async function loadEntryCapture() {
+  if (!import.meta.env.VITE_API_BASE) {
+    entryCaptureItems.value = entryCaptureMockItems.map((e) => ({ ...e }));
+    return;
+  }
+  try {
+    const events = await fetchSecurityEvents();
+    entryCaptureItems.value = Array.isArray(events) ? events.map(toEntryCaptureItem) : [];
+  } catch {
+    entryCaptureItems.value = entryCaptureMockItems.map((e) => ({ ...e }));
+  }
+}
+
 export const entryCaptureDrawerActive = computed(() => entryCaptureListOpen.value);
 
 export const entryCaptureFilteredItems = computed(() => {
   const keyword = entryCaptureKeyword.value.trim().toLowerCase();
   const timeRange = entryCaptureTimeRange.value.trim();
-  return filterByPlantArea(entryCaptureItems).filter((item) => {
+  return filterByPlantArea(entryCaptureItems.value).filter((item) => {
     if (item.mode !== entryCaptureMode.value) return false;
     if (keyword && !item.title.toLowerCase().includes(keyword)) return false;
     if (timeRange && !item.time.includes(timeRange)) return false;
@@ -52,6 +84,7 @@ export function openEntryCaptureList(mode: EntryCaptureMode) {
   entryCaptureKeyword.value = '';
   entryCaptureTimeRange.value = '';
   entryCaptureListOpen.value = true;
+  void loadEntryCapture();
 }
 
 export function closeEntryCaptureList() {

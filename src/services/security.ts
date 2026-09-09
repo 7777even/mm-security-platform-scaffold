@@ -494,12 +494,15 @@ export async function fetchBollards(): Promise<BollardItem[]> {
   }
 }
 
-export async function fetchVehicleSearch(): Promise<searchFixture.VehicleSearchResult[]> {
+export async function fetchVehicleSearch(
+  keyword?: string,
+): Promise<searchFixture.VehicleSearchResult[]> {
   if (!import.meta.env.VITE_API_BASE) return searchFixture.vehicleSearchResults;
   try {
     const data = await request<searchFixture.VehicleSearchResult[]>({
       url: '/security/search/vehicle',
       method: 'GET',
+      ...(keyword ? { params: { keyword } } : {}),
     });
     return Array.isArray(data) ? data : [];
   } catch {
@@ -508,12 +511,15 @@ export async function fetchVehicleSearch(): Promise<searchFixture.VehicleSearchR
   }
 }
 
-export async function fetchPersonSearch(): Promise<searchFixture.PersonSearchResult[]> {
+export async function fetchPersonSearch(
+  keyword?: string,
+): Promise<searchFixture.PersonSearchResult[]> {
   if (!import.meta.env.VITE_API_BASE) return searchFixture.personSearchResults;
   try {
     const data = await request<searchFixture.PersonSearchResult[]>({
       url: '/security/search/person',
       method: 'GET',
+      ...(keyword ? { params: { keyword } } : {}),
     });
     return Array.isArray(data) ? data : [];
   } catch {

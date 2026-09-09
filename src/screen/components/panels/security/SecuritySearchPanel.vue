@@ -2,7 +2,12 @@
 import { computed, ref, watch } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import SecuritySearchResultCard from './SecuritySearchResultCard.vue';
-import { personSearchResults, vehicleSearchResults } from '@/services/security';
+import {
+  fetchVehicleSearch,
+  fetchPersonSearch,
+  type PersonSearchResult,
+  type VehicleSearchResult,
+} from '@/services/security';
 import {
   closeSearchPanel,
   securitySearchPanelMode,
@@ -17,20 +22,46 @@ const plateKeyword = ref('');
 const nameKeyword = ref('');
 const timeStart = ref('');
 const timeEnd = ref('');
+const loading = ref(false);
+const fetchedVehicle = ref<VehicleSearchResult[]>([]);
+const fetchedPerson = ref<PersonSearchResult[]>([]);
 
 const isVehicle = computed(() => props.mode === 'vehicle');
 const title = computed(() => (isVehicle.value ? '车辆搜索' : '人员搜索'));
 
+// 真实后端检索：VITE_API_BASE 命中时走 /security/search/*（带 keyword），
+// 失败/未配置回落由 fetch* 内部处理（暴露式降级：空集合 + 告警，纯静态模式才回落 fixture）。
+async function loadResults() {
+  loading.value = true;
+  const keyword = isVehicle.value ? plateKeyword.value.trim() : nameKeyword.value.trim();
+  try {
+    if (isVehicle.value) {
+      fetchedVehicle.value = await fetchVehicleSearch(keyword || undefined);
+    } else {
+      fetchedPerson.value = await fetchPersonSearch(keyword || undefined);
+    }
+  } finally {
+    loading.value = false;
+  }
+}
+
+// 客户端二次收窄：在后端返回结果上按关键字/时间区间再过滤，保留即时输入体验。
 const vehicleResults = computed(() => {
   const q = plateKeyword.value.trim().toLowerCase();
-  if (!q) return vehicleSearchResults;
-  return vehicleSearchResults.filter((item) => item.plate.toLowerCase().includes(q));
+  let list = fetchedVehicle.value;
+  if (q) list = list.filter((item) => item.plate.toLowerCase().includes(q));
+  if (timeStart.value) list = list.filter((item) => (item.time ?? '') >= timeStart.value);
+  if (timeEnd.value) list = list.filter((item) => (item.time ?? '') <= timeEnd.value);
+  return list;
 });
 
 const personResults = computed(() => {
   const q = nameKeyword.value.trim();
-  if (!q) return personSearchResults;
-  return personSearchResults.filter((item) => item.name.includes(q));
+  let list = fetchedPerson.value;
+  if (q) list = list.filter((item) => item.name.includes(q));
+  if (timeStart.value) list = list.filter((item) => (item.date ?? '') >= timeStart.value);
+  if (timeEnd.value) list = list.filter((item) => (item.date ?? '') <= timeEnd.value);
+  return list;
 });
 
 const resultCount = computed(() =>
@@ -45,11 +76,13 @@ watch(
     nameKeyword.value = '';
     timeStart.value = '';
     timeEnd.value = '';
+    void loadResults();
   },
+  { immediate: true },
 );
 
 function handleSearch() {
-  // 占位：后续对接检索接口
+  void loadResults();
 }
 
 function handleReset() {
@@ -57,6 +90,7 @@ function handleReset() {
   nameKeyword.value = '';
   timeStart.value = '';
   timeEnd.value = '';
+  void loadResults();
 }
 
 function onUploadClick() {
