@@ -1,5 +1,22 @@
 <script setup lang="ts">
-import { toastMessage } from '../../lib/composables/useToast';
+import { onMounted, onUnmounted } from 'vue';
+import { toastMessage, showToast } from '../../lib/composables/useToast';
+import { subscribeGlobalToast } from '@/services/globalToast';
+
+// 全局错误兜底展示：http 拦截器推送的全局 toast（globalToast）经此转发到
+// 大屏既有 toast 渲染通道；组件卸载时退订，防止监听器泄漏。
+let unsubscribe: (() => void) | null = null;
+
+onMounted(() => {
+  unsubscribe = subscribeGlobalToast((toast) => {
+    showToast(toast.message);
+  });
+});
+
+onUnmounted(() => {
+  unsubscribe?.();
+  unsubscribe = null;
+});
 </script>
 
 <template>

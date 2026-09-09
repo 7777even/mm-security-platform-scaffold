@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { startRealtime, stopRealtime } from './realtime';
+import { startRealtime, stopRealtime, subscribeAlarmPush } from './realtime';
 import { useAlarmStore } from '@/stores/alarm';
 
 // 复刻 ws.spec 的 FakeSocket，用于驱动 onmessage（node 环境无全局 WebSocket）
@@ -83,5 +83,54 @@ describe('realtime 监测预警中枢', () => {
     startWithFake();
     startRealtime({ url: 'ws://t', createSocket: (u) => new FakeSocket(u) });
     expect(FakeSocket.instances).toHaveLength(1);
+  });
+
+  it('subscribeAlarmPush 订阅者收到 alarm.push 增量（与 store 入库并行）', () => {
+    const received: string[] = [];
+    const unsubscribe = subscribeAlarmPush((alarm) => received.push(alarm.alarmId));
+    const s = startWithFake();
+    s.onmessage?.({ data: JSON.stringify({ topic: 'alarm.push', payload: makeAlarmPayload() }) });
+    expect(received).toEqual(['a1']);
+    expect(useAlarmStore().alarms).toHaveLength(1); // store 入库不受订阅影响
+    unsubscribe();
+  });
+
+  it('无活跃 Pinia 时订阅者仍可收到推送', () => {
+    const received: string[] = [];
+    const unsubscribe = subscribeAlarmPush((alarm) => received.push(alarm.alarmId));
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const store = useAlarmStore(); // 先取引用，再模拟子应用早期无活跃 Pinia
+    setActivePinia(undefined as never);
+    const s = startWithFake();
+    s.onmessage?.({ data: JSON.stringify({ topic: 'alarm.push', payload: makeAlarmPayload() }) });
+    expect(received).toEqual(['a1']);
+    expect(store.alarms).toHaveLength(0);
+    warnSpy.mockRestore();
+    unsubscribe();
+  });
+
+  it('非法 alarm 负载不触发订阅者', () => {
+    const listener = vi.fn();
+    subscribeAlarmPush(listener);
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const s = startWithFake();
+    s.onmessage?.({ data: JSON.stringify({ topic: 'alarm.push', payload: { foo: 1 } }) });
+    expect(listener).not.toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  it('订阅者抛异常不影响其他订阅者与 store 入库', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const received: string[] = [];
+    subscribeAlarmPush(() => {
+      throw new Error('boom');
+    });
+    const unsubscribe = subscribeAlarmPush((alarm) => received.push(alarm.alarmId));
+    const s = startWithFake();
+    s.onmessage?.({ data: JSON.stringify({ topic: 'alarm.push', payload: makeAlarmPayload() }) });
+    expect(received).toEqual(['a1']);
+    expect(useAlarmStore().alarms).toHaveLength(1);
+    warnSpy.mockRestore();
+    unsubscribe();
   });
 });

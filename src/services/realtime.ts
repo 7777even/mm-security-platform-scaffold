@@ -25,10 +25,20 @@ function isAlarmItem(v: unknown): v is AlarmItem {
 // 消息分发：仅处理 alarm.push，非法负载容错忽略（不抛异常，与 ws 解析策略一致）。
 function dispatch(msg: { topic: string; payload: unknown }): void {
   if (msg.topic !== ALARM_TOPIC) return;
-  if (!isAlarmItem(msg.payload)) {
+  const alarm = msg.payload;
+  if (!isAlarmItem(alarm)) {
     logger.warn('[realtime] 收到非法 alarm 负载，已忽略');
     return;
   }
+  // 实时告警发布-订阅：store 入库之外，任何消费方（如大屏告警流 useScreenAlarmFeed）
+  // 均可订阅增量推送。与 store 解耦——无 Pinia（子应用早期）也不影响订阅者。
+  alarmPushListeners.forEach((listener) => {
+    try {
+      listener(alarm);
+    } catch (err) {
+      logger.warn('[realtime] alarm.push 订阅者处理失败，已跳过', err);
+    }
+  });
   // 子应用独立 Pinia：无活跃实例时仅建立 WS 连接（不入库），避免崩溃；
   // 子应用需在入口创建 Pinia 后才能消费实时告警。
   const pinia = getActivePinia();
@@ -38,7 +48,19 @@ function dispatch(msg: { topic: string; payload: unknown }): void {
     );
     return;
   }
-  useAlarmStore(pinia).ingestAlarm(msg.payload);
+  useAlarmStore(pinia).ingestAlarm(alarm);
+}
+
+type AlarmPushListener = (alarm: AlarmItem) => void;
+
+const alarmPushListeners = new Set<AlarmPushListener>();
+
+/** 订阅 WS 实时告警推送（alarm.push 增量）；返回退订函数（组件 onUnmounted 时调用防泄漏）。 */
+export function subscribeAlarmPush(listener: AlarmPushListener): () => void {
+  alarmPushListeners.add(listener);
+  return () => {
+    alarmPushListeners.delete(listener);
+  };
 }
 
 export interface RealtimeHubOptions {
