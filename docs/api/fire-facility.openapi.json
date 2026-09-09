@@ -1,0 +1,608 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "消防设施分项监测接口",
+    "description": "覆盖消防设施分项监测大屏的监测概览、台账、故障、报警、维保工单五类数据，取代前端硬编码的 fireFacilityMonitoringMock 业务数据（地图撒点、扫描动画等纯前端几何仍留在 mock）。",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "paths": {
+    "/fire-facility/monitors": {
+      "get": {
+        "summary": "消防设施监测概览",
+        "description": "按设施类型返回各分项监测概览：在线/离线/故障计数、状态基调与参数明细（如 CPU/内存/温度），以及最近上报时间。",
+        "tags": ["fire-facility"],
+        "parameters": [
+          {
+            "name": "facilityType",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "设施类型筛选（可空字符串表示全部）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "消防设施监测概览数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FireFacilityMonitorResult" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "typeOptions": ["消防水泵", "火灾报警控制器", "自动喷淋系统"],
+                    "items": [
+                      {
+                        "key": "pump-01",
+                        "facilityType": "消防水泵",
+                        "total": 12,
+                        "online": 10,
+                        "offline": 1,
+                        "fault": 1,
+                        "status": "fault",
+                        "params": [
+                          { "label": "CPU", "value": "45%", "tone": "green" },
+                          { "label": "内存", "value": "60%", "tone": "green" },
+                          { "label": "温度", "value": "78℃", "tone": "red" }
+                        ],
+                        "lastReportTime": "2026-03-17 10:22:23"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fire-facility/ledger": {
+      "get": {
+        "summary": "消防设施台账",
+        "description": "按设施类型返回设施台账明细：编码、名称、位置、关联设备、维护人联系方式及历史维保记录。",
+        "tags": ["fire-facility"],
+        "parameters": [
+          {
+            "name": "facilityType",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "设施类型筛选（可空字符串表示全部）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "消防设施台账数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FireFacilityLedgerResult" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "typeOptions": ["消防水泵", "火灾报警控制器"],
+                    "items": [
+                      {
+                        "facilityCode": "FP-001",
+                        "facilityName": "1#消防水泵",
+                        "facilityType": "消防水泵",
+                        "location": "炼油一部泵房",
+                        "device": "XBD8/30-150L",
+                        "maintainerName": "张伟",
+                        "maintainerPhone": "13800000001",
+                        "enabled": true,
+                        "maintenanceRecords": [
+                          {
+                            "date": "2026-02-20",
+                            "content": "更换密封圈",
+                            "reportFile": "https://example.com/report/1.pdf"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fire-facility/faults": {
+      "get": {
+        "summary": "消防设施故障列表",
+        "description": "按故障等级与故障状态筛选返回故障明细，含故障现象、原因、处置进展与完整时间线。",
+        "tags": ["fire-facility"],
+        "parameters": [
+          {
+            "name": "faultLevel",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "故障等级筛选（可空字符串表示全部）"
+          },
+          {
+            "name": "faultStatus",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "故障状态筛选（可空字符串表示全部）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "消防设施故障数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FireFacilityFaultResult" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "items": [
+                      {
+                        "id": 1001,
+                        "faultCode": "F-20260317-001",
+                        "facilityCode": "FP-001",
+                        "facilityName": "1#消防水泵",
+                        "facilityType": "消防水泵",
+                        "faultType": "机械故障",
+                        "faultLevel": "严重",
+                        "discoverTime": "2026-03-17 09:30:00",
+                        "discoverMethod": "自动巡检",
+                        "phenomenon": "泵体异响、压力不足",
+                        "cause": "轴承磨损",
+                        "status": "处理中",
+                        "workOrderNo": "WO-20260317-001",
+                        "repairPerson": "李强",
+                        "estimatedFinish": "2026-03-18 18:00:00",
+                        "actualFinish": null,
+                        "repairMeasures": "更换轴承并校准",
+                        "acceptancePerson": null,
+                        "acceptanceResult": null,
+                        "timeline": [
+                          {
+                            "time": "2026-03-17 09:30:00",
+                            "operator": "系统",
+                            "action": "发现故障",
+                            "detail": "自动巡检触发压力告警"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fire-facility/alarms": {
+      "get": {
+        "summary": "消防设施报警列表",
+        "description": "按报警等级与处理状态筛选返回报警明细，含报警来源、类别、内容、时间与关联故障单。",
+        "tags": ["fire-facility"],
+        "parameters": [
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "报警等级筛选（可空字符串表示全部）"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "报警处理状态筛选（可空字符串表示全部）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "消防设施报警数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FireFacilityAlarmResult" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "items": [
+                      {
+                        "id": 2001,
+                        "source": "火灾报警控制器",
+                        "facilityType": "火灾报警控制器",
+                        "level": "一级",
+                        "category": "烟感报警",
+                        "content": "3#装置区烟感触发",
+                        "time": "2026-03-17 08:15:00",
+                        "status": "已处理",
+                        "faultCode": "F-20260317-002"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fire-facility/work-orders": {
+      "get": {
+        "summary": "消防设施维保工单列表",
+        "description": "按工单状态筛选返回维保工单明细，含关联故障、派工、处置进展与完整时间线。",
+        "tags": ["fire-facility"],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "工单状态筛选（可空字符串表示全部）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "消防设施维保工单数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FireFacilityWorkOrderResult" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "items": [
+                      {
+                        "id": 3001,
+                        "workOrderNo": "WO-20260317-001",
+                        "faultCode": "F-20260317-001",
+                        "facilityCode": "FP-001",
+                        "facilityName": "1#消防水泵",
+                        "facilityType": "消防水泵",
+                        "faultLevel": "严重",
+                        "description": "泵体异响、压力不足",
+                        "status": "处理中",
+                        "dispatchTime": "2026-03-17 09:40:00",
+                        "repairPerson": "李强",
+                        "estimatedFinish": "2026-03-18 18:00:00",
+                        "actualFinish": null,
+                        "timeline": [
+                          {
+                            "time": "2026-03-17 09:40:00",
+                            "operator": "调度员",
+                            "action": "派单",
+                            "detail": "派工至李强"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FireFacilityMonitorParam": {
+        "type": "object",
+        "description": "监测参数明细项",
+        "properties": {
+          "label": { "type": "string", "description": "参数名称", "example": "CPU" },
+          "value": { "type": "string", "description": "参数取值", "example": "45%" },
+          "tone": {
+            "type": "string",
+            "description": "着色基调：green/blue/red/grey",
+            "example": "green"
+          }
+        }
+      },
+      "FireFacilityMonitorSummary": {
+        "type": "object",
+        "description": "单个设施类型的监测概览",
+        "properties": {
+          "key": { "type": "string", "description": "分项唯一键", "example": "pump-01" },
+          "facilityType": { "type": "string", "description": "设施类型", "example": "消防水泵" },
+          "total": { "type": "integer", "description": "设施总数", "example": 12 },
+          "online": { "type": "integer", "description": "在线数", "example": 10 },
+          "offline": { "type": "integer", "description": "离线数", "example": 1 },
+          "fault": { "type": "integer", "description": "故障数", "example": 1 },
+          "status": {
+            "type": "string",
+            "description": "状态基调：normal/online/offline/fault",
+            "example": "fault"
+          },
+          "params": {
+            "type": "array",
+            "description": "参数明细列表",
+            "items": { "$ref": "#/components/schemas/FireFacilityMonitorParam" }
+          },
+          "lastReportTime": {
+            "type": "string",
+            "description": "最近上报时间",
+            "example": "2026-03-17 10:22:23"
+          }
+        }
+      },
+      "FireFacilityMonitorResult": {
+        "type": "object",
+        "description": "消防设施监测概览聚合",
+        "properties": {
+          "typeOptions": {
+            "type": "array",
+            "description": "设施类型下拉选项",
+            "items": { "type": "string" }
+          },
+          "items": {
+            "type": "array",
+            "description": "各设施类型监测概览列表",
+            "items": { "$ref": "#/components/schemas/FireFacilityMonitorSummary" }
+          }
+        }
+      },
+      "FireFacilityMaintenanceRecord": {
+        "type": "object",
+        "description": "设施维保记录项",
+        "properties": {
+          "date": { "type": "string", "description": "维保日期", "example": "2026-02-20" },
+          "content": { "type": "string", "description": "维保内容", "example": "更换密封圈" },
+          "reportFile": {
+            "type": ["string", "null"],
+            "description": "维保报告文件地址",
+            "example": "https://example.com/report/1.pdf"
+          }
+        }
+      },
+      "FireFacilityLedgerItem": {
+        "type": "object",
+        "description": "设施台账明细项",
+        "properties": {
+          "facilityCode": { "type": "string", "description": "设施编码", "example": "FP-001" },
+          "facilityName": { "type": "string", "description": "设施名称", "example": "1#消防水泵" },
+          "facilityType": { "type": "string", "description": "设施类型", "example": "消防水泵" },
+          "location": { "type": "string", "description": "安装位置", "example": "炼油一部泵房" },
+          "device": { "type": "string", "description": "关联设备型号", "example": "XBD8/30-150L" },
+          "maintainerName": { "type": "string", "description": "维护人姓名", "example": "张伟" },
+          "maintainerPhone": {
+            "type": "string",
+            "description": "维护人电话",
+            "example": "13800000001"
+          },
+          "enabled": { "type": "boolean", "description": "是否启用", "example": true },
+          "maintenanceRecords": {
+            "type": "array",
+            "description": "历史维保记录",
+            "items": { "$ref": "#/components/schemas/FireFacilityMaintenanceRecord" }
+          }
+        }
+      },
+      "FireFacilityLedgerResult": {
+        "type": "object",
+        "description": "消防设施台账聚合",
+        "properties": {
+          "typeOptions": {
+            "type": "array",
+            "description": "设施类型下拉选项",
+            "items": { "type": "string" }
+          },
+          "items": {
+            "type": "array",
+            "description": "设施台账明细列表",
+            "items": { "$ref": "#/components/schemas/FireFacilityLedgerItem" }
+          }
+        }
+      },
+      "FireFacilityFaultTimelineItem": {
+        "type": "object",
+        "description": "故障/工单时间线条目",
+        "properties": {
+          "time": { "type": "string", "description": "发生时间", "example": "2026-03-17 09:30:00" },
+          "operator": { "type": "string", "description": "操作人/系统", "example": "系统" },
+          "action": { "type": "string", "description": "操作动作", "example": "发现故障" },
+          "detail": {
+            "type": "string",
+            "description": "操作详情",
+            "example": "自动巡检触发压力告警"
+          }
+        }
+      },
+      "FireFacilityFaultItem": {
+        "type": "object",
+        "description": "设施故障明细项",
+        "properties": {
+          "id": { "type": "integer", "description": "故障记录 id", "example": 1001 },
+          "faultCode": { "type": "string", "description": "故障单号", "example": "F-20260317-001" },
+          "facilityCode": { "type": "string", "description": "设施编码", "example": "FP-001" },
+          "facilityName": { "type": "string", "description": "设施名称", "example": "1#消防水泵" },
+          "facilityType": { "type": "string", "description": "设施类型", "example": "消防水泵" },
+          "faultType": { "type": "string", "description": "故障类型", "example": "机械故障" },
+          "faultLevel": { "type": "string", "description": "故障等级", "example": "严重" },
+          "discoverTime": {
+            "type": "string",
+            "description": "发现时间",
+            "example": "2026-03-17 09:30:00"
+          },
+          "discoverMethod": { "type": "string", "description": "发现方式", "example": "自动巡检" },
+          "phenomenon": {
+            "type": "string",
+            "description": "故障现象",
+            "example": "泵体异响、压力不足"
+          },
+          "cause": { "type": "string", "description": "故障原因", "example": "轴承磨损" },
+          "status": { "type": "string", "description": "故障状态", "example": "处理中" },
+          "workOrderNo": {
+            "type": ["string", "null"],
+            "description": "关联工单号",
+            "example": "WO-20260317-001"
+          },
+          "repairPerson": {
+            "type": ["string", "null"],
+            "description": "维修人",
+            "example": "李强"
+          },
+          "estimatedFinish": {
+            "type": ["string", "null"],
+            "description": "预计完成时间",
+            "example": "2026-03-18 18:00:00"
+          },
+          "actualFinish": {
+            "type": ["string", "null"],
+            "description": "实际完成时间",
+            "example": null
+          },
+          "repairMeasures": {
+            "type": ["string", "null"],
+            "description": "维修措施",
+            "example": "更换轴承并校准"
+          },
+          "acceptancePerson": {
+            "type": ["string", "null"],
+            "description": "验收人",
+            "example": null
+          },
+          "acceptanceResult": {
+            "type": ["string", "null"],
+            "description": "验收结果",
+            "example": null
+          },
+          "timeline": {
+            "type": "array",
+            "description": "故障处置时间线",
+            "items": { "$ref": "#/components/schemas/FireFacilityFaultTimelineItem" }
+          }
+        }
+      },
+      "FireFacilityFaultResult": {
+        "type": "object",
+        "description": "消防设施故障聚合",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "故障明细列表",
+            "items": { "$ref": "#/components/schemas/FireFacilityFaultItem" }
+          }
+        }
+      },
+      "FireFacilityAlarmItem": {
+        "type": "object",
+        "description": "设施报警明细项",
+        "properties": {
+          "id": { "type": "integer", "description": "报警记录 id", "example": 2001 },
+          "source": { "type": "string", "description": "报警来源", "example": "火灾报警控制器" },
+          "facilityType": {
+            "type": "string",
+            "description": "设施类型",
+            "example": "火灾报警控制器"
+          },
+          "level": { "type": "string", "description": "报警等级", "example": "一级" },
+          "category": { "type": "string", "description": "报警类别", "example": "烟感报警" },
+          "content": { "type": "string", "description": "报警内容", "example": "3#装置区烟感触发" },
+          "time": { "type": "string", "description": "报警时间", "example": "2026-03-17 08:15:00" },
+          "status": { "type": "string", "description": "处理状态", "example": "已处理" },
+          "faultCode": {
+            "type": ["string", "null"],
+            "description": "关联故障单号",
+            "example": "F-20260317-002"
+          }
+        }
+      },
+      "FireFacilityAlarmResult": {
+        "type": "object",
+        "description": "消防设施报警聚合",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "报警明细列表",
+            "items": { "$ref": "#/components/schemas/FireFacilityAlarmItem" }
+          }
+        }
+      },
+      "FireFacilityWorkOrderItem": {
+        "type": "object",
+        "description": "维保工单明细项",
+        "properties": {
+          "id": { "type": "integer", "description": "工单记录 id", "example": 3001 },
+          "workOrderNo": {
+            "type": "string",
+            "description": "工单号",
+            "example": "WO-20260317-001"
+          },
+          "faultCode": {
+            "type": ["string", "null"],
+            "description": "关联故障单号",
+            "example": "F-20260317-001"
+          },
+          "facilityCode": {
+            "type": ["string", "null"],
+            "description": "设施编码",
+            "example": "FP-001"
+          },
+          "facilityName": {
+            "type": ["string", "null"],
+            "description": "设施名称",
+            "example": "1#消防水泵"
+          },
+          "facilityType": {
+            "type": ["string", "null"],
+            "description": "设施类型",
+            "example": "消防水泵"
+          },
+          "faultLevel": {
+            "type": ["string", "null"],
+            "description": "故障等级",
+            "example": "严重"
+          },
+          "description": {
+            "type": ["string", "null"],
+            "description": "工单描述",
+            "example": "泵体异响、压力不足"
+          },
+          "status": { "type": "string", "description": "工单状态", "example": "处理中" },
+          "dispatchTime": {
+            "type": ["string", "null"],
+            "description": "派工时间",
+            "example": "2026-03-17 09:40:00"
+          },
+          "repairPerson": {
+            "type": ["string", "null"],
+            "description": "维修人",
+            "example": "李强"
+          },
+          "estimatedFinish": {
+            "type": ["string", "null"],
+            "description": "预计完成时间",
+            "example": "2026-03-18 18:00:00"
+          },
+          "actualFinish": {
+            "type": ["string", "null"],
+            "description": "实际完成时间",
+            "example": null
+          },
+          "timeline": {
+            "type": "array",
+            "description": "工单处置时间线",
+            "items": { "$ref": "#/components/schemas/FireFacilityFaultTimelineItem" }
+          }
+        }
+      },
+      "FireFacilityWorkOrderResult": {
+        "type": "object",
+        "description": "消防设施维保工单聚合",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "维保工单明细列表",
+            "items": { "$ref": "#/components/schemas/FireFacilityWorkOrderItem" }
+          }
+        }
+      }
+    }
+  }
+}

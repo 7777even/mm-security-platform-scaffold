@@ -1,0 +1,134 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "消防态势地图聚合点位接口",
+    "description": "取代前端硬编码的 fireSituationMapMock 业务数据，由后端 /api/v1/fire-situation 真实端点提供消防态势地图聚合点位。",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "paths": {
+    "/fire-situation/markers": {
+      "get": {
+        "summary": "消防态势地图聚合点位",
+        "description": "返回消防态势地图所需的聚合点位（事件/处置/告警三类），由后端 /api/v1/fire-situation/markers 真实端点提供，取代前端 fireSituationMapMock 硬编码数据。",
+        "tags": ["fire-situation"],
+        "responses": {
+          "200": {
+            "description": "消防态势地图聚合点位数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FireSituationMarkerSummary" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "items": [
+                      {
+                        "id": "evt-1",
+                        "kind": "event",
+                        "title": "罐区泄漏处置",
+                        "subtitle": "炼油运行一部",
+                        "longitude": 110.391,
+                        "latitude": 21.615,
+                        "important": true,
+                        "iconUrl": "/icons/fire/event.png",
+                        "level": "LEVEL_1",
+                        "targetId": 1001
+                      },
+                      {
+                        "id": "op-2",
+                        "kind": "operation",
+                        "title": "消防演练",
+                        "subtitle": "消防支队",
+                        "longitude": 110.402,
+                        "latitude": 21.621,
+                        "important": false,
+                        "iconUrl": "/icons/fire/operation.png",
+                        "targetId": 1002
+                      },
+                      {
+                        "id": "al-3",
+                        "kind": "alarm",
+                        "title": "烟感告警",
+                        "subtitle": "化工区 B 区",
+                        "longitude": 110.388,
+                        "latitude": 21.609,
+                        "important": true,
+                        "iconUrl": "/icons/fire/alarm.png",
+                        "level": "LEVEL_2",
+                        "targetId": 1003
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FireSituationMarkerItem": {
+        "type": "object",
+        "description": "消防态势地图聚合点位",
+        "properties": {
+          "id": { "type": "string", "description": "点位唯一 id", "example": "evt-1" },
+          "kind": {
+            "type": "string",
+            "description": "点位类型：event 事件 / operation 处置 / alarm 告警",
+            "enum": ["event", "operation", "alarm"],
+            "example": "event"
+          },
+          "title": { "type": "string", "description": "点位主标题", "example": "罐区泄漏处置" },
+          "subtitle": {
+            "type": "string",
+            "description": "点位副标题（区域/单位）",
+            "example": "炼油运行一部"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "经度",
+            "example": 110.391
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "纬度",
+            "example": 21.615
+          },
+          "important": { "type": "boolean", "description": "是否重点点位", "example": true },
+          "iconUrl": {
+            "type": "string",
+            "description": "点位图标 URL",
+            "example": "/icons/fire/event.png"
+          },
+          "level": {
+            "type": "string",
+            "description": "告警/事件级别（可选）",
+            "example": "LEVEL_1"
+          },
+          "targetId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "关联业务对象 id",
+            "example": 1001
+          }
+        }
+      },
+      "FireSituationMarkerSummary": {
+        "type": "object",
+        "description": "消防态势地图聚合点位集合",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "聚合点位列表",
+            "items": { "$ref": "#/components/schemas/FireSituationMarkerItem" }
+          }
+        }
+      }
+    }
+  }
+}

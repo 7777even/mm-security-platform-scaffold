@@ -1,0 +1,200 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "天气观测/预报接口",
+    "description": "取代前端硬编码的 weatherMock 业务数据。覆盖天气监测面板的实时观测、逐时预报与逐日预报。后端基址 RequestMapping /api/v1/weather。",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "paths": {
+    "/weather/overview": {
+      "get": {
+        "summary": "天气观测与预报聚合",
+        "description": "一次返回实时天气观测、逐时预报与逐日预报，供天气监测面板展示。",
+        "tags": ["weather"],
+        "responses": {
+          "200": {
+            "description": "天气观测与预报聚合数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WeatherOverview" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "current": {
+                      "temperature": 28.5,
+                      "condition": "多云",
+                      "airQuality": 45,
+                      "airQualityLevel": "优",
+                      "windDirection": "东南风",
+                      "windSpeed": "3.2",
+                      "windLevel": "2级",
+                      "humidity": "68%",
+                      "pressure": "1008 hPa",
+                      "visibility": "12 km",
+                      "rainfall": "0.0 mm",
+                      "updatedAt": "2026-03-17 10:30:00"
+                    },
+                    "hourly": [
+                      {
+                        "time": "11:00",
+                        "rain": 0,
+                        "wind": 3,
+                        "temperature": 29,
+                        "pressure": 1008,
+                        "humidity": 66
+                      }
+                    ],
+                    "daily": [
+                      {
+                        "day": "周一",
+                        "date": "2026-03-17",
+                        "condition": "多云转晴",
+                        "icon": "partly-cloudy",
+                        "high": 31,
+                        "low": 22,
+                        "wind": "东南风3级",
+                        "humidity": 65,
+                        "rain": 10
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "WeatherOverview": {
+        "type": "object",
+        "description": "天气观测与预报聚合",
+        "properties": {
+          "current": { "$ref": "#/components/schemas/CurrentWeather" },
+          "hourly": {
+            "type": "array",
+            "description": "逐时天气预报",
+            "items": { "$ref": "#/components/schemas/HourlyWeatherItem" }
+          },
+          "daily": {
+            "type": "array",
+            "description": "逐日天气预报",
+            "items": { "$ref": "#/components/schemas/DailyWeatherItem" }
+          }
+        }
+      },
+      "CurrentWeather": {
+        "type": "object",
+        "description": "实时天气观测",
+        "properties": {
+          "temperature": {
+            "type": "number",
+            "format": "double",
+            "description": "实时温度（℃）",
+            "example": 28.5
+          },
+          "condition": { "type": "string", "description": "天气状况描述", "example": "多云" },
+          "airQuality": {
+            "type": "number",
+            "format": "integer",
+            "description": "空气质量指数（AQI）",
+            "example": 45
+          },
+          "airQualityLevel": { "type": "string", "description": "空气质量等级", "example": "优" },
+          "windDirection": { "type": "string", "description": "风向", "example": "东南风" },
+          "windSpeed": { "type": "string", "description": "风速（m/s）", "example": "3.2" },
+          "windLevel": { "type": "string", "description": "风力等级", "example": "2级" },
+          "humidity": { "type": "string", "description": "相对湿度", "example": "68%" },
+          "pressure": { "type": "string", "description": "气压", "example": "1008 hPa" },
+          "visibility": { "type": "string", "description": "能见度", "example": "12 km" },
+          "rainfall": { "type": "string", "description": "降水量", "example": "0.0 mm" },
+          "updatedAt": {
+            "type": "string",
+            "description": "观测更新时间",
+            "example": "2026-03-17 10:30:00"
+          }
+        }
+      },
+      "HourlyWeatherItem": {
+        "type": "object",
+        "description": "逐时天气项",
+        "properties": {
+          "time": { "type": "string", "description": "预报时刻（HH:mm）", "example": "11:00" },
+          "rain": {
+            "type": "number",
+            "format": "double",
+            "description": "降水概率（%）",
+            "example": 0
+          },
+          "wind": {
+            "type": "number",
+            "format": "double",
+            "description": "风速（m/s）",
+            "example": 3
+          },
+          "temperature": {
+            "type": "number",
+            "format": "double",
+            "description": "温度（℃）",
+            "example": 29
+          },
+          "pressure": {
+            "type": "number",
+            "format": "double",
+            "description": "气压（hPa）",
+            "example": 1008
+          },
+          "humidity": {
+            "type": "number",
+            "format": "double",
+            "description": "相对湿度（%）",
+            "example": 66
+          }
+        }
+      },
+      "DailyWeatherItem": {
+        "type": "object",
+        "description": "逐日天气项",
+        "properties": {
+          "day": { "type": "string", "description": "星期（周一~周日）", "example": "周一" },
+          "date": {
+            "type": "string",
+            "description": "日期（YYYY-MM-DD）",
+            "example": "2026-03-17"
+          },
+          "condition": { "type": "string", "description": "天气状况描述", "example": "多云转晴" },
+          "icon": { "type": "string", "description": "天气图标标识", "example": "partly-cloudy" },
+          "high": {
+            "type": "number",
+            "format": "integer",
+            "description": "最高温（℃）",
+            "example": 31
+          },
+          "low": {
+            "type": "number",
+            "format": "integer",
+            "description": "最低温（℃）",
+            "example": 22
+          },
+          "wind": { "type": "string", "description": "风力描述", "example": "东南风3级" },
+          "humidity": {
+            "type": "number",
+            "format": "double",
+            "description": "相对湿度（%）",
+            "example": 65
+          },
+          "rain": {
+            "type": "number",
+            "format": "double",
+            "description": "降水概率（%）",
+            "example": 10
+          }
+        }
+      }
+    }
+  }
+}

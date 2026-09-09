@@ -1,0 +1,126 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "安防黑名单接口",
+    "description": "取代前端硬编码的 blacklistMock 业务数据，由后端 /api/v1/security 真实端点提供安防黑名单（车辆/人员）聚合数据。",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "paths": {
+    "/security/blacklist": {
+      "get": {
+        "summary": "安防黑名单聚合",
+        "description": "返回安防黑名单的车辆列表与人员列表，由后端 /api/v1/security/blacklist 真实端点提供，取代前端 blacklistMock 硬编码数据。",
+        "tags": ["security"],
+        "responses": {
+          "200": {
+            "description": "安防黑名单聚合数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BlacklistSummary" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "vehicles": [
+                      {
+                        "id": 1,
+                        "plate": "粤KAA543",
+                        "reason": "未授权闯入禁区",
+                        "time": "2026-03-17 10:22:23",
+                        "status": "ACTIVE"
+                      }
+                    ],
+                    "persons": [
+                      {
+                        "id": 9,
+                        "name": "陈志强",
+                        "idCard": "4409**********1234",
+                        "reason": "冒用他人证件",
+                        "time": "2026-03-17 09:11:08",
+                        "status": "ACTIVE"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BlacklistVehicleItem": {
+        "type": "object",
+        "description": "黑名单车辆项",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "黑名单记录 id",
+            "example": 1
+          },
+          "plate": { "type": "string", "description": "车牌号", "example": "粤KAA543" },
+          "reason": {
+            "type": "string",
+            "description": "列入黑名单原因",
+            "example": "未授权闯入禁区"
+          },
+          "time": { "type": "string", "description": "列入时间", "example": "2026-03-17 10:22:23" },
+          "status": {
+            "type": "string",
+            "description": "状态：ACTIVE 生效 / INACTIVE 失效",
+            "example": "ACTIVE"
+          }
+        }
+      },
+      "BlacklistPersonItem": {
+        "type": "object",
+        "description": "黑名单人员项",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "黑名单记录 id",
+            "example": 9
+          },
+          "name": { "type": "string", "description": "姓名", "example": "陈志强" },
+          "idCard": {
+            "type": "string",
+            "description": "身份证号（脱敏）",
+            "example": "4409**********1234"
+          },
+          "reason": {
+            "type": "string",
+            "description": "列入黑名单原因",
+            "example": "冒用他人证件"
+          },
+          "time": { "type": "string", "description": "列入时间", "example": "2026-03-17 09:11:08" },
+          "status": {
+            "type": "string",
+            "description": "状态：ACTIVE 生效 / INACTIVE 失效",
+            "example": "ACTIVE"
+          }
+        }
+      },
+      "BlacklistSummary": {
+        "type": "object",
+        "description": "安防黑名单聚合",
+        "properties": {
+          "vehicles": {
+            "type": "array",
+            "description": "黑名单车辆列表",
+            "items": { "$ref": "#/components/schemas/BlacklistVehicleItem" }
+          },
+          "persons": {
+            "type": "array",
+            "description": "黑名单人员列表",
+            "items": { "$ref": "#/components/schemas/BlacklistPersonItem" }
+          }
+        }
+      }
+    }
+  }
+}

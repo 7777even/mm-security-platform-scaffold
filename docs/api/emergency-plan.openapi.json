@@ -1,0 +1,330 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "应急预案矩阵 / 预案切换接口（fm-accident-rescue 应急指挥）",
+    "description": "取代前端硬编码的 planMatrixMock / emergencyPlanSwitchMock 预案矩阵与预案切换数据。覆盖应急指挥大屏的预案选项（Tab、事故类型、设施、可选预案）与预案矩阵实例（主阶段/子阶段/风险事件/作战资源/行动卡片）。",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "paths": {
+    "/emergency-plans/options": {
+      "get": {
+        "summary": "应急预案选项聚合",
+        "description": "返回应急指挥大屏预案切换所需的全部选项：顶部 Tab、事故类型、设施列表，以及可选预案清单（含所属 Tab/名称/事故类型/设施）。用于预案切换面板的下拉与筛选。",
+        "tags": ["emergency-plan"],
+        "responses": {
+          "200": {
+            "description": "应急预案选项聚合数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmergencyPlanOptions" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "tabs": [
+                      { "key": "flood", "label": "防汛" },
+                      { "key": "fire", "label": "防火" }
+                    ],
+                    "accidentTypes": ["泄漏", "火灾", "爆炸"],
+                    "facilities": ["炼油一部", "乙烯装置"],
+                    "plans": [
+                      {
+                        "id": "plan-1001",
+                        "tab": "flood",
+                        "name": "炼油一部防汛预案",
+                        "accidentType": "泄漏",
+                        "facility": "炼油一部"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/emergency-plans/matrix": {
+      "get": {
+        "summary": "预案矩阵实例",
+        "description": "返回某个预案的完整矩阵实例：主阶段/子阶段进度、风险事件、作战资源与行动卡片。planId 可选；不传时返回默认（首个）预案的矩阵，供应急指挥大屏首屏初始化。",
+        "tags": ["emergency-plan"],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "query",
+            "required": false,
+            "description": "预案 id；不传则返回默认（首个）预案矩阵",
+            "schema": { "type": "string", "example": "plan-1001" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "预案矩阵实例数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PlanInstance" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": "plan-1001",
+                    "title": "炼油一部防汛预案",
+                    "description": "针对炼油一部区域防汛应急响应的完整作战矩阵。",
+                    "majorPhases": [
+                      {
+                        "id": "mp-1",
+                        "name": "预警响应",
+                        "order": 1,
+                        "upgradeProcess": "水位超 1m 升级为Ⅱ级响应"
+                      }
+                    ],
+                    "subPhases": [
+                      {
+                        "id": "sp-1",
+                        "parentId": "mp-1",
+                        "name": "信息接报",
+                        "order": 1,
+                        "progress": 100
+                      }
+                    ],
+                    "riskEvents": [{ "id": "re-1", "subPhaseId": "sp-1", "name": "泵房进水" }],
+                    "resources": [
+                      {
+                        "id": "rs-1",
+                        "name": "排水抢险组",
+                        "expectedCount": "12",
+                        "actualCount": "10",
+                        "leaderName": "张伟",
+                        "contactPhone": "13800000000",
+                        "duties": "负责泵房排水与设备抢修",
+                        "lon": 110.351,
+                        "lat": 21.271
+                      }
+                    ],
+                    "actionCards": [
+                      {
+                        "id": "ac-1",
+                        "resourceId": "rs-1",
+                        "title": "启动排水泵",
+                        "content": "开启 3# 排水泵并确认出水",
+                        "description": "泵房积水排放作业",
+                        "startSubPhaseId": "sp-1",
+                        "endSubPhaseId": "sp-2",
+                        "riskEventId": "re-1",
+                        "status": "in-progress",
+                        "isGlobal": false
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EmergencyPlanTab": {
+        "type": "object",
+        "description": "预案 Tab 项",
+        "properties": {
+          "key": { "type": "string", "description": "Tab 唯一键", "example": "flood" },
+          "label": { "type": "string", "description": "Tab 展示名", "example": "防汛" }
+        }
+      },
+      "SelectableEmergencyPlan": {
+        "type": "object",
+        "description": "可选预案项",
+        "properties": {
+          "id": { "type": "string", "description": "预案 id", "example": "plan-1001" },
+          "tab": { "type": "string", "description": "所属 Tab 键", "example": "flood" },
+          "name": { "type": "string", "description": "预案名称", "example": "炼油一部防汛预案" },
+          "accidentType": { "type": "string", "description": "事故类型", "example": "泄漏" },
+          "facility": { "type": "string", "description": "关联设施", "example": "炼油一部" }
+        }
+      },
+      "EmergencyPlanOptions": {
+        "type": "object",
+        "description": "应急预案选项聚合",
+        "properties": {
+          "tabs": {
+            "type": "array",
+            "description": "顶部 Tab 列表",
+            "items": { "$ref": "#/components/schemas/EmergencyPlanTab" }
+          },
+          "accidentTypes": {
+            "type": "array",
+            "description": "事故类型列表",
+            "items": { "type": "string" }
+          },
+          "facilities": {
+            "type": "array",
+            "description": "设施列表",
+            "items": { "type": "string" }
+          },
+          "plans": {
+            "type": "array",
+            "description": "可选预案清单",
+            "items": { "$ref": "#/components/schemas/SelectableEmergencyPlan" }
+          }
+        }
+      },
+      "PlanMajorPhase": {
+        "type": "object",
+        "description": "预案主阶段",
+        "properties": {
+          "id": { "type": "string", "description": "主阶段 id", "example": "mp-1" },
+          "name": { "type": "string", "description": "主阶段名称", "example": "预警响应" },
+          "order": { "type": "integer", "description": "排序号", "example": 1 },
+          "upgradeProcess": {
+            "type": "string",
+            "description": "升级流程说明（可选）",
+            "example": "水位超 1m 升级为Ⅱ级响应"
+          }
+        }
+      },
+      "PlanSubPhase": {
+        "type": "object",
+        "description": "预案子阶段",
+        "properties": {
+          "id": { "type": "string", "description": "子阶段 id", "example": "sp-1" },
+          "parentId": { "type": "string", "description": "所属主阶段 id", "example": "mp-1" },
+          "name": { "type": "string", "description": "子阶段名称", "example": "信息接报" },
+          "order": { "type": "integer", "description": "排序号", "example": 1 },
+          "progress": {
+            "type": "integer",
+            "description": "完成进度（0-100，可选）",
+            "example": 100
+          }
+        }
+      },
+      "PlanRiskEvent": {
+        "type": "object",
+        "description": "预案风险事件",
+        "properties": {
+          "id": { "type": "string", "description": "风险事件 id", "example": "re-1" },
+          "subPhaseId": { "type": "string", "description": "关联子阶段 id", "example": "sp-1" },
+          "name": { "type": "string", "description": "风险事件名称", "example": "泵房进水" }
+        }
+      },
+      "PlanCombatResource": {
+        "type": "object",
+        "description": "作战资源（队伍/装备）",
+        "properties": {
+          "id": { "type": "string", "description": "资源 id", "example": "rs-1" },
+          "name": { "type": "string", "description": "资源名称", "example": "排水抢险组" },
+          "expectedCount": {
+            "type": "string",
+            "description": "应到数量（字符串，前端原样展示）",
+            "example": "12"
+          },
+          "actualCount": {
+            "type": "string",
+            "description": "实到数量（字符串，前端原样展示）",
+            "example": "10"
+          },
+          "leaderName": {
+            "type": "string",
+            "description": "负责人姓名（可选）",
+            "example": "张伟"
+          },
+          "contactPhone": {
+            "type": "string",
+            "description": "联系电话（可选）",
+            "example": "13800000000"
+          },
+          "duties": {
+            "type": "string",
+            "description": "职责说明",
+            "example": "负责泵房排水与设备抢修"
+          },
+          "lon": { "type": "number", "description": "经度（可选）", "example": 110.351 },
+          "lat": { "type": "number", "description": "纬度（可选）", "example": 21.271 }
+        }
+      },
+      "PlanActionCard": {
+        "type": "object",
+        "description": "行动卡片",
+        "properties": {
+          "id": { "type": "string", "description": "行动卡片 id", "example": "ac-1" },
+          "resourceId": { "type": "string", "description": "关联作战资源 id", "example": "rs-1" },
+          "title": { "type": "string", "description": "卡片标题", "example": "启动排水泵" },
+          "content": {
+            "type": "string",
+            "description": "卡片内容（可选）",
+            "example": "开启 3# 排水泵并确认出水"
+          },
+          "description": {
+            "type": "string",
+            "description": "卡片描述（可选）",
+            "example": "泵房积水排放作业"
+          },
+          "startSubPhaseId": {
+            "type": "string",
+            "description": "起始子阶段 id",
+            "example": "sp-1"
+          },
+          "endSubPhaseId": { "type": "string", "description": "结束子阶段 id", "example": "sp-2" },
+          "riskEventId": {
+            "type": "string",
+            "description": "关联风险事件 id（可选）",
+            "example": "re-1"
+          },
+          "status": {
+            "type": "string",
+            "description": "状态：pending 待执行 / in-progress 执行中 / completed 已完成",
+            "enum": ["pending", "in-progress", "completed"],
+            "example": "in-progress"
+          },
+          "isGlobal": {
+            "type": "boolean",
+            "description": "是否全局卡片（不绑定具体子阶段，可选）",
+            "example": false
+          }
+        }
+      },
+      "PlanInstance": {
+        "type": "object",
+        "description": "预案矩阵实例",
+        "properties": {
+          "id": { "type": "string", "description": "预案 id", "example": "plan-1001" },
+          "title": { "type": "string", "description": "预案标题", "example": "炼油一部防汛预案" },
+          "description": {
+            "type": "string",
+            "description": "预案描述",
+            "example": "针对炼油一部区域防汛应急响应的完整作战矩阵。"
+          },
+          "majorPhases": {
+            "type": "array",
+            "description": "主阶段列表",
+            "items": { "$ref": "#/components/schemas/PlanMajorPhase" }
+          },
+          "subPhases": {
+            "type": "array",
+            "description": "子阶段列表",
+            "items": { "$ref": "#/components/schemas/PlanSubPhase" }
+          },
+          "riskEvents": {
+            "type": "array",
+            "description": "风险事件列表",
+            "items": { "$ref": "#/components/schemas/PlanRiskEvent" }
+          },
+          "resources": {
+            "type": "array",
+            "description": "作战资源列表",
+            "items": { "$ref": "#/components/schemas/PlanCombatResource" }
+          },
+          "actionCards": {
+            "type": "array",
+            "description": "行动卡片列表",
+            "items": { "$ref": "#/components/schemas/PlanActionCard" }
+          }
+        }
+      }
+    }
+  }
+}

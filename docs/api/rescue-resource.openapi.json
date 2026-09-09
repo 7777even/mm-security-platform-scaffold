@@ -1,0 +1,920 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "应急救援资源台账接口（救援装备/人员/车辆/消防队伍）",
+    "description": "取代前端硬编码的 rescueEquipmentMock / rescuePersonnelMock / rescueVehicleMock / fireBrigadeMock 业务数据。覆盖救援装备台账、救援人员台账、救援车辆台账（含随车人员/随车装备/消耗品/出车汇总）与消防队伍台账（含下属车辆/人员/装备）。",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "paths": {
+    "/rescue-resources/equipment": {
+      "get": {
+        "summary": "救援装备台账列表",
+        "description": "按中队的名称模糊可选过滤，返回装备品类聚合（中队集合 + 套装总数 + 装备项明细）。",
+        "tags": ["rescue-resource"],
+        "parameters": [
+          {
+            "name": "squadron",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "中队名称（可选过滤）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "救援装备台账列表",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RescueEquipmentList" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "squadrons": ["炼油中队", "化工中队"],
+                    "totalSets": 128,
+                    "items": [
+                      {
+                        "id": 1,
+                        "name": "正压式空气呼吸器",
+                        "squadron": "炼油中队",
+                        "quantity": 6,
+                        "leaderName": "王强",
+                        "leaderPhone": "13800000001",
+                        "stockQuantity": 2,
+                        "model": "RHZKF6.8",
+                        "protectionType": "自给开路式",
+                        "filterCanister": "碳纤维气瓶",
+                        "maxContinuousUse": "60min",
+                        "storageLocation": "器材库A区",
+                        "purchaseBatch": "2023-01",
+                        "factoryValidityYears": "15年",
+                        "remainingValidity": "12年",
+                        "lastInspectionDate": "2025-10-01",
+                        "nextMandatoryMaintenanceDate": "2026-04-01",
+                        "equipmentStatus": "在用",
+                        "scrapWarning": "无",
+                        "issueRegistration": "无",
+                        "spareParts": "面罩1套"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rescue-resources/equipment/{id}": {
+      "get": {
+        "summary": "救援装备明细",
+        "description": "按装备 id 返回单条装备台账明细。",
+        "tags": ["rescue-resource"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "装备 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "救援装备明细",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RescueEquipmentItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "name": "正压式空气呼吸器",
+                    "squadron": "炼油中队",
+                    "quantity": 6,
+                    "leaderName": "王强",
+                    "leaderPhone": "13800000001",
+                    "stockQuantity": 2,
+                    "model": "RHZKF6.8",
+                    "protectionType": "自给开路式",
+                    "filterCanister": "碳纤维气瓶",
+                    "maxContinuousUse": "60min",
+                    "storageLocation": "器材库A区",
+                    "purchaseBatch": "2023-01",
+                    "factoryValidityYears": "15年",
+                    "remainingValidity": "12年",
+                    "lastInspectionDate": "2025-10-01",
+                    "nextMandatoryMaintenanceDate": "2026-04-01",
+                    "equipmentStatus": "在用",
+                    "scrapWarning": "无",
+                    "issueRegistration": "无",
+                    "spareParts": "面罩1套"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rescue-resources/personnel": {
+      "get": {
+        "summary": "救援人员台账列表",
+        "description": "按中队与角色可选过滤，返回人员聚合（中队集合 + 角色集合 + 人员总数 + 人员明细）。",
+        "tags": ["rescue-resource"],
+        "parameters": [
+          {
+            "name": "squadron",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "中队名称（可选过滤）"
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "角色（可选过滤）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "救援人员台账列表",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RescuePersonnelList" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "squadrons": ["炼油中队", "化工中队"],
+                    "roles": ["队长", "队员"],
+                    "totalCount": 42,
+                    "items": [{ "id": 1, "name": "王强", "squadron": "炼油中队", "role": "队长" }]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rescue-resources/personnel/{id}": {
+      "get": {
+        "summary": "救援人员明细",
+        "description": "按人员 id 返回单条救援人员台账明细。",
+        "tags": ["rescue-resource"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "人员 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "救援人员明细",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RescuePersonnelItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": { "id": 1, "name": "王强", "squadron": "炼油中队", "role": "队长" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rescue-resources/vehicles": {
+      "get": {
+        "summary": "救援车辆台账列表",
+        "description": "按中队与车辆类型可选过滤，返回车辆聚合（中队集合 + 类型集合 + 车辆明细）。",
+        "tags": ["rescue-resource"],
+        "parameters": [
+          {
+            "name": "squadron",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "中队名称（可选过滤）"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "车辆类型（可选过滤）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "救援车辆台账列表",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RescueVehicleList" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "squadrons": ["炼油中队", "化工中队"],
+                    "types": ["泡沫消防车", "水罐消防车"],
+                    "items": [
+                      {
+                        "id": 1,
+                        "plate": "粤K12345",
+                        "type": "泡沫消防车",
+                        "squadron": "炼油中队",
+                        "leaderName": "王强",
+                        "leaderPhone": "13800000001",
+                        "status": "执勤",
+                        "businessName": "应急消防",
+                        "vehicleTypeFull": "重型泡沫消防车",
+                        "parkingLocation": "消防站1号库",
+                        "chassisModel": "ZZ5207",
+                        "manufactureDate": "2021-05-12",
+                        "inspectionExpiry": "2026-05-12",
+                        "foamTankVolume": "3000L",
+                        "waterTankVolume": "8000L",
+                        "maxWaterFlow": "60L/s",
+                        "foamType": "A类泡沫",
+                        "lastMaintenanceDate": "2025-11-01",
+                        "nextMaintenanceDate": "2026-05-01",
+                        "totalMileage": "45000km",
+                        "faultRecord": "无",
+                        "inspectionStatus": "合格",
+                        "crew": [
+                          {
+                            "role": "驾驶员",
+                            "name": "李雷",
+                            "phone": "13800000002",
+                            "certificate": "B2",
+                            "dutyStatus": "在岗"
+                          }
+                        ],
+                        "onboardEquipment": [
+                          {
+                            "name": "水带",
+                            "quantity": "10",
+                            "model": "65mm",
+                            "nextCheckDate": "2026-06-01",
+                            "equipmentStatus": "在用",
+                            "storageLocation": "车厢"
+                          }
+                        ],
+                        "consumables": [{ "label": "泡沫液", "value": "200L" }],
+                        "dispatchSummary": [{ "label": "本月出动", "value": "3次" }]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rescue-resources/vehicles/{id}": {
+      "get": {
+        "summary": "救援车辆明细",
+        "description": "按车辆 id 返回单条救援车辆台账明细（含随车人员/随车装备/消耗品/出车汇总）。",
+        "tags": ["rescue-resource"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "车辆 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "救援车辆明细",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RescueVehicleItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "plate": "粤K12345",
+                    "type": "泡沫消防车",
+                    "squadron": "炼油中队",
+                    "leaderName": "王强",
+                    "leaderPhone": "13800000001",
+                    "status": "执勤",
+                    "businessName": "应急消防",
+                    "vehicleTypeFull": "重型泡沫消防车",
+                    "parkingLocation": "消防站1号库",
+                    "chassisModel": "ZZ5207",
+                    "manufactureDate": "2021-05-12",
+                    "inspectionExpiry": "2026-05-12",
+                    "foamTankVolume": "3000L",
+                    "waterTankVolume": "8000L",
+                    "maxWaterFlow": "60L/s",
+                    "foamType": "A类泡沫",
+                    "lastMaintenanceDate": "2025-11-01",
+                    "nextMaintenanceDate": "2026-05-01",
+                    "totalMileage": "45000km",
+                    "faultRecord": "无",
+                    "inspectionStatus": "合格",
+                    "crew": [],
+                    "onboardEquipment": [],
+                    "consumables": [],
+                    "dispatchSummary": []
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rescue-resources/brigades": {
+      "get": {
+        "summary": "消防队伍台账列表",
+        "description": "按区域可选过滤，返回消防队伍聚合（区域集合 + 队伍明细）。",
+        "tags": ["rescue-resource"],
+        "parameters": [
+          {
+            "name": "area",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "所属区域（可选过滤）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "消防队伍台账列表",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FireBrigadeList" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "areas": ["炼油区", "化工区"],
+                    "items": [
+                      {
+                        "id": 1,
+                        "name": "炼油消防中队",
+                        "area": "炼油区",
+                        "memberCount": 18,
+                        "leaderName": "王强",
+                        "leaderPhone": "13800000001",
+                        "location": "炼油区消防站",
+                        "longitude": 110.35,
+                        "latitude": 21.5,
+                        "description": "负责炼油区火灾扑救",
+                        "rescuePersonnel": 18,
+                        "rescueVehicles": 3,
+                        "vehicles": [
+                          {
+                            "id": 1,
+                            "plate": "粤K12345",
+                            "type": "泡沫消防车",
+                            "status": "执勤",
+                            "parkingLocation": "消防站1号库"
+                          }
+                        ],
+                        "personnel": [
+                          {
+                            "id": 1,
+                            "name": "王强",
+                            "role": "队长",
+                            "group": "一组",
+                            "phone": "13800000001",
+                            "dutyStatus": "在岗"
+                          }
+                        ],
+                        "equipment": [
+                          {
+                            "id": 1,
+                            "name": "空气呼吸器",
+                            "category": "防护",
+                            "count": 12,
+                            "unit": "套",
+                            "status": "在用",
+                            "storageLocation": "器材库"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rescue-resources/brigades/{id}": {
+      "get": {
+        "summary": "消防队伍明细",
+        "description": "按队伍 id 返回单条消防队伍台账明细（含下属车辆/人员/装备）。",
+        "tags": ["rescue-resource"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "队伍 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "消防队伍明细",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FireBrigadeTeam" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "name": "炼油消防中队",
+                    "area": "炼油区",
+                    "memberCount": 18,
+                    "leaderName": "王强",
+                    "leaderPhone": "13800000001",
+                    "location": "炼油区消防站",
+                    "longitude": 110.35,
+                    "latitude": 21.5,
+                    "description": "负责炼油区火灾扑救",
+                    "rescuePersonnel": 18,
+                    "rescueVehicles": 3,
+                    "vehicles": [],
+                    "personnel": [],
+                    "equipment": []
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RescueEquipmentList": {
+        "type": "object",
+        "description": "救援装备台账列表聚合",
+        "properties": {
+          "squadrons": {
+            "type": "array",
+            "description": "涉及的中队名称集合",
+            "items": { "type": "string", "description": "中队名称", "example": "炼油中队" }
+          },
+          "totalSets": { "type": "integer", "description": "装备套装总数", "example": 128 },
+          "items": {
+            "type": "array",
+            "description": "装备项明细列表",
+            "items": { "$ref": "#/components/schemas/RescueEquipmentItem" }
+          }
+        }
+      },
+      "RescueEquipmentItem": {
+        "type": "object",
+        "description": "救援装备台账项",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "装备 id", "example": 1 },
+          "name": { "type": "string", "description": "装备名称", "example": "正压式空气呼吸器" },
+          "squadron": { "type": "string", "description": "所属中队", "example": "炼油中队" },
+          "quantity": { "type": "integer", "description": "配置数量", "example": 6 },
+          "leaderName": {
+            "type": ["string", "null"],
+            "description": "装备负责人姓名",
+            "example": "王强"
+          },
+          "leaderPhone": {
+            "type": ["string", "null"],
+            "description": "装备负责人电话",
+            "example": "13800000001"
+          },
+          "stockQuantity": { "type": "integer", "description": "库存数量", "example": 2 },
+          "model": { "type": ["string", "null"], "description": "型号", "example": "RHZKF6.8" },
+          "protectionType": {
+            "type": ["string", "null"],
+            "description": "防护类型",
+            "example": "自给开路式"
+          },
+          "filterCanister": {
+            "type": ["string", "null"],
+            "description": "滤毒罐/气瓶类型",
+            "example": "碳纤维气瓶"
+          },
+          "maxContinuousUse": {
+            "type": ["string", "null"],
+            "description": "最大连续使用时间",
+            "example": "60min"
+          },
+          "storageLocation": {
+            "type": ["string", "null"],
+            "description": "存放位置",
+            "example": "器材库A区"
+          },
+          "purchaseBatch": {
+            "type": ["string", "null"],
+            "description": "采购批次",
+            "example": "2023-01"
+          },
+          "factoryValidityYears": {
+            "type": ["string", "null"],
+            "description": "出厂有效期年限",
+            "example": "15年"
+          },
+          "remainingValidity": {
+            "type": ["string", "null"],
+            "description": "剩余有效期",
+            "example": "12年"
+          },
+          "lastInspectionDate": {
+            "type": ["string", "null"],
+            "description": "上次检验日期",
+            "example": "2025-10-01"
+          },
+          "nextMandatoryMaintenanceDate": {
+            "type": ["string", "null"],
+            "description": "下次强制保养日期",
+            "example": "2026-04-01"
+          },
+          "equipmentStatus": {
+            "type": ["string", "null"],
+            "description": "装备状态",
+            "example": "在用"
+          },
+          "scrapWarning": {
+            "type": ["string", "null"],
+            "description": "报废预警",
+            "example": "无"
+          },
+          "issueRegistration": {
+            "type": ["string", "null"],
+            "description": "故障/出库登记",
+            "example": "无"
+          },
+          "spareParts": {
+            "type": ["string", "null"],
+            "description": "备品备件",
+            "example": "面罩1套"
+          }
+        }
+      },
+      "RescuePersonnelList": {
+        "type": "object",
+        "description": "救援人员台账列表聚合",
+        "properties": {
+          "squadrons": {
+            "type": "array",
+            "description": "涉及的中队名称集合",
+            "items": { "type": "string", "description": "中队名称", "example": "炼油中队" }
+          },
+          "roles": {
+            "type": "array",
+            "description": "涉及的角色集合",
+            "items": { "type": "string", "description": "角色名", "example": "队长" }
+          },
+          "totalCount": { "type": "integer", "description": "人员总数", "example": 42 },
+          "items": {
+            "type": "array",
+            "description": "人员明细列表",
+            "items": { "$ref": "#/components/schemas/RescuePersonnelItem" }
+          }
+        }
+      },
+      "RescuePersonnelItem": {
+        "type": "object",
+        "description": "救援人员台账项",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "人员 id", "example": 1 },
+          "name": { "type": "string", "description": "姓名", "example": "王强" },
+          "squadron": { "type": "string", "description": "所属中队", "example": "炼油中队" },
+          "role": { "type": "string", "description": "角色", "example": "队长" }
+        }
+      },
+      "RescueVehicleList": {
+        "type": "object",
+        "description": "救援车辆台账列表聚合",
+        "properties": {
+          "squadrons": {
+            "type": "array",
+            "description": "涉及的中队名称集合",
+            "items": { "type": "string", "description": "中队名称", "example": "炼油中队" }
+          },
+          "types": {
+            "type": "array",
+            "description": "涉及的车辆类型集合",
+            "items": { "type": "string", "description": "车辆类型", "example": "泡沫消防车" }
+          },
+          "items": {
+            "type": "array",
+            "description": "车辆明细列表",
+            "items": { "$ref": "#/components/schemas/RescueVehicleItem" }
+          }
+        }
+      },
+      "RescueVehicleItem": {
+        "type": "object",
+        "description": "救援车辆台账项",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "车辆 id", "example": 1 },
+          "plate": { "type": ["string", "null"], "description": "车牌号", "example": "粤K12345" },
+          "type": {
+            "type": ["string", "null"],
+            "description": "车辆类型",
+            "example": "泡沫消防车"
+          },
+          "squadron": {
+            "type": ["string", "null"],
+            "description": "所属中队",
+            "example": "炼油中队"
+          },
+          "leaderName": {
+            "type": ["string", "null"],
+            "description": "车组长姓名",
+            "example": "王强"
+          },
+          "leaderPhone": {
+            "type": ["string", "null"],
+            "description": "车组长电话",
+            "example": "13800000001"
+          },
+          "status": { "type": ["string", "null"], "description": "车辆状态", "example": "执勤" },
+          "businessName": {
+            "type": ["string", "null"],
+            "description": "所属单位/业务名称",
+            "example": "应急消防"
+          },
+          "vehicleTypeFull": {
+            "type": ["string", "null"],
+            "description": "车辆类型全称",
+            "example": "重型泡沫消防车"
+          },
+          "parkingLocation": {
+            "type": ["string", "null"],
+            "description": "停放位置",
+            "example": "消防站1号库"
+          },
+          "chassisModel": {
+            "type": ["string", "null"],
+            "description": "底盘型号",
+            "example": "ZZ5207"
+          },
+          "manufactureDate": {
+            "type": ["string", "null"],
+            "description": "生产日期",
+            "example": "2021-05-12"
+          },
+          "inspectionExpiry": {
+            "type": ["string", "null"],
+            "description": "检验到期日",
+            "example": "2026-05-12"
+          },
+          "foamTankVolume": {
+            "type": ["string", "null"],
+            "description": "泡沫罐容量",
+            "example": "3000L"
+          },
+          "waterTankVolume": {
+            "type": ["string", "null"],
+            "description": "水罐容量",
+            "example": "8000L"
+          },
+          "maxWaterFlow": {
+            "type": ["string", "null"],
+            "description": "最大水流量",
+            "example": "60L/s"
+          },
+          "foamType": {
+            "type": ["string", "null"],
+            "description": "泡沫类型",
+            "example": "A类泡沫"
+          },
+          "lastMaintenanceDate": {
+            "type": ["string", "null"],
+            "description": "上次保养日期",
+            "example": "2025-11-01"
+          },
+          "nextMaintenanceDate": {
+            "type": ["string", "null"],
+            "description": "下次保养日期",
+            "example": "2026-05-01"
+          },
+          "totalMileage": {
+            "type": ["string", "null"],
+            "description": "累计里程",
+            "example": "45000km"
+          },
+          "faultRecord": { "type": ["string", "null"], "description": "故障记录", "example": "无" },
+          "inspectionStatus": {
+            "type": ["string", "null"],
+            "description": "检验状态",
+            "example": "合格"
+          },
+          "crew": {
+            "type": "array",
+            "description": "随车人员",
+            "items": { "$ref": "#/components/schemas/RescueVehicleCrewMember" }
+          },
+          "onboardEquipment": {
+            "type": "array",
+            "description": "随车装备",
+            "items": { "$ref": "#/components/schemas/RescueVehicleOnboardEquipment" }
+          },
+          "consumables": {
+            "type": "array",
+            "description": "消耗品",
+            "items": { "$ref": "#/components/schemas/KvItem" }
+          },
+          "dispatchSummary": {
+            "type": "array",
+            "description": "出车汇总",
+            "items": { "$ref": "#/components/schemas/KvItem" }
+          }
+        }
+      },
+      "RescueVehicleCrewMember": {
+        "type": "object",
+        "description": "救援车辆随车人员",
+        "properties": {
+          "role": { "type": ["string", "null"], "description": "随车职责", "example": "驾驶员" },
+          "name": { "type": ["string", "null"], "description": "姓名", "example": "李雷" },
+          "phone": { "type": ["string", "null"], "description": "电话", "example": "13800000002" },
+          "certificate": { "type": ["string", "null"], "description": "资质证书", "example": "B2" },
+          "dutyStatus": { "type": ["string", "null"], "description": "值班状态", "example": "在岗" }
+        }
+      },
+      "RescueVehicleOnboardEquipment": {
+        "type": "object",
+        "description": "救援车辆随车装备",
+        "properties": {
+          "name": { "type": ["string", "null"], "description": "装备名称", "example": "水带" },
+          "quantity": { "type": ["string", "null"], "description": "数量", "example": "10" },
+          "model": { "type": ["string", "null"], "description": "型号", "example": "65mm" },
+          "nextCheckDate": {
+            "type": ["string", "null"],
+            "description": "下次检查日期",
+            "example": "2026-06-01"
+          },
+          "equipmentStatus": {
+            "type": ["string", "null"],
+            "description": "装备状态",
+            "example": "在用"
+          },
+          "storageLocation": {
+            "type": ["string", "null"],
+            "description": "存放位置",
+            "example": "车厢"
+          }
+        }
+      },
+      "KvItem": {
+        "type": "object",
+        "description": "键值对项",
+        "properties": {
+          "label": { "type": "string", "description": "标签", "example": "泡沫液" },
+          "value": { "type": "string", "description": "值", "example": "200L" }
+        }
+      },
+      "FireBrigadeList": {
+        "type": "object",
+        "description": "消防队伍台账列表聚合",
+        "properties": {
+          "areas": {
+            "type": "array",
+            "description": "涉及的区域集合",
+            "items": { "type": "string", "description": "区域名", "example": "炼油区" }
+          },
+          "items": {
+            "type": "array",
+            "description": "队伍明细列表",
+            "items": { "$ref": "#/components/schemas/FireBrigadeTeam" }
+          }
+        }
+      },
+      "FireBrigadeTeam": {
+        "type": "object",
+        "description": "消防队伍台账项",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "队伍 id", "example": 1 },
+          "name": { "type": "string", "description": "队伍名称", "example": "炼油消防中队" },
+          "area": { "type": ["string", "null"], "description": "所属区域", "example": "炼油区" },
+          "memberCount": { "type": "integer", "description": "编制人数", "example": 18 },
+          "leaderName": {
+            "type": ["string", "null"],
+            "description": "队长姓名",
+            "example": "王强"
+          },
+          "leaderPhone": {
+            "type": ["string", "null"],
+            "description": "队长电话",
+            "example": "13800000001"
+          },
+          "location": {
+            "type": ["string", "null"],
+            "description": "驻防位置",
+            "example": "炼油区消防站"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "经度",
+            "example": 110.35
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "纬度",
+            "example": 21.5
+          },
+          "description": {
+            "type": ["string", "null"],
+            "description": "队伍简介",
+            "example": "负责炼油区火灾扑救"
+          },
+          "rescuePersonnel": { "type": "integer", "description": "在岗救援人员数", "example": 18 },
+          "rescueVehicles": { "type": "integer", "description": "可用救援车辆数", "example": 3 },
+          "vehicles": {
+            "type": "array",
+            "description": "下属车辆",
+            "items": { "$ref": "#/components/schemas/FireBrigadeVehicle" }
+          },
+          "personnel": {
+            "type": "array",
+            "description": "下属人员",
+            "items": { "$ref": "#/components/schemas/FireBrigadePerson" }
+          },
+          "equipment": {
+            "type": "array",
+            "description": "下属装备",
+            "items": { "$ref": "#/components/schemas/FireBrigadeEquipment" }
+          }
+        }
+      },
+      "FireBrigadeVehicle": {
+        "type": "object",
+        "description": "消防队伍下属车辆",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "车辆 id", "example": 1 },
+          "plate": { "type": ["string", "null"], "description": "车牌号", "example": "粤K12345" },
+          "type": {
+            "type": ["string", "null"],
+            "description": "车辆类型",
+            "example": "泡沫消防车"
+          },
+          "status": { "type": ["string", "null"], "description": "车辆状态", "example": "执勤" },
+          "parkingLocation": {
+            "type": ["string", "null"],
+            "description": "停放位置",
+            "example": "消防站1号库"
+          }
+        }
+      },
+      "FireBrigadePerson": {
+        "type": "object",
+        "description": "消防队伍下属人员",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "人员 id", "example": 1 },
+          "name": { "type": ["string", "null"], "description": "姓名", "example": "王强" },
+          "role": { "type": ["string", "null"], "description": "角色", "example": "队长" },
+          "group": { "type": ["string", "null"], "description": "分组", "example": "一组" },
+          "phone": { "type": ["string", "null"], "description": "电话", "example": "13800000001" },
+          "dutyStatus": { "type": ["string", "null"], "description": "值班状态", "example": "在岗" }
+        }
+      },
+      "FireBrigadeEquipment": {
+        "type": "object",
+        "description": "消防队伍下属装备",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "装备 id", "example": 1 },
+          "name": {
+            "type": ["string", "null"],
+            "description": "装备名称",
+            "example": "空气呼吸器"
+          },
+          "category": { "type": ["string", "null"], "description": "类别", "example": "防护" },
+          "count": { "type": "integer", "description": "数量", "example": 12 },
+          "unit": { "type": ["string", "null"], "description": "单位", "example": "套" },
+          "status": { "type": ["string", "null"], "description": "状态", "example": "在用" },
+          "storageLocation": {
+            "type": ["string", "null"],
+            "description": "存放位置",
+            "example": "器材库"
+          }
+        }
+      }
+    }
+  }
+}

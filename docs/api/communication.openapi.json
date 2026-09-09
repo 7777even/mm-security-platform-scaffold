@@ -1,0 +1,250 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "通讯设备接口（广播/电话/对讲）",
+    "description": "取代前端硬编码的 communicationDeviceMock 业务数据。覆盖通讯设备分组（广播/电话/对讲）及其设备明细撒点。后端基址 RequestMapping /api/v1/communication。",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "paths": {
+    "/communication/devices": {
+      "get": {
+        "summary": "通讯设备分组聚合",
+        "description": "一次返回广播、电话、对讲三类通讯设备的分组数据，每组含设备明细，用于首屏通讯设备面板与地图撒点。",
+        "tags": ["communication"],
+        "responses": {
+          "200": {
+            "description": "通讯设备分组聚合数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommunicationDeviceGroups" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "broadcast": [
+                      {
+                        "key": "broadcast-1",
+                        "label": "厂区广播组",
+                        "devices": [
+                          {
+                            "id": "BC-001",
+                            "type": "broadcast",
+                            "name": "中央控制室广播",
+                            "area": "炼油罐区",
+                            "location": "中央控制楼1F",
+                            "status": "online",
+                            "longitude": 110.851,
+                            "latitude": 21.623,
+                            "detail": {
+                              "category": "号角扬声器",
+                              "installTime": "2024-06-01 09:00:00",
+                              "owner": "电仪车间",
+                              "ip": "10.20.3.11",
+                              "lastCheck": "2026-03-10 14:20:00"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "phone": [
+                      {
+                        "key": "phone-1",
+                        "label": "调度电话组",
+                        "devices": [
+                          {
+                            "id": "PH-001",
+                            "type": "phone",
+                            "name": "调度电话01",
+                            "area": "炼油运行一部",
+                            "location": "控制室机柜间",
+                            "status": "online",
+                            "longitude": 110.852,
+                            "latitude": 21.624,
+                            "detail": {
+                              "category": "IP话机",
+                              "installTime": "2023-11-12 10:00:00",
+                              "owner": "调度中心",
+                              "ip": "10.20.4.21",
+                              "lastCheck": "2026-03-09 08:30:00"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "intercom": [
+                      {
+                        "key": "intercom-1",
+                        "label": "巡检对讲组",
+                        "devices": [
+                          {
+                            "id": "IC-001",
+                            "type": "intercom",
+                            "name": "巡检对讲终端01",
+                            "area": "化工区",
+                            "location": "化工装置区巡检点",
+                            "status": "offline",
+                            "longitude": 110.853,
+                            "latitude": 21.625,
+                            "detail": {
+                              "category": "数字对讲终端",
+                              "installTime": "2024-01-20 11:00:00",
+                              "owner": "安全环保部",
+                              "ip": "10.20.5.31",
+                              "lastCheck": "2026-02-28 16:00:00"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/communication/devices/{id}": {
+      "get": {
+        "summary": "单个通讯设备详情",
+        "description": "按设备 id 返回单台通讯设备的完整信息（含明细），用于设备详情弹窗。",
+        "tags": ["communication"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "通讯设备 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "单个通讯设备详情",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommunicationDevice" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": "BC-001",
+                    "type": "broadcast",
+                    "name": "中央控制室广播",
+                    "area": "炼油罐区",
+                    "location": "中央控制楼1F",
+                    "status": "online",
+                    "longitude": 110.851,
+                    "latitude": 21.623,
+                    "detail": {
+                      "category": "号角扬声器",
+                      "installTime": "2024-06-01 09:00:00",
+                      "owner": "电仪车间",
+                      "ip": "10.20.3.11",
+                      "lastCheck": "2026-03-10 14:20:00"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CommunicationDeviceGroups": {
+        "type": "object",
+        "description": "通讯设备分组聚合（广播/电话/对讲）",
+        "properties": {
+          "broadcast": {
+            "type": "array",
+            "description": "广播设备分组列表",
+            "items": { "$ref": "#/components/schemas/CommunicationGroup" }
+          },
+          "phone": {
+            "type": "array",
+            "description": "电话设备分组列表",
+            "items": { "$ref": "#/components/schemas/CommunicationGroup" }
+          },
+          "intercom": {
+            "type": "array",
+            "description": "对讲设备分组列表",
+            "items": { "$ref": "#/components/schemas/CommunicationGroup" }
+          }
+        }
+      },
+      "CommunicationGroup": {
+        "type": "object",
+        "description": "通讯设备分组（同一类别下的设备集合）",
+        "properties": {
+          "key": { "type": "string", "description": "分组唯一键", "example": "broadcast-1" },
+          "label": { "type": "string", "description": "分组名称", "example": "厂区广播组" },
+          "devices": {
+            "type": "array",
+            "description": "分组内设备列表",
+            "items": { "$ref": "#/components/schemas/CommunicationDevice" }
+          }
+        }
+      },
+      "CommunicationDevice": {
+        "type": "object",
+        "description": "通讯设备",
+        "properties": {
+          "id": { "type": "string", "description": "设备唯一 id", "example": "BC-001" },
+          "type": {
+            "type": "string",
+            "description": "设备类型：broadcast/phone/intercom",
+            "example": "broadcast"
+          },
+          "name": { "type": "string", "description": "设备名称", "example": "中央控制室广播" },
+          "area": { "type": "string", "description": "所属区域", "example": "炼油罐区" },
+          "location": {
+            "type": "string",
+            "description": "安装位置描述",
+            "example": "中央控制楼1F"
+          },
+          "status": {
+            "type": "string",
+            "description": "设备状态：online/offline/fault",
+            "example": "online"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "经度",
+            "example": 110.851
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "纬度",
+            "example": 21.623
+          },
+          "detail": { "$ref": "#/components/schemas/CommunicationDeviceDetail" }
+        }
+      },
+      "CommunicationDeviceDetail": {
+        "type": "object",
+        "description": "通讯设备明细",
+        "properties": {
+          "category": { "type": "string", "description": "设备型号/类别", "example": "号角扬声器" },
+          "installTime": {
+            "type": "string",
+            "description": "安装时间",
+            "example": "2024-06-01 09:00:00"
+          },
+          "owner": { "type": "string", "description": "责任部门/责任人", "example": "电仪车间" },
+          "ip": { "type": "string", "description": "设备 IP 地址", "example": "10.20.3.11" },
+          "lastCheck": {
+            "type": "string",
+            "description": "最近巡检时间",
+            "example": "2026-03-10 14:20:00"
+          }
+        }
+      }
+    }
+  }
+}
