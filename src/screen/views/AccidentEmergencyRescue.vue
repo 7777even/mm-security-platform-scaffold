@@ -36,6 +36,7 @@ import {
   accidentRescueRouteWaypoints,
 } from '../lib/data/accidentRescueMock';
 import { resolveDrillRescueIncident } from '../lib/data/drillRescueMock';
+import { fetchAccidentIncident, type AccidentRescuePayload } from '@/services/accidentRescue';
 import { getSharedMap } from '../lib/composables/sharedCesiumBridge';
 import {
   buildEvacuationRouteFromGeoJson,
@@ -71,10 +72,32 @@ const pageTheme = computed(() => (isDrillMode.value ? 'drill' : 'event'));
 const panelTheme = computed(() => (isDrillMode.value ? 'drill' : 'accident'));
 const actionKind = computed(() => (isDrillMode.value ? 'drill' : 'event'));
 
-const incident = computed(() =>
-  isDrillMode.value
-    ? resolveDrillRescueIncident(Number(shellRoute.query.value.eventId) || undefined)
-    : resolveAccidentRescueIncident(Number(shellRoute.query.value.eventId) || undefined),
+// 事件聚合：演练模式走本地 drill 解析；生产模式（配置了 VITE_API_BASE）走真实后端
+// /accident/rescue-incident，后端失败/缺数据时 service 暴露式降级为空数据并告警，绝不冒充真实数据；
+// 纯静态演示（无 VITE_API_BASE）回落本地 fixture 保证大屏可看。
+const incident = ref<AccidentRescuePayload>(
+  resolveAccidentRescueIncident() as unknown as AccidentRescuePayload,
+);
+
+async function loadIncident(): Promise<void> {
+  const eid = Number(shellRoute.query.value.eventId) || undefined;
+  if (isDrillMode.value) {
+    incident.value = resolveDrillRescueIncident(eid) as unknown as AccidentRescuePayload;
+    return;
+  }
+  if (!import.meta.env.VITE_API_BASE) {
+    incident.value = resolveAccidentRescueIncident(eid) as unknown as AccidentRescuePayload;
+    return;
+  }
+  incident.value = await fetchAccidentIncident(eid);
+}
+
+onMounted(loadIncident);
+watch(
+  () => [shellRoute.query.value.eventId, isDrillMode.value],
+  () => {
+    void loadIncident();
+  },
 );
 
 const facilityDetail = computed(() => resolveFacilityDetail(incident.value.facilityName));
@@ -604,7 +627,10 @@ onUnmounted(() => {
                   v-else
                   class="accident-rescue-page__tab-panel accident-rescue-page__tab-panel--resource"
                 >
-                  <EmergencyResourceDispatchPanel @focus="focusDispatchResource" />
+                  <EmergencyResourceDispatchPanel
+                    :resources="incident.dispatchResources"
+                    @focus="focusDispatchResource"
+                  />
                 </div>
               </div>
             </template>

@@ -1,18 +1,13 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
-import {
-  eventCommandAwarenessDynamics,
-  eventCommandBriefDynamics,
-  eventCommandDynamics,
-  eventCommandDynamicsTabs,
-  rescueDynamics,
-} from '../../../lib/data/accidentRescueMock';
+import { eventCommandDynamicsTabs } from '../../../lib/data/accidentRescueMock';
 import {
   drillAwarenessDynamics,
   drillBriefDynamics,
   drillDynamics,
 } from '../../../lib/data/drillRescueMock';
+import { fetchAccidentIncident, type RescueDynamicEntry } from '@/services/accidentRescue';
 
 const props = withDefaults(
   defineProps<{
@@ -31,14 +26,14 @@ const activeTab = ref(0);
 const previewImage = ref<{ name: string; src?: string } | null>(null);
 const playingAudioId = ref<string | null>(null);
 
-function playAudio(id: string, text: string) {
+function playAudio(id: string, text?: string) {
   if (playingAudioId.value === id) {
     window.speechSynthesis?.cancel();
     playingAudioId.value = null;
     return;
   }
   window.speechSynthesis?.cancel();
-  const utterance = new SpeechSynthesisUtterance(text.replace(/^【已回复】：?/, ''));
+  const utterance = new SpeechSynthesisUtterance((text ?? '').replace(/^【已回复】：?/, ''));
   utterance.lang = 'zh-CN';
   utterance.rate = 0.92;
   utterance.onend = () => {
@@ -55,7 +50,17 @@ onBeforeUnmount(() => window.speechSynthesis?.cancel());
 
 const isEventCommand = computed(() => props.layout === 'eventCommand');
 
-const entries = computed(() => {
+// 事件模式（fm-rescue）走真实后端 /accident/rescue-incident 的 dynamics；后端缺数据时
+// 暴露式返回空列表（service 已告警），绝不回落本地 fixture。演练模式（fm-drill）无后端，保留本地数据。
+const allDynamics = ref<RescueDynamicEntry[]>([]);
+onMounted(async () => {
+  if (props.theme !== 'drill' && import.meta.env.VITE_API_BASE) {
+    const incident = await fetchAccidentIncident();
+    allDynamics.value = incident.dynamics ?? [];
+  }
+});
+
+const entries = computed<RescueDynamicEntry[]>(() => {
   if (props.theme === 'drill') {
     if (isEventCommand.value) {
       if (activeTab.value === 1) return drillBriefDynamics;
@@ -63,12 +68,12 @@ const entries = computed(() => {
     }
     return drillDynamics;
   }
+  if (allDynamics.value.length === 0) return [];
   if (isEventCommand.value) {
-    if (activeTab.value === 1) return eventCommandBriefDynamics;
-    if (activeTab.value === 2) return eventCommandAwarenessDynamics;
-    return eventCommandDynamics;
+    const cat = activeTab.value === 0 ? 'command' : activeTab.value === 1 ? 'brief' : 'awareness';
+    return allDynamics.value.filter((d) => d.category === cat);
   }
-  return rescueDynamics;
+  return allDynamics.value.filter((d) => d.category === 'rescue');
 });
 
 const scrollClass = computed(() => (props.theme === 'drill' ? 'dr-scroll' : 'ar-scroll'));
