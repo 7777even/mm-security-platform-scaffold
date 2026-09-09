@@ -6,7 +6,8 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 import { fileURLToPath, URL } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join, extname } from 'node:path';
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import type { Logger } from 'vite';
 import { compression } from 'vite-plugin-compression2';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
@@ -42,6 +43,67 @@ const CESIUM_BASE_URL = '/cesium';
 // 回退前把 /subapps/<name>/(/index.html) 重写为直读 subapps/<name>/dist/index.html，绕开 Vite HTML transform
 // 与 /@vite/client 注入。dist 下的静态资源（subapp.iife.js / style.css 及切图等）也由本中间件直读 dist 目录托管，
 // 不依赖 Vite 静态中间件（经验证 Vite 不会 serving subapps/ 下产物，会回退成主壳 SPA HTML → 子应用脚本变空）。
+// 目录最新修改时间（跳过 node_modules / dist / .git），用于子应用产物陈旧检测
+function latestMtime(dir: string): number {
+  let max = 0;
+  try {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const name = String(e.name);
+      if (name === 'node_modules' || name === 'dist' || name === '.git') continue;
+      const p = join(dir, name);
+      if (e.isDirectory()) {
+        max = Math.max(max, latestMtime(p));
+      } else {
+        try {
+          max = Math.max(max, statSync(p).mtimeMs);
+        } catch {
+          /* 忽略不可读文件 */
+        }
+      }
+    }
+  } catch {
+    return max;
+  }
+  return max;
+}
+
+// 子应用产物陈旧检测（dev 启动时打印一次，仅提示不阻塞）。
+// 背景：子应用走 build:subapps 预打成 IIFE 包，dev 由下方中间件直传 dist 产物（不经 Vite 编译），
+// 所以 src/ 下的共享代码改动（典型：services/token.ts 的 wujie 令牌桥）不会自动进子应用包。
+// 曾因产物落后一天，子应用 getAccessToken() 仍是旧实现（无桥）→ 子应用所有鉴权请求不带
+// Authorization → 应急/消防等子应用全站 401，而主壳接口正常，极易误判为后端鉴权问题。
+function warnStaleSubapps(logger: Logger): void {
+  const rootDir = fileURLToPath(new URL('.', import.meta.url));
+  try {
+    const subappsDir = join(rootDir, 'subapps');
+    let srcMtime = latestMtime(join(rootDir, 'src'));
+    const subappNames = readdirSync(subappsDir, { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((e) => String(e.name));
+    for (const name of subappNames) {
+      const mainTs = join(subappsDir, name, 'main.ts');
+      if (existsSync(mainTs)) srcMtime = Math.max(srcMtime, statSync(mainTs).mtimeMs);
+    }
+    const stale: string[] = [];
+    for (const name of subappNames) {
+      const bundle = join(subappsDir, name, 'dist', 'subapp.iife.js');
+      if (!existsSync(bundle)) continue;
+      if (statSync(bundle).mtimeMs < srcMtime - 1000) stale.push(name);
+    }
+    if (stale.length === 0) return;
+    logger.warn(
+      `\n[subapp-stale] 检测到 ${stale.length} 个子应用产物落后于源码（源码最后改动 ${new Date(
+        srcMtime,
+      ).toLocaleString('zh-CN')}）：\n  ${stale.join(', ')}\n` +
+        `  子应用走预打包 IIFE，改了 src/ 或 subapps/*/main.ts 后必须重新打包，否则子应用仍跑旧代码\n` +
+        `  （典型症状：主壳接口正常、子应用接口全 401）。执行：npm run build:subapps\n` +
+        `  单个重建（省时）：SUBAPP=fm-emergency npm run build:subapps\n`,
+    );
+  } catch {
+    /* 检测失败不影响 dev 启动 */
+  }
+}
+
 function serveSubappDist(): Plugin {
   const rootDir = fileURLToPath(new URL('.', import.meta.url));
   const MIME: Record<string, string> = {
@@ -66,6 +128,7 @@ function serveSubappDist(): Plugin {
     name: 'serve-subapp-dist',
     apply: 'serve',
     configureServer(server) {
+      warnStaleSubapps(server.config.logger);
       server.middlewares.use((req, res, next) => {
         const raw = req.url ?? '';
         const pathPart = raw.split('?')[0];
