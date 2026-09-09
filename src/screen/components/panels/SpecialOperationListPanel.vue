@@ -2,28 +2,31 @@
 import { computed } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
 import {
-  specialOperationAreas,
-  specialOperationLevels,
-  specialOperationStatuses,
-  specialOperationTotalCount,
-  specialOperationTypes,
-} from '../../lib/data/specialOperationMock';
-import {
   closeSpecialOperationView,
   goToSpecialOperationPage,
   resetSpecialOperationSearch,
   searchSpecialOperation,
   selectSpecialOperation,
   selectedSpecialOperationId,
+  specialOperationAreas,
   specialOperationAreaFilter,
   specialOperationCurrentPage,
+  specialOperationLevels,
   specialOperationLevelFilter,
   specialOperationPagedItems,
+  specialOperationStatuses,
   specialOperationStatusFilter,
   specialOperationTimeRange,
+  specialOperationTotalCount,
   specialOperationTotalPages,
+  specialOperationTypes,
   specialOperationTypeFilter,
 } from '../../lib/composables/useSpecialOperationView';
+
+// 下拉变更即触发服务端筛选（下拉文案原样传参，「全部xx」由后端忽略）
+function handleFilterChange() {
+  void searchSpecialOperation();
+}
 
 const visiblePages = computed(() => {
   const pages: number[] = [];
@@ -53,22 +56,38 @@ function handleSelect(id: number) {
 
     <div class="spec-op-list">
       <div class="spec-op-list__toolbar">
-        <select v-model="specialOperationAreaFilter" class="spec-op-list__select">
+        <select
+          v-model="specialOperationAreaFilter"
+          class="spec-op-list__select"
+          @change="handleFilterChange"
+        >
           <option v-for="area in specialOperationAreas" :key="area" :value="area">
             {{ area === '全部区域' ? '作业区域' : area }}
           </option>
         </select>
-        <select v-model="specialOperationTypeFilter" class="spec-op-list__select">
+        <select
+          v-model="specialOperationTypeFilter"
+          class="spec-op-list__select"
+          @change="handleFilterChange"
+        >
           <option v-for="type in specialOperationTypes" :key="type" :value="type">
             {{ type === '全部类型' ? '作业类型' : type }}
           </option>
         </select>
-        <select v-model="specialOperationLevelFilter" class="spec-op-list__select">
+        <select
+          v-model="specialOperationLevelFilter"
+          class="spec-op-list__select"
+          @change="handleFilterChange"
+        >
           <option v-for="level in specialOperationLevels" :key="level" :value="level">
             {{ level === '全部等级' ? '作业等级' : level }}
           </option>
         </select>
-        <select v-model="specialOperationStatusFilter" class="spec-op-list__select">
+        <select
+          v-model="specialOperationStatusFilter"
+          class="spec-op-list__select"
+          @change="handleFilterChange"
+        >
           <option v-for="status in specialOperationStatuses" :key="status" :value="status">
             {{ status === '全部状态' ? '状态' : status }}
           </option>

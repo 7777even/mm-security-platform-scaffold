@@ -26,7 +26,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** 按 20 位编码查询单台设备 */
+    /**
+     * 按 20 位编码查询单台设备
+     * @description 按 20 位 MDM 设备编码查询单台设备台账明细；编码非 20 位直接返回 301，查无此设备时 data 为 null。
+     */
     get: operations['getDeviceByCode'];
     put?: never;
     post?: never;
@@ -256,6 +259,21 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "deviceCode": "FAC2026FIREA00000001",
+           *         "deviceName": "罐区A消防探头-F01",
+           *         "deviceType": "FIRE",
+           *         "zone": "罐区A",
+           *         "status": 1,
+           *         "lat": 21.5123,
+           *         "lon": 110.4123
+           *       }
+           *     }
+           */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['Device'];
           };

@@ -1,0 +1,87 @@
+import { request } from '@/services/http';
+
+// 视频控制/视频墙大屏接口（fm-video-control / fm-video-wall），对齐 docs/api/video.openapi.json。
+// 取代前端硬编码的 videoControlMock / videoLinkageMock 业务数据；
+// 网格布局（1x1/2x2/3x3）与画面轮巡为前端交互状态，不在 service 层。
+
+export type VideoCellStatus = 'live' | 'loading' | 'ai';
+
+export type GridLayout = '1x1' | '2x2' | '3x3';
+
+export interface VideoCategoryItem {
+  id: string;
+  label: string;
+  iconType: number;
+}
+
+export interface VideoGroupNode {
+  id: string;
+  label: string;
+  children?: VideoGroupNode[];
+}
+
+export interface VideoNavigation {
+  categories: VideoCategoryItem[];
+  tree: VideoGroupNode[];
+}
+
+export interface VideoCameraItem {
+  id: number;
+  name: string;
+  cameraType: string;
+  location: string;
+  status: VideoCellStatus;
+  hd: boolean;
+  thumbIndex: number;
+}
+
+export interface VideoCameraPage {
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+  list: VideoCameraItem[];
+}
+
+export interface VideoLinkageItem {
+  id: string;
+  name: string;
+  code: string;
+  category: string;
+  linkageCount: number;
+  businessObjects: string;
+}
+
+export interface VideoLinkageRuleRow {
+  id: string;
+  presetPoint: string;
+  objectCategory: string;
+  objectName: string;
+}
+
+/** 左侧导航：顶部分类（扁平）+ 分组树。 */
+export async function fetchVideoNavigation(): Promise<VideoNavigation> {
+  return request<VideoNavigation>({ url: '/video/navigation', method: 'GET' });
+}
+
+/** 摄像头分页网格（前端默认每页 9 宫格）。 */
+export async function fetchVideoCameras(page = 1, size = 9): Promise<VideoCameraPage> {
+  return request<VideoCameraPage>({
+    url: '/video/cameras',
+    method: 'GET',
+    params: { page, size },
+  });
+}
+
+/** 视频联动配置列表。 */
+export async function fetchVideoLinkages(): Promise<VideoLinkageItem[]> {
+  return request<VideoLinkageItem[]>({ url: '/video/linkages', method: 'GET' });
+}
+
+/** 指定联动配置的规则行；后端对未预置规则回退默认行。 */
+export async function fetchVideoLinkageRules(configCode: string): Promise<VideoLinkageRuleRow[]> {
+  return request<VideoLinkageRuleRow[]>({
+    url: `/video/linkages/${encodeURIComponent(configCode)}/rules`,
+    method: 'GET',
+  });
+}

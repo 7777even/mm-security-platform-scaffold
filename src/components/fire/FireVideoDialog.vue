@@ -1,28 +1,65 @@
 <!--
   FireVideoDialog — 视频监控 / 现场监控（二级界面 video）
   对标参考视频监控弹窗：区域分类 + 视频墙网格（LIVE / 加载 / AI 识别）。
-  数据消费 videoControlMock（videoControlCategories / videoControlPages / getVideoControlPage）。
+  数据消费 /video 域 service（fetchVideoNavigation / fetchVideoCameras，见 src/services/video.ts）。
   视频画面占位：压缩包 mock-cameras 监控抓拍图（按 thumbIndex 取图，cover 底图），不用脚手架图标。
   点击单元格为前端 mock（toast），无真实码流。
 -->
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import ScreenDialog from './ScreenDialog.vue';
 import { showToast } from '@/composables/useToast';
 import {
-  videoControlCategories,
-  videoControlPages,
-  getVideoControlPage,
-} from '@/services/map-data/videoControlMock';
+  fetchVideoCameras,
+  fetchVideoNavigation,
+  type VideoCameraItem,
+  type VideoCategoryItem,
+} from '@/services/video';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 import { cameraThumbByIndex } from '@/services/map-data/fireImages';
 import type { FireAlarmListItem } from '@/services/map-data/fireAlarmListMock';
 
 const props = defineProps<{ alarm?: FireAlarmListItem }>();
 const emit = defineEmits<{ close: [] }>();
 
-const cat = ref<string>(videoControlCategories[0]?.id ?? '');
+const categories = ref<VideoCategoryItem[]>([]);
+const cells = ref<VideoCameraItem[]>([]);
+const pageCount = ref(1);
+const cat = ref<string>('');
 const page = ref(1);
-const cells = computed(() => getVideoControlPage(page.value));
+
+async function loadNavigation() {
+  try {
+    const nav = await fetchVideoNavigation();
+    categories.value = nav.categories;
+    if (!cat.value) cat.value = nav.categories[0]?.id ?? '';
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '请求失败';
+    backendUnavailableWarn('video', '/video/navigation', message);
+  }
+}
+
+async function loadCameras() {
+  try {
+    const res = await fetchVideoCameras(page.value, 9);
+    cells.value = res.list;
+    pageCount.value = Math.max(1, res.pages);
+  } catch (error) {
+    cells.value = [];
+    pageCount.value = 1;
+    const message = error instanceof Error ? error.message : '请求失败';
+    backendUnavailableWarn('video', '/video/cameras', message);
+  }
+}
+
+onMounted(() => {
+  void loadNavigation();
+  void loadCameras();
+});
+
+watch(page, () => {
+  void loadCameras();
+});
 
 function thumbOf(cell: { thumbIndex: number }): string {
   return cameraThumbByIndex(cell.thumbIndex);
@@ -46,7 +83,7 @@ function openCell(name: string): void {
     <div class="video">
       <aside class="video__cats">
         <button
-          v-for="c in videoControlCategories"
+          v-for="c in categories"
           :key="c.id"
           type="button"
           :class="['video__cat', { 'video__cat--active': cat === c.id }]"
@@ -79,16 +116,16 @@ function openCell(name: string): void {
         </div>
 
         <div class="video__pager">
-          <span class="video__total">共 {{ videoControlPages.length }} 页</span>
+          <span class="video__total">共 {{ pageCount }} 页</span>
           <div class="pager">
             <button type="button" :disabled="page <= 1" @click="page = Math.max(1, page - 1)">
               上一页
             </button>
-            <span class="pager__cur">{{ page }} / {{ videoControlPages.length }}</span>
+            <span class="pager__cur">{{ page }} / {{ pageCount }}</span>
             <button
               type="button"
-              :disabled="page >= videoControlPages.length"
-              @click="page = Math.min(videoControlPages.length, page + 1)"
+              :disabled="page >= pageCount"
+              @click="page = Math.min(pageCount, page + 1)"
             >
               下一页
             </button>

@@ -2,16 +2,44 @@
 import { computed, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import { vehicleThumbStyle } from '../../../utils/tvSpriteConfig';
-import { inspectionPersons, inspectionVehicles } from '../../../lib/data/tvMock';
+import { fetchTvInspections } from '@/services/tv';
+import { useScreenAsyncState } from '../../../lib/composables/useScreenAsyncState';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
+import { resolvePlantAreaCode } from '../../../lib/data/plantAreas';
 import personCaptureScene from '../../../assets/semantic-scenes/production-person-gathering.png';
 
 const activeTab = ref<'vehicle' | 'person'>('vehicle');
 const keyword = ref('');
 const direction = ref<'all' | '入厂' | '出厂'>('all');
-const { areaScopedItems } = usePlantArea();
-const visibleInspectionVehicles = areaScopedItems(inspectionVehicles);
-const visibleInspectionPersons = areaScopedItems(inspectionPersons);
+const { filterByPlantArea } = usePlantArea();
+const { data: inspections } = useScreenAsyncState('tv', '/tv/inspections', fetchTvInspections);
+
+// 服务端 areaCode 与厂区演示编码对齐；未知编码回退到按 id 稳定分配
+function normalizeAreaCode(code: string | undefined, id: number) {
+  return code === 'refinery' || code === 'chemical' || code === 'port'
+    ? code
+    : resolvePlantAreaCode({ id });
+}
+
+const visibleInspectionVehicles = computed(() =>
+  filterByPlantArea(
+    (inspections.value?.vehicles ?? []).map((item) => ({
+      ...item,
+      plate: item.plate ?? '',
+      areaCode: normalizeAreaCode(item.areaCode, item.id),
+    })),
+  ),
+);
+const visibleInspectionPersons = computed(() =>
+  filterByPlantArea(
+    (inspections.value?.persons ?? []).map((item) => ({
+      ...item,
+      name: item.name ?? '',
+      department: item.department ?? '',
+      areaCode: normalizeAreaCode(item.areaCode, item.id),
+    })),
+  ),
+);
 
 const filteredVehicles = computed(() => {
   const value = keyword.value.trim().toLowerCase();

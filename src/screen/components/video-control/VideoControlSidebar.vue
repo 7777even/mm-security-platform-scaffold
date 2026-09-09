@@ -1,16 +1,46 @@
 ﻿<script setup lang="ts">
-import { ref } from 'vue';
-import {
-  videoControlCategories,
-  videoControlTree,
-  type VideoControlTreeNode,
-} from '../../lib/data/videoControlMock';
+import { computed, ref, watch } from 'vue';
+import { fetchVideoNavigation, type VideoGroupNode } from '@/services/video';
+import { useScreenAsyncState } from '../../lib/composables/useScreenAsyncState';
 
-const activeCategoryId = ref(videoControlCategories[0]?.id ?? '');
-const activeNodeId = ref('drill-1');
-const expandedIds = ref(new Set(videoControlTree.map((node) => node.id)));
+const { data: navigation } = useScreenAsyncState(
+  'video',
+  '/video/navigation',
+  fetchVideoNavigation,
+  { initialData: { categories: [], tree: [] } },
+);
+
+const categories = computed(() => navigation.value?.categories ?? []);
+const tree = computed(() => navigation.value?.tree ?? []);
+
+const activeCategoryId = ref('');
+const activeNodeId = ref('');
+const expandedIds = ref(new Set<string>());
 const searchQuery = ref('');
 const pinHoverId = ref<string | null>(null);
+
+watch(
+  categories,
+  (list) => {
+    if (!activeCategoryId.value && list.length > 0) {
+      activeCategoryId.value = list[0]?.id ?? '';
+    }
+  },
+  { immediate: true },
+);
+
+watch(
+  tree,
+  (nodes) => {
+    if (expandedIds.value.size === 0 && nodes.length > 0) {
+      expandedIds.value = new Set(nodes.map((node) => node.id));
+    }
+    if (!activeNodeId.value) {
+      activeNodeId.value = nodes[0]?.children?.[0]?.id ?? '';
+    }
+  },
+  { immediate: true },
+);
 
 function toggleExpand(id: string) {
   const next = new Set(expandedIds.value);
@@ -23,7 +53,7 @@ function selectNode(id: string) {
   activeNodeId.value = id;
 }
 
-function isNodeVisible(node: VideoControlTreeNode): boolean {
+function isNodeVisible(node: VideoGroupNode): boolean {
   if (!searchQuery.value.trim()) return true;
   const q = searchQuery.value.trim().toLowerCase();
   if (node.label.toLowerCase().includes(q)) return true;
@@ -35,7 +65,7 @@ function isNodeVisible(node: VideoControlTreeNode): boolean {
   <aside class="vc-sidebar">
     <section class="vc-sidebar__categories">
       <button
-        v-for="cat in videoControlCategories"
+        v-for="cat in categories"
         :key="cat.id"
         type="button"
         class="vc-category"
@@ -71,7 +101,7 @@ function isNodeVisible(node: VideoControlTreeNode): boolean {
       </div>
 
       <ul class="vc-tree">
-        <li v-for="group in videoControlTree" v-show="isNodeVisible(group)" :key="group.id">
+        <li v-for="group in tree" v-show="isNodeVisible(group)" :key="group.id">
           <button type="button" class="vc-tree__group" @click="toggleExpand(group.id)">
             <i
               class="vc-tree__chevron"

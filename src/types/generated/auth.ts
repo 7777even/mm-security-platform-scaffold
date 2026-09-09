@@ -175,11 +175,20 @@ export interface components {
     };
     /** @description 当前登录用户。 */
     CurrentUser: {
-      /** @example admin */
+      /**
+       * @description 登录用户名（唯一标识）
+       * @example admin
+       */
       username?: string;
-      /** @example 系统管理员 */
+      /**
+       * @description 用户真实姓名（展示用）
+       * @example 系统管理员
+       */
       realName?: string;
-      /** @example ADMIN */
+      /**
+       * @description 角色码（ADMIN 为管理员，其余为普通角色）
+       * @example ADMIN
+       */
       role?: string;
     };
     /** @description 菜单项（可递归嵌套 children）。 */
@@ -312,6 +321,17 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "accessToken": "eyJ...",
+           *         "expiresIn": 7200,
+           *         "tokenType": "Bearer"
+           *       }
+           *     }
+           */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['TokenResponse'];
           };
@@ -335,6 +355,13 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: null;
           };

@@ -1,27 +1,56 @@
 <!--
   FirePatrolDialog — 消防巡检（二级界面 patrol）
   对标参考 FirePatrolDialog：巡检完成率 + 近期巡检作业记录。
-  完成率汇总复用 FireFacilityPanel 的 patrol 口径；记录消费 specialOperationMock（与消防巡检强相关的作业记录）。
+  完成率汇总复用 FireFacilityPanel 的 patrol 口径；记录走 /special-operations 域 service（与消防巡检强相关的作业记录）。
   图标：压缩包 fire-situation 图标（PkgIcon）。
 -->
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import ScreenDialog from './ScreenDialog.vue';
 import PkgIcon from '@/components/common/PkgIcon.vue';
-import {
-  specialOperationItems,
-  specialOperationAreas,
-} from '@/services/map-data/specialOperationMock';
+import { fetchSpecialOperations, type SpecialOperationItem } from '@/services/specialOperation';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 
 const emit = defineEmits<{ close: [] }>();
 
 // 巡检完成率汇总（与 FireFacilityPanel 口径一致）
 const patrol = { tasks: 28, done: 24, points: 56, rate: 86 };
 
+const specialOperationAreas = [
+  '全部区域',
+  '重油加氢装置',
+  '乙烯装置区',
+  '芳烃装置区',
+  '罐区',
+  '公用工程区',
+  '仓储区',
+];
+
 const area = ref<string>('全部区域');
-const rows = computed(() =>
-  specialOperationItems.filter((it) => area.value === '全部区域' || it.area === area.value),
-);
+const rows = ref<SpecialOperationItem[]>([]);
+
+async function loadRows() {
+  try {
+    const res = await fetchSpecialOperations({
+      page: 1,
+      size: 100,
+      area: area.value,
+    });
+    rows.value = res.list;
+  } catch (error) {
+    rows.value = [];
+    const message = error instanceof Error ? error.message : '请求失败';
+    backendUnavailableWarn('special-operation', '/special-operations', message);
+  }
+}
+
+onMounted(() => {
+  void loadRows();
+});
+
+watch(area, () => {
+  void loadRows();
+});
 
 function statusTone(s: string): 'ok' | 'warn' {
   return s === '已完成' || s === '已签发' ? 'ok' : 'warn';

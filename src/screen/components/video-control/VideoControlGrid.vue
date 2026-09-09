@@ -1,12 +1,35 @@
 ﻿<script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { getVideoControlPage, type GridLayout } from '../../lib/data/videoControlMock';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { fetchVideoCameras, type GridLayout, type VideoCameraPage } from '@/services/video';
+import { useScreenAsyncState } from '../../lib/composables/useScreenAsyncState';
 import { videoControlFrameStyle } from '../../utils/tvSpriteConfig';
 
 const props = defineProps<{
   page: number;
   layout: GridLayout;
 }>();
+
+const emptyPage: VideoCameraPage = { total: 0, page: 1, size: 9, pages: 1, list: [] };
+
+const { data: cameras, retry } = useScreenAsyncState<VideoCameraPage>(
+  'video',
+  '/video/cameras',
+  () => fetchVideoCameras(props.page, 9),
+  { initialData: emptyPage },
+);
+
+// 翻页时重新拉取；useScreenAsyncState 会合并 inflight，若合并导致
+// 返回页码与当前页不一致（快速翻页时），循环重试直到对齐。
+watch(
+  () => props.page,
+  async () => {
+    for (;;) {
+      await retry();
+      const current = cameras.value;
+      if (!current || current.page === props.page) return;
+    }
+  },
+);
 
 const nowText = ref('');
 
@@ -36,7 +59,7 @@ onUnmounted(() => {
   clearInterval(timer);
 });
 
-const cells = computed(() => getVideoControlPage(props.page));
+const cells = computed(() => cameras.value?.list ?? []);
 
 const visibleCells = computed(() => {
   const count = props.layout === '1x1' ? 1 : props.layout === '2x2' ? 4 : 9;

@@ -5,9 +5,8 @@ import {
   businessObjectOptions,
   monitorNameOptions,
   presetPointOptions,
-  videoLinkageConfigs,
-  type VideoLinkageConfig,
-} from '../../lib/data/videoLinkageMock';
+} from '../../lib/data/videoLinkageOptions';
+import type { VideoLinkageItem } from '@/services/video';
 import {
   cancelLinkageEdit,
   closeLinkageDialog,
@@ -15,8 +14,10 @@ import {
   editingRules,
   linkageDialogOpen,
   linkageEditMode,
+  loadLinkageConfigs,
   saveLinkageEdit,
   startLinkageEdit,
+  configs as linkageConfigs,
 } from '../../lib/composables/useVideoLinkageConfig';
 
 const keyword = ref('');
@@ -39,11 +40,11 @@ const categoryByMonitor = reactive<Record<string, string>>({
 
 const categories = computed(() => [
   '全部类别',
-  ...Array.from(new Set(videoLinkageConfigs.map((item) => item.category))),
+  ...Array.from(new Set(linkageConfigs.value.map((item) => item.category))),
 ]);
 
 const filteredItems = computed(() =>
-  videoLinkageConfigs.filter((item) => {
+  linkageConfigs.value.filter((item) => {
     if (categoryFilter.value !== '全部类别' && item.category !== categoryFilter.value) return false;
     if (keyword.value.trim()) {
       const q = keyword.value.trim();
@@ -64,6 +65,7 @@ watch(linkageDialogOpen, (open) => {
   keyword.value = '';
   categoryFilter.value = '全部类别';
   currentPage.value = 1;
+  void loadLinkageConfigs();
 });
 
 watch(linkageEditMode, (edit) => {
@@ -104,9 +106,10 @@ function removeRule(id: string) {
   editingRules.value = editingRules.value.filter((r) => r.id !== id);
 }
 
-function removeConfig(config: VideoLinkageConfig) {
-  const index = videoLinkageConfigs.findIndex((item) => item.id === config.id);
-  if (index >= 0) videoLinkageConfigs.splice(index, 1);
+function removeConfig(config: VideoLinkageItem) {
+  // 演示行为：后端暂无删除端点，仅从前端列表移除
+  const index = linkageConfigs.value.findIndex((item) => item.id === config.id);
+  if (index >= 0) linkageConfigs.value.splice(index, 1);
 }
 
 function submitEdit() {

@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import VideoControlSidebar from '../components/video-control/VideoControlSidebar.vue';
 import VideoControlGrid from '../components/video-control/VideoControlGrid.vue';
 import VideoControlBottomBar from '../components/video-control/VideoControlBottomBar.vue';
-import type { GridLayout } from '../lib/data/videoControlMock';
+import type { GridLayout } from '@/services/video';
 
 const page = ref(1);
 const layout = ref<GridLayout>('3x3');

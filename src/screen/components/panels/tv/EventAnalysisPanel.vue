@@ -6,19 +6,24 @@ import { PieChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import PanelCard from '../../common/PanelCard.vue';
 import FireAlarmListDialog from '../../common/FireAlarmListDialog.vue';
-import { eventBreakdown } from '../../../lib/data/tvMock';
+import { fetchTvOverview } from '@/services/tv';
+import { useScreenAsyncState } from '../../../lib/composables/useScreenAsyncState';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const { scaleAreaCount } = usePlantArea();
+const { data: overview } = useScreenAsyncState('tv', '/tv/overview', fetchTvOverview);
 const visibleBreakdown = computed(() =>
-  eventBreakdown.map((item) => ({
+  (overview.value?.eventBreakdown ?? []).map((item) => ({
     ...item,
     value: scaleAreaCount(item.value),
   })),
 );
-const visibleEventTotal = computed(() =>
-  visibleBreakdown.value.reduce((total, item) => total + item.value, 0),
-);
+// 事件总数优先取后端 operationStats.eventTotal，缺失时按分项求和兜底
+const visibleEventTotal = computed(() => {
+  const backendTotal = overview.value?.operationStats.eventTotal;
+  if (backendTotal != null) return scaleAreaCount(backendTotal);
+  return visibleBreakdown.value.reduce((total, item) => total + item.value, 0);
+});
 
 use([PieChart, CanvasRenderer]);
 const alarmListOpen = ref(false);

@@ -1,22 +1,17 @@
 <!--
   SpecialWorkDialog — 特殊作业（二级界面 specialWork）
   对标参考特殊作业列表：多维度筛选 + 作业票表格 + 行操作（查看监控）。
-  数据消费 specialOperationMock（specialOperationItems + 维度选项）。
+  数据走 /special-operations 域 service（fetchSpecialOperations，见 src/services/specialOperation.ts）。
   图标：压缩包 fire-situation 图标（PkgIcon）。
 -->
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import ScreenDialog from './ScreenDialog.vue';
 import PkgIcon from '@/components/common/PkgIcon.vue';
 import { useFireAlarmInteraction } from '@/composables/useFireAlarmInteraction';
 import { showToast } from '@/composables/useToast';
-import {
-  specialOperationItems,
-  specialOperationTypes,
-  specialOperationAreas,
-  specialOperationLevels,
-  specialOperationStatuses,
-} from '@/services/map-data/specialOperationMock';
+import { fetchSpecialOperations, type SpecialOperationItem } from '@/services/specialOperation';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 
 const emit = defineEmits<{ close: [] }>();
 const ia = useFireAlarmInteraction();
@@ -26,15 +21,57 @@ const area = ref<string>('全部区域');
 const level = ref<string>('全部等级');
 const status = ref<string>('全部状态');
 
-const rows = computed(() =>
-  specialOperationItems.filter(
-    (it) =>
-      (type.value === '全部类型' || it.type === type.value) &&
-      (area.value === '全部区域' || it.area === area.value) &&
-      (level.value === '全部等级' || it.level === level.value) &&
-      (status.value === '全部状态' || it.status === status.value),
-  ),
-);
+// 维度选项与作业票明细均走 /special-operations 域 service
+const specialOperationTypes = [
+  '全部类型',
+  '动火作业',
+  '盲板抽堵',
+  '吊装作业',
+  '动土作业',
+  '受限空间',
+  '高处作业',
+  '临时用电',
+  '断路作业',
+];
+const specialOperationAreas = [
+  '全部区域',
+  '重油加氢装置',
+  '乙烯装置区',
+  '芳烃装置区',
+  '罐区',
+  '公用工程区',
+  '仓储区',
+];
+const specialOperationLevels = ['全部等级', '一级', '二级', '三级'];
+const specialOperationStatuses = ['全部状态', '已签发', '进行中', '已完成', '已取消'];
+
+const rows = ref<SpecialOperationItem[]>([]);
+
+async function loadRows() {
+  try {
+    const res = await fetchSpecialOperations({
+      page: 1,
+      size: 100,
+      type: type.value,
+      area: area.value,
+      level: level.value,
+      status: status.value,
+    });
+    rows.value = res.list;
+  } catch (error) {
+    rows.value = [];
+    const message = error instanceof Error ? error.message : '请求失败';
+    backendUnavailableWarn('special-operation', '/special-operations', message);
+  }
+}
+
+onMounted(() => {
+  void loadRows();
+});
+
+watch([type, area, level, status], () => {
+  void loadRows();
+});
 
 function levelTone(l: string): 'danger' | 'warn' | 'muted' {
   if (l === '一级') return 'danger';

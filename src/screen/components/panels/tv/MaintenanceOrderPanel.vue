@@ -1,16 +1,20 @@
 ﻿<script setup lang="ts">
+import { computed } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
-import { maintenanceOrders } from '../../../lib/data/tvMock';
+import { fetchTvOverview } from '@/services/tv';
+import { useScreenAsyncState } from '../../../lib/composables/useScreenAsyncState';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const { scaleAreaCount } = usePlantArea();
+const { data: overview } = useScreenAsyncState('tv', '/tv/overview', fetchTvOverview);
+const orders = computed(() => overview.value?.maintenanceOrders ?? []);
 </script>
 
 <template>
   <PanelCard title="维修工单" variant="maintenance" module="tv">
     <div class="maintenance-orders">
       <div
-        v-for="order in maintenanceOrders"
+        v-for="order in orders"
         :key="order.label"
         class="maintenance-orders__card"
         :class="`maintenance-orders__card--${order.tone}`"

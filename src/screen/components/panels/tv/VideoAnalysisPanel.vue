@@ -2,16 +2,22 @@
 import { computed } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import TvSemiGauge from '../../common/TvSemiGauge.vue';
-import { videoOperationStats } from '../../../lib/data/tvMock';
+import { fetchTvOverview } from '@/services/tv';
+import { useScreenAsyncState } from '../../../lib/composables/useScreenAsyncState';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const { scaleAreaCount } = usePlantArea();
-const stats = computed(() => ({
-  ...videoOperationStats,
-  total: scaleAreaCount(videoOperationStats.total),
-  offline: scaleAreaCount(videoOperationStats.offline),
-  fault: scaleAreaCount(videoOperationStats.fault),
-}));
+const { data: overview } = useScreenAsyncState('tv', '/tv/overview', fetchTvOverview);
+const stats = computed(() => {
+  const operationStats = overview.value?.operationStats;
+  return {
+    total: scaleAreaCount(operationStats?.total ?? 0),
+    offline: scaleAreaCount(operationStats?.offline ?? 0),
+    fault: scaleAreaCount(operationStats?.fault ?? 0),
+    integrityRate: operationStats?.integrityRate ?? 0,
+    onlineRate: operationStats?.onlineRate ?? 0,
+  };
+});
 </script>
 
 <template>

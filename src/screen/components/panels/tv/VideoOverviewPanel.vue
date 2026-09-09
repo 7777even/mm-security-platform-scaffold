@@ -1,15 +1,19 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
-import { videoOverviewItems } from '../../../lib/data/tvMock';
+import { fetchTvOverview } from '@/services/tv';
+import { useScreenAsyncState } from '../../../lib/composables/useScreenAsyncState';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const { scaleAreaCount } = usePlantArea();
+const { data: overview } = useScreenAsyncState('tv', '/tv/overview', fetchTvOverview);
+const overviewItems = computed(() => overview.value?.overviewItems ?? []);
 </script>
 
 <template>
   <PanelCard title="视频监控概览" variant="videoOverview" module="tv">
     <div class="video-overview">
-      <div v-for="item in videoOverviewItems" :key="item.id" class="video-overview__cell">
+      <div v-for="item in overviewItems" :key="item.id" class="video-overview__cell">
         <div class="video-overview__icon-box">
           <i
             class="video-overview__icon"

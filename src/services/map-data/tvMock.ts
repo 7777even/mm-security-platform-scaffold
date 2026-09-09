@@ -1,35 +1,10 @@
+/**
+ * 工业电视大屏静态几何 / 演示数据（地图撒点、地图标签、巡检圆扫描点位、监控详情演示映射）。
+ * 业务数据（概览/运行统计/维保工单/事件分析/入厂巡检）已迁移至 src/services/tv.ts
+ * （/tv/overview、/tv/inspections），请勿在此回填业务 mock。
+ */
 import { stagePercentToWorldPosition } from '@/utils/mapDesignGeo';
 import type { BoundaryEdgeSide } from '@/composables/sharedCesiumBridge';
-import type { ConcretePlantAreaCode } from './plantAreas';
-
-export interface VideoOverviewItem {
-  id: number;
-  label: string;
-  value: number;
-  iconIndex: number;
-}
-
-export interface EventBreakdownItem {
-  label: string;
-  value: number;
-  color: string;
-}
-
-export interface ImportantVideoItem {
-  id: number;
-  label: string;
-  online: boolean;
-}
-
-export interface InspectionVehicleItem {
-  id: number;
-  areaCode: ConcretePlantAreaCode;
-  plate: string;
-  badge: string;
-  gate: string;
-  time: string;
-}
-
 export interface TvMapPin {
   label: string;
   labelBgIndex: number;
@@ -45,16 +20,6 @@ export interface TvInspectionCircle {
   latitude: number;
   radiusMeters: number;
   height?: number;
-}
-
-export interface InspectionPersonItem {
-  id: number;
-  areaCode: ConcretePlantAreaCode;
-  name: string;
-  badge: string;
-  department: string;
-  gate: string;
-  time: string;
 }
 
 export type TvVideoPointGroupKey = 'high-ar' | 'focus' | 'hazard' | 'boundary';
@@ -98,175 +63,6 @@ export const tvVideoMapPoints: TvVideoMapPoint[] = [
   createTvVideoMapPoint('boundary-02', '厂区北门', 'boundary', 51.8, 15.8),
   createTvVideoMapPoint('boundary-03', '厂界东侧', 'boundary', 63.3, 31.5),
   createTvVideoMapPoint('boundary-04', '厂界南侧', 'boundary', 52.6, 50.8, false),
-];
-
-export const videoOverviewItems: VideoOverviewItem[] = [
-  { id: 1, label: '重大危险源', value: 665, iconIndex: 0 },
-  { id: 2, label: '生产设施', value: 56, iconIndex: 1 },
-  { id: 3, label: '厂界', value: 56, iconIndex: 2 },
-  { id: 4, label: '封闭入口', value: 55, iconIndex: 3 },
-  { id: 5, label: '其他入口', value: 66, iconIndex: 4 },
-  { id: 6, label: '其它', value: 6, iconIndex: 5 },
-];
-
-export const videoOperationStats = {
-  total: 1233,
-  offline: 23,
-  fault: 23,
-  integrityRate: 98,
-  onlineRate: 98,
-};
-
-export const maintenanceOrders = [
-  { label: '未接单', value: 12, tone: 'grey' as const },
-  { label: '处理中', value: 25, tone: 'blue' as const },
-  { label: '已超时', value: 8, tone: 'red' as const },
-];
-
-export const eventAlertTotal = 110;
-
-export const eventBreakdown: EventBreakdownItem[] = [
-  { label: '人员闯入', value: 150, color: '#5b8cff' },
-  { label: '烟火检测', value: 100, color: '#6a8fd8' },
-  { label: '未戴安全帽', value: 150, color: '#3dd68c' },
-  { label: '区域入侵', value: 152, color: '#f0b429' },
-  { label: '设备异常', value: 120, color: '#ff6b6b' },
-  { label: '其他', value: 48, color: '#b07aff' },
-];
-
-export const eventTotal = 450;
-
-export const importantVideos: ImportantVideoItem[] = [
-  { id: 1, label: '化工区/乙烯装置-1', online: true },
-  { id: 2, label: '水东港区/码头-2', online: true },
-  { id: 3, label: '炼油区/储罐区-3', online: true },
-  { id: 4, label: '化工区/罐区-4', online: true },
-  { id: 5, label: '博贺港区/泊位-5', online: true },
-  { id: 6, label: '炼油区/装置区-6', online: false },
-];
-
-export const inspectionVehicles: InspectionVehicleItem[] = [
-  {
-    id: 1,
-    areaCode: 'refinery',
-    plate: '粤KAA543',
-    badge: '入厂',
-    gate: '3#门-入',
-    time: '2026-03-17 10:22:23',
-  },
-  {
-    id: 2,
-    areaCode: 'refinery',
-    plate: '粤K·D8621',
-    badge: '出厂',
-    gate: '2#门-出',
-    time: '2026-03-17 10:19:46',
-  },
-  {
-    id: 3,
-    areaCode: 'refinery',
-    plate: '粤K·B3310',
-    badge: '入厂',
-    gate: '南门-入',
-    time: '2026-03-17 10:16:08',
-  },
-  {
-    id: 4,
-    areaCode: 'refinery',
-    plate: '粤K·A8821',
-    badge: '出厂',
-    gate: '东门-出',
-    time: '2026-03-17 10:11:35',
-  },
-  {
-    id: 5,
-    areaCode: 'refinery',
-    plate: '粤K·F2076',
-    badge: '入厂',
-    gate: '1#门-入',
-    time: '2026-03-17 10:07:12',
-  },
-  {
-    id: 6,
-    areaCode: 'chemical',
-    plate: '粤K·C5198',
-    badge: '出厂',
-    gate: '3#门-出',
-    time: '2026-03-17 10:02:54',
-  },
-  {
-    id: 7,
-    areaCode: 'chemical',
-    plate: '粤K·E7603',
-    badge: '入厂',
-    gate: '北门-入',
-    time: '2026-03-17 09:58:31',
-  },
-  {
-    id: 8,
-    areaCode: 'port',
-    plate: '粤K·H1265',
-    badge: '出厂',
-    gate: '2#门-出',
-    time: '2026-03-17 09:53:17',
-  },
-];
-
-export const inspectionPersons: InspectionPersonItem[] = [
-  {
-    id: 1,
-    areaCode: 'refinery',
-    name: '陈志强',
-    badge: '员工',
-    department: '炼油运行一部',
-    gate: '3#门-入',
-    time: '10:21:18',
-  },
-  {
-    id: 2,
-    areaCode: 'refinery',
-    name: '李明辉',
-    badge: '承包商',
-    department: '广东安建',
-    gate: '2#门-入',
-    time: '10:18:42',
-  },
-  {
-    id: 3,
-    areaCode: 'refinery',
-    name: '王晓峰',
-    badge: '访客',
-    department: '设备厂商',
-    gate: '东门-入',
-    time: '10:14:09',
-  },
-  {
-    id: 4,
-    areaCode: 'refinery',
-    name: '周宇鹏',
-    badge: '员工',
-    department: '储运部',
-    gate: '南门-出',
-    time: '10:09:56',
-  },
-  {
-    id: 5,
-    areaCode: 'chemical',
-    name: '黄建军',
-    badge: '承包商',
-    department: '石化检修',
-    gate: '1#门-入',
-    time: '10:05:23',
-  },
-  {
-    id: 6,
-    areaCode: 'port',
-    name: '张伟东',
-    badge: '员工',
-    department: '安全环保部',
-    gate: '3#门-出',
-    time: '09:59:47',
-  },
 ];
 
 const alarmPos = stagePercentToWorldPosition(50.9, 45.6);

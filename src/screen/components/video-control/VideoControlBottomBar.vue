@@ -1,5 +1,7 @@
 ﻿<script setup lang="ts">
-import { videoControlPages, type GridLayout } from '../../lib/data/videoControlMock';
+import { computed } from 'vue';
+import { fetchVideoCameras, type GridLayout } from '@/services/video';
+import { useScreenAsyncState } from '../../lib/composables/useScreenAsyncState';
 
 defineProps<{
   page: number;
@@ -10,6 +12,15 @@ const emit = defineEmits<{
   'update:page': [page: number];
   'update:layout': [layout: GridLayout];
 }>();
+
+// 页码列表根据 /video/cameras 返回的 pages 动态生成（拉一次首页取总页数）。
+const { data: firstPage } = useScreenAsyncState('video', '/video/cameras', () =>
+  fetchVideoCameras(1, 9),
+);
+const pagerPages = computed(() => {
+  const pages = firstPage.value?.pages ?? 1;
+  return Array.from({ length: Math.max(1, pages) }, (_, i) => i + 1);
+});
 
 const layouts: { key: GridLayout; label: string; cols: number }[] = [
   { key: '1x1', label: '1×1', cols: 1 },
@@ -47,7 +58,7 @@ const layouts: { key: GridLayout; label: string; cols: number }[] = [
       </button>
 
       <button
-        v-for="p in videoControlPages"
+        v-for="p in pagerPages"
         :key="p"
         type="button"
         class="vc-pager-num"
@@ -60,7 +71,7 @@ const layouts: { key: GridLayout; label: string; cols: number }[] = [
       <button
         type="button"
         class="vc-pager-btn"
-        :disabled="page >= videoControlPages.length"
+        :disabled="page >= pagerPages.length"
         aria-label="下一页"
         @click="emit('update:page', page + 1)"
       >

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
-import type { SpecialOperationRecord } from '../../lib/data/specialOperationMock';
+import type { SpecialOperationRecord } from '@/services/specialOperation';
 
 const props = defineProps<{
   item: SpecialOperationRecord;

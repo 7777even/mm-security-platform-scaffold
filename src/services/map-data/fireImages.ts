@@ -13,7 +13,7 @@ import highAltitudeAr from '@/assets/map/mock-cameras/high-altitude-ar-petrochem
 import mediaA from '@/assets/map/mock-cameras/media__1782729464392.png';
 import mediaB from '@/assets/map/mock-cameras/media__1782729636918.png';
 
-// 监控墙缩略图（与 videoControlMock 的 thumbIndex % 6 一一对应）
+// 监控墙缩略图（与 /video/cameras 返回的 thumbIndex % 6 一一对应）
 const CAMERA_THUMBS = [
   chemicalFactoryPipes,
   chemicalPlantReactor,
