@@ -18,6 +18,7 @@ import {
   isSigningEnabled,
 } from '@/services/requestSigner';
 import { isPlainRequestBody, strictSanitizeDeep } from '@/utils/sanitize';
+import { pushGlobalToast } from '@/services/globalToast';
 
 /**
  * B3 统一包络错误：业务码（code!=0）或鉴权失败（401/403）时由 http 层抛出，
@@ -119,9 +120,14 @@ http.interceptors.response.use(
         // 清除内存态令牌，避免后续请求继续携带死令牌反复 401。
         clearAccessToken();
         logger.warn('[http] 401 未授权，已清除内存态令牌');
+        // 401 不再弹全局 toast：unauthorizedHandler 已接管（跳登录/重登），避免双重打扰。
         unauthorizedHandler?.();
       } else if (status === 403) {
         logger.warn('[http] 403 无权限访问该资源');
+        pushGlobalToast(`无权限访问该资源：${String(body.message)}`);
+      } else {
+        // 全局错误兜底（L4 已确认）：业务失败时 UI 层可见，不再只有 console。
+        pushGlobalToast(String(body.message));
       }
       return Promise.reject(apiErr);
     }
@@ -130,8 +136,12 @@ http.interceptors.response.use(
       unauthorizedHandler?.();
     } else if (status === 403) {
       logger.warn('[http] 403 无权限访问该资源');
+      pushGlobalToast('无权限访问该资源');
+    } else {
+      // 网络层失败（超时/断网/非 B3 包络响应）：全局兜底提示，节流防批量刷屏。
+      logger.error('[http] request failed', error?.message);
+      pushGlobalToast(status ? `请求失败（HTTP ${status}）` : '网络异常，请检查后端连接');
     }
-    logger.error('[http] request failed', error?.message);
     return Promise.reject(error);
   },
 );
