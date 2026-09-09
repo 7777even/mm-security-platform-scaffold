@@ -1,9 +1,9 @@
 import { computed, ref, watch } from 'vue';
 import {
-  emergencyEventGroups,
+  fetchEmergencyEvents,
   type EmergencyEventGroup,
   type EmergencyEventItem,
-} from '../data/preliminaryMock';
+} from '@/services/emergencyEvent';
 import { selectPreliminaryEvent } from './usePreliminaryEventSelection';
 import { usePlantArea } from './usePlantArea';
 
@@ -11,6 +11,31 @@ const { filterByPlantArea } = usePlantArea();
 
 export const PRELIMINARY_EVENT_CARD_SLOT = 114;
 export const PRELIMINARY_GROUP_TITLE_SLOT = 26;
+
+export const preliminaryEventGroups = ref<EmergencyEventGroup[]>([]);
+export const preliminaryEventsLoading = ref(false);
+export const preliminaryEventsError = ref<unknown>(null);
+
+void loadPreliminaryEvents();
+
+async function loadPreliminaryEvents(): Promise<void> {
+  preliminaryEventsLoading.value = true;
+  preliminaryEventsError.value = null;
+  try {
+    const data = await fetchEmergencyEvents('PRELIMINARY');
+    if (Array.isArray(data)) {
+      preliminaryEventGroups.value = data;
+    } else {
+      preliminaryEventsError.value = new Error('[preliminary] 后端未返回事件分组数组');
+      console.warn('[preliminary] 后端未返回事件分组数组，保持空列表');
+    }
+  } catch (err) {
+    preliminaryEventsError.value = err;
+    console.error('[preliminary] 加载先期处置事件分组失败', err);
+  } finally {
+    preliminaryEventsLoading.value = false;
+  }
+}
 
 export const preliminaryKeyword = ref('');
 export const preliminaryCurrentPage = ref(1);
@@ -39,7 +64,7 @@ export function resetPreliminaryEventList() {
 
 const filteredGroups = computed(() => {
   const q = preliminaryKeyword.value.trim().toLowerCase();
-  const areaGroups = emergencyEventGroups
+  const areaGroups = preliminaryEventGroups.value
     .map((group) => ({
       ...group,
       events: filterByPlantArea(group.events),

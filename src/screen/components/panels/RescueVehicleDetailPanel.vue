@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
-import type { RescueVehicleItem } from '../../lib/data/rescueVehicleMock';
+import type { RescueVehicleItem } from '@/services/rescueResource';
 
 const props = defineProps<{
   item: RescueVehicleItem;
@@ -54,7 +54,7 @@ const maintenanceRows = computed(() => [
 </script>
 
 <template>
-  <PanelCard :title="item.businessName" variant="rescue" :show-more="false">
+  <PanelCard :title="item.businessName ?? ''" variant="rescue" :show-more="false">
     <div class="brigade-detail">
       <div class="brigade-detail__tabs">
         <button

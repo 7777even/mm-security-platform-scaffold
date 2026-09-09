@@ -1,14 +1,29 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import {
-  currentWeather,
-  dailyWeather,
-  hourlyWeather,
+  fetchWeatherOverview,
   type WeatherMetric,
-} from '../../lib/data/weatherMock';
+  type CurrentWeather,
+  type HourlyWeatherItem,
+  type DailyWeatherItem,
+} from '@/services/weather';
 
 defineProps<{ open: boolean }>();
 defineEmits<{ close: [] }>();
+
+const currentWeather = ref<CurrentWeather | null>(null);
+const hourlyWeather = ref<HourlyWeatherItem[]>([]);
+const dailyWeather = ref<DailyWeatherItem[]>([]);
+
+onMounted(() => {
+  fetchWeatherOverview()
+    .then((res) => {
+      currentWeather.value = res.current;
+      hourlyWeather.value = res.hourly;
+      dailyWeather.value = res.daily;
+    })
+    .catch(() => {});
+});
 
 const metric = ref<WeatherMetric>('rain');
 const metrics: Array<{ key: WeatherMetric; label: string; unit: string }> = [
@@ -22,7 +37,7 @@ const metrics: Array<{ key: WeatherMetric; label: string; unit: string }> = [
 const activeMetric = computed(
   () => metrics.find((item) => item.key === metric.value) ?? metrics[0],
 );
-const values = computed(() => hourlyWeather.map((item) => item[metric.value]));
+const values = computed(() => hourlyWeather.value.map((item) => item[metric.value]));
 const chartPoints = computed(() => {
   const list = values.value;
   const min = Math.min(...list);
@@ -38,10 +53,14 @@ const polyline = computed(() =>
   chartPoints.value.map((point) => `${point.x},${point.y}`).join(' '),
 );
 const weeklyHighPoints = computed(() =>
-  dailyWeather.map((item, index) => `${71 + index * 142},${42 + (33 - item.high) * 9}`).join(' '),
+  dailyWeather.value
+    .map((item, index) => `${71 + index * 142},${42 + (33 - item.high) * 9}`)
+    .join(' '),
 );
 const weeklyLowPoints = computed(() =>
-  dailyWeather.map((item, index) => `${71 + index * 142},${104 + (26 - item.low) * 9}`).join(' '),
+  dailyWeather.value
+    .map((item, index) => `${71 + index * 142},${104 + (26 - item.low) * 9}`)
+    .join(' '),
 );
 </script>
 
@@ -49,7 +68,7 @@ const weeklyLowPoints = computed(() =>
   <Teleport to="body">
     <Transition name="weather-dialog">
       <div
-        v-if="open"
+        v-if="open && currentWeather"
         class="weather-dialog"
         role="dialog"
         aria-modal="true"

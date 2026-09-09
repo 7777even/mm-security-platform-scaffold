@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import {
-  fireFacilityTypeOptions,
-  fireFacilityMonitorSummaries,
-  fireFacilityFaults as initialFaults,
-  resolveFacilityLedgerByType,
+  type AlarmLevel,
   type FacilityAlarmItem,
   type FacilityFaultItem,
   type FacilityWorkOrderItem,
@@ -14,6 +11,14 @@ import {
 } from '../../lib/data/fireFacilityMonitoringMock';
 import { facilityAlarmToDetail } from '../../lib/data/alarmDetailMock';
 import { equipmentStatus } from '../../lib/data/mock';
+import {
+  fetchFireFacilityMonitors,
+  fetchFireFacilityLedger,
+  fetchFireFacilityFaults,
+  type FireFacilityMonitorSummary,
+  type FireFacilityLedgerItem,
+  type FireFacilityFaultItem,
+} from '@/services/fireFacility';
 import {
   useFireFacilityMonitoringDialog,
   type FireFacilityDialogTab,
@@ -32,9 +37,57 @@ const {
 } = useFireFacilityMonitoringDialog();
 const { openAlarmDetail } = useAlarmDetailPanel();
 
-const faults = ref<FacilityFaultItem[]>(
-  initialFaults.map((fault) => ({ ...fault, timeline: [...fault.timeline] })),
-);
+const faults = ref<FacilityFaultItem[]>([]);
+const monitorSummaries = ref<FireFacilityMonitorSummary[]>([]);
+const ledgerItems = ref<FireFacilityLedgerItem[]>([]);
+const typeOptions = ref<string[]>(['全部类型']);
+
+/** 后端故障项（字段多为可空字符串）桥接为弹窗内部展示用的 mock 结构（faultLevel/status 为字面量枚举）。 */
+function toFacilityFaultItem(f: FireFacilityFaultItem): FacilityFaultItem {
+  return {
+    id: f.id,
+    faultCode: f.faultCode,
+    facilityCode: f.facilityCode,
+    facilityName: f.facilityName,
+    facilityType: f.facilityType,
+    faultType: f.faultType,
+    faultLevel: f.faultLevel as AlarmLevel,
+    discoverTime: f.discoverTime,
+    discoverMethod: f.discoverMethod,
+    phenomenon: f.phenomenon,
+    cause: f.cause ?? '',
+    status: f.status as FaultStatus,
+    workOrderNo: f.workOrderNo ?? undefined,
+    repairPerson: f.repairPerson ?? undefined,
+    estimatedFinish: f.estimatedFinish ?? undefined,
+    actualFinish: f.actualFinish ?? undefined,
+    repairMeasures: f.repairMeasures ?? undefined,
+    acceptancePerson: f.acceptancePerson ?? undefined,
+    acceptanceResult: f.acceptanceResult ?? undefined,
+    timeline: f.timeline.map((t) => ({
+      time: t.time,
+      operator: t.operator,
+      action: t.action,
+      detail: t.detail,
+    })),
+  };
+}
+
+async function loadFacilityData() {
+  try {
+    const [mon, led, flt] = await Promise.all([
+      fetchFireFacilityMonitors(),
+      fetchFireFacilityLedger(),
+      fetchFireFacilityFaults(),
+    ]);
+    typeOptions.value = mon.typeOptions;
+    monitorSummaries.value = mon.items;
+    ledgerItems.value = led.items;
+    faults.value = flt.items.map(toFacilityFaultItem);
+  } catch (e) {
+    console.error('[FireFacilityMonitoringDialog] 加载消防设施监测数据失败', e);
+  }
+}
 
 type DetailView =
   | { kind: 'facility'; facilityType: string }
@@ -243,6 +296,7 @@ watch(
   () => props.open,
   (visible) => {
     if (!visible) return;
+    void loadFacilityData();
     applyPresets();
   },
 );
@@ -481,10 +535,8 @@ function summaryStatusClass(status: string) {
 const currentFacilityDetail = computed(() => {
   const view = detailView.value;
   if (!view || view.kind !== 'facility') return null;
-  const ledger = resolveFacilityLedgerByType(view.facilityType);
-  const summary = fireFacilityMonitorSummaries.find(
-    (item) => item.facilityType === view.facilityType,
-  );
+  const ledger = ledgerItems.value.find((item) => item.facilityType === view.facilityType) ?? null;
+  const summary = monitorSummaries.value.find((item) => item.facilityType === view.facilityType);
   const relatedFaults = faults.value.filter((fault) => fault.facilityType === view.facilityType);
   return { ledger, summary, relatedFaults };
 });
@@ -545,7 +597,14 @@ const currentWorkOrderDetail = computed(() => {
           </header>
 
           <div class="ffm__body">
-            <template v-if="detailView && detailView.kind === 'facility' && currentFacilityDetail">
+            <template
+              v-if="
+                detailView &&
+                detailView.kind === 'facility' &&
+                currentFacilityDetail &&
+                currentFacilityDetail.ledger
+              "
+            >
               <div class="ffm__detail-head">
                 <button type="button" class="ffm__back" @click="backToList">‹ 返回</button>
                 <h4 class="ffm__detail-title">
@@ -1017,7 +1076,7 @@ const currentWorkOrderDetail = computed(() => {
                     placeholder="搜索告警内容 / 来源 / 编号"
                   />
                   <select v-model="monitorTypeFilter" class="ffm__select">
-                    <option v-for="opt in fireFacilityTypeOptions" :key="opt" :value="opt">
+                    <option v-for="opt in typeOptions" :key="opt" :value="opt">
                       {{ opt === '全部类型' ? '设施类型' : opt }}
                     </option>
                   </select>
@@ -1037,7 +1096,7 @@ const currentWorkOrderDetail = computed(() => {
 
                 <div class="ffm__cards">
                   <button
-                    v-for="card in fireFacilityMonitorSummaries"
+                    v-for="card in monitorSummaries"
                     :key="card.key"
                     type="button"
                     class="ffm__card"
@@ -1170,7 +1229,7 @@ const currentWorkOrderDetail = computed(() => {
                     placeholder="搜索故障编号 / 设备 / 现象"
                   />
                   <select v-model="problemTypeFilter" class="ffm__select">
-                    <option v-for="opt in fireFacilityTypeOptions" :key="opt" :value="opt">
+                    <option v-for="opt in typeOptions" :key="opt" :value="opt">
                       {{ opt === '全部类型' ? '设施类型' : opt }}
                     </option>
                   </select>
@@ -1289,7 +1348,7 @@ const currentWorkOrderDetail = computed(() => {
                     placeholder="搜索工单 / 故障 / 设备"
                   />
                   <select v-model="workorderTypeFilter" class="ffm__select">
-                    <option v-for="opt in fireFacilityTypeOptions" :key="opt" :value="opt">
+                    <option v-for="opt in typeOptions" :key="opt" :value="opt">
                       {{ opt === '全部类型' ? '设施类型' : opt }}
                     </option>
                   </select>

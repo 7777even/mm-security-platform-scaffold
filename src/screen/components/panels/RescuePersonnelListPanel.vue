@@ -2,18 +2,16 @@
 import { computed } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
 import {
-  rescuePersonnelRoles,
-  rescuePersonnelSquadrons,
-  rescuePersonnelTotalCount,
-} from '../../lib/data/rescuePersonnelMock';
-import {
   closeRescuePersonnelView,
   goToRescuePersonnelPage,
   rescuePersonnelCurrentPage,
   rescuePersonnelKeyword,
   rescuePersonnelPagedItems,
   rescuePersonnelRoleFilter,
+  rescuePersonnelRoles,
   rescuePersonnelSquadronFilter,
+  rescuePersonnelSquadrons,
+  rescuePersonnelTotalCount,
   rescuePersonnelTotalPages,
   resetRescuePersonnelSearch,
   searchRescuePersonnel,

@@ -10,11 +10,11 @@ import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
 import { findScreenAlarm, refreshScreenAlarms } from '../../lib/composables/useScreenAlarmFeed';
 import { rescueDrawerActive } from '../../lib/composables/useRescueDrawerActive';
 import { useAlarmDetailPanel } from '../../lib/composables/useAlarmDetailPanel';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 import { getPlantAreaDefinition } from '../../lib/data/plantAreas';
-import { fireSituationMarkers } from '../../lib/data/fireSituationMapMock';
-import type { FireSituationMarkerItem } from '../../lib/data/fireSituationMapMock';
+import { fetchFireSituationMarkers } from '@/services/fireSituation';
+import type { FireSituationMarkerItem } from '@/services/fireSituation';
 import { useRouter } from 'vue-router';
 import { fireAlarmToDetail } from '../../lib/data/alarmDetailMock';
 import {
@@ -62,8 +62,15 @@ function openSituationDetail(item: FireSituationMarkerItem) {
   if (alarm) openAlarmDetail(fireAlarmToDetail(alarm));
 }
 
-// 挂载即拉取真实后端 /alarms，供上方点位反查；失败时 findScreenAlarm 命中不到，静默不弹详情。
-onMounted(() => void refreshScreenAlarms());
+const fireSituationMarkers = ref<FireSituationMarkerItem[]>([]);
+onMounted(() => {
+  void refreshScreenAlarms();
+  void fetchFireSituationMarkers()
+    .then((data) => {
+      fireSituationMarkers.value = data.items;
+    })
+    .catch(() => {});
+});
 </script>
 
 <template>

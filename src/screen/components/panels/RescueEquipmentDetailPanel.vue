@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
-import type { RescueEquipmentItem } from '../../lib/data/rescueEquipmentMock';
+import type { RescueEquipmentItem } from '@/services/rescueResource';
 
 const props = defineProps<{
   item: RescueEquipmentItem;

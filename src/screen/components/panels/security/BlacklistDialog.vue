@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import {
-  personBlacklist,
-  vehicleBlacklist,
+  fetchBlacklist,
   type BlacklistPersonItem,
   type BlacklistVehicleItem,
-} from '../../../lib/data/blacklistMock';
+} from '@/services/securityBlacklist';
 
 const props = defineProps<{
   open: boolean;
@@ -16,22 +15,32 @@ const emit = defineEmits<{
 }>();
 
 const activeTab = ref<'vehicle' | 'person'>('vehicle');
+const vehicleBlacklist = ref<BlacklistVehicleItem[]>([]);
+const personBlacklist = ref<BlacklistPersonItem[]>([]);
 
 watch(
   () => props.open,
   (visible) => {
-    if (visible) activeTab.value = 'vehicle';
+    if (visible) {
+      activeTab.value = 'vehicle';
+      void fetchBlacklist()
+        .then((data) => {
+          vehicleBlacklist.value = data.vehicles;
+          personBlacklist.value = data.persons;
+        })
+        .catch(() => {});
+    }
   },
 );
 
 function removeVehicle(item: BlacklistVehicleItem) {
-  const index = vehicleBlacklist.findIndex((v) => v.id === item.id);
-  if (index >= 0) vehicleBlacklist.splice(index, 1);
+  const index = vehicleBlacklist.value.findIndex((v) => v.id === item.id);
+  if (index >= 0) vehicleBlacklist.value.splice(index, 1);
 }
 
 function removePerson(item: BlacklistPersonItem) {
-  const index = personBlacklist.findIndex((p) => p.id === item.id);
-  if (index >= 0) personBlacklist.splice(index, 1);
+  const index = personBlacklist.value.findIndex((p) => p.id === item.id);
+  if (index >= 0) personBlacklist.value.splice(index, 1);
 }
 </script>
 

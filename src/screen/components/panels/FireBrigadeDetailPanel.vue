@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
 import { selectedFireBrigade } from '../../lib/composables/useFireBrigadeView';
-import type { FireBrigadeEquipment, FireBrigadePerson } from '../../lib/data/fireBrigadeMock';
+import type { FireBrigadeEquipment, FireBrigadePerson } from '@/services/rescueResource';
 
 const tabs = [
   { key: 'basic', label: '基础信息' },
@@ -106,7 +106,7 @@ const archiveRows = computed(() => {
   ];
 });
 
-function statusBadgeClass(status: string): string {
+function statusBadgeClass(status: string | null): string {
   const map: Record<string, string> = {
     待命: 'ok',
     在岗: 'ok',
@@ -118,7 +118,7 @@ function statusBadgeClass(status: string): string {
     休假: 'muted',
     报废预警: 'danger',
   };
-  return map[status] ?? 'muted';
+  return map[status ?? ''] ?? 'muted';
 }
 </script>
 

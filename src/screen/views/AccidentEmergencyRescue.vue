@@ -42,7 +42,8 @@ import {
   buildEvacuationRouteFromGeoJson,
   extractEvacuationLinesFromGeoJson,
 } from '../lib/geo/evacuationRoute';
-import { resolveEvacuationPeople, type EvacuationPerson } from '../lib/data/evacuationPeopleMock';
+import { pickPointAlongRoute, type EvacuationPerson } from '../lib/data/evacuationPeopleMock';
+import { fetchEvacuationPeople } from '@/services/emergencyEvent';
 import {
   resolveMonitoringAlarms,
   resolveMonitoringPoints,
@@ -344,7 +345,18 @@ async function enterEvacuationScene() {
       lines: lines.map((l) => ({ id: l.id, positions: l.positions })),
       focus: true,
     });
-    evacuationPeople.value = resolveEvacuationPeople({ route: primary.positions, count: 20 });
+    const roster = await fetchEvacuationPeople(20);
+    evacuationPeople.value = roster.map((person) => {
+      const pos = pickPointAlongRoute(primary.positions, person.routeProgress);
+      return {
+        id: person.id,
+        name: person.name,
+        org: person.org,
+        job: person.job,
+        longitude: pos.longitude,
+        latitude: pos.latitude,
+      } satisfies EvacuationPerson;
+    });
     frameWorldPositions(primary.positions, {
       duration: 0.9,
       pitchDeg: -38,

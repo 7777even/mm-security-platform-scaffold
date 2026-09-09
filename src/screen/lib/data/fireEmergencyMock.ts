@@ -319,10 +319,6 @@ export const fireEmergencyAllEventGroups: EmergencyEventGroup[] = [
   ...fireEmergencyDrillEventGroups,
 ];
 
-/** 初始数据快照（页面重置时恢复） */
-export const initialFireEmergencyEventGroups = fireEmergencyEventGroups;
-export const initialFireEmergencyDrillEventGroups = fireEmergencyDrillEventGroups;
-
 export const fireEmergencyEvents: EmergencyEventItem[] = fireEmergencyEventGroups.flatMap(
   (group) => group.events,
 );

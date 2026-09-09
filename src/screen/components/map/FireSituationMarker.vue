@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FireSituationMarkerItem } from '../../lib/data/fireSituationMapMock';
+import type { FireSituationMarkerItem } from '@/services/fireSituation';
 import { useCesiumScreenAnchor } from '../../lib/composables/useCesiumScreenAnchor';
 
 const props = defineProps<{ item: FireSituationMarkerItem }>();

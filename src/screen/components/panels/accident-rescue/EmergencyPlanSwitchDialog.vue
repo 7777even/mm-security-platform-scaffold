@@ -5,9 +5,11 @@ import {
   emergencyPlanSwitchOptions,
   emergencyPlanSwitchTabs,
   resolvePlansByTab,
-  type EmergencyPlanSwitchTabKey,
+  usePlanMatrix,
   type SelectableEmergencyPlan,
-} from '../../../lib/data/emergencyPlanSwitchMock';
+} from '../../../lib/composables/usePlanMatrix';
+
+const { loadOptions } = usePlanMatrix();
 
 const props = defineProps<{
   open: boolean;
@@ -20,10 +22,10 @@ const emit = defineEmits<{
   select: [plan: SelectableEmergencyPlan];
 }>();
 
-const activeTab = ref<EmergencyPlanSwitchTabKey>('disposal');
+const activeTab = ref<string>('');
 const keyword = ref('');
-const accidentType = ref(emergencyPlanSwitchOptions.accidentTypes[0]);
-const facility = ref(emergencyPlanSwitchOptions.facilities[0]);
+const accidentType = ref(emergencyPlanSwitchOptions.value.accidentTypes[0]);
+const facility = ref(emergencyPlanSwitchOptions.value.facilities[0]);
 const localSelectedId = ref<string | null>(null);
 
 const tabPlans = computed(() => resolvePlansByTab(activeTab.value));
@@ -48,11 +50,13 @@ watch(
   () => props.open,
   (visible) => {
     if (!visible) return;
-    activeTab.value = 'disposal';
-    keyword.value = '';
-    accidentType.value = emergencyPlanSwitchOptions.accidentTypes[0];
-    facility.value = emergencyPlanSwitchOptions.facilities[0];
-    localSelectedId.value = props.selectedPlanId ?? null;
+    loadOptions().then(() => {
+      activeTab.value = emergencyPlanSwitchTabs.value[0]?.key ?? '';
+      keyword.value = '';
+      accidentType.value = emergencyPlanSwitchOptions.value.accidentTypes[0];
+      facility.value = emergencyPlanSwitchOptions.value.facilities[0];
+      localSelectedId.value = props.selectedPlanId ?? null;
+    });
   },
 );
 
@@ -62,8 +66,8 @@ function closeDialog() {
 
 function resetFilters() {
   keyword.value = '';
-  accidentType.value = emergencyPlanSwitchOptions.accidentTypes[0];
-  facility.value = emergencyPlanSwitchOptions.facilities[0];
+  accidentType.value = emergencyPlanSwitchOptions.value.accidentTypes[0];
+  facility.value = emergencyPlanSwitchOptions.value.facilities[0];
 }
 
 function handleSelect(plan: SelectableEmergencyPlan) {

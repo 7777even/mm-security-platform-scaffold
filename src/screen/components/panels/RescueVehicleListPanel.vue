@@ -2,24 +2,22 @@
 import { computed } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
 import {
-  rescueVehicleSquadrons,
-  rescueVehicleTotalCount,
-  rescueVehicleTypes,
-  statusBadgeClass,
-} from '../../lib/data/rescueVehicleMock';
-import {
   closeRescueVehicleView,
   goToRescueVehiclePage,
   rescueVehicleCurrentPage,
   rescueVehiclePagedItems,
   rescueVehiclePlateKeyword,
   rescueVehicleSquadronFilter,
+  rescueVehicleSquadrons,
+  rescueVehicleTotalCount,
   rescueVehicleTotalPages,
   rescueVehicleTypeFilter,
+  rescueVehicleTypes,
   resetRescueVehicleSearch,
   searchRescueVehicle,
   selectRescueVehicle,
   selectedRescueVehicleId,
+  statusBadgeClass,
 } from '../../lib/composables/useRescueVehicleView';
 
 const visiblePages = computed(() => {

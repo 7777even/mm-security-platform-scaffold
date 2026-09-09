@@ -45,17 +45,6 @@ export interface FireBrigadeTeam {
   equipment: FireBrigadeEquipment[];
 }
 
-export const fireBrigadeAreas = [
-  '全部区域',
-  '炼油区',
-  '乙烯区',
-  '罐区',
-  '仓储区',
-  '码头区',
-  '芳烃区',
-  '特勤保障区',
-] as const;
-
 const teamMeta: Array<{
   name: string;
   area: string;

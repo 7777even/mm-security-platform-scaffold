@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
-import { fireBrigadeAreas } from '../../lib/data/fireBrigadeMock';
 import {
   closeFireBrigadeView,
+  fireBrigadeAreas,
   fireBrigadeCurrentPage,
   fireBrigadeAreaFilter,
   fireBrigadeFilteredTeams,

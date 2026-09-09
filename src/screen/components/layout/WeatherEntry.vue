@@ -1,13 +1,23 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import WeatherDetailsDialog from './WeatherDetailsDialog.vue';
-import { currentWeather } from '../../lib/data/weatherMock';
+import { fetchWeatherOverview, type CurrentWeather } from '@/services/weather';
 
 const open = ref(false);
+const currentWeather = ref<CurrentWeather | null>(null);
+
+onMounted(() => {
+  fetchWeatherOverview()
+    .then((res) => {
+      currentWeather.value = res.current;
+    })
+    .catch(() => {});
+});
 </script>
 
 <template>
   <button
+    v-if="currentWeather"
     type="button"
     class="weather-entry"
     title="查看天气详情"
@@ -28,6 +38,7 @@ const open = ref(false);
     ><span>{{ currentWeather.temperature }}℃</span><small>{{ currentWeather.condition }}</small
     ><i>›</i>
   </button>
+  <span v-else class="weather-entry weather-entry--loading" aria-hidden="true"><i>›</i></span>
   <WeatherDetailsDialog :open="open" @close="open = false" />
 </template>
 
@@ -78,5 +89,14 @@ const open = ref(false);
   font-size: var(--icon-md);
   color: var(--color-text-muted);
   transform: rotate(90deg);
+}
+
+.weather-entry--loading {
+  width: 38px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  cursor: default;
+  animation: none;
 }
 </style>

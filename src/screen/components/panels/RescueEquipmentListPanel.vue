@@ -2,17 +2,15 @@
 import { computed } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
 import {
-  rescueEquipmentSquadrons,
-  rescueEquipmentTotalSets,
-} from '../../lib/data/rescueEquipmentMock';
-import {
   closeRescueEquipmentView,
   goToRescueEquipmentPage,
   rescueEquipmentCurrentPage,
   rescueEquipmentKeyword,
   rescueEquipmentPagedItems,
   rescueEquipmentSquadronFilter,
+  rescueEquipmentSquadrons,
   rescueEquipmentTotalPages,
+  rescueEquipmentTotalSets,
   resetRescueEquipmentSearch,
   searchRescueEquipment,
   selectRescueEquipment,

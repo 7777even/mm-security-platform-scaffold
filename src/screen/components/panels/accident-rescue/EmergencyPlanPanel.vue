@@ -8,11 +8,11 @@ import {
   type EmergencyPlanLevel,
   type IncidentDetailField,
 } from '../../../lib/data/accidentRescueMock';
-import { usePlanMatrix } from '../../../lib/composables/usePlanMatrix';
 import {
+  usePlanMatrix,
   planSwitchTabToRowId,
   type SelectableEmergencyPlan,
-} from '../../../lib/data/emergencyPlanSwitchMock';
+} from '../../../lib/composables/usePlanMatrix';
 
 const props = withDefaults(
   defineProps<{

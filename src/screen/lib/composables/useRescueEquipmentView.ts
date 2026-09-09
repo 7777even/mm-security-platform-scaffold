@@ -1,9 +1,10 @@
 import { computed, ref } from 'vue';
 import {
-  getRescueEquipmentItem,
-  rescueEquipmentItems,
+  fetchRescueEquipment,
+  fetchRescueEquipmentDetail,
   type RescueEquipmentItem,
-} from '../data/rescueEquipmentMock';
+  type RescueEquipmentList,
+} from '@/services/rescueResource';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
@@ -18,13 +19,33 @@ export const rescueEquipmentCurrentPage = ref(1);
 export const rescueEquipmentKeyword = ref('');
 export const rescueEquipmentSquadronFilter = ref('全部中队');
 
-export const selectedRescueEquipment = computed<RescueEquipmentItem | null>(() =>
-  getRescueEquipmentItem(selectedRescueEquipmentId.value),
+const rescueEquipmentData = ref<RescueEquipmentList>({ squadrons: [], totalSets: 0, items: [] });
+const rescueEquipmentItems = computed<RescueEquipmentItem[]>(() => rescueEquipmentData.value.items);
+
+/** 筛选下拉选项（含“全部”哨兵值），由后端返回的中队列表派生。 */
+export const rescueEquipmentSquadrons = computed(() => [
+  '全部中队',
+  ...rescueEquipmentData.value.squadrons,
+]);
+/** 业务总量（套），由后端台账总数派生。 */
+export const rescueEquipmentTotalSets = computed(() => rescueEquipmentData.value.totalSets);
+
+const selectedRescueEquipmentDetail = ref<RescueEquipmentItem | null>(null);
+export const selectedRescueEquipment = computed<RescueEquipmentItem | null>(
+  () => selectedRescueEquipmentDetail.value,
 );
+
+export const rescueEquipmentLoading = ref(false);
+export const rescueEquipmentError = ref<string | null>(null);
+
+function findRescueEquipment(id: number | null | undefined): RescueEquipmentItem | null {
+  if (!id) return null;
+  return rescueEquipmentItems.value.find((item) => item.id === id) ?? null;
+}
 
 export const rescueEquipmentFilteredItems = computed(() => {
   const kw = rescueEquipmentKeyword.value.trim();
-  return filterByPlantArea(rescueEquipmentItems).filter((item) => {
+  return filterByPlantArea(rescueEquipmentItems.value).filter((item) => {
     const matchKw = !kw || item.name.includes(kw);
     const matchSquadron =
       rescueEquipmentSquadronFilter.value === '全部中队' ||
@@ -42,6 +63,18 @@ export const rescueEquipmentPagedItems = computed(() => {
   return rescueEquipmentFilteredItems.value.slice(start, start + RESCUE_EQUIPMENT_PAGE_SIZE);
 });
 
+async function loadRescueEquipment() {
+  rescueEquipmentLoading.value = true;
+  rescueEquipmentError.value = null;
+  try {
+    rescueEquipmentData.value = await fetchRescueEquipment();
+  } catch (e) {
+    rescueEquipmentError.value = e instanceof Error ? e.message : String(e);
+  } finally {
+    rescueEquipmentLoading.value = false;
+  }
+}
+
 function equipmentMarkers() {
   const page = rescueEquipmentCurrentPage.value;
   const items = rescueEquipmentPagedItems.value;
@@ -53,7 +86,7 @@ function equipmentMarkers() {
 function focusForEquipment(id: number | null) {
   const items = rescueEquipmentPagedItems.value;
   const index = items.findIndex((item) => item.id === id);
-  const item = getRescueEquipmentItem(id);
+  const item = findRescueEquipment(id);
   if (!item || index < 0) return null;
   return coordsForSquadronPaged(
     item.squadron,
@@ -76,6 +109,7 @@ export function goToRescueEquipmentPage(page: number) {
     !rescueEquipmentPagedItems.value.some((item) => item.id === selectedRescueEquipmentId.value)
   ) {
     selectedRescueEquipmentId.value = null;
+    selectedRescueEquipmentDetail.value = null;
   }
   syncRescueEquipmentMapFocus();
 }
@@ -83,6 +117,7 @@ export function goToRescueEquipmentPage(page: number) {
 export function searchRescueEquipment() {
   rescueEquipmentCurrentPage.value = 1;
   selectedRescueEquipmentId.value = null;
+  selectedRescueEquipmentDetail.value = null;
   syncRescueEquipmentMapFocus();
 }
 
@@ -98,17 +133,28 @@ export function openRescueEquipmentView() {
   rescueEquipmentKeyword.value = '';
   rescueEquipmentSquadronFilter.value = '全部中队';
   selectedRescueEquipmentId.value = null;
-  runRescueMapFocus(equipmentMarkers());
+  selectedRescueEquipmentDetail.value = null;
+  void loadRescueEquipment().then(() => runRescueMapFocus(equipmentMarkers()));
 }
 
 export function closeRescueEquipmentView() {
   rescueEquipmentViewActive.value = false;
   rescueEquipmentCurrentPage.value = 1;
   selectedRescueEquipmentId.value = null;
+  selectedRescueEquipmentDetail.value = null;
   restoreRescueMapView();
 }
 
 export function selectRescueEquipment(id: number) {
   selectedRescueEquipmentId.value = id;
+  // 先用列表项即时回填（列表项已含完整字段），再由详情接口刷新，保证子集合最新。
+  selectedRescueEquipmentDetail.value = findRescueEquipment(id);
   syncRescueEquipmentMapFocus();
+  if (id != null) {
+    fetchRescueEquipmentDetail(id)
+      .then((detail) => {
+        if (selectedRescueEquipmentId.value === id) selectedRescueEquipmentDetail.value = detail;
+      })
+      .catch(() => {});
+  }
 }

@@ -1,9 +1,9 @@
 import { computed, ref } from 'vue';
 import {
-  fireBrigadeTeams,
-  getFireBrigadeTeam,
+  fetchFireBrigades,
+  type FireBrigadeList,
   type FireBrigadeTeam,
-} from '../data/fireBrigadeMock';
+} from '@/services/rescueResource';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
@@ -18,15 +18,31 @@ export const fireBrigadeCurrentPage = ref(1);
 export const fireBrigadeKeyword = ref('');
 export const fireBrigadeAreaFilter = ref('全部区域');
 
+const fireBrigadeData = ref<FireBrigadeList>({ areas: [], items: [] });
+const fireBrigadeItems = computed<FireBrigadeTeam[]>(() => fireBrigadeData.value.items);
+
+/** 筛选下拉选项（含“全部”哨兵值），由后端返回的区域列表派生。 */
+export const fireBrigadeAreas = computed(() => ['全部区域', ...fireBrigadeData.value.areas]);
+
 export const selectedFireBrigade = computed<FireBrigadeTeam | null>(() =>
-  getFireBrigadeTeam(selectedFireBrigadeId.value),
+  findFireBrigade(selectedFireBrigadeId.value),
 );
+
+export const fireBrigadeLoading = ref(false);
+export const fireBrigadeError = ref<string | null>(null);
+
+function findFireBrigade(id: number | null | undefined): FireBrigadeTeam | null {
+  if (!id) return null;
+  return fireBrigadeItems.value.find((team) => team.id === id) ?? null;
+}
 
 export const fireBrigadeFilteredTeams = computed(() => {
   const kw = fireBrigadeKeyword.value.trim().toLowerCase();
-  return filterByPlantArea(fireBrigadeTeams).filter((team) => {
+  return filterByPlantArea(fireBrigadeItems.value).filter((team) => {
     const matchKeyword =
-      !kw || team.name.toLowerCase().includes(kw) || team.leaderName.toLowerCase().includes(kw);
+      !kw ||
+      team.name.toLowerCase().includes(kw) ||
+      (team.leaderName ?? '').toLowerCase().includes(kw);
     const matchArea =
       fireBrigadeAreaFilter.value === '全部区域' || team.area === fireBrigadeAreaFilter.value;
     return matchKeyword && matchArea;
@@ -42,6 +58,18 @@ export const fireBrigadePagedTeams = computed(() => {
   return fireBrigadeFilteredTeams.value.slice(start, start + FIRE_BRIGADE_PAGE_SIZE);
 });
 
+async function loadFireBrigades() {
+  fireBrigadeLoading.value = true;
+  fireBrigadeError.value = null;
+  try {
+    fireBrigadeData.value = await fetchFireBrigades();
+  } catch (e) {
+    fireBrigadeError.value = e instanceof Error ? e.message : String(e);
+  } finally {
+    fireBrigadeLoading.value = false;
+  }
+}
+
 function brigadeMarkers() {
   const page = fireBrigadeCurrentPage.value;
   const teams = fireBrigadePagedTeams.value;
@@ -52,7 +80,7 @@ function focusForTeam(id: number | null) {
   if (!id) return null;
   const teams = fireBrigadePagedTeams.value;
   const index = teams.findIndex((team) => team.id === id);
-  const team = getFireBrigadeTeam(id);
+  const team = findFireBrigade(id);
   if (!team || index < 0) return null;
   return coordsForFireBrigadeTeam(team, index, teams.length, fireBrigadeCurrentPage.value);
 }
@@ -91,7 +119,7 @@ export function openFireBrigadeView() {
   fireBrigadeKeyword.value = '';
   fireBrigadeAreaFilter.value = '全部区域';
   selectedFireBrigadeId.value = null;
-  runRescueMapFocus(brigadeMarkers());
+  void loadFireBrigades().then(() => runRescueMapFocus(brigadeMarkers()));
 }
 
 export function closeFireBrigadeView() {

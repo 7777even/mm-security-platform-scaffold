@@ -96,7 +96,7 @@ export function resolveDrillRescueIncident(eventId?: number): DrillRescueInciden
     hazardSourceLevel: event.hazardSourceLevel ?? hazardLevels[event.id % hazardLevels.length],
     mapStatus: '演练处置',
     startedAt: event.time,
-    endedAt: event.endedAt,
+    endedAt: event.endedAt ?? undefined,
     status: event.status,
     reported: event.reported,
     facilityName: event.title.includes('储罐') ? '储罐演练区' : event.title,

@@ -1,5 +1,6 @@
 import { isInsideBoundary, type LonLat } from '../../utils/accidentRescueGeo';
-import { fireBrigadeTeams, type FireBrigadeTeam } from './fireBrigadeMock';
+import { fireBrigadeTeams } from './fireBrigadeMock';
+import type { FireBrigadeTeam } from '@/services/rescueResource';
 
 const fallback = fireBrigadeTeams[0]!;
 

@@ -1,10 +1,10 @@
 import { computed, ref, watch } from 'vue';
 import {
-  initialFireEmergencyDrillEventGroups,
-  initialFireEmergencyEventGroups,
+  fetchEmergencyEvents,
   type EmergencyEventGroup,
   type EmergencyEventItem,
-} from '../data/fireEmergencyMock';
+} from '@/services/emergencyEvent';
+import { fireEmergencyDrillEventGroups, fireEmergencyEventGroups } from '../data/fireEmergencyMock';
 import { selectFireEmergencyEvent } from './useFireEmergencyEventSelection';
 import {
   fireEmergencyListTab,
@@ -53,17 +53,75 @@ function cloneEventGroups(groups: EmergencyEventGroup[]): EmergencyEventGroup[] 
   }));
 }
 
+/** 后端返回的分组事件统一带 kind，按 kind 拆分回「事件」与「演练」两组，保持既有分组 id / label */
+function splitGroupsByKind(groups: EmergencyEventGroup[]): {
+  events: EmergencyEventGroup[];
+  drills: EmergencyEventGroup[];
+} {
+  const eventMap = new Map<string, EmergencyEventGroup>();
+  const drillMap = new Map<string, EmergencyEventGroup>();
+  for (const group of groups) {
+    for (const event of group.events) {
+      const isDrill = (event.kind ?? 'event') === 'drill';
+      const target = isDrill ? drillMap : eventMap;
+      const existing = target.get(group.id);
+      if (existing) {
+        existing.events.push(event);
+      } else {
+        target.set(group.id, { id: group.id, label: group.label, events: [event] });
+      }
+    }
+  }
+  return { events: Array.from(eventMap.values()), drills: Array.from(drillMap.values()) };
+}
+
+// 初始态预填本地 fixture（演示/无后端态下可用），真实后端就绪后由 loadFireEmergencyEvents 覆盖。
+const fireEmergencyEventGroupsSnapshot = ref<EmergencyEventGroup[]>(
+  cloneEventGroups(fireEmergencyEventGroups),
+);
+const fireEmergencyDrillEventGroupsSnapshot = ref<EmergencyEventGroup[]>(
+  cloneEventGroups(fireEmergencyDrillEventGroups),
+);
+
 export const fireEmergencyEventGroupsState = ref<EmergencyEventGroup[]>(
-  cloneEventGroups(initialFireEmergencyEventGroups),
+  cloneEventGroups(fireEmergencyEventGroups),
 );
 export const fireEmergencyDrillEventGroupsState = ref<EmergencyEventGroup[]>(
-  cloneEventGroups(initialFireEmergencyDrillEventGroups),
+  cloneEventGroups(fireEmergencyDrillEventGroups),
 );
 
 export const fireEmergencyAllEventGroups = computed<EmergencyEventGroup[]>(() => [
   ...fireEmergencyEventGroupsState.value,
   ...fireEmergencyDrillEventGroupsState.value,
 ]);
+
+export const fireEmergencyEventsLoading = ref(false);
+export const fireEmergencyEventsError = ref<unknown>(null);
+
+void loadFireEmergencyEvents();
+
+async function loadFireEmergencyEvents(): Promise<void> {
+  fireEmergencyEventsLoading.value = true;
+  fireEmergencyEventsError.value = null;
+  try {
+    const groups = await fetchEmergencyEvents('FIRE');
+    if (!Array.isArray(groups)) {
+      fireEmergencyEventsError.value = new Error('[fire-emergency] 后端未返回事件分组数组');
+      console.warn('[fire-emergency] 后端未返回事件分组数组，保持本地 fixture');
+      return;
+    }
+    const { events, drills } = splitGroupsByKind(groups);
+    fireEmergencyEventGroupsSnapshot.value = events;
+    fireEmergencyDrillEventGroupsSnapshot.value = drills;
+    fireEmergencyEventGroupsState.value = cloneEventGroups(events);
+    fireEmergencyDrillEventGroupsState.value = cloneEventGroups(drills);
+  } catch (err) {
+    fireEmergencyEventsError.value = err;
+    console.error('[fire-emergency] 加载应急事件分组失败', err);
+  } finally {
+    fireEmergencyEventsLoading.value = false;
+  }
+}
 
 export const fireEmergencyKeyword = ref('');
 export const fireEmergencyCurrentPage = ref(1);
@@ -108,8 +166,10 @@ export function resetFireEmergencyEventList() {
   fireEmergencyKeyword.value = '';
   fireEmergencyCurrentPage.value = 1;
   fireEmergencyListTab.value = 'event';
-  fireEmergencyEventGroupsState.value = cloneEventGroups(initialFireEmergencyEventGroups);
-  fireEmergencyDrillEventGroupsState.value = cloneEventGroups(initialFireEmergencyDrillEventGroups);
+  fireEmergencyEventGroupsState.value = cloneEventGroups(fireEmergencyEventGroupsSnapshot.value);
+  fireEmergencyDrillEventGroupsState.value = cloneEventGroups(
+    fireEmergencyDrillEventGroupsSnapshot.value,
+  );
   selectFireEmergencyEvent(null);
 }
 

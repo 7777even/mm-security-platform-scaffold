@@ -285,7 +285,7 @@ export function resolveAccidentRescueIncident(eventId?: number): AccidentRescueI
     hazardSourceLevel: event.hazardSourceLevel,
     mapStatus: '主力扑救',
     startedAt: event.time,
-    endedAt: event.endedAt,
+    endedAt: event.endedAt ?? undefined,
     status: event.status,
     reported: event.reported,
     facilityName: event.id === 4 ? '乙烯裂解装置' : event.title,

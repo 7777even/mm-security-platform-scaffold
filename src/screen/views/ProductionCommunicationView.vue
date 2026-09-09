@@ -12,7 +12,7 @@ import {
   selectedDevice,
   switchCommunicationTab,
 } from '../lib/composables/useCommunicationDevices';
-import type { CommunicationTab } from '../lib/data/communicationDeviceMock';
+import type { CommunicationTab } from '@/services/communication';
 import { useShellRoute } from '../lib/composables/useShellRoute';
 
 const router = useRouter();

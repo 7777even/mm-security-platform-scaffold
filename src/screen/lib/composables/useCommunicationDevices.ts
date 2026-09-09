@@ -1,9 +1,9 @@
 import { computed, ref } from 'vue';
 import {
-  communicationDeviceGroups,
-  getCommunicationDevice,
+  fetchCommunicationDevices,
   type CommunicationTab,
-} from '../data/communicationDeviceMock';
+  type CommunicationGroup,
+} from '@/services/communication';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea, matchesPlantArea } = usePlantArea();
@@ -12,13 +12,38 @@ export const communicationTab = ref<CommunicationTab>('broadcast');
 export const selectedDeviceId = ref<string | null>(null);
 export const communicationDrawerOpen = ref(false);
 
+// 后端返回的三组结构（broadcast / phone / intercom），按 tab 切到对应数组。
+const communicationDeviceGroups = ref<Record<CommunicationTab, CommunicationGroup[]>>({
+  broadcast: [],
+  phone: [],
+  intercom: [],
+});
+
+// 模块级 immediate fetch：回填设备分组，依赖组件零改动。
+fetchCommunicationDevices()
+  .then((data) => {
+    communicationDeviceGroups.value = data;
+  })
+  .catch(() => {});
+
+function getCommunicationDevice(id: string | null) {
+  if (!id) return null;
+  for (const groups of Object.values(communicationDeviceGroups.value)) {
+    for (const group of groups) {
+      const found = group.devices.find((d) => d.id === id);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 export const selectedDevice = computed(() => {
   const device = getCommunicationDevice(selectedDeviceId.value);
   return device && matchesPlantArea(device) ? device : null;
 });
 
 export const activeGroups = computed(() =>
-  (communicationDeviceGroups[communicationTab.value] ?? [])
+  (communicationDeviceGroups.value[communicationTab.value] ?? [])
     .map((group) => {
       const devices = filterByPlantArea(group.devices);
       return {

@@ -59,7 +59,7 @@ const markers = computed<RescueMapMarker[]>(() => {
         mapKey: `brigade-${page}-${team.id}`,
         id: team.id,
         label: team.name,
-        meta: team.location,
+        meta: team.location ?? undefined,
         longitude,
         latitude,
       };
@@ -71,7 +71,7 @@ const markers = computed<RescueMapMarker[]>(() => {
     const items = rescueEquipmentPagedItems.value;
     return items.map((item, index) => {
       const { longitude, latitude } = coordsForSquadronPaged(
-        item.squadron,
+        item.squadron ?? '',
         item.id,
         index,
         items.length,
@@ -93,7 +93,7 @@ const markers = computed<RescueMapMarker[]>(() => {
     const items = rescuePersonnelPagedItems.value;
     return items.map((item, index) => {
       const { longitude, latitude } = coordsForSquadronPaged(
-        item.squadron,
+        item.squadron ?? '',
         item.id,
         index,
         items.length,
@@ -115,7 +115,7 @@ const markers = computed<RescueMapMarker[]>(() => {
     const items = rescueVehiclePagedItems.value;
     return items.map((item, index) => {
       const { longitude, latitude } = coordsForSquadronPaged(
-        item.squadron,
+        item.squadron ?? '',
         item.id,
         index,
         items.length,
@@ -124,7 +124,7 @@ const markers = computed<RescueMapMarker[]>(() => {
       return {
         mapKey: `vehicle-${page}-${item.id}`,
         id: item.id,
-        label: item.plate,
+        label: item.plate ?? '',
         meta: `${item.type} · ${item.status}`,
         longitude,
         latitude,
@@ -140,7 +140,7 @@ const markers = computed<RescueMapMarker[]>(() => {
       return {
         mapKey: `specop-${page}-${item.id}`,
         id: item.id,
-        label: item.area,
+        label: item.area ?? '',
         meta: `${item.type} · ${item.status}`,
         longitude,
         latitude,
