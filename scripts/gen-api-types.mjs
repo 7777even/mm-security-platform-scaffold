@@ -107,6 +107,46 @@ async function main() {
   writeFileSync(resolve(OUT_DIR, 'index.ts'), indexLines.join('\n'), 'utf-8');
   console.log(`\n生成完成：${domains.length} 个域 → src/types/generated/`);
   console.log('聚合入口：src/types/generated/index.ts');
+
+  await prettifyGenerated();
+}
+
+/**
+ * 生成物落盘后按仓库 prettier 风格回写。
+ *
+ * openapi-typescript 输出的是 4 空格缩进 + 双引号，与仓库 prettier 配置
+ * （2 空格 + 单引号）不符；不格式化会把 27 个域文件整体刷成上万行的风格噪音，
+ * 真实的类型变更被完全淹没，review 无从下手。这里在生成链路末尾统一回写，
+ * 使 `npm run gen:api-types` 一次到位，不再依赖人记得补跑 prettier。
+ *
+ * prettier 缺失或解析失败只告警、不阻断生成（类型是主产物，格式是附加品）。
+ */
+async function prettifyGenerated() {
+  let prettier;
+  try {
+    prettier = await import('prettier');
+  } catch {
+    console.warn('[warn] 未找到 prettier，跳过格式化（生成物将保持 4 空格 / 双引号风格）');
+    return;
+  }
+
+  const files = readdirSync(OUT_DIR).filter((f) => f.endsWith('.ts'));
+  let changed = 0;
+  for (const file of files) {
+    const full = resolve(OUT_DIR, file);
+    try {
+      const text = readFileSync(full, 'utf-8');
+      const config = await prettier.resolveConfig(full);
+      const formatted = await prettier.format(text, { ...config, filepath: full });
+      if (formatted !== text) {
+        writeFileSync(full, formatted, 'utf-8');
+        changed += 1;
+      }
+    } catch (err) {
+      console.warn(`[warn] 格式化失败，已保留原始生成物 ${file}: ${err && err.message}`);
+    }
+  }
+  console.log(`已按 prettier 回写 ${changed}/${files.length} 个生成文件`);
 }
 
 main().catch((e) => {
