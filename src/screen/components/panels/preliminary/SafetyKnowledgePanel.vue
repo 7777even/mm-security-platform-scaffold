@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
-import { safetyKnowledgeItems } from '../../../lib/data/preliminaryMock';
-import { fireSafetyKnowledgeItems } from '../../../lib/data/fireEmergencyMock';
 import { Document, WarningFilled, Guide } from '@element-plus/icons-vue';
 import { fetchEmergencyKnowledge } from '@/services/knowledge';
 import type { DesignModule } from '../../../utils/designAssets';
@@ -15,28 +13,22 @@ interface KnowledgePanelItem {
   countTone: string;
 }
 
-const props = withDefaults(
+// module 仅用于面板配色/切图变体（PreliminarySidePanel），数据不再按模块分流
+withDefaults(
   defineProps<{
     module?: Extract<DesignModule, 'preliminary' | 'fireEmergency'>;
   }>(),
   { module: 'preliminary' },
 );
 
-// 应急指挥屏（fireEmergency 模块）直连真后端 /emergency/knowledge；preliminary 模块保留内置 mock。
-const realItems = ref<KnowledgePanelItem[]>([]);
-const items = computed<KnowledgePanelItem[]>(() =>
-  props.module === 'fireEmergency'
-    ? realItems.value
-    : ((props.module === 'preliminary'
-        ? safetyKnowledgeItems
-        : fireSafetyKnowledgeItems) as KnowledgePanelItem[]),
-);
+// 单一数据源：无论 preliminary / fireEmergency 模块，统一走 /emergency/knowledge
+// （services/knowledge.ts 内置无后端时的演示 fixture 与非法响应空态，见 backendFallback.ts）
+const items = ref<KnowledgePanelItem[]>([]);
 
 onMounted(async () => {
-  if (props.module !== 'fireEmergency') return;
   try {
     const knowledge = await fetchEmergencyKnowledge();
-    realItems.value = knowledge.items.map((it, i) => ({
+    items.value = knowledge.items.map((it, i) => ({
       iconIndex: i,
       line1: it.title,
       line2: '知识条目',
@@ -68,7 +60,7 @@ const KNOWLEDGE_ICONS = [Document, WarningFilled, Guide];
       <div v-for="(row, rowIndex) in knowledgeRows" :key="rowIndex" class="knowledge-row">
         <div v-for="item in row" :key="item.key" class="knowledge-card">
           <span class="knowledge-card__icon" aria-hidden="true">
-            <component :is="KNOWLEDGE_ICONS[item.iconIndex]" />
+            <component :is="KNOWLEDGE_ICONS[item.iconIndex % KNOWLEDGE_ICONS.length]" />
           </span>
           <div class="knowledge-card__text">
             <div class="knowledge-card__line1">{{ item.line1 }}</div>

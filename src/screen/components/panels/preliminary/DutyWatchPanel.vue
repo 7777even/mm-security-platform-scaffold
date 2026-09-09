@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
-import { dutyWatchPersons } from '../../../lib/data/preliminaryMock';
-import { fireDutyWatchPersons } from '../../../lib/data/fireEmergencyMock';
 import { UserFilled } from '@element-plus/icons-vue';
 import { fetchDutyRoster } from '@/services/duty';
 import type { DesignModule } from '../../../utils/designAssets';
@@ -15,7 +13,8 @@ interface DutyWatchPerson {
   shift?: string;
 }
 
-const props = withDefaults(
+// module 仅用于面板配色/切图变体（PreliminarySidePanel），数据不再按模块分流
+withDefaults(
   defineProps<{
     module?: Extract<DesignModule, 'preliminary' | 'fireEmergency'>;
   }>(),
@@ -24,23 +23,18 @@ const props = withDefaults(
 
 const shift = ref<'day' | 'night'>('day');
 
-// 应急指挥屏（fireEmergency 模块）直连真后端 /emergency/duty；preliminary 模块保留内置 mock。
-const allRealPersons = ref<DutyWatchPerson[]>([]);
+// 单一数据源：无论 preliminary / fireEmergency 模块，统一走 /emergency/duty
+// （services/duty.ts 内置无后端时的演示 fixture 与非法响应空态，见 backendFallback.ts）
+const allPersons = ref<DutyWatchPerson[]>([]);
 const persons = computed<DutyWatchPerson[]>(() => {
-  if (props.module !== 'fireEmergency') {
-    return (
-      props.module === 'preliminary' ? dutyWatchPersons : fireDutyWatchPersons
-    ) as DutyWatchPerson[];
-  }
   const dayNight = shift.value === 'day' ? '白班' : '夜班';
-  return allRealPersons.value.filter((p) => (p.shift ?? '白班') === dayNight);
+  return allPersons.value.filter((p) => (p.shift ?? '白班') === dayNight);
 });
 
 onMounted(async () => {
-  if (props.module !== 'fireEmergency') return;
   try {
     const roster = await fetchDutyRoster();
-    allRealPersons.value = roster.members.map((m) => ({
+    allPersons.value = roster.members.map((m) => ({
       id: m.id,
       name: m.name,
       role: m.role,
@@ -48,7 +42,7 @@ onMounted(async () => {
       shift: m.shift,
     }));
   } catch {
-    // 保留空，模板回退无卡片（services 层已对非法响应回落 dev mock）
+    // 保留空，模板回退无卡片
   }
 });
 </script>

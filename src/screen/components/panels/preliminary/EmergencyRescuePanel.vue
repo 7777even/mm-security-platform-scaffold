@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
-import { rescueForceStats } from '../../../lib/data/preliminaryMock';
-import { fireRescueForceStats } from '../../../lib/data/fireEmergencyMock';
 import {
   UserFilled,
   Box,
@@ -21,26 +19,22 @@ interface RescueStat {
   iconIndex: number;
 }
 
-const props = withDefaults(
+// module 仅用于面板配色/切图变体（PreliminarySidePanel），数据不再按模块分流
+withDefaults(
   defineProps<{
     module?: Extract<DesignModule, 'preliminary' | 'fireEmergency'>;
   }>(),
   { module: 'preliminary' },
 );
 
-// 应急指挥屏（fireEmergency 模块）直连真后端 /emergency/strength；preliminary 模块保留内置 mock。
-const realStats = ref<RescueStat[]>([]);
-const stats = computed<RescueStat[]>(() =>
-  props.module === 'fireEmergency'
-    ? realStats.value
-    : ((props.module === 'preliminary' ? rescueForceStats : fireRescueForceStats) as RescueStat[]),
-);
+// 单一数据源：无论 preliminary / fireEmergency 模块，统一走 /emergency/strength
+// （services/emergency.ts 内置无后端时的演示 fixture 与非法响应空态，见 backendFallback.ts）
+const stats = ref<RescueStat[]>([]);
 
 onMounted(async () => {
-  if (props.module !== 'fireEmergency') return;
   try {
     const strength = await fetchEmergencyStrength();
-    realStats.value = strength.resources.map((r, i) => ({
+    stats.value = strength.resources.map((r, i) => ({
       label: r.kind,
       value: r.count,
       iconIndex: i,
@@ -50,7 +44,7 @@ onMounted(async () => {
   }
 });
 
-/* 与 rescueForceStats.iconIndex 一一对应；iconIndex 0..7
+/* 与后端 sys_emergency_strength 种子顺序一一对应；iconIndex 0..7
    应急专家 / 应急物资 / 救援队伍 / 装备车辆 / 应急场所 / 医疗机构 / 应急车辆 / 消防设施 */
 const RESCUE_ICONS = [UserFilled, Box, Avatar, Van, OfficeBuilding, FirstAidKit, Van, Warning];
 </script>
@@ -60,7 +54,7 @@ const RESCUE_ICONS = [UserFilled, Box, Avatar, Van, OfficeBuilding, FirstAidKit,
     <div class="rescue-grid">
       <div v-for="stat in stats" :key="stat.label" class="rescue-item">
         <span class="rescue-item__icon" aria-hidden="true">
-          <component :is="RESCUE_ICONS[stat.iconIndex]" />
+          <component :is="RESCUE_ICONS[stat.iconIndex % RESCUE_ICONS.length]" />
         </span>
         <div class="rescue-item__text">
           <div class="rescue-item__value">{{ stat.value }}</div>
