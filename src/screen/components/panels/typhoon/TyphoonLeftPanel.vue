@@ -8,7 +8,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
 import EmergencyResourceDispatchPanel from '../accident-rescue/EmergencyResourceDispatchPanel.vue';
 import WeatherDetailsDialog from '../../layout/WeatherDetailsDialog.vue';
-import { typhoonDispatchResources } from '../../../lib/data/typhoonEmergencyMock';
+import { fetchTyphoonDispatchResources } from '@/services/typhoonEmergency';
 import type { EmergencyDispatchResource } from '../../../lib/data/accidentRescueMock';
 import type { TyphoonEmergencyIncident } from '../../../lib/data/typhoonEmergencyMock';
 
@@ -38,6 +38,13 @@ const infoEditOpen = ref(false);
 const weatherDetailsOpen = ref(false);
 const editableInfo = ref(props.incident.eventInfoFields.map((field) => ({ ...field })));
 const draftInfo = ref<Array<{ label: string; value: string }>>([]);
+// 防汛排涝可调度力量：直连真后端 /typhoon/dispatch-resources。
+// 未配置 VITE_API_BASE 时 service 回落到本地 fixture；已配置但后端失败则为空集合并告警（不造假数据）。
+const dispatchResources = ref<EmergencyDispatchResource[]>([]);
+
+onMounted(async () => {
+  dispatchResources.value = (await fetchTyphoonDispatchResources()) as EmergencyDispatchResource[];
+});
 const responseKind = ref<'plan' | 'temporary'>('plan');
 const responseStatus = ref('全部状态');
 const weatherBannerIndex = ref(0);
@@ -543,7 +550,7 @@ const waterChartOption = computed(() => ({
       <div v-else class="tw-left__body tw-left__body--single tw-resource-wrap">
         <EmergencyResourceDispatchPanel
           scenario="weather"
-          :resources="typhoonDispatchResources"
+          :resources="dispatchResources"
           @focus="emit('focus-resource', $event)"
         />
       </div>

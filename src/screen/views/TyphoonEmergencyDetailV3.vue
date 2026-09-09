@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 import { LineChart } from 'echarts/charts';
@@ -11,6 +11,7 @@ import TyphoonRiskMapOverlay from '../components/map/TyphoonRiskMapOverlay.vue';
 import SatelliteCloudMapDialog from '../components/panels/typhoon/SatelliteCloudMapDialog.vue';
 import TyphoonRiskVideoWallDialog from '../components/panels/typhoon/TyphoonRiskVideoWallDialog.vue';
 import { resolveTyphoonEmergencyIncidentV2 } from '../lib/data/typhoonEmergencyMock';
+import { fetchTyphoonIncident } from '@/services/typhoonEmergency';
 import type { TyphoonEmergencyIncident } from '../lib/data/typhoonEmergencyMock';
 import { useShellRoute } from '../lib/composables/useShellRoute';
 
@@ -25,9 +26,23 @@ const trendMetric = ref<'rain' | 'wind'>('rain');
 const selectedVideoPoint = ref<RiskPoint | null>(null);
 const dynamicFilter = ref<'all' | 'alarm' | 'command' | 'feedback'>('all');
 
-const incident = computed(() =>
-  resolveTyphoonEmergencyIncidentV2(Number(shellRoute.query.value.eventId) || undefined),
+const eventId = computed(() => Number(shellRoute.query.value.eventId) || undefined);
+// 本地 fixture 仅在纯静态演示（未配置 VITE_API_BASE）时使用；一旦配置了后端地址就以真实数据为准，
+// 后端失败时 service 会告警并返回 null，此处保持空态而不是回落到假数据冒充后端。
+const localIncident = computed(() => resolveTyphoonEmergencyIncidentV2(eventId.value));
+const remoteIncident = ref<TyphoonEmergencyIncident | null>(null);
+// 真实后端优先；未配置 VITE_API_BASE 时用本地 fixture（纯静态演示，不存在误判后端就绪的风险）。
+const incident = computed<TyphoonEmergencyIncident>(
+  () => remoteIncident.value ?? localIncident.value,
 );
+// 已配置后端但真实数据未到位时不渲染页面，避免本地假数据被当成后端数据展示（service 侧已告警）。
+const incidentReady = computed(
+  () => !import.meta.env.VITE_API_BASE || remoteIncident.value !== null,
+);
+
+onMounted(async () => {
+  remoteIncident.value = await fetchTyphoonIncident(eventId.value);
+});
 const abnormalPoints = computed(() =>
   incident.value.mapRiskPoints.filter((point) => point.status !== 'normal'),
 );
@@ -171,7 +186,7 @@ function openPointVideo(point: RiskPoint) {
 </script>
 
 <template>
-  <MapPageShell min-width="1920px">
+  <MapPageShell v-if="incidentReady" min-width="1920px">
     <template #map
       ><TyphoonRiskMapOverlay :points="displayPoints" @open-video="openPointVideo"
     /></template>
