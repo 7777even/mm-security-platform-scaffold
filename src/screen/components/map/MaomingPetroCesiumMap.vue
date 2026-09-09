@@ -3036,12 +3036,22 @@ function warnIfBoundaryExceedsMap(canvasRectangle, boundaryLonLatRing) {
     minLat = Math.min(minLat, point.lat);
     maxLat = Math.max(maxLat, point.lat);
   }
-  if (minLon < westDeg || maxLon > eastDeg || minLat < southDeg || maxLat > northDeg) {
+  // 亚公里级偏差容差：QGIS 导出边缘与边界.geojson 的边角通常仅差数十米，
+  // 且超出部分本就被 maskExportedMapCanvas 置为透明（无影像数据、无视觉影响）。
+  // 仅当超出容差（≈550m）时才告警提示重新导出，避免常态化噪声。
+  const EPS = 0.005;
+  if (
+    minLon < westDeg - EPS ||
+    maxLon > eastDeg + EPS ||
+    minLat < southDeg - EPS ||
+    maxLat > northDeg + EPS
+  ) {
     console.warn(
       '边界部分超出 map.png + map.pgw 范围，请在 QGIS 中扩大导出范围使影像完全覆盖边界',
       {
         map: { westDeg, eastDeg, southDeg, northDeg },
         boundary: { minLon, maxLon, minLat, maxLat },
+        toleranceDeg: EPS,
       },
     );
   }
