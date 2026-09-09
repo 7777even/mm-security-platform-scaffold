@@ -54,3 +54,46 @@ jobs:
           name: dist
           path: dist/
           if-no-files-found: warn
+
+  # 为什么前端仓也要跑对拍：契约真源在本仓 docs/api，后端 CI 的 contract-guard 会
+  # 拉取本仓契约去对拍后端实现。也就是说「后端推送时契约是否已更新」是一个时序耦合
+  # —— 契约没先推，后端 CI 必红，且后端同学看不出该找谁修。
+  # 在本仓跑同一套对拍（拉后端 main 的实现侧）后，契约一改就能立刻看到对后端实现的
+  # 漂移，顺序由此从「人工纪律」变成「可验证的前置条件」：本 job 绿 → 后端对拍才可能绿。
+  contract-guard:
+    name: 跨库 API 契约守门（契约 vs 后端实现）
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出前端源码（契约真源侧）
+        uses: actions/checkout@v4
+
+      - name: 配置 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 守门脚本 check-api-contract.mjs 位于后端仓，且用 __dirname 定位仓库根，
+      # 因此需把后端仓的 scripts/ 与 src/main/java 一起稀疏拉出后在子目录内执行。
+      # 若后端仓为私有：在本仓 Settings → Secrets 配置 CONTRACT_REPO_TOKEN（PAT）。
+      - name: 检出后端实现（跨仓，仅 scripts + src/main/java）
+        uses: actions/checkout@v4
+        with:
+          repository: 7777even/mm-security-platform-backend
+          ref: main
+          path: backend-scaffold
+          sparse-checkout: |
+            scripts
+            src/main/java
+          sparse-checkout-cone-mode: false
+          token: ${{ secrets.CONTRACT_REPO_TOKEN || github.token }}
+
+      - name: 契约对拍（strict：路由差异或 schema 漂移任一 > 0 即失败）
+        run: node backend-scaffold/scripts/check-api-contract.mjs --contracts docs/api --strict
+
+      - name: 失败排查指引
+        if: failure()
+        run: |
+          echo "::error::契约与后端 main 实现存在漂移。按 AGENTS.md §11 四同步处理："
+          echo "  1) 若漂移源于契约标注（后端实现与种子数据为准）→ 改 docs/api/<domain>.openapi.json"
+          echo "  2) 若漂移源于后端实现 → 改后端并先推送后端，再回到本仓跑 npm run gen:api-types"
+          echo "  3) 无论如何，本仓（契约侧）必须先绿并推送，后端的 contract-guard 才可能通过"
