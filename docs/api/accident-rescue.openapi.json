@@ -1,0 +1,238 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "事故救援应急大屏接口（fm-rescue）",
+    "description": "取代前端硬编码的 accidentRescueMock / fireEmergencyEventsStore。事件聚合 + 调度资源 + 值班人员 + 辅助统计 + 动态快讯四类真实数据源。地图标记与路线为前端按事件坐标推算的几何，不在此契约内。",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "paths": {
+    "/accident/rescue-incident": {
+      "get": {
+        "summary": "事故救援事件聚合",
+        "description": "返回单个事故救援事件的完整聚合数据：事件基础信息、详情字段、可调度资源、值班人员、辅助统计与动态快讯。eventId 为空或未命中时回退到默认事件（is_default=TRUE），保证大屏不空屏。",
+        "tags": ["accident"],
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "query",
+            "required": false,
+            "description": "事件 id；不传或查不到时回退默认事件",
+            "schema": { "type": "integer", "format": "int64", "example": 4 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "事件聚合数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AccidentRescueIncident" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "eventId": 4,
+                    "title": "乙烯裂解装置区火灾",
+                    "location": "乙烯裂解装置区",
+                    "longitude": 110.8781,
+                    "latitude": 21.6812,
+                    "hazardSourceLevel": "一级",
+                    "mapStatus": "主力扑救",
+                    "startedAt": "2026-04-27 14:54:49",
+                    "endedAt": null,
+                    "status": "processing",
+                    "reported": true,
+                    "facilityName": "乙烯裂解装置",
+                    "detailFields": [
+                      { "label": "事故时间", "value": "2026-04-27 14:54:49" },
+                      { "label": "事件描述", "value": "模拟液氨储罐 T-001 泄漏引发火灾" }
+                    ],
+                    "dispatchResources": [
+                      {
+                        "id": "team-01",
+                        "type": "救援队伍",
+                        "name": "炼油消防一中队",
+                        "code": "TEAM-RY-01",
+                        "organization": "消防救援中心",
+                        "area": "炼油区",
+                        "status": "可调度",
+                        "distanceKm": 1.2,
+                        "etaMinutes": 6,
+                        "capacity": "18人 · 泡沫灭火",
+                        "contact": "王钰",
+                        "phone": "18300556145",
+                        "longitude": 110.8781,
+                        "latitude": 21.6812
+                      }
+                    ],
+                    "dutyPersons": [
+                      {
+                        "id": 1,
+                        "name": "杨恒朋",
+                        "role": "值班领导",
+                        "phone": "13792536966",
+                        "avatarIndex": 0
+                      }
+                    ],
+                    "auxiliaryStats": [{ "label": "应急专家", "value": 47, "iconIndex": 0 }],
+                    "dynamics": [
+                      {
+                        "id": 1,
+                        "category": "rescue",
+                        "title": "应急救援",
+                        "tag": "【固定指令】",
+                        "time": "2026-04-03 12:15:45",
+                        "command": "请消防一队立即赶赴储罐区B-3开展主力扑救",
+                        "responder": "王钰",
+                        "reply": "已接收指令，车辆已出发",
+                        "stageLabel": null
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccidentRescueIncident": {
+        "type": "object",
+        "description": "事故救援事件聚合",
+        "properties": {
+          "eventId": { "type": "integer", "format": "int64", "description": "事件 id" },
+          "title": { "type": "string", "description": "事件标题" },
+          "location": { "type": "string", "description": "事件位置" },
+          "longitude": { "type": "number", "format": "double", "description": "经度" },
+          "latitude": { "type": "number", "format": "double", "description": "纬度" },
+          "hazardSourceLevel": { "type": "string", "description": "危险源等级", "nullable": true },
+          "mapStatus": { "type": "string", "description": "地图态势状态文案" },
+          "startedAt": {
+            "type": "string",
+            "description": "开始时间，格式 YYYY-MM-DD HH:mm:ss",
+            "nullable": true
+          },
+          "endedAt": {
+            "type": "string",
+            "description": "结束时间，格式 YYYY-MM-DD HH:mm:ss",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "事件状态 processing/pending/done",
+            "enum": ["processing", "pending", "done"]
+          },
+          "reported": { "type": "boolean", "description": "是否已报送" },
+          "facilityName": { "type": "string", "description": "设施详情面板标题" },
+          "detailFields": {
+            "type": "array",
+            "description": "事件详情字段列表",
+            "items": { "$ref": "#/components/schemas/IncidentDetailField" }
+          },
+          "dispatchResources": {
+            "type": "array",
+            "description": "可调度应急资源",
+            "items": { "$ref": "#/components/schemas/EmergencyDispatchResource" }
+          },
+          "dutyPersons": {
+            "type": "array",
+            "description": "值班人员",
+            "items": { "$ref": "#/components/schemas/RescueDutyPerson" }
+          },
+          "auxiliaryStats": {
+            "type": "array",
+            "description": "辅助统计项",
+            "items": { "$ref": "#/components/schemas/RescueAuxiliaryStat" }
+          },
+          "dynamics": {
+            "type": "array",
+            "description": "动态快讯（含救援/指令/简报/态势四类）",
+            "items": { "$ref": "#/components/schemas/RescueDynamicEntry" }
+          }
+        }
+      },
+      "IncidentDetailField": {
+        "type": "object",
+        "description": "事件详情字段",
+        "properties": {
+          "label": { "type": "string", "description": "字段标签" },
+          "value": { "type": "string", "description": "字段值" }
+        }
+      },
+      "EmergencyDispatchResource": {
+        "type": "object",
+        "description": "应急调度资源",
+        "properties": {
+          "id": { "type": "string", "description": "资源 id" },
+          "type": {
+            "type": "string",
+            "description": "资源类型",
+            "enum": ["救援队伍", "应急车辆", "应急物资", "应急专家"]
+          },
+          "name": { "type": "string", "description": "资源名称" },
+          "code": { "type": "string", "description": "资源编码" },
+          "organization": { "type": "string", "description": "所属机构" },
+          "area": { "type": "string", "description": "所在区域" },
+          "status": {
+            "type": "string",
+            "description": "调度状态",
+            "enum": ["可调度", "任务中", "离线"]
+          },
+          "distanceKm": {
+            "type": "number",
+            "format": "double",
+            "description": "距事件距离（公里）"
+          },
+          "etaMinutes": { "type": "integer", "description": "预计到达分钟数" },
+          "capacity": { "type": "string", "description": "能力/容量描述" },
+          "contact": { "type": "string", "description": "联系人" },
+          "phone": { "type": "string", "description": "联系电话" },
+          "longitude": { "type": "number", "format": "double", "description": "经度" },
+          "latitude": { "type": "number", "format": "double", "description": "纬度" }
+        }
+      },
+      "RescueDutyPerson": {
+        "type": "object",
+        "description": "值班人员",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "人员 id" },
+          "name": { "type": "string", "description": "姓名" },
+          "role": { "type": "string", "description": "角色" },
+          "phone": { "type": "string", "description": "电话" },
+          "avatarIndex": { "type": "integer", "description": "头像索引（0-3 循环）" }
+        }
+      },
+      "RescueAuxiliaryStat": {
+        "type": "object",
+        "description": "辅助统计项",
+        "properties": {
+          "label": { "type": "string", "description": "统计标签" },
+          "value": { "type": "integer", "description": "统计数值" },
+          "iconIndex": { "type": "integer", "description": "图标索引" }
+        }
+      },
+      "RescueDynamicEntry": {
+        "type": "object",
+        "description": "动态快讯条目",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "动态 id" },
+          "category": {
+            "type": "string",
+            "description": "分类 rescue/command/brief/awareness",
+            "enum": ["rescue", "command", "brief", "awareness"]
+          },
+          "title": { "type": "string", "description": "标题" },
+          "tag": { "type": "string", "description": "标签，如【固定指令】" },
+          "time": { "type": "string", "description": "时间" },
+          "command": { "type": "string", "description": "指令/快讯内容" },
+          "responder": { "type": "string", "description": "回复人/发布方" },
+          "reply": { "type": "string", "description": "回复内容", "nullable": true },
+          "stageLabel": { "type": "string", "description": "左侧阶段标签", "nullable": true }
+        }
+      }
+    }
+  }
+}
