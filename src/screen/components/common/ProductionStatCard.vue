@@ -1,5 +1,5 @@
 ﻿<script setup lang="ts">
-import type { StatOverviewItem } from '../../lib/data/productionMock';
+import type { StatOverviewItem } from '@/services/production';
 
 defineProps<{
   stat: StatOverviewItem;
@@ -13,7 +13,7 @@ defineProps<{
       <div class="stat-card__label">{{ stat.label }}</div>
       <div class="stat-card__value-row">
         <span class="stat-card__value">{{ stat.value }}</span>
-        <span v-if="stat.valueSuffix" class="stat-card__suffix">{{ stat.valueSuffix }}</span>
+        <span v-if="stat.unit" class="stat-card__suffix">{{ stat.unit }}</span>
         <span v-else class="stat-card__arrow">↑</span>
       </div>
       <div class="stat-card__trend">

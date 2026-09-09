@@ -1,11 +1,34 @@
 ﻿<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import { Warning } from '@element-plus/icons-vue';
-import { riskSummary, riskWarnings } from '../../../lib/data/productionMock';
+import {
+  fetchProductionOverview,
+  fetchProductionRiskWarnings,
+  type RiskSummary,
+  type RiskWarningItem,
+} from '@/services/production';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
-const { areaScopedItems, scaleAreaCount } = usePlantArea();
-const visibleRiskWarnings = areaScopedItems(riskWarnings);
+const { filterByPlantArea, scaleAreaCount } = usePlantArea();
+const riskSummary = ref<RiskSummary>({ red: 0, orange: 0, yellow: 0 });
+const riskWarnings = ref<RiskWarningItem[]>([]);
+
+onMounted(async () => {
+  try {
+    const overview = await fetchProductionOverview();
+    riskSummary.value = overview.riskSummary;
+  } catch {
+    // 暴露式降级：保持零值，不静默回落硬编码假数据
+  }
+  try {
+    riskWarnings.value = await fetchProductionRiskWarnings();
+  } catch {
+    riskWarnings.value = [];
+  }
+});
+
+const visibleRiskWarnings = computed(() => filterByPlantArea(riskWarnings.value));
 </script>
 
 <template>

@@ -1,28 +1,46 @@
 import { computed, ref } from 'vue';
 import {
+  fetchProductionDevices,
   getDevicesByCategory,
   productionDevicePageSize,
-  type ProductionDeviceCategory,
   type ProductionDeviceItem,
   type ProductionDeviceStatus,
-} from '../data/productionDeviceMock';
+} from '@/services/production';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
 
 export const productionDeviceListOpen = ref(false);
-export const productionDeviceCategory = ref<ProductionDeviceCategory | null>(null);
+export const productionDeviceCategory = ref<string | null>(null);
 export const productionDeviceCurrentPage = ref(1);
 export const productionDeviceNameFilter = ref('');
 export const productionDeviceTypeFilter = ref('全部类型');
 export const productionDeviceStatusFilter = ref<'全部状态' | ProductionDeviceStatus>('全部状态');
 
+// 设备清单来自真实后端（/production/devices），客户端仅做展示收窄，不再持有静态副本。
+export const productionDeviceAll = ref<ProductionDeviceItem[]>([]);
+let loadToken = 0;
+export function loadProductionDevices() {
+  const token = ++loadToken;
+  return fetchProductionDevices({ page: 1, size: 999 })
+    .then((page) => {
+      if (token === loadToken) productionDeviceAll.value = page.items;
+    })
+    .catch(() => {
+      if (token === loadToken) productionDeviceAll.value = [];
+    });
+}
+
+const baseItems = computed(() => {
+  const cat = productionDeviceCategory.value;
+  return filterByPlantArea(getDevicesByCategory(productionDeviceAll.value, cat));
+});
+
 export const productionDeviceDrawerActive = computed(() => productionDeviceListOpen.value);
 
 export const productionDeviceFilteredItems = computed(() => {
-  const base = filterByPlantArea(getDevicesByCategory(productionDeviceCategory.value));
   const nameKey = productionDeviceNameFilter.value.trim();
-  return base.filter((item) => {
+  return baseItems.value.filter((item) => {
     if (nameKey && !item.name.includes(nameKey)) return false;
     if (
       productionDeviceTypeFilter.value !== '全部类型' &&
@@ -41,8 +59,7 @@ export const productionDeviceFilteredItems = computed(() => {
 });
 
 export const productionDeviceTypeOptions = computed(() => {
-  const base = filterByPlantArea(getDevicesByCategory(productionDeviceCategory.value));
-  const types = Array.from(new Set(base.map((d) => d.type)));
+  const types = Array.from(new Set(baseItems.value.map((d) => d.type)));
   return ['全部类型', ...types];
 });
 
@@ -74,10 +91,11 @@ function resetFilters() {
   productionDeviceCurrentPage.value = 1;
 }
 
-export function openProductionDeviceList(category: ProductionDeviceCategory) {
+export function openProductionDeviceList(category: string) {
   productionDeviceCategory.value = category;
   resetFilters();
   productionDeviceListOpen.value = true;
+  void loadProductionDevices();
 }
 
 export function closeProductionDeviceList() {
@@ -121,4 +139,4 @@ export function useProductionDeviceListView() {
   };
 }
 
-export type { ProductionDeviceItem, ProductionDeviceCategory };
+export type { ProductionDeviceItem };

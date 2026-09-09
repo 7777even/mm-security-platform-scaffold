@@ -1,74 +1,21 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import ProductionStatCard from '../../common/ProductionStatCard.vue';
-import { fetchDashboardOverview } from '@/services/alarm';
-import { statOverview } from '../../../lib/data/productionMock';
-import type { StatOverviewItem } from '../../../lib/data/productionMock';
+import { fetchProductionOverview, type StatOverviewItem } from '@/services/production';
 
-const overview = ref<{
-  activeAlarm: number;
-  deviceOnline: number;
-  deviceTotal: number;
-  riskIndex: number;
-  onlineWorkstation: number;
-} | null>(null);
-
-function realStats(): StatOverviewItem[] {
-  if (!overview.value) return statOverview;
-  const o = overview.value;
-  return [
-    {
-      id: 1,
-      label: '活跃告警',
-      value: String(o.activeAlarm),
-      trend: 0,
-      trendUp: false,
-      iconIndex: 0,
-    },
-    {
-      id: 2,
-      label: '在线设备',
-      value: String(o.deviceOnline),
-      trend: 0,
-      trendUp: false,
-      iconIndex: 1,
-    },
-    {
-      id: 3,
-      label: '设备总数',
-      value: String(o.deviceTotal),
-      trend: 0,
-      trendUp: false,
-      iconIndex: 2,
-    },
-    {
-      id: 4,
-      label: '风险指数',
-      value: String(o.riskIndex),
-      trend: 0,
-      trendUp: false,
-      iconIndex: 3,
-    },
-    {
-      id: 5,
-      label: '在线工位',
-      value: String(o.onlineWorkstation),
-      trend: 0,
-      trendUp: false,
-      iconIndex: 4,
-    },
-  ];
-}
-
-const visibleStats = computed(() => realStats());
+const stats = ref<StatOverviewItem[]>([]);
 
 onMounted(async () => {
   try {
-    overview.value = await fetchDashboardOverview();
+    const overview = await fetchProductionOverview();
+    stats.value = overview.stats;
   } catch {
-    // 直连真后端失败时回落内置 mock，保证 UI 可见
+    // 暴露式降级：后端不可用保持空列表，不静默回落硬编码假数据
+    stats.value = [];
   }
 });
+
+const visibleStats = computed(() => stats.value);
 </script>
 
 <template>

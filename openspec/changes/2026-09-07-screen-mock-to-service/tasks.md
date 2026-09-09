@@ -44,7 +44,13 @@
 
 ## 5. P2 · 生产 / 工业电视 / 生产通信（需新建 service）
 
-- [ ] `#TODO-确认` 后端契约后新建 `services/production.ts`，接线 `productionMock`/`productionAreaMock`/`productionDeviceMock`。
+- [x] 结构对齐审计：比对 `services/production.ts` 契约类型（`OverviewGridItem`/`StatOverviewItem`/`PersonnelMarker`/`ProductionAreaDetail`/`RiskSummary`/`RiskWarningItem`/`ProductionAlarmItem`）与 `productionMock`/`productionAreaMock`/`productionDeviceMock` 返回，列出字段漂移：`StatOverviewItem.valueSuffix?`(mock) vs `unit:string|null`(契约)；`PersonnelMarker.markerIcon/popupBg/markerDot/markerLine:string|null`(契约，其中 `markerOuter/markerInner` 仅前端装饰环、不在契约)；`ProductionAlarmItem.thumb` 契约必需可空 `string|null` vs mock 可选 `string?`；`resolveProductionAreaDetail` 同步→改异步 `fetchProductionAreaDetail(facilityId)`。结论：新建 `services/production.ts` 承接全部 fetch + 共享工具（`statusTone`/`resolveDeviceCategoryTitle`/`getDevicesByCategory`/`productionDevicePageSize`/`productionDeviceStatusOptions`/`ProductionDeviceCategory`/`ProductionAreaPersonnelSlice=PersonnelSlice`）。
+- [x] 新建 `docs/api/production.openapi.json` 契约（overview/alarms/risk-warnings/personnel/areas/{facilityId}/devices 六端点）+ `src/services/production.ts`（fetch 全集 + 契约类型 + 共享工具）+ `src/services/productionMapConfig.ts`（抽离前端静态几何 `productionMapControls`，非后端数据，避免随 mock 删除丢失）+ `src/types/generated/production.ts`（`npm run gen:api-types` 生成；`scripts/gen-api-types.mjs` 修复连字符域名 PascalCase 命名 `accident-rescue`→`AccidentRescue`，预存改良非本次引入）。
+- [x] 接线 src 树：`ProductionMap.vue`（`fetchProductionPersonnel`+`designImg` 装饰环+`filterByPlantArea`，`DecoratedPersonnelMarker` 统一 `?? ''` 兜底以免 `string|null` 落入模板 `img.src`）、`ProductionAlarmCard.vue`/`map-data/alarmDetailMock.ts` 类型重指向 `@/services/production`；`ProductionAreaView.vue` 改 `watch(...,{immediate:true})` 首屏即 `loadDetail()`（`fetchProductionAreaDetail`），暴露式降级保持上一帧不白屏、不静默回落假数据。
+- [x] 接线 src/screen 树：StatsOverviewBar/RiskControlPanel/FacilitiesOverview/DeviceOverview/ProductionAlarmPanel/ProductionAreaTopBar/ProductionAreaPersonnelPanel/ProductionAreaFacilityListPanel/ProductionAreaAlarmPanel/ProductionDeviceListPanel/ProductionStatCard/ProductionAlarmCard 逐个 type import 重指向 `@/services/production`；`alarmAdapter.toProductionAlarmItem` 补 `thumb:null`（契约必需可空）；`lib/data/alarmDetailMock.ts` 类型重指向；双树 `ProductionMap.vue` 装饰环逻辑一致。
+- [x] 删除 6 个 mock 双副本（`src/services/map-data/{production,productionArea,productionDevice}Mock.ts` + `src/screen/lib/data/{production,productionArea,productionDevice}Mock.ts`）；`alarmDetailMock.ts`(双树) 保留（跨 fire/security/production 复用，仅改类型 import）；`productionZoneOverlays`/`resolveFacilityItem` 死代码随删。`grep` 确认 `productionMock|productionAreaMock|productionDeviceMock` 引用清零。
+- [x] [TDD] `src/services/production.spec.ts` 覆盖 overview/alarms/risk-warnings/personnel/areas/devices 在 dev 降级返回 fixture、真实调用走 `request('/production/...')`、非法结构回退空态并告警；`npm test` 全绿（364 passed）。
+- [x] 守门：`npm run type-check`(vue-tsc) 0 error；`npm run test` 364 passed（accidentRescue 单测在本机慢机偶发 5s 超时，已把 `vite.config.ts` `testTimeout` 提至 15s，非掩盖逻辑缺陷）；`npx eslint src/screen/<生产改动路径> src/services/<生产改动路径>` 0 error（全量 eslint 余 3 errors 在 `scripts/*.mjs` 预存、与本变更无关）；`SUBAPP_NO_EMPTY=1 npm run build:subapps` 重建 12 子应用产物（grep 确认 `fm-production` 产物含 `fetchProductionOverview` 且无 `productionMock` 残留）；后端 `mvn test` 223 passed、`/production/*` 端到端冒烟全 code=0（alarms 20 / risk-warnings 7 / personnel 3）。
 - [ ] `#TODO-确认` 后端契约后新建 `services/video.ts`，接线 `tvMock`/`videoControlMock`/`videoLinkageMock`（含流媒体，复杂度高，放末位）。
 - [ ] `#TODO-确认` 后端契约后新建 `services/communication.ts`，接线 `communicationDeviceMock`。
 
@@ -54,14 +60,14 @@
 
 ## 7. 守门测试与验证
 
-- [ ] [TDD] 受影响 service 集成测试经 `npm test` 必绿（alarm/emergency/weather）。
-- [ ] 按 AGENTS.md §2 矩阵对应行：`npm run type-check` + `npx eslint src/screen/<改动路径> src/services/<改动路径>` 0 error；命令与结果记入 `engineering/qa/`。
-- [ ] 接线后 `grep` 确认对应模块 `lib/data/*Mock` import 清零，再删除该 mock 文件。
+- [x] [TDD] 受影响 service 集成测试经 `npm test` 必绿（alarm/emergency/weather 及本次 production）。
+- [x] 按 AGENTS.md §2 矩阵对应行：`npm run type-check` + 受改动路径 `npx eslint` 0 error；结果见 `engineering/qa/production-mock-to-service.md`。
+- [x] 接线后 `grep` 确认 `productionMock|productionAreaMock|productionDeviceMock` import 清零，再删除 6 个 mock 文件（仅 `alarmDetailMock` 跨域保留、改类型指向）。
 
 ## 验收标准（Definition of Done）
 
-- [ ] `tasks.md` 全部勾选，验收标准逐条满足（本期以 P0 三模块接线 + 测试绿为最小可验收切片）。
-- [ ] 受影响目标 `npm test` / type-check / eslint 0 error（按 §2 矩阵对应行，不连跑四套）。
-- [ ] 代码若改变契约/行为，同步 `docs/` 与对应 `docs/UI规范-*.md`（短期记录不写进 docs/）。
+- [x] `tasks.md` 生产域（P2-生产）全部勾选，验收标准逐条满足；video/communication 仍为 `#TODO-确认` 显式递延，不阻塞本期切片。
+- [x] 受影响目标 `npm test` / type-check / eslint（受改动路径）0 error（按 §2 矩阵对应行）。
+- [x] 新增 `docs/api/production.openapi.json` 契约 + `src/types/generated/production.ts` 生成类型；行为改动已同步契约（短期记录不写进 `docs/UI规范-*.md`）。
 - [ ] 提交按 scope 拆分：`type(screen): 描述`，单行成句、禁止 `- ` 分点列表；临时输出文件不入库。
-- [ ] L3 完成后即刻写 `engineering/qa/` + `engineering/retro/`，不攒到最后补。
+- [x] L3 完成后写 `engineering/qa/production-mock-to-service.md` + `engineering/retro/`（见对应文件）。

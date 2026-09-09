@@ -58,8 +58,15 @@ function loadJson(p) {
   return JSON.parse(readFileSync(p, 'utf-8'));
 }
 
+// 域名转合法 TS 命名空间标识符：accident-rescue → AccidentRescue。
+// 直接用域名会产生 `import type * as Accident-rescue`，连字符不是合法标识符 → 全量 type-check 报错。
 function capitalize(s) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  const pascal = s
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+  return /^[0-9]/.test(pascal) ? `D${pascal}` : pascal;
 }
 
 async function main() {

@@ -1,0 +1,629 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "生产应急大屏接口（fm-production / fm-production-area）",
+    "description": "取代前端硬编码的 productionMock / productionAreaMock / productionDeviceMock。覆盖生产应急大屏的设施与设备分类总览、统计概览、生产报警、风险预警、人员定位标记，以及装置区二级页（分区/指标/人员构成/报警）与设备清单分页。地图覆盖层与控件为前端静态几何，不在此契约内。",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "paths": {
+    "/production/overview": {
+      "get": {
+        "summary": "生产应急总览",
+        "description": "一次返回大屏首屏所需的四类数据：设施总览卡片、设备分类总览卡片、统计概览条与风险等级汇总，避免首屏多端点拼接。",
+        "tags": ["production"],
+        "responses": {
+          "200": {
+            "description": "生产应急总览数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProductionOverview" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "facilities": [
+                      { "id": 1, "name": "厂区", "count": 596, "image": "image_0001.png" },
+                      { "id": 2, "name": "生产装置", "count": 596, "image": "image_0008.png" }
+                    ],
+                    "devices": [
+                      { "id": 1, "name": "卡口/通道", "count": 596, "image": "image_0002.png" }
+                    ],
+                    "stats": [
+                      {
+                        "id": 1,
+                        "label": "今日报警",
+                        "value": "128",
+                        "trend": 12.5,
+                        "trendUp": true,
+                        "iconIndex": 0
+                      }
+                    ],
+                    "riskSummary": { "red": 2, "orange": 3, "yellow": 2 }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/production/alarms": {
+      "get": {
+        "summary": "生产报警列表",
+        "description": "大屏报警面板与装置区二级页共用。facilityId 为空返回全部；传入时按设施过滤（装置区二级页会把 location 重写为对应装置区）。",
+        "tags": ["production"],
+        "parameters": [
+          {
+            "name": "facilityId",
+            "in": "query",
+            "required": false,
+            "description": "设施 id；不传返回全部报警",
+            "schema": { "type": "integer", "format": "int64", "example": 2 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "生产报警列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ProductionAlarmItem" }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "title": "人员跌倒",
+                      "titleColor": "warning",
+                      "location": "化工区乙烯装置东侧",
+                      "time": "2026-03-17 14:21:30",
+                      "description": "A装置区域发现人员跌倒。",
+                      "status": "未处置",
+                      "iconIndex": 0,
+                      "thumb": "person_fall.png"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/production/risk-warnings": {
+      "get": {
+        "summary": "风险预警列表",
+        "description": "风险管控面板数据：预警位置、类型、时间、责任人与电话，按红/橙/黄三级着色。",
+        "tags": ["production"],
+        "responses": {
+          "200": {
+            "description": "风险预警列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/RiskWarningItem" }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "location": "化工区乙烯装置",
+                      "type": "可燃气体泄漏",
+                      "time": "2026-03-17 14:05:00",
+                      "person": "张伟",
+                      "phone": "13800138000",
+                      "level": "red",
+                      "levelLabel": "重大风险"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/production/personnel": {
+      "get": {
+        "summary": "人员定位标记",
+        "description": "生产地图的人员聚集点标记。left/top 为舞台百分比坐标（用于版面定位），longitude/latitude 为真实经纬度（用于地图打点）。",
+        "tags": ["production"],
+        "responses": {
+          "200": {
+            "description": "人员定位标记列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PersonnelMarker" }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "left": "33.5%",
+                      "top": "46.2%",
+                      "longitude": 110.8792,
+                      "latitude": 21.6789,
+                      "location": "化工区乙烯装置东侧",
+                      "count": 24,
+                      "markerIcon": "person_cluster.png",
+                      "popupBg": "#0b2a4a",
+                      "markerDot": "#3ec6ff",
+                      "markerLine": "#3ec6ff"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/production/areas/{facilityId}": {
+      "get": {
+        "summary": "装置区详情",
+        "description": "装置区二级页（fm-production-area）聚合数据：分区与报警数、指标卡、人员总数与构成、该装置区报警列表。facilityId 未命中时返回 404 业务码。",
+        "tags": ["production"],
+        "parameters": [
+          {
+            "name": "facilityId",
+            "in": "path",
+            "required": true,
+            "description": "设施 id（取自总览 facilities[].id）",
+            "schema": { "type": "integer", "format": "int64", "example": 2 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "装置区详情",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProductionAreaDetail" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "facilityId": 2,
+                    "facilityName": "生产装置",
+                    "zones": [{ "id": "a", "name": "A生产装置", "alarmCount": 2, "zoneIndex": 0 }],
+                    "metrics": [{ "id": 1, "label": "重大危险源", "value": "536" }],
+                    "personnelTotal": 35,
+                    "personnelSlices": [{ "name": "本厂人员", "value": 24, "color": "#3ec6ff" }],
+                    "alarms": [
+                      {
+                        "id": 1,
+                        "title": "人员跌倒",
+                        "titleColor": "warning",
+                        "location": "生产装置区域",
+                        "time": "2026-03-17 14:21:30",
+                        "description": "生产装置区域发现人员跌倒。",
+                        "status": "未处置",
+                        "iconIndex": 0,
+                        "thumb": "person_fall.png"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/production/devices": {
+      "get": {
+        "summary": "设备清单（分页）",
+        "description": "设备列表抽屉数据。category 与 status 均为可选过滤，传「全部状态」或不传表示不过滤。",
+        "tags": ["production"],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "设备分类（卡口/通道、监测点、人员定位、消防设施、通风设备、广播、电话）",
+            "schema": { "type": "string", "example": "监测点" }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "设备状态（正常 / 离线 / 故障）",
+            "schema": { "type": "string", "example": "正常" }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码，从 1 开始",
+            "schema": { "type": "integer", "default": 1, "example": 1 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": { "type": "integer", "default": 10, "example": 10 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "设备分页结果",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProductionDevicePage" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "page": 1,
+                    "size": 10,
+                    "total": 35,
+                    "items": [
+                      {
+                        "id": 1,
+                        "name": "催化裂解监测",
+                        "type": "气体监测",
+                        "category": "监测点",
+                        "area": "炼油区",
+                        "status": "正常",
+                        "longitude": 110.8792,
+                        "latitude": 21.6789
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ProductionOverview": {
+        "type": "object",
+        "description": "生产应急大屏首屏总览",
+        "properties": {
+          "facilities": {
+            "type": "array",
+            "description": "设施总览卡片（厂区/生产装置/仓库/重大危险源/储罐）",
+            "items": { "$ref": "#/components/schemas/OverviewGridItem" }
+          },
+          "devices": {
+            "type": "array",
+            "description": "设备分类总览卡片（卡口通道/监测点/人员定位/消防设施/通风设备/广播/电话）",
+            "items": { "$ref": "#/components/schemas/OverviewGridItem" }
+          },
+          "stats": {
+            "type": "array",
+            "description": "统计概览条",
+            "items": { "$ref": "#/components/schemas/StatOverviewItem" }
+          },
+          "riskSummary": { "$ref": "#/components/schemas/RiskSummary" }
+        }
+      },
+      "OverviewGridItem": {
+        "type": "object",
+        "description": "总览网格项（设施或设备分类卡片）",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "卡片 id", "example": 1 },
+          "name": { "type": "string", "description": "卡片名称", "example": "生产装置" },
+          "count": { "type": "integer", "description": "关联对象数量", "example": 596 },
+          "image": {
+            "type": "string",
+            "description": "卡片缩略图文件名（前端按 production 模块静态资源解析）",
+            "example": "image_0008.png"
+          }
+        }
+      },
+      "StatOverviewItem": {
+        "type": "object",
+        "description": "统计概览项",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "统计项 id", "example": 1 },
+          "label": { "type": "string", "description": "统计项名称", "example": "今日报警" },
+          "value": {
+            "type": "string",
+            "description": "统计值（已格式化展示串）",
+            "example": "128"
+          },
+          "unit": {
+            "type": "string",
+            "description": "单位（可为空）",
+            "example": "起",
+            "nullable": true
+          },
+          "trend": {
+            "type": "number",
+            "format": "double",
+            "description": "环比变化百分比",
+            "example": 12.5
+          },
+          "trendUp": {
+            "type": "boolean",
+            "description": "是否为上升（上升红、下降绿由前端样式决定）",
+            "example": true
+          },
+          "iconIndex": {
+            "type": "integer",
+            "description": "图标索引（前端图标数组下标）",
+            "example": 0
+          }
+        }
+      },
+      "RiskSummary": {
+        "type": "object",
+        "description": "风险等级汇总计数",
+        "properties": {
+          "red": { "type": "integer", "description": "重大风险（红）数量", "example": 2 },
+          "orange": { "type": "integer", "description": "较大风险（橙）数量", "example": 3 },
+          "yellow": { "type": "integer", "description": "一般风险（黄）数量", "example": 2 }
+        }
+      },
+      "ProductionAlarmItem": {
+        "type": "object",
+        "description": "生产报警项",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "报警 id", "example": 1 },
+          "title": {
+            "type": "string",
+            "description": "报警标题（人员跌倒 / 有毒气体超标 等）",
+            "example": "人员跌倒"
+          },
+          "titleColor": {
+            "type": "string",
+            "description": "标题配色档位",
+            "enum": ["danger", "warning", "orange", "purple"],
+            "example": "warning"
+          },
+          "location": {
+            "type": "string",
+            "description": "报警位置",
+            "example": "化工区乙烯装置东侧"
+          },
+          "time": {
+            "type": "string",
+            "description": "报警时间（yyyy-MM-dd HH:mm:ss）",
+            "example": "2026-03-17 14:21:30"
+          },
+          "description": {
+            "type": "string",
+            "description": "报警描述",
+            "example": "A装置区域发现人员跌倒。"
+          },
+          "status": {
+            "type": "string",
+            "description": "处置状态（未处置 / 处置中 / 已处置）",
+            "example": "未处置"
+          },
+          "iconIndex": { "type": "integer", "description": "图标索引", "example": 0 },
+          "thumb": {
+            "type": "string",
+            "description": "报警抓图文件名（前端静态资源解析，可为空）",
+            "example": "person_fall.png",
+            "nullable": true
+          }
+        }
+      },
+      "RiskWarningItem": {
+        "type": "object",
+        "description": "风险预警项",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "预警 id", "example": 1 },
+          "location": { "type": "string", "description": "预警位置", "example": "化工区乙烯装置" },
+          "type": { "type": "string", "description": "预警类型", "example": "可燃气体泄漏" },
+          "time": {
+            "type": "string",
+            "description": "预警时间（yyyy-MM-dd HH:mm:ss）",
+            "example": "2026-03-17 14:05:00"
+          },
+          "person": { "type": "string", "description": "责任人", "example": "张伟" },
+          "phone": { "type": "string", "description": "责任人电话", "example": "13800138000" },
+          "level": {
+            "type": "string",
+            "description": "风险等级（对应红/橙/黄）",
+            "enum": ["red", "orange", "yellow"],
+            "example": "red"
+          },
+          "levelLabel": {
+            "type": "string",
+            "description": "风险等级中文标签",
+            "example": "重大风险"
+          }
+        }
+      },
+      "PersonnelMarker": {
+        "type": "object",
+        "description": "人员定位标记",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "标记 id", "example": 1 },
+          "left": {
+            "type": "string",
+            "description": "舞台百分比横坐标（版面定位用）",
+            "example": "33.5%"
+          },
+          "top": {
+            "type": "string",
+            "description": "舞台百分比纵坐标（版面定位用）",
+            "example": "46.2%"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "经度（地图打点用）",
+            "example": 110.8792
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "纬度（地图打点用）",
+            "example": 21.6789
+          },
+          "location": {
+            "type": "string",
+            "description": "位置名称",
+            "example": "化工区乙烯装置东侧"
+          },
+          "count": { "type": "integer", "description": "该点人员数量", "example": 24 },
+          "markerIcon": {
+            "type": "string",
+            "description": "标记图标文件名",
+            "example": "person_cluster.png",
+            "nullable": true
+          },
+          "popupBg": {
+            "type": "string",
+            "description": "气泡背景色",
+            "example": "#0b2a4a",
+            "nullable": true
+          },
+          "markerDot": {
+            "type": "string",
+            "description": "标记点颜色",
+            "example": "#3ec6ff",
+            "nullable": true
+          },
+          "markerLine": {
+            "type": "string",
+            "description": "标记连线颜色",
+            "example": "#3ec6ff",
+            "nullable": true
+          }
+        }
+      },
+      "ProductionAreaDetail": {
+        "type": "object",
+        "description": "装置区二级页聚合详情",
+        "properties": {
+          "facilityId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "设施 id",
+            "example": 2
+          },
+          "facilityName": { "type": "string", "description": "设施名称", "example": "生产装置" },
+          "zones": {
+            "type": "array",
+            "description": "装置区分区（A/B/C）",
+            "items": { "$ref": "#/components/schemas/ProductionAreaZone" }
+          },
+          "metrics": {
+            "type": "array",
+            "description": "装置区指标卡（重大危险源 / 生产装置 / 门禁闸机 …）",
+            "items": { "$ref": "#/components/schemas/ProductionAreaMetric" }
+          },
+          "personnelTotal": { "type": "integer", "description": "装置区人员总数", "example": 35 },
+          "personnelSlices": {
+            "type": "array",
+            "description": "人员构成（本厂人员 / 承包商 / 访客）",
+            "items": { "$ref": "#/components/schemas/PersonnelSlice" }
+          },
+          "alarms": {
+            "type": "array",
+            "description": "该装置区报警列表",
+            "items": { "$ref": "#/components/schemas/ProductionAlarmItem" }
+          }
+        }
+      },
+      "ProductionAreaZone": {
+        "type": "object",
+        "description": "装置区分区",
+        "properties": {
+          "id": { "type": "string", "description": "分区代码（a/b/c）", "example": "a" },
+          "name": { "type": "string", "description": "分区名称", "example": "A生产装置" },
+          "alarmCount": { "type": "integer", "description": "分区报警数", "example": 2 },
+          "zoneIndex": {
+            "type": "integer",
+            "description": "分区序号（着色与排序用）",
+            "example": 0
+          }
+        }
+      },
+      "ProductionAreaMetric": {
+        "type": "object",
+        "description": "装置区指标项",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "指标 id", "example": 1 },
+          "label": { "type": "string", "description": "指标名称", "example": "重大危险源" },
+          "value": { "type": "string", "description": "指标值（已格式化展示串）", "example": "536" }
+        }
+      },
+      "PersonnelSlice": {
+        "type": "object",
+        "description": "人员构成切片（环形图）",
+        "properties": {
+          "name": { "type": "string", "description": "人员类别", "example": "本厂人员" },
+          "value": { "type": "integer", "description": "人数", "example": 24 },
+          "color": { "type": "string", "description": "扇区颜色", "example": "#3ec6ff" }
+        }
+      },
+      "ProductionDevicePage": {
+        "type": "object",
+        "description": "设备分页结果",
+        "properties": {
+          "page": { "type": "integer", "description": "当前页码", "example": 1 },
+          "size": { "type": "integer", "description": "每页条数", "example": 10 },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "description": "符合条件的总条数",
+            "example": 35
+          },
+          "items": {
+            "type": "array",
+            "description": "当前页设备",
+            "items": { "$ref": "#/components/schemas/ProductionDeviceItem" }
+          }
+        }
+      },
+      "ProductionDeviceItem": {
+        "type": "object",
+        "description": "设备明细",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "设备 id", "example": 1 },
+          "name": { "type": "string", "description": "设备名称", "example": "催化裂解监测" },
+          "type": {
+            "type": "string",
+            "description": "设备类型（气体监测 / 门禁闸机 等）",
+            "example": "气体监测"
+          },
+          "category": {
+            "type": "string",
+            "description": "设备分类（与总览设备卡片名称一致）",
+            "example": "监测点"
+          },
+          "area": { "type": "string", "description": "所属区域", "example": "炼油区" },
+          "status": {
+            "type": "string",
+            "description": "设备状态",
+            "enum": ["正常", "离线", "故障"],
+            "example": "正常"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "经度",
+            "example": 110.8792
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "纬度",
+            "example": 21.6789
+          }
+        }
+      }
+    }
+  }
+}

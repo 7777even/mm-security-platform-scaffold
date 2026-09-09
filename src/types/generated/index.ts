@@ -1,20 +1,34 @@
 // 自动生成：scripts/gen-api-types.mjs。请勿手改。
 // 用法：import type { Alarm } from '@/types/generated'; 再取 Alarm.components['schemas']['AlarmItem']
+import type * as AccidentRescue from './accident-rescue';
 import type * as Alarm from './alarm';
 import type * as Auth from './auth';
 import type * as Dashboard from './dashboard';
 import type * as Device from './device';
 import type * as Emergency from './emergency';
+import type * as FireAlarm from './fire-alarm';
+import type * as FireMonitoring from './fire-monitoring';
 import type * as Gis from './gis';
+import type * as Hazard from './hazard';
 import type * as Map from './map';
+import type * as Production from './production';
 import type * as Realtime from './realtime';
+import type * as Security from './security';
+import type * as TyphoonEmergency from './typhoon-emergency';
 import type * as Uplink from './uplink';
+export { AccidentRescue };
 export { Alarm };
 export { Auth };
 export { Dashboard };
 export { Device };
 export { Emergency };
+export { FireAlarm };
+export { FireMonitoring };
 export { Gis };
+export { Hazard };
 export { Map };
+export { Production };
 export { Realtime };
+export { Security };
+export { TyphoonEmergency };
 export { Uplink };

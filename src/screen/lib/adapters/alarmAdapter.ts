@@ -68,7 +68,7 @@ export function toScreenAlarm(alarm: ApiAlarmItem, index = 0): ScreenAlarmItem {
 
 // 生产屏告警卡片（ProductionAlarmCard）期望的本地形状与 AlarmCard 不同，
 // 同样需要把契约 AlarmItem 单向映射过去，避免改动卡片组件。
-import type { ProductionAlarmItem } from '@/screen/lib/data/productionMock';
+import type { ProductionAlarmItem } from '@/services/production';
 
 function levelToTitleColor(level: number): ProductionAlarmItem['titleColor'] {
   if (level <= 2) return 'danger';
@@ -90,5 +90,6 @@ export function toProductionAlarmItem(alarm: ApiAlarmItem, index = 0): Productio
     description: alarm.description ?? '',
     status: STATUS_LABEL[alarm.status ?? 'ACTIVE'],
     iconIndex: Math.min(Math.max(level - 1, 0), 3),
+    thumb: null,
   };
 }

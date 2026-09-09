@@ -1,16 +1,31 @@
 ﻿<script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
 import OverviewGridItem from '../../common/OverviewGridItem.vue';
-import { deviceItems } from '../../../lib/data/productionMock';
+import {
+  fetchProductionOverview,
+  type OverviewGridItem as OverviewGridItemType,
+  type ProductionDeviceCategory,
+} from '@/services/production';
 import { openProductionDeviceList } from '../../../lib/composables/useProductionDeviceListView';
-import type { ProductionDeviceCategory } from '../../../lib/data/productionDeviceMock';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const router = useRouter();
 const { scaleAreaCount } = usePlantArea();
 
-function openDevice(item: (typeof deviceItems)[number]) {
+const deviceItems = ref<OverviewGridItemType[]>([]);
+
+onMounted(async () => {
+  try {
+    const overview = await fetchProductionOverview();
+    deviceItems.value = overview.devices;
+  } catch {
+    deviceItems.value = [];
+  }
+});
+
+function openDevice(item: OverviewGridItemType) {
   if (item.name === '广播') {
     void router.push({ name: 'productionCommunication', query: { tab: 'broadcast' } });
     return;

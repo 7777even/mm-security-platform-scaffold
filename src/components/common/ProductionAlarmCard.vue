@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import type { ProductionAlarmItem } from '@/services/map-data/productionMock';
+import type { ProductionAlarmItem } from '@/services/production';
 import { User, Warning, UserFilled } from '@element-plus/icons-vue';
 import ClipImage from './ClipImage.vue';
 import OneKeyBroadcastDialog from '../panels/production/OneKeyBroadcastDialog.vue';

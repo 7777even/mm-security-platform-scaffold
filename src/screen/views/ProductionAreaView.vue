@@ -9,19 +9,35 @@ import ProductionAreaPersonnelPanel from '../components/panels/production/Produc
 import ProductionAreaAlarmPanel from '../components/panels/production/ProductionAreaAlarmPanel.vue';
 import ProductionAreaFacilityListPanel from '../components/panels/production/ProductionAreaFacilityListPanel.vue';
 import { getSharedMap, onSharedMapReady } from '../lib/composables/sharedCesiumBridge';
-import { resolveProductionAreaDetail } from '../lib/data/productionAreaMock';
+import { fetchProductionAreaDetail, type ProductionAreaDetail } from '@/services/production';
 
 const props = defineProps<{
   facilityId: string;
 }>();
 
 const router = useRouter();
-const detail = computed(() => resolveProductionAreaDetail(props.facilityId));
-const activeZoneId = ref(detail.value.zones[0]?.id ?? 'a');
+const detail = ref<ProductionAreaDetail | null>(null);
+const activeZoneId = ref('a');
+
+const zones = computed(() => detail.value?.zones ?? []);
+const metrics = computed(() => detail.value?.metrics ?? []);
+const personnelTotal = computed(() => detail.value?.personnelTotal ?? 0);
+const personnelSlices = computed(() => detail.value?.personnelSlices ?? []);
+const alarms = computed(() => detail.value?.alarms ?? []);
 
 const activeZone = computed(
-  () => detail.value.zones.find((z) => z.id === activeZoneId.value) ?? detail.value.zones[0],
+  () => zones.value.find((z) => z.id === activeZoneId.value) ?? zones.value[0],
 );
+
+async function loadDetail() {
+  try {
+    detail.value = await fetchProductionAreaDetail(Number(props.facilityId));
+  } catch {
+    // 暴露式降级：后端不可用保持上一帧（或初始空结构），不白屏、不静默回落假数据
+  } finally {
+    activeZoneId.value = zones.value[0]?.id ?? 'a';
+  }
+}
 
 async function flyToActiveZone() {
   const map = getSharedMap();
@@ -46,12 +62,7 @@ function goBack() {
   void router.push({ name: 'production' });
 }
 
-watch(
-  () => props.facilityId,
-  () => {
-    activeZoneId.value = detail.value.zones[0]?.id ?? 'a';
-  },
-);
+watch(() => props.facilityId, loadDetail, { immediate: true });
 
 watch(activeZoneId, () => {
   void flyToActiveZone();
@@ -80,22 +91,19 @@ onMounted(() => {
       <div class="production-area">
         <ProductionAreaTopBar
           class="production-area__top"
-          :zones="detail.zones"
+          :zones="zones"
           :active-zone-id="activeZoneId"
-          :metrics="detail.metrics"
+          :metrics="metrics"
           @update:active-zone-id="activeZoneId = $event"
         />
 
         <aside class="production-area__left">
-          <ProductionAreaFacilityListPanel :metrics="detail.metrics" />
+          <ProductionAreaFacilityListPanel :metrics="metrics" />
         </aside>
 
         <aside class="production-area__right">
-          <ProductionAreaPersonnelPanel
-            :total="detail.personnelTotal"
-            :slices="detail.personnelSlices"
-          />
-          <ProductionAreaAlarmPanel :alarms="detail.alarms" />
+          <ProductionAreaPersonnelPanel :total="personnelTotal" :slices="personnelSlices" />
+          <ProductionAreaAlarmPanel :alarms="alarms" />
         </aside>
 
         <button type="button" class="production-area__back" @click="goBack">返回</button>

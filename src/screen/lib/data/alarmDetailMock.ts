@@ -2,7 +2,7 @@ import { fireAlarmMarker, type AlarmItem } from './mock';
 import type { FireAlarmItem } from '@/services/alarm';
 import type { FacilityAlarmItem } from './fireFacilityMonitoringMock';
 import { fireFacilityFaults } from './fireFacilityMonitoringMock';
-import type { ProductionAlarmItem } from './productionMock';
+import type { ProductionAlarmItem } from '@/services/production';
 import type { PatrolAlarmItem } from '@/services/security';
 import fireAlarmPipeRack from '../../assets/semantic-scenes/fire-alarm-pipe-rack.png';
 import securityPerimeterIntrusion from '../../assets/semantic-scenes/security-perimeter-intrusion.png';

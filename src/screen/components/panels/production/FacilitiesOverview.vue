@@ -1,15 +1,30 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
 import OverviewGridItem from '../../common/OverviewGridItem.vue';
-import { facilityItems } from '../../../lib/data/productionMock';
+import {
+  fetchProductionOverview,
+  type OverviewGridItem as OverviewGridItemType,
+} from '@/services/production';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const router = useRouter();
 const { scaleAreaCount } = usePlantArea();
 
-/** 重大危险源卡片 id，与 productionMock.facilityItems 保持一致 */
+/** 重大危险源卡片 id，与后端 production 总览 facilities[].id 保持一致 */
 const MAJOR_HAZARD_FACILITY_ID = 4;
+
+const facilityItems = ref<OverviewGridItemType[]>([]);
+
+onMounted(async () => {
+  try {
+    const overview = await fetchProductionOverview();
+    facilityItems.value = overview.facilities;
+  } catch {
+    facilityItems.value = [];
+  }
+});
 
 function openFacility(facilityId: number) {
   if (facilityId === MAJOR_HAZARD_FACILITY_ID) {

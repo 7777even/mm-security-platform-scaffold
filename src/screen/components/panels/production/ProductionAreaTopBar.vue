@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import type {
-  ProductionAreaMetric,
-  ProductionAreaZone,
-} from '../../../lib/data/productionAreaMock';
+import type { ProductionAreaMetric, ProductionAreaZone } from '@/services/production';
 
 const props = defineProps<{
   zones: ProductionAreaZone[];

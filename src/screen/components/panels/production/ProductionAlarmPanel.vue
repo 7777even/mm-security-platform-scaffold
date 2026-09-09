@@ -2,24 +2,22 @@
 import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import ProductionAlarmCard from '../../common/ProductionAlarmCard.vue';
-import { productionAlarms } from '../../../lib/data/productionMock';
-import type { ProductionAlarmItem } from '../../../lib/data/productionMock';
+import type { ProductionAlarmItem } from '@/services/production';
 import { fetchAlarmPage } from '@/services/alarm';
 import { toProductionAlarmItem } from '../../../lib/adapters/alarmAdapter';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
 const realAlarms = ref<ProductionAlarmItem[]>([]);
-const visibleProductionAlarms = computed(() =>
-  filterByPlantArea(realAlarms.value.length ? realAlarms.value : productionAlarms),
-);
+const visibleProductionAlarms = computed(() => filterByPlantArea(realAlarms.value));
 
 onMounted(async () => {
   try {
     const page = await fetchAlarmPage(1, 20);
     realAlarms.value = page.list.map((alarm, i) => toProductionAlarmItem(alarm, i));
   } catch {
-    // 直连真后端失败时回落内置 mock，保证 UI 可见
+    // 暴露式降级：后端不可用时保持空列表，不静默回落硬编码假数据
+    realAlarms.value = [];
   }
 });
 </script>

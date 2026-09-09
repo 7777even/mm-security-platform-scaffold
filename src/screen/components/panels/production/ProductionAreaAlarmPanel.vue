@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import PanelCard from '../../common/PanelCard.vue';
 import ProductionAlarmCard from '../../common/ProductionAlarmCard.vue';
-import type { ProductionAlarmItem } from '../../../lib/data/productionMock';
+import type { ProductionAlarmItem } from '@/services/production';
 
 defineProps<{
   alarms: ProductionAlarmItem[];

@@ -6,7 +6,7 @@ import { PieChart } from 'echarts/charts';
 import { TooltipComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import PanelCard from '../../common/PanelCard.vue';
-import type { ProductionAreaPersonnelSlice } from '../../../lib/data/productionAreaMock';
+import type { ProductionAreaPersonnelSlice } from '@/services/production';
 
 use([PieChart, TooltipComponent, CanvasRenderer]);
 

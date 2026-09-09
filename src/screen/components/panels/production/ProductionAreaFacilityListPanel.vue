@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
-import type { ProductionAreaMetric } from '../../../lib/data/productionAreaMock';
+import type { ProductionAreaMetric } from '@/services/production';
 
 const props = defineProps<{
   metrics: ProductionAreaMetric[];

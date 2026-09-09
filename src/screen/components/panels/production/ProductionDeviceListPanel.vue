@@ -6,7 +6,7 @@ import {
   resolveDeviceCategoryTitle,
   statusTone,
   type ProductionDeviceStatus,
-} from '../../../lib/data/productionDeviceMock';
+} from '@/services/production';
 import {
   applyProductionDeviceSearch,
   closeProductionDeviceList,

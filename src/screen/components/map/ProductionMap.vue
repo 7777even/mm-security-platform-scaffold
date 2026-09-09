@@ -1,11 +1,13 @@
 ﻿<script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import SpriteImage from '../common/SpriteImage.vue';
 import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
 import MapMarkerIcon from './MapMarkerIcon.vue';
 import { productionSprites } from '../../utils/productionSpriteConfig';
-import { personnelMarkers, productionMapControls } from '../../lib/data/productionMock';
+import { productionMapControls } from '@/services/productionMapConfig';
+import { designImg } from '../../utils/designAssets';
+import { fetchProductionPersonnel, statusTone, type PersonnelMarker } from '@/services/production';
 import { useMapControls } from '../../lib/composables/useMapControls';
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
@@ -19,14 +21,49 @@ import {
   communicationDrawerOpen,
   selectedDeviceId,
 } from '../../lib/composables/useCommunicationDevices';
-import { statusTone } from '../../lib/data/productionDeviceMock';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 import { resolvePlantAreaWorldPosition } from '../../lib/data/plantAreas';
 import { fetchAlarmPoints, type MapPoint } from '@/services/map';
 
 const { onMapControl } = useMapControls();
-const { areaScopedItems } = usePlantArea();
-const visiblePersonnelMarkers = areaScopedItems(personnelMarkers);
+const { filterByPlantArea } = usePlantArea();
+
+// 人员定位标记来自真实后端（/production/personnel）；markerOuter/markerInner 为前端装饰环，
+// 后端契约 PersonnelMarker 不承载，故在此用 designImg 补回，保证视觉与历史一致。
+// 后端契约 PersonnelMarker 的图片字段为 string | null；模板 :src 要求 string，
+// 故在此统一兜底为空串（null → 不渲染图片，属可接受的暴露式降级）。
+type DecoratedPersonnelMarker = Omit<
+  PersonnelMarker,
+  'markerIcon' | 'popupBg' | 'markerDot' | 'markerLine'
+> & {
+  markerIcon: string;
+  popupBg: string;
+  markerDot: string;
+  markerLine: string;
+  markerOuter: string;
+  markerInner: string;
+};
+const personnelMarkers = ref<PersonnelMarker[]>([]);
+
+onMounted(async () => {
+  try {
+    personnelMarkers.value = await fetchProductionPersonnel();
+  } catch {
+    personnelMarkers.value = [];
+  }
+});
+
+const visiblePersonnelMarkers = computed<DecoratedPersonnelMarker[]>(() =>
+  filterByPlantArea(personnelMarkers.value).map((marker) => ({
+    ...marker,
+    markerIcon: marker.markerIcon ?? '',
+    popupBg: marker.popupBg ?? '',
+    markerDot: marker.markerDot ?? '',
+    markerLine: marker.markerLine ?? '',
+    markerOuter: designImg('圆形_41.png', 'production') ?? '',
+    markerInner: designImg('圆形_42.png', 'production') ?? '',
+  })),
+);
 
 const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(() => {
   const height = getSharedMap()?.getBoundaryModelTopHeight?.() ?? 72.05;
