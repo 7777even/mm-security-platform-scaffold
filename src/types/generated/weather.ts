@@ -140,9 +140,8 @@ export interface components {
     /** @description 实时天气观测 */
     CurrentWeather: {
       /**
-       * Format: double
-       * @description 实时温度（℃）
-       * @example 28.5
+       * @description 实时温度（℃，后端 fac_weather_current.temperature 为整型）
+       * @example 29
        */
       temperature?: number;
       /**
@@ -151,7 +150,6 @@ export interface components {
        */
       condition?: string;
       /**
-       * Format: integer
        * @description 空气质量指数（AQI）
        * @example 45
        */
@@ -222,8 +220,7 @@ export interface components {
        */
       wind?: number;
       /**
-       * Format: double
-       * @description 温度（℃）
+       * @description 温度（℃，后端 fac_weather_hourly.temperature 为整型）
        * @example 29
        */
       temperature?: number;
@@ -234,7 +231,6 @@ export interface components {
        */
       pressure?: number;
       /**
-       * Format: double
        * @description 相对湿度（%）
        * @example 66
        */
@@ -263,13 +259,11 @@ export interface components {
        */
       icon?: string;
       /**
-       * Format: integer
        * @description 最高温（℃）
        * @example 31
        */
       high?: number;
       /**
-       * Format: integer
        * @description 最低温（℃）
        * @example 22
        */
@@ -280,7 +274,6 @@ export interface components {
        */
       wind?: string;
       /**
-       * Format: double
        * @description 相对湿度（%）
        * @example 65
        */

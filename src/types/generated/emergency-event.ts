@@ -238,9 +238,9 @@ export interface components {
     EvacuationPerson: {
       /**
        * @description 人员 id
-       * @example p-001
+       * @example 1
        */
-      id?: string;
+      id?: number;
       /**
        * @description 姓名
        * @example 王磊

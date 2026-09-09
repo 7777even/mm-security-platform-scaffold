@@ -267,7 +267,7 @@
         "type": "object",
         "description": "疏散人员进度项",
         "properties": {
-          "id": { "type": "string", "description": "人员 id", "example": "p-001" },
+          "id": { "type": "integer", "description": "人员 id", "example": 1 },
           "name": { "type": "string", "description": "姓名", "example": "王磊" },
           "org": { "type": "string", "description": "所属单位", "example": "炼油运行一部" },
           "job": { "type": "string", "description": "岗位", "example": "外操" },

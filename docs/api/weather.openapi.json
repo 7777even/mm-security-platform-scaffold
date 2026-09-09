@@ -92,15 +92,13 @@
         "description": "实时天气观测",
         "properties": {
           "temperature": {
-            "type": "number",
-            "format": "double",
-            "description": "实时温度（℃）",
-            "example": 28.5
+            "type": "integer",
+            "description": "实时温度（℃，后端 fac_weather_current.temperature 为整型）",
+            "example": 29
           },
           "condition": { "type": "string", "description": "天气状况描述", "example": "多云" },
           "airQuality": {
-            "type": "number",
-            "format": "integer",
+            "type": "integer",
             "description": "空气质量指数（AQI）",
             "example": 45
           },
@@ -137,9 +135,8 @@
             "example": 3
           },
           "temperature": {
-            "type": "number",
-            "format": "double",
-            "description": "温度（℃）",
+            "type": "integer",
+            "description": "温度（℃，后端 fac_weather_hourly.temperature 为整型）",
             "example": 29
           },
           "pressure": {
@@ -149,8 +146,7 @@
             "example": 1008
           },
           "humidity": {
-            "type": "number",
-            "format": "double",
+            "type": "integer",
             "description": "相对湿度（%）",
             "example": 66
           }
@@ -169,21 +165,18 @@
           "condition": { "type": "string", "description": "天气状况描述", "example": "多云转晴" },
           "icon": { "type": "string", "description": "天气图标标识", "example": "partly-cloudy" },
           "high": {
-            "type": "number",
-            "format": "integer",
+            "type": "integer",
             "description": "最高温（℃）",
             "example": 31
           },
           "low": {
-            "type": "number",
-            "format": "integer",
+            "type": "integer",
             "description": "最低温（℃）",
             "example": 22
           },
           "wind": { "type": "string", "description": "风力描述", "example": "东南风3级" },
           "humidity": {
-            "type": "number",
-            "format": "double",
+            "type": "integer",
             "description": "相对湿度（%）",
             "example": 65
           },

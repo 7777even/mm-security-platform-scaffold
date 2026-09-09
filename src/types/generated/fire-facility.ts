@@ -696,10 +696,10 @@ export interface components {
     /** @description 设施报警明细项 */
     FireFacilityAlarmItem: {
       /**
-       * @description 报警记录 id
-       * @example 2001
+       * @description 报警记录 id（形如 AL-<故障单号>，后端按字符串下发）
+       * @example AL-20260317001
        */
-      id?: number;
+      id?: string;
       /**
        * @description 报警来源
        * @example 火灾报警控制器

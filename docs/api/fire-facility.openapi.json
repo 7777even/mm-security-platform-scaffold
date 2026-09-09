@@ -494,7 +494,11 @@
         "type": "object",
         "description": "设施报警明细项",
         "properties": {
-          "id": { "type": "integer", "description": "报警记录 id", "example": 2001 },
+          "id": {
+            "type": "string",
+            "description": "报警记录 id（形如 AL-<故障单号>，后端按字符串下发）",
+            "example": "AL-20260317001"
+          },
           "source": { "type": "string", "description": "报警来源", "example": "火灾报警控制器" },
           "facilityType": {
             "type": "string",
