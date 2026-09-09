@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import WujieVue from 'wujie-vue3';
 import { useAuthStore } from '@/stores/auth';
+import { getAccessToken } from '@/services/token';
 import { injectDesignTokens } from './wujieTokens';
 
 // wujie 主壳装载槽（wujie-shell spec）。
@@ -89,6 +90,8 @@ onBeforeUnmount(() => {
 // 子应用侧经 window.$wujie.props 读取后回退到本地 vue-router 之上。
 // query：子应用视图大量使用 route.query（eventId/from/autostart/tab/monitor/...），
 // 由主壳下传替代子应用沙箱 vue-router 永远命中的 subapp-fallback 缺失。
+// getAccessToken：子应用自身不独立登录（subapps/fm-* 入口不调用 ensureLogin），
+// 经此只读桥实时读取主壳内存态令牌，避免子应用发起的鉴权请求因无 Authorization 头而 401。
 const sharedProps = computed(() => ({
   user: auth.roleId,
   perms: auth.perms,
@@ -97,6 +100,7 @@ const sharedProps = computed(() => ({
   routeName: route.name as string | undefined,
   routePath: route.path,
   query: { ...route.query } as Record<string, string | string[] | null | undefined>,
+  getAccessToken,
 }));
 
 // 子应用沙箱 style 隔离，无法读取主壳 :root 变量；
