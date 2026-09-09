@@ -3,14 +3,16 @@ import { computed } from 'vue';
 import { assets } from '@/utils/designAssets';
 import { getSharedMap } from '@/composables/sharedCesiumBridge';
 import { useWorldMarkerScreenPositions } from '@/composables/useCesiumScreenAnchor';
-import { fireBrigadeTeams, getFireBrigadeTeam } from '@/services/map-data/fireBrigadeMock';
+import { allFireBrigadeTeams } from '@/composables/useFireBrigadeView';
 import { selectedFireBrigadeId, selectFireBrigade } from '@/composables/useFireBrigadeView';
 
-const activeTeam = computed(() => getFireBrigadeTeam(selectedFireBrigadeId.value));
+const activeTeam = computed(
+  () => allFireBrigadeTeams.value.find((t) => t.id === selectedFireBrigadeId.value) ?? null,
+);
 
 const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(() => {
   const height = getSharedMap()?.getBoundaryModelTopHeight?.() ?? 72.05;
-  return fireBrigadeTeams.map((team) => ({
+  return allFireBrigadeTeams.value.map((team) => ({
     key: String(team.id),
     longitude: team.longitude,
     latitude: team.latitude,
@@ -22,7 +24,7 @@ const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(() => {
 <template>
   <div class="brigade-map" aria-hidden="true">
     <div
-      v-for="team in fireBrigadeTeams"
+      v-for="team in allFireBrigadeTeams"
       :key="team.id"
       class="brigade-marker"
       :class="{ 'brigade-marker--active': selectedFireBrigadeId === team.id }"

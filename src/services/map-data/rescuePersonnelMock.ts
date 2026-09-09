@@ -1,3 +1,6 @@
+import { fetchRescuePersonnel } from '@/services/rescueResource';
+import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+
 export interface RescuePersonnelItem {
   id: number;
   name: string;
@@ -84,4 +87,29 @@ export const rescuePersonnelTotalCount = 375;
 export function getRescuePersonnelItem(id: number | null | undefined): RescuePersonnelItem | null {
   if (!id) return null;
   return rescuePersonnelItems.find((item) => item.id === id) ?? null;
+}
+
+/** 救援人员台账：未配置后端时回落本地 fixture；配置后走 /rescue-resources/personnel 真实端点。 */
+export async function loadRescuePersonnel(): Promise<RescuePersonnelItem[]> {
+  if (!import.meta.env.VITE_API_BASE) return rescuePersonnelItems;
+  try {
+    const data = await fetchRescuePersonnel();
+    if (!data || !Array.isArray(data.items)) {
+      backendUnavailableWarn(
+        'rescue-resources',
+        '/rescue-resources/personnel',
+        REASON_CONTRACT_MISMATCH,
+      );
+      return rescuePersonnelItems;
+    }
+    return data.items.map((i) => ({
+      id: i.id,
+      name: i.name,
+      squadron: i.squadron,
+      role: i.role,
+    }));
+  } catch {
+    backendUnavailableWarn('rescue-resources', '/rescue-resources/personnel');
+    return rescuePersonnelItems;
+  }
 }

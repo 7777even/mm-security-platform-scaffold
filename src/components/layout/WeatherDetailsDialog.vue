@@ -1,14 +1,25 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import {
-  currentWeather,
-  dailyWeather,
-  hourlyWeather,
+  fetchWeatherOverview,
+  type CurrentWeather,
+  type DailyWeatherItem,
+  type HourlyWeatherItem,
   type WeatherMetric,
+} from '@/services/weather';
+import { backendUnavailableWarn } from '@/services/backendFallback';
+import {
+  currentWeather as mockCurrentWeather,
+  dailyWeather as mockDailyWeather,
+  hourlyWeather as mockHourlyWeather,
 } from '@/services/map-data/weatherMock';
 
 defineProps<{ open: boolean }>();
 defineEmits<{ close: [] }>();
+
+const currentWeather = ref<CurrentWeather>(mockCurrentWeather as unknown as CurrentWeather);
+const hourlyWeather = ref<HourlyWeatherItem[]>(mockHourlyWeather as unknown as HourlyWeatherItem[]);
+const dailyWeather = ref<DailyWeatherItem[]>(mockDailyWeather as unknown as DailyWeatherItem[]);
 
 const metric = ref<WeatherMetric>('rain');
 const metrics: Array<{ key: WeatherMetric; label: string; unit: string }> = [
@@ -22,7 +33,7 @@ const metrics: Array<{ key: WeatherMetric; label: string; unit: string }> = [
 const activeMetric = computed(
   () => metrics.find((item) => item.key === metric.value) ?? metrics[0],
 );
-const values = computed(() => hourlyWeather.map((item) => item[metric.value]));
+const values = computed(() => hourlyWeather.value.map((item) => item[metric.value]));
 const chartPoints = computed(() => {
   const list = values.value;
   const min = Math.min(...list);
@@ -38,11 +49,26 @@ const polyline = computed(() =>
   chartPoints.value.map((point) => `${point.x},${point.y}`).join(' '),
 );
 const weeklyHighPoints = computed(() =>
-  dailyWeather.map((item, index) => `${71 + index * 142},${42 + (33 - item.high) * 9}`).join(' '),
+  dailyWeather.value
+    .map((item, index) => `${71 + index * 142},${42 + (33 - item.high) * 9}`)
+    .join(' '),
 );
 const weeklyLowPoints = computed(() =>
-  dailyWeather.map((item, index) => `${71 + index * 142},${104 + (26 - item.low) * 9}`).join(' '),
+  dailyWeather.value
+    .map((item, index) => `${71 + index * 142},${104 + (26 - item.low) * 9}`)
+    .join(' '),
 );
+
+onMounted(() => {
+  if (!import.meta.env.VITE_API_BASE) return;
+  void fetchWeatherOverview()
+    .then((data) => {
+      currentWeather.value = data.current;
+      hourlyWeather.value = data.hourly;
+      dailyWeather.value = data.daily;
+    })
+    .catch(() => backendUnavailableWarn('weather', '/weather/overview'));
+});
 </script>
 
 <template>

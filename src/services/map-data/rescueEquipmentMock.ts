@@ -1,3 +1,9 @@
+import {
+  fetchRescueEquipment,
+  type RescueEquipmentItem as ServiceRescueEquipmentItem,
+} from '@/services/rescueResource';
+import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+
 export interface RescueEquipmentItem {
   id: number;
   name: string;
@@ -130,4 +136,50 @@ export const rescueEquipmentTotalSets = 375;
 export function getRescueEquipmentItem(id: number | null | undefined): RescueEquipmentItem | null {
   if (!id) return null;
   return rescueEquipmentItems.find((item) => item.id === id) ?? null;
+}
+
+function mapRescueEquipment(i: ServiceRescueEquipmentItem): RescueEquipmentItem {
+  return {
+    id: i.id,
+    name: i.name,
+    squadron: i.squadron,
+    quantity: i.quantity,
+    leaderName: i.leaderName ?? '',
+    leaderPhone: i.leaderPhone ?? '',
+    stockQuantity: i.stockQuantity,
+    model: i.model ?? '',
+    protectionType: i.protectionType ?? '',
+    filterCanister: i.filterCanister ?? '',
+    maxContinuousUse: i.maxContinuousUse ?? '',
+    storageLocation: i.storageLocation ?? '',
+    purchaseBatch: i.purchaseBatch ?? '',
+    factoryValidityYears: i.factoryValidityYears ?? '',
+    remainingValidity: i.remainingValidity ?? '',
+    lastInspectionDate: i.lastInspectionDate ?? '',
+    nextMandatoryMaintenanceDate: i.nextMandatoryMaintenanceDate ?? '',
+    equipmentStatus: i.equipmentStatus ?? '',
+    scrapWarning: i.scrapWarning ?? '',
+    issueRegistration: i.issueRegistration ?? '',
+    spareParts: i.spareParts ?? '',
+  };
+}
+
+/** 救援装备台账：未配置后端时回落本地 fixture；配置后走 /rescue-resources/equipment 真实端点。 */
+export async function loadRescueEquipment(): Promise<RescueEquipmentItem[]> {
+  if (!import.meta.env.VITE_API_BASE) return rescueEquipmentItems;
+  try {
+    const data = await fetchRescueEquipment();
+    if (!data || !Array.isArray(data.items)) {
+      backendUnavailableWarn(
+        'rescue-resources',
+        '/rescue-resources/equipment',
+        REASON_CONTRACT_MISMATCH,
+      );
+      return rescueEquipmentItems;
+    }
+    return data.items.map(mapRescueEquipment);
+  } catch {
+    backendUnavailableWarn('rescue-resources', '/rescue-resources/equipment');
+    return rescueEquipmentItems;
+  }
 }

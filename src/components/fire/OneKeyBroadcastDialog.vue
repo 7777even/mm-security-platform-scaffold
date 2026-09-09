@@ -9,7 +9,7 @@
 import { ref } from 'vue';
 import ScreenDialog from './ScreenDialog.vue';
 import { showToast } from '@/composables/useToast';
-import { fireBrigadeTeams } from '@/services/map-data/fireBrigadeMock';
+import { allFireBrigadeTeams } from '@/composables/useFireBrigadeView';
 
 const props = defineProps<{ contact?: { name: string; phone: string } }>();
 const emit = defineEmits<{ close: [] }>();
@@ -42,7 +42,7 @@ function send(): void {
     <div class="broadcast">
       <aside class="broadcast__targets">
         <h4>广播目标（消防中队）</h4>
-        <label v-for="t in fireBrigadeTeams" :key="t.id" class="target">
+        <label v-for="t in allFireBrigadeTeams" :key="t.id" class="target">
           <input type="checkbox" :checked="has(t.id)" @change="toggle(t.id)" />
           <span class="target__name">{{ t.name }}</span>
           <span class="target__meta">{{ t.area }} · {{ t.leaderName }}</span>

@@ -1,12 +1,14 @@
 import { computed, ref } from 'vue';
 import {
+  loadFireBrigades,
   fireBrigadeTeams,
-  getFireBrigadeTeam,
   type FireBrigadeTeam,
 } from '@/services/map-data/fireBrigadeMock';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
+
+export const allFireBrigadeTeams = ref<FireBrigadeTeam[]>(fireBrigadeTeams);
 import { coordsForFireBrigadeTeam } from '@/services/map-data/rescueMapCoords';
 import { restoreRescueMapView, runRescueMapFocus } from './useRescueMapFocus';
 
@@ -18,13 +20,13 @@ export const fireBrigadeCurrentPage = ref(1);
 export const fireBrigadeKeyword = ref('');
 export const fireBrigadeAreaFilter = ref('全部区域');
 
-export const selectedFireBrigade = computed<FireBrigadeTeam | null>(() =>
-  getFireBrigadeTeam(selectedFireBrigadeId.value),
+export const selectedFireBrigade = computed<FireBrigadeTeam | null>(
+  () => allFireBrigadeTeams.value.find((t) => t.id === selectedFireBrigadeId.value) ?? null,
 );
 
 export const fireBrigadeFilteredTeams = computed(() => {
   const kw = fireBrigadeKeyword.value.trim().toLowerCase();
-  return filterByPlantArea(fireBrigadeTeams).filter((team) => {
+  return filterByPlantArea(allFireBrigadeTeams.value).filter((team) => {
     const matchKeyword =
       !kw || team.name.toLowerCase().includes(kw) || team.leaderName.toLowerCase().includes(kw);
     const matchArea =
@@ -52,7 +54,7 @@ function focusForTeam(id: number | null) {
   if (!id) return null;
   const teams = fireBrigadePagedTeams.value;
   const index = teams.findIndex((team) => team.id === id);
-  const team = getFireBrigadeTeam(id);
+  const team = allFireBrigadeTeams.value.find((t) => t.id === id) ?? null;
   if (!team || index < 0) return null;
   return coordsForFireBrigadeTeam(team, index, teams.length, fireBrigadeCurrentPage.value);
 }
@@ -92,6 +94,10 @@ export function openFireBrigadeView() {
   fireBrigadeAreaFilter.value = '全部区域';
   selectedFireBrigadeId.value = null;
   runRescueMapFocus(brigadeMarkers());
+  void loadFireBrigades().then((items) => {
+    allFireBrigadeTeams.value = items;
+    syncFireBrigadeMapFocus();
+  });
 }
 
 export function closeFireBrigadeView() {

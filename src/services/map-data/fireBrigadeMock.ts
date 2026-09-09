@@ -1,3 +1,9 @@
+import {
+  fetchFireBrigades,
+  type FireBrigadeTeam as ServiceFireBrigadeTeam,
+} from '@/services/rescueResource';
+import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+
 // ===== 消防队伍 mock 数据（大屏消防监测 · 消防救援力量）=====
 
 export interface FireBrigadeVehicle {
@@ -335,4 +341,65 @@ export const fireBrigadeTeams: FireBrigadeTeam[] = Array.from({ length: 8 }, (_,
 export function getFireBrigadeTeam(id: number | null | undefined): FireBrigadeTeam | null {
   if (!id) return null;
   return fireBrigadeTeams.find((team) => team.id === id) ?? null;
+}
+
+function mapFireBrigadeTeam(i: ServiceFireBrigadeTeam): FireBrigadeTeam {
+  return {
+    id: i.id,
+    name: i.name,
+    area: i.area ?? '',
+    memberCount: i.memberCount,
+    leaderName: i.leaderName ?? '',
+    leaderPhone: i.leaderPhone ?? '',
+    location: i.location ?? '',
+    longitude: i.longitude,
+    latitude: i.latitude,
+    description: i.description ?? '',
+    rescuePersonnel: i.rescuePersonnel,
+    rescueVehicles: i.rescueVehicles,
+    vehicles: (i.vehicles ?? []).map((v) => ({
+      id: v.id,
+      plate: v.plate ?? '',
+      type: v.type ?? '',
+      status: (v.status ?? '待命') as FireBrigadeVehicle['status'],
+      parkingLocation: v.parkingLocation ?? '',
+    })),
+    personnel: (i.personnel ?? []).map((p) => ({
+      id: p.id,
+      name: p.name ?? '',
+      role: p.role ?? '',
+      group: (p.group ?? '战斗') as FireBrigadePerson['group'],
+      phone: p.phone ?? '',
+      dutyStatus: (p.dutyStatus ?? '在岗') as FireBrigadePerson['dutyStatus'],
+    })),
+    equipment: (i.equipment ?? []).map((e) => ({
+      id: e.id,
+      name: e.name ?? '',
+      category: (e.category ?? '防护装备') as FireBrigadeEquipment['category'],
+      count: e.count,
+      unit: e.unit ?? '',
+      status: (e.status ?? '完好') as FireBrigadeEquipment['status'],
+      storageLocation: e.storageLocation ?? '',
+    })),
+  };
+}
+
+/** 消防队伍台账：未配置后端时回落本地 fixture；配置后走 /rescue-resources/brigades 真实端点。 */
+export async function loadFireBrigades(): Promise<FireBrigadeTeam[]> {
+  if (!import.meta.env.VITE_API_BASE) return fireBrigadeTeams;
+  try {
+    const data = await fetchFireBrigades();
+    if (!data || !Array.isArray(data.items)) {
+      backendUnavailableWarn(
+        'rescue-resources',
+        '/rescue-resources/brigades',
+        REASON_CONTRACT_MISMATCH,
+      );
+      return fireBrigadeTeams;
+    }
+    return data.items.map(mapFireBrigadeTeam);
+  } catch {
+    backendUnavailableWarn('rescue-resources', '/rescue-resources/brigades');
+    return fireBrigadeTeams;
+  }
 }

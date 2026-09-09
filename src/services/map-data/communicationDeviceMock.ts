@@ -1,3 +1,9 @@
+import {
+  fetchCommunicationDevices,
+  type CommunicationDeviceGroups,
+} from '@/services/communication';
+import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+
 export type CommunicationTab = 'broadcast' | 'phone' | 'intercom';
 
 export interface CommunicationDevice {
@@ -265,4 +271,20 @@ export function getCommunicationDevice(id: string | null) {
     }
   }
   return null;
+}
+
+/** 通讯设备分组：未配置后端时回落本地 fixture；配置后走 /communication/devices 真实端点。 */
+export async function loadCommunicationDevices(): Promise<CommunicationDeviceGroups> {
+  if (!import.meta.env.VITE_API_BASE) return communicationDeviceGroups;
+  try {
+    const data = await fetchCommunicationDevices();
+    if (!data || !data.broadcast || !data.phone || !data.intercom) {
+      backendUnavailableWarn('communication', '/communication/devices', REASON_CONTRACT_MISMATCH);
+      return communicationDeviceGroups;
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('communication', '/communication/devices');
+    return communicationDeviceGroups;
+  }
 }

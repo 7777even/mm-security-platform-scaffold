@@ -6,6 +6,8 @@ import type {
   RescueForceStat,
 } from './preliminaryMock';
 import { stagePercentStringToWorldPosition } from '@/utils/mapDesignGeo';
+import { fetchEmergencyEvents } from '@/services/emergencyEvent';
+import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
 
 export type { EmergencyEventItem, EmergencyEventGroup };
 
@@ -333,3 +335,51 @@ export const fireEmergencyMapControls = [
   { key: 'labels', label: '标签默认' },
   { key: 'toggle', label: '地图控件切换' },
 ];
+
+/**
+ * 消防应急事件分组：未配置后端时回落本地 fixture；
+ * 配置后端后走 /emergency-events?scene=FIRE 真实端点，并按 kind 拆分为事件/演练两组（契约不符/异常回落 fixture）。
+ */
+export async function loadFireEmergencyEventGroups(): Promise<{
+  events: EmergencyEventGroup[];
+  drills: EmergencyEventGroup[];
+}> {
+  if (!import.meta.env.VITE_API_BASE) {
+    return {
+      events: initialFireEmergencyEventGroups,
+      drills: initialFireEmergencyDrillEventGroups,
+    };
+  }
+  try {
+    const data = await fetchEmergencyEvents('FIRE');
+    if (!Array.isArray(data)) {
+      backendUnavailableWarn('emergencyEvent', '/emergency-events', REASON_CONTRACT_MISMATCH);
+      return {
+        events: initialFireEmergencyEventGroups,
+        drills: initialFireEmergencyDrillEventGroups,
+      };
+    }
+    const events: EmergencyEventGroup[] = [];
+    const drills: EmergencyEventGroup[] = [];
+    for (const group of data) {
+      const evs = group.events
+        .filter((e) => (e.kind ?? 'event') === 'event')
+        .map((e) => ({ ...e, endedAt: e.endedAt ?? undefined }));
+      const drs = group.events
+        .filter((e) => e.kind === 'drill')
+        .map((e) => ({ ...e, endedAt: e.endedAt ?? undefined }));
+      if (evs.length) events.push({ ...group, events: evs });
+      if (drs.length) drills.push({ ...group, events: drs });
+    }
+    return {
+      events: events.length ? events : initialFireEmergencyEventGroups,
+      drills: drills.length ? drills : initialFireEmergencyDrillEventGroups,
+    };
+  } catch {
+    backendUnavailableWarn('emergencyEvent', '/emergency-events');
+    return {
+      events: initialFireEmergencyEventGroups,
+      drills: initialFireEmergencyDrillEventGroups,
+    };
+  }
+}

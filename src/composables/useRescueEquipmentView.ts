@@ -1,12 +1,14 @@
 import { computed, ref } from 'vue';
 import {
-  getRescueEquipmentItem,
+  loadRescueEquipment,
   rescueEquipmentItems,
   type RescueEquipmentItem,
 } from '@/services/map-data/rescueEquipmentMock';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
+
+const equipmentItems = ref<RescueEquipmentItem[]>(rescueEquipmentItems);
 import { coordsForSquadronPaged } from '@/services/map-data/rescueMapCoords';
 import { restoreRescueMapView, runRescueMapFocus } from './useRescueMapFocus';
 
@@ -18,13 +20,13 @@ export const rescueEquipmentCurrentPage = ref(1);
 export const rescueEquipmentKeyword = ref('');
 export const rescueEquipmentSquadronFilter = ref('全部中队');
 
-export const selectedRescueEquipment = computed<RescueEquipmentItem | null>(() =>
-  getRescueEquipmentItem(selectedRescueEquipmentId.value),
+export const selectedRescueEquipment = computed<RescueEquipmentItem | null>(
+  () => equipmentItems.value.find((i) => i.id === selectedRescueEquipmentId.value) ?? null,
 );
 
 export const rescueEquipmentFilteredItems = computed(() => {
   const kw = rescueEquipmentKeyword.value.trim();
-  return filterByPlantArea(rescueEquipmentItems).filter((item) => {
+  return filterByPlantArea(equipmentItems.value).filter((item) => {
     const matchKw = !kw || item.name.includes(kw);
     const matchSquadron =
       rescueEquipmentSquadronFilter.value === '全部中队' ||
@@ -53,7 +55,7 @@ function equipmentMarkers() {
 function focusForEquipment(id: number | null) {
   const items = rescueEquipmentPagedItems.value;
   const index = items.findIndex((item) => item.id === id);
-  const item = getRescueEquipmentItem(id);
+  const item = equipmentItems.value.find((i) => i.id === id) ?? null;
   if (!item || index < 0) return null;
   return coordsForSquadronPaged(
     item.squadron,
@@ -99,6 +101,10 @@ export function openRescueEquipmentView() {
   rescueEquipmentSquadronFilter.value = '全部中队';
   selectedRescueEquipmentId.value = null;
   runRescueMapFocus(equipmentMarkers());
+  void loadRescueEquipment().then((items) => {
+    equipmentItems.value = items;
+    syncRescueEquipmentMapFocus();
+  });
 }
 
 export function closeRescueEquipmentView() {

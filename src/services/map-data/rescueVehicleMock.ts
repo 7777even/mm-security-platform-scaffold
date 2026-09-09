@@ -1,3 +1,9 @@
+import {
+  fetchRescueVehicles,
+  type RescueVehicleItem as ServiceRescueVehicleItem,
+} from '@/services/rescueResource';
+import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+
 export type RescueVehicleStatus = '出动' | '空闲' | '维修中';
 
 export interface RescueVehicleCrewMember {
@@ -243,4 +249,68 @@ export function statusBadgeClass(status: RescueVehicleStatus): string {
   if (status === '出动') return 'vehicle-status--dispatch';
   if (status === '维修中') return 'vehicle-status--repair';
   return 'vehicle-status--idle';
+}
+
+function mapRescueVehicle(i: ServiceRescueVehicleItem): RescueVehicleItem {
+  return {
+    id: i.id,
+    plate: i.plate ?? '',
+    type: i.type ?? '',
+    squadron: i.squadron ?? '',
+    leaderName: i.leaderName ?? '',
+    leaderPhone: i.leaderPhone ?? '',
+    status: (i.status ?? '空闲') as RescueVehicleStatus,
+    businessName: i.businessName ?? '',
+    vehicleTypeFull: i.vehicleTypeFull ?? '',
+    parkingLocation: i.parkingLocation ?? '',
+    chassisModel: i.chassisModel ?? '',
+    manufactureDate: i.manufactureDate ?? '',
+    inspectionExpiry: i.inspectionExpiry ?? '',
+    foamTankVolume: i.foamTankVolume ?? '',
+    waterTankVolume: i.waterTankVolume ?? '',
+    maxWaterFlow: i.maxWaterFlow ?? '',
+    foamType: i.foamType ?? '',
+    lastMaintenanceDate: i.lastMaintenanceDate ?? '',
+    nextMaintenanceDate: i.nextMaintenanceDate ?? '',
+    totalMileage: i.totalMileage ?? '',
+    faultRecord: i.faultRecord ?? '',
+    inspectionStatus: i.inspectionStatus ?? '',
+    crew: (i.crew ?? []).map((c) => ({
+      role: c.role ?? '',
+      name: c.name ?? '',
+      phone: c.phone ?? '',
+      certificate: c.certificate ?? '',
+      dutyStatus: c.dutyStatus ?? '',
+    })),
+    onboardEquipment: (i.onboardEquipment ?? []).map((e) => ({
+      name: e.name ?? '',
+      quantity: e.quantity ?? '',
+      model: e.model ?? '',
+      nextCheckDate: e.nextCheckDate ?? '',
+      equipmentStatus: e.equipmentStatus ?? '',
+      storageLocation: e.storageLocation ?? '',
+    })),
+    consumables: (i.consumables ?? []).map((k) => ({ label: k.label, value: k.value })),
+    dispatchSummary: (i.dispatchSummary ?? []).map((k) => ({ label: k.label, value: k.value })),
+  };
+}
+
+/** 救援车辆台账：未配置后端时回落本地 fixture；配置后走 /rescue-resources/vehicles 真实端点。 */
+export async function loadRescueVehicles(): Promise<RescueVehicleItem[]> {
+  if (!import.meta.env.VITE_API_BASE) return rescueVehicleItems;
+  try {
+    const data = await fetchRescueVehicles();
+    if (!data || !Array.isArray(data.items)) {
+      backendUnavailableWarn(
+        'rescue-resources',
+        '/rescue-resources/vehicles',
+        REASON_CONTRACT_MISMATCH,
+      );
+      return rescueVehicleItems;
+    }
+    return data.items.map(mapRescueVehicle);
+  } catch {
+    backendUnavailableWarn('rescue-resources', '/rescue-resources/vehicles');
+    return rescueVehicleItems;
+  }
 }

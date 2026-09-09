@@ -1,6 +1,7 @@
 import { computed, ref, watch } from 'vue';
 import {
   emergencyEventGroups,
+  loadPreliminaryEvents,
   type EmergencyEventGroup,
   type EmergencyEventItem,
 } from '@/services/map-data/preliminaryMock';
@@ -8,6 +9,15 @@ import { selectPreliminaryEvent } from './usePreliminaryEventSelection';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
+
+// 先期处置事件：预填本地 fixture，配置后端后拉取真实端点（失败/契约不符回落 fixture）。
+const preliminaryGroups = ref<EmergencyEventGroup[]>(emergencyEventGroups);
+
+export function refreshPreliminaryEvents() {
+  void loadPreliminaryEvents('PRELIMINARY').then((groups) => {
+    preliminaryGroups.value = groups;
+  });
+}
 
 export const PRELIMINARY_EVENT_CARD_SLOT = 114;
 export const PRELIMINARY_GROUP_TITLE_SLOT = 26;
@@ -39,7 +49,7 @@ export function resetPreliminaryEventList() {
 
 const filteredGroups = computed(() => {
   const q = preliminaryKeyword.value.trim().toLowerCase();
-  const areaGroups = emergencyEventGroups
+  const areaGroups = preliminaryGroups.value
     .map((group) => ({
       ...group,
       events: filterByPlantArea(group.events),
@@ -129,3 +139,6 @@ export function searchPreliminaryEvents() {
 export function resetPreliminarySearch() {
   resetPreliminaryEventList();
 }
+
+// 配置后端时模块加载即拉取一次真实数据（无后端为 no-op，保持本地 fixture）。
+refreshPreliminaryEvents();

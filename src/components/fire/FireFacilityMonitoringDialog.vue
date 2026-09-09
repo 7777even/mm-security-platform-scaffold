@@ -5,7 +5,7 @@
   图标：压缩包 fire-situation 图标（PkgIcon）。
 -->
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import ScreenDialog from './ScreenDialog.vue';
 import PkgIcon from '@/components/common/PkgIcon.vue';
 import {
@@ -14,6 +14,11 @@ import {
   fireFacilityAlarms,
   fireFacilityWorkOrders,
   resolveFacilityLedgerByType,
+  loadFireFacilityMonitors,
+  loadFireFacilityFaults,
+  loadFireFacilityAlarms,
+  loadFireFacilityWorkOrders,
+  loadFireFacilityLedger,
 } from '@/services/map-data/fireFacilityMonitoringMock';
 
 const emit = defineEmits<{ close: [] }>();
@@ -22,7 +27,24 @@ type Tab = 'overview' | 'fault' | 'alarm' | 'order' | 'ledger';
 const tab = ref<Tab>('overview');
 const ledgerType = ref<string>(fireFacilityMonitorSummaries[0]?.facilityType ?? '');
 
+// 业务数据：预填本地 fixture，配置后端后首次挂载拉取真实端点（失败/契约不符回落 fixture）。
+const monitorSummaries = ref<typeof fireFacilityMonitorSummaries>(fireFacilityMonitorSummaries);
+const faultList = ref<typeof fireFacilityFaults>(fireFacilityFaults);
+const alarmList = ref<typeof fireFacilityAlarms>(fireFacilityAlarms);
+const workOrderList = ref<typeof fireFacilityWorkOrders>(fireFacilityWorkOrders);
+
 const ledgerRows = computed(() => resolveFacilityLedgerByType(ledgerType.value));
+
+onMounted(() => {
+  void loadFireFacilityMonitors().then((items) => {
+    monitorSummaries.value = items;
+    if (!ledgerType.value && items[0]) ledgerType.value = items[0].facilityType;
+  });
+  void loadFireFacilityFaults().then((items) => (faultList.value = items));
+  void loadFireFacilityAlarms().then((items) => (alarmList.value = items));
+  void loadFireFacilityWorkOrders().then((items) => (workOrderList.value = items));
+  void loadFireFacilityLedger();
+});
 
 function overviewTone(s: string): 'ok' | 'warn' | 'danger' {
   if (s === '正常') return 'ok';
@@ -66,7 +88,7 @@ function faultTone(s: string): 'ok' | 'danger' {
 
       <!-- 监控总览 -->
       <div v-if="tab === 'overview'" class="fac__grid">
-        <div v-for="s in fireFacilityMonitorSummaries" :key="s.key" class="fcard">
+        <div v-for="s in monitorSummaries" :key="s.key" class="fcard">
           <div class="fcard__head">
             <span class="fcard__name">{{ s.facilityType }}</span>
             <span :class="['fcard__status', `is-${overviewTone(s.status)}`]">{{ s.status }}</span>
@@ -101,7 +123,7 @@ function faultTone(s: string): 'ok' | 'danger' {
 
       <!-- 故障记录 -->
       <div v-else-if="tab === 'fault'" class="tbl">
-        <div v-for="f in fireFacilityFaults" :key="f.id" class="trow">
+        <div v-for="f in faultList" :key="f.id" class="trow">
           <span class="num">{{ f.faultCode }}</span>
           <span>{{ f.facilityName }}</span>
           <span>{{ f.faultType }}</span>
@@ -113,7 +135,7 @@ function faultTone(s: string): 'ok' | 'danger' {
 
       <!-- 告警记录 -->
       <div v-else-if="tab === 'alarm'" class="tbl">
-        <div v-for="a in fireFacilityAlarms" :key="a.id" class="trow">
+        <div v-for="a in alarmList" :key="a.id" class="trow">
           <span>{{ a.source }}</span>
           <span>{{ a.facilityType }}</span>
           <span :class="['tag', `is-${levelTone(a.level)}`]">{{ a.level }}</span>
@@ -125,7 +147,7 @@ function faultTone(s: string): 'ok' | 'danger' {
 
       <!-- 维修工单 -->
       <div v-else-if="tab === 'order'" class="tbl">
-        <div v-for="o in fireFacilityWorkOrders" :key="o.id" class="trow">
+        <div v-for="o in workOrderList" :key="o.id" class="trow">
           <span class="num">{{ o.workOrderNo }}</span>
           <span>{{ o.facilityName }}</span>
           <span :class="['tag', `is-${levelTone(o.faultLevel)}`]">{{ o.faultLevel }}</span>
@@ -138,7 +160,7 @@ function faultTone(s: string): 'ok' | 'danger' {
       <!-- 设施台账 -->
       <div v-else class="ledger">
         <select v-model="ledgerType" class="ledger__select">
-          <option v-for="s in fireFacilityMonitorSummaries" :key="s.key" :value="s.facilityType">
+          <option v-for="s in monitorSummaries" :key="s.key" :value="s.facilityType">
             {{ s.facilityType }}
           </option>
         </select>

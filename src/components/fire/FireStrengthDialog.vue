@@ -8,12 +8,14 @@
 import { computed, ref } from 'vue';
 import ScreenDialog from './ScreenDialog.vue';
 import PkgIcon from '@/components/common/PkgIcon.vue';
-import { fireBrigadeTeams, getFireBrigadeTeam } from '@/services/map-data/fireBrigadeMock';
+import { allFireBrigadeTeams } from '@/composables/useFireBrigadeView';
 
 const emit = defineEmits<{ close: [] }>();
 
-const selectedId = ref<number>(fireBrigadeTeams[0]?.id ?? 1);
-const team = computed(() => getFireBrigadeTeam(selectedId.value));
+const selectedId = ref<number>(allFireBrigadeTeams.value[0]?.id ?? 1);
+const team = computed(
+  () => allFireBrigadeTeams.value.find((t) => t.id === selectedId.value) ?? null,
+);
 
 function dutyTone(s: string): 'ok' | 'warn' | 'muted' {
   if (s === '在岗') return 'ok';
@@ -32,7 +34,7 @@ function equipTone(s: string): 'ok' | 'warn' | 'danger' {
     <div class="strength">
       <aside class="strength__list">
         <button
-          v-for="t in fireBrigadeTeams"
+          v-for="t in allFireBrigadeTeams"
           :key="t.id"
           type="button"
           :class="['team', { 'team--active': selectedId === t.id }]"

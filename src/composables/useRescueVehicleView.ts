@@ -1,12 +1,14 @@
 import { computed, ref } from 'vue';
 import {
-  getRescueVehicleItem,
+  loadRescueVehicles,
   rescueVehicleItems,
   type RescueVehicleItem,
 } from '@/services/map-data/rescueVehicleMock';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
+
+const vehicleItems = ref<RescueVehicleItem[]>(rescueVehicleItems);
 import { coordsForSquadronPaged } from '@/services/map-data/rescueMapCoords';
 import { restoreRescueMapView, runRescueMapFocus } from './useRescueMapFocus';
 
@@ -19,13 +21,13 @@ export const rescueVehiclePlateKeyword = ref('');
 export const rescueVehicleTypeFilter = ref('全部类型');
 export const rescueVehicleSquadronFilter = ref('全部中队');
 
-export const selectedRescueVehicle = computed<RescueVehicleItem | null>(() =>
-  getRescueVehicleItem(selectedRescueVehicleId.value),
+export const selectedRescueVehicle = computed<RescueVehicleItem | null>(
+  () => vehicleItems.value.find((i) => i.id === selectedRescueVehicleId.value) ?? null,
 );
 
 export const rescueVehicleFilteredItems = computed(() => {
   const kw = rescueVehiclePlateKeyword.value.trim();
-  return filterByPlantArea(rescueVehicleItems).filter((item) => {
+  return filterByPlantArea(vehicleItems.value).filter((item) => {
     const matchPlate = !kw || item.plate.includes(kw);
     const matchType =
       rescueVehicleTypeFilter.value === '全部类型' || item.type === rescueVehicleTypeFilter.value;
@@ -56,7 +58,7 @@ function vehicleMarkers() {
 function focusForVehicle(id: number | null) {
   const items = rescueVehiclePagedItems.value;
   const index = items.findIndex((item) => item.id === id);
-  const item = getRescueVehicleItem(id);
+  const item = vehicleItems.value.find((i) => i.id === id) ?? null;
   if (!item || index < 0) return null;
   return coordsForSquadronPaged(
     item.squadron,
@@ -104,6 +106,10 @@ export function openRescueVehicleView() {
   rescueVehicleSquadronFilter.value = '全部中队';
   selectedRescueVehicleId.value = null;
   runRescueMapFocus(vehicleMarkers());
+  void loadRescueVehicles().then((items) => {
+    vehicleItems.value = items;
+    syncRescueVehicleMapFocus();
+  });
 }
 
 export function closeRescueVehicleView() {

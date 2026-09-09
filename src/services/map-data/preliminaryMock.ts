@@ -1,4 +1,6 @@
 import { stagePercentStringToWorldPosition } from '@/utils/mapDesignGeo';
+import { fetchEmergencyEvents, type EmergencyEventScene } from '@/services/emergencyEvent';
+import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
 
 export interface EmergencyEventItem {
   id: number;
@@ -252,3 +254,28 @@ export const preliminaryMapControls = [
   { key: 'labels', label: '标签默认' },
   { key: 'toggle', label: '地图控件切换' },
 ];
+
+/**
+ * 先期处置应急事件分组：未配置后端时回落本地 fixture；
+ * 配置后端后走 /emergency-events?scene=PRELIMINARY 真实端点（契约不符/异常回落 fixture）。
+ */
+export async function loadPreliminaryEvents(
+  scene: EmergencyEventScene = 'PRELIMINARY',
+): Promise<EmergencyEventGroup[]> {
+  if (!import.meta.env.VITE_API_BASE) return emergencyEventGroups;
+  try {
+    const data = await fetchEmergencyEvents(scene);
+    if (!Array.isArray(data) || data.some((g) => !g || !Array.isArray(g.events))) {
+      backendUnavailableWarn('emergencyEvent', '/emergency-events', REASON_CONTRACT_MISMATCH);
+      return emergencyEventGroups;
+    }
+    return data.map((g) => ({
+      id: g.id,
+      label: g.label,
+      events: g.events.map((e) => ({ ...e, endedAt: e.endedAt ?? undefined })),
+    }));
+  } catch {
+    backendUnavailableWarn('emergencyEvent', '/emergency-events');
+    return emergencyEventGroups;
+  }
+}

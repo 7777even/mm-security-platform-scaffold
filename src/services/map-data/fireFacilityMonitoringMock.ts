@@ -1,4 +1,13 @@
+import { ref } from 'vue';
 import { fireEquipmentCategories } from './mock';
+import {
+  fetchFireFacilityMonitors,
+  fetchFireFacilityFaults,
+  fetchFireFacilityAlarms,
+  fetchFireFacilityWorkOrders,
+  fetchFireFacilityLedger,
+} from '@/services/fireFacility';
+import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
 
 /** 13 类标准类型（含“维护保养记录”，作为子表不参与监控卡片） */
 export const fireFacilityTypeOptions = [
@@ -959,6 +968,167 @@ export const fireFacilityWorkOrders: FacilityWorkOrderItem[] = fireFacilityFault
   .map(buildWorkOrder)
   .filter((item): item is FacilityWorkOrderItem => item !== null);
 
+/** 台账数据（可经后端刷新；缺省回落本地 fixture） */
+export const facilityLedgerItemsRef = ref<FacilityLedgerItem[]>(fireFacilityLedgerItems);
+
 export function resolveFacilityLedgerByType(facilityType: string): FacilityLedgerItem[] {
-  return fireFacilityLedgerItems.filter((item) => item.facilityType === facilityType);
+  return facilityLedgerItemsRef.value.filter((item) => item.facilityType === facilityType);
+}
+
+/** 消防设施监测概览：未配置后端时回落本地 fixture；配置后走 /fire-facility/monitors。 */
+export async function loadFireFacilityMonitors(): Promise<FacilityMonitorSummary[]> {
+  if (!import.meta.env.VITE_API_BASE) return fireFacilityMonitorSummaries;
+  try {
+    const data = await fetchFireFacilityMonitors();
+    if (!data || !Array.isArray(data.items)) {
+      backendUnavailableWarn('fireFacility', '/fire-facility/monitors', REASON_CONTRACT_MISMATCH);
+      return fireFacilityMonitorSummaries;
+    }
+    return data.items.map((i) => ({
+      key: i.key,
+      facilityType: i.facilityType,
+      total: i.total,
+      online: i.online,
+      offline: i.offline,
+      fault: i.fault,
+      status: i.status as FacilityMonitorStatus,
+      params: i.params.map((p) => ({
+        label: p.label,
+        value: p.value,
+        tone: p.tone as MonitorParam['tone'],
+      })),
+      lastReportTime: i.lastReportTime,
+    }));
+  } catch {
+    backendUnavailableWarn('fireFacility', '/fire-facility/monitors');
+    return fireFacilityMonitorSummaries;
+  }
+}
+
+/** 消防设施故障列表：未配置后端时回落本地 fixture；配置后走 /fire-facility/faults。 */
+export async function loadFireFacilityFaults(): Promise<FacilityFaultItem[]> {
+  if (!import.meta.env.VITE_API_BASE) return fireFacilityFaults;
+  try {
+    const data = await fetchFireFacilityFaults();
+    if (!data || !Array.isArray(data.items)) {
+      backendUnavailableWarn('fireFacility', '/fire-facility/faults', REASON_CONTRACT_MISMATCH);
+      return fireFacilityFaults;
+    }
+    return data.items.map((i) => ({
+      id: i.id,
+      faultCode: i.faultCode,
+      facilityCode: i.facilityCode,
+      facilityName: i.facilityName,
+      facilityType: i.facilityType,
+      faultType: i.faultType,
+      faultLevel: i.faultLevel as AlarmLevel,
+      discoverTime: i.discoverTime,
+      discoverMethod: i.discoverMethod,
+      phenomenon: i.phenomenon,
+      cause: i.cause ?? '',
+      status: i.status as FaultStatus,
+      workOrderNo: i.workOrderNo ?? undefined,
+      repairPerson: i.repairPerson ?? undefined,
+      estimatedFinish: i.estimatedFinish ?? undefined,
+      actualFinish: i.actualFinish ?? undefined,
+      repairMeasures: i.repairMeasures ?? undefined,
+      acceptancePerson: i.acceptancePerson ?? undefined,
+      acceptanceResult: i.acceptanceResult ?? undefined,
+      timeline: i.timeline,
+    }));
+  } catch {
+    backendUnavailableWarn('fireFacility', '/fire-facility/faults');
+    return fireFacilityFaults;
+  }
+}
+
+/** 消防设施报警列表：未配置后端时回落本地 fixture；配置后走 /fire-facility/alarms。 */
+export async function loadFireFacilityAlarms(): Promise<FacilityAlarmItem[]> {
+  if (!import.meta.env.VITE_API_BASE) return fireFacilityAlarms;
+  try {
+    const data = await fetchFireFacilityAlarms();
+    if (!data || !Array.isArray(data.items)) {
+      backendUnavailableWarn('fireFacility', '/fire-facility/alarms', REASON_CONTRACT_MISMATCH);
+      return fireFacilityAlarms;
+    }
+    return data.items.map((i) => ({
+      id: String(i.id),
+      source: i.source,
+      facilityType: i.facilityType,
+      level: i.level as AlarmLevel,
+      category: i.category as AlarmCategory,
+      content: i.content,
+      time: i.time,
+      status: i.status as FaultStatus,
+      faultCode: i.faultCode ?? '',
+    }));
+  } catch {
+    backendUnavailableWarn('fireFacility', '/fire-facility/alarms');
+    return fireFacilityAlarms;
+  }
+}
+
+/** 消防设施维保工单：未配置后端时回落本地 fixture；配置后走 /fire-facility/work-orders。 */
+export async function loadFireFacilityWorkOrders(): Promise<FacilityWorkOrderItem[]> {
+  if (!import.meta.env.VITE_API_BASE) return fireFacilityWorkOrders;
+  try {
+    const data = await fetchFireFacilityWorkOrders();
+    if (!data || !Array.isArray(data.items)) {
+      backendUnavailableWarn(
+        'fireFacility',
+        '/fire-facility/work-orders',
+        REASON_CONTRACT_MISMATCH,
+      );
+      return fireFacilityWorkOrders;
+    }
+    return data.items.map((i) => ({
+      id: i.id,
+      workOrderNo: i.workOrderNo ?? '',
+      faultCode: i.faultCode ?? '',
+      facilityCode: i.facilityCode ?? '',
+      facilityName: i.facilityName ?? '',
+      facilityType: i.facilityType ?? '',
+      faultLevel: i.faultLevel as AlarmLevel,
+      description: i.description ?? '',
+      status: i.status as WorkOrderStatus,
+      dispatchTime: i.dispatchTime ?? '',
+      repairPerson: i.repairPerson ?? '',
+      estimatedFinish: i.estimatedFinish ?? '',
+      actualFinish: i.actualFinish ?? undefined,
+      timeline: i.timeline,
+    }));
+  } catch {
+    backendUnavailableWarn('fireFacility', '/fire-facility/work-orders');
+    return fireFacilityWorkOrders;
+  }
+}
+
+/** 消防设施台账：未配置后端时回落本地 fixture；配置后走 /fire-facility/ledger。 */
+export async function loadFireFacilityLedger(): Promise<FacilityLedgerItem[]> {
+  if (!import.meta.env.VITE_API_BASE) return fireFacilityLedgerItems;
+  try {
+    const data = await fetchFireFacilityLedger();
+    if (!data || !Array.isArray(data.items)) {
+      backendUnavailableWarn('fireFacility', '/fire-facility/ledger', REASON_CONTRACT_MISMATCH);
+      return fireFacilityLedgerItems;
+    }
+    return data.items.map((i) => ({
+      facilityCode: i.facilityCode,
+      facilityName: i.facilityName,
+      facilityType: i.facilityType,
+      location: i.location,
+      device: i.device,
+      maintainerName: i.maintainerName,
+      maintainerPhone: i.maintainerPhone,
+      enabled: i.enabled,
+      maintenanceRecords: i.maintenanceRecords.map((r) => ({
+        date: r.date,
+        content: r.content,
+        reportFile: r.reportFile ?? undefined,
+      })),
+    }));
+  } catch {
+    backendUnavailableWarn('fireFacility', '/fire-facility/ledger');
+    return fireFacilityLedgerItems;
+  }
 }

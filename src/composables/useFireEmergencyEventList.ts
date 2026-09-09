@@ -2,6 +2,7 @@ import { computed, ref, watch } from 'vue';
 import {
   initialFireEmergencyDrillEventGroups,
   initialFireEmergencyEventGroups,
+  loadFireEmergencyEventGroups,
   type EmergencyEventGroup,
   type EmergencyEventItem,
 } from '@/services/map-data/fireEmergencyMock';
@@ -111,6 +112,14 @@ export function resetFireEmergencyEventList() {
   fireEmergencyEventGroupsState.value = cloneEventGroups(initialFireEmergencyEventGroups);
   fireEmergencyDrillEventGroupsState.value = cloneEventGroups(initialFireEmergencyDrillEventGroups);
   selectFireEmergencyEvent(null);
+}
+
+/** 配置后端时拉取真实消防应急事件/演练分组（无后端为 no-op，保持本地 fixture）。 */
+export function refreshFireEmergencyEventGroups() {
+  void loadFireEmergencyEventGroups().then(({ events, drills }) => {
+    fireEmergencyEventGroupsState.value = cloneEventGroups(events);
+    fireEmergencyDrillEventGroupsState.value = cloneEventGroups(drills);
+  });
 }
 
 const kindFilteredGroups = computed(() => {
@@ -380,3 +389,6 @@ export function applyPendingFireEmergencyListPage() {
   }
   fireEmergencyPendingListPage.value = null;
 }
+
+// 配置后端时模块加载即拉取一次真实数据（无后端为 no-op，保持本地 fixture）。
+refreshFireEmergencyEventGroups();

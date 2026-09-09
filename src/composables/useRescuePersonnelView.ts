@@ -1,8 +1,14 @@
 import { computed, ref } from 'vue';
-import { rescuePersonnelItems } from '@/services/map-data/rescuePersonnelMock';
+import {
+  loadRescuePersonnel,
+  rescuePersonnelItems,
+  type RescuePersonnelItem,
+} from '@/services/map-data/rescuePersonnelMock';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
+
+const personnelItems = ref<RescuePersonnelItem[]>(rescuePersonnelItems);
 import { coordsForSquadronPaged } from '@/services/map-data/rescueMapCoords';
 import { restoreRescueMapView, runRescueMapFocus } from './useRescueMapFocus';
 
@@ -17,7 +23,7 @@ export const rescuePersonnelSquadronFilter = ref('全部中队');
 
 export const rescuePersonnelFilteredItems = computed(() => {
   const kw = rescuePersonnelKeyword.value.trim();
-  return filterByPlantArea(rescuePersonnelItems).filter((item) => {
+  return filterByPlantArea(personnelItems.value).filter((item) => {
     const matchName = !kw || item.name.includes(kw);
     const matchRole =
       rescuePersonnelRoleFilter.value === '全部岗位' ||
@@ -102,6 +108,10 @@ export function openRescuePersonnelView() {
   rescuePersonnelSquadronFilter.value = '全部中队';
   selectedRescuePersonnelId.value = null;
   runRescueMapFocus(personnelMarkers());
+  void loadRescuePersonnel().then((items) => {
+    personnelItems.value = items;
+    syncRescuePersonnelMapFocus();
+  });
 }
 
 export function closeRescuePersonnelView() {

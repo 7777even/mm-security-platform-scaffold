@@ -1,9 +1,13 @@
 import { computed, ref } from 'vue';
 import {
   communicationDeviceGroups,
-  getCommunicationDevice,
-  type CommunicationTab,
+  loadCommunicationDevices,
 } from '@/services/map-data/communicationDeviceMock';
+import {
+  type CommunicationDevice,
+  type CommunicationDeviceGroups,
+  type CommunicationTab,
+} from '@/services/communication';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea, matchesPlantArea } = usePlantArea();
@@ -12,13 +16,19 @@ export const communicationTab = ref<CommunicationTab>('broadcast');
 export const selectedDeviceId = ref<string | null>(null);
 export const communicationDrawerOpen = ref(false);
 
-export const selectedDevice = computed(() => {
-  const device = getCommunicationDevice(selectedDeviceId.value);
+export const deviceGroups = ref<CommunicationDeviceGroups>(communicationDeviceGroups);
+
+export const selectedDevice = computed<CommunicationDevice | null>(() => {
+  if (!selectedDeviceId.value) return null;
+  const all = Object.values(deviceGroups.value).flatMap((groups) =>
+    groups.flatMap((g) => g.devices),
+  );
+  const device = all.find((d) => d.id === selectedDeviceId.value) ?? null;
   return device && matchesPlantArea(device) ? device : null;
 });
 
 export const activeGroups = computed(() =>
-  (communicationDeviceGroups[communicationTab.value] ?? [])
+  (deviceGroups.value[communicationTab.value] ?? [])
     .map((group) => {
       const devices = filterByPlantArea(group.devices);
       return {
@@ -38,6 +48,9 @@ export function selectCommunicationDevice(id: string | null) {
 
 export function openCommunicationDevices() {
   communicationDrawerOpen.value = true;
+  void loadCommunicationDevices().then((groups) => {
+    deviceGroups.value = groups;
+  });
 }
 
 export function closeCommunicationDevices() {
