@@ -42,11 +42,29 @@ describe('fetchEmergencyStrength', () => {
     expect(res).toBe(fake);
   });
 
-  it('真实接口返回非法结构时回退 DEV_FIXTURE', async () => {
+  it('真实接口返回非法结构时返回空态并告警（不再用假数据冒充后端）', async () => {
     vi.stubEnv('VITE_API_BASE', 'http://api.example.com');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     (request as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ foo: 1 });
+
     const res = await fetchEmergencyStrength();
-    expect(res.resources).toHaveLength(8);
+
+    // 配了后端地址却拿到不符契约的响应 → 必须暴露为空态，否则缺口会被 fixture 掩盖
+    expect(res.resources).toHaveLength(0);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('/emergency/strength'));
+    warn.mockRestore();
+  });
+
+  it('真实接口抛错时返回空态并告警', async () => {
+    vi.stubEnv('VITE_API_BASE', 'http://api.example.com');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    (request as unknown as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('boom'));
+
+    const res = await fetchEmergencyStrength();
+
+    expect(res.resources).toHaveLength(0);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
   });
 });
 

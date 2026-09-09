@@ -1,4 +1,5 @@
 import { request } from '@/services/http';
+import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
 
 // 应急电话通讯录（B3 Mock 契约 §3.6）
 export interface EmergencyPhone {
@@ -26,15 +27,21 @@ const DEV_FIXTURE: EmergencyPhoneBook = {
   ],
 };
 
+/** 后端不可用时的空态：不再回落 DEV_FIXTURE，避免假数据冒充后端（见 backendFallback.ts）。 */
+const EMPTY: EmergencyPhoneBook = { entries: [] };
+
 export async function fetchEmergencyPhones(): Promise<EmergencyPhoneBook> {
+  // 纯静态 / 演示模式（未配置后端地址）仍用 fixture，此时不存在误判后端就绪的风险
   if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_FIXTURE);
   try {
     const data = await request<EmergencyPhoneBook>({ url: '/emergency/phones', method: 'GET' });
-    // 后端契约尚未稳定：服务端可能返回 null / 字段缺失，兜底为开发期 fixture，避免视图层崩溃
-    if (!data || !Array.isArray(data.entries)) return DEV_FIXTURE;
+    if (!data || !Array.isArray(data.entries)) {
+      backendUnavailableWarn('emergencyPhone', '/emergency/phones', REASON_CONTRACT_MISMATCH);
+      return EMPTY;
+    }
     return data;
   } catch {
-    // 网络异常 / 后端未启：返回兜底，保证 UI 可见
-    return DEV_FIXTURE;
+    backendUnavailableWarn('emergencyPhone', '/emergency/phones');
+    return EMPTY;
   }
 }

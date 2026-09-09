@@ -1,4 +1,5 @@
 import { request } from '@/services/http';
+import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
 
 // 应急值班值守（按部门 + 班次）
 export type DutyRole = '值班领导' | '值班员';
@@ -91,13 +92,21 @@ const DEV_FIXTURE: DutyRoster = {
   ],
 };
 
+/** 后端不可用时的空态：不再回落 DEV_FIXTURE，避免假数据冒充后端（见 backendFallback.ts）。 */
+const EMPTY: DutyRoster = { departments: [], shift: '白班', members: [] };
+
 export async function fetchDutyRoster(): Promise<DutyRoster> {
+  // 纯静态 / 演示模式（未配置后端地址）仍用 fixture，此时不存在误判后端就绪的风险
   if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_FIXTURE);
   try {
     const data = await request<DutyRoster>({ url: '/emergency/duty', method: 'GET' });
-    if (!data || !Array.isArray(data.members)) return DEV_FIXTURE;
+    if (!data || !Array.isArray(data.members)) {
+      backendUnavailableWarn('duty', '/emergency/duty', REASON_CONTRACT_MISMATCH);
+      return EMPTY;
+    }
     return data;
   } catch {
-    return DEV_FIXTURE;
+    backendUnavailableWarn('duty', '/emergency/duty');
+    return EMPTY;
   }
 }

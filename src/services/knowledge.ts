@@ -1,4 +1,5 @@
 import { request } from '@/services/http';
+import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
 
 // 应急生产安全知识（B3 Mock 契约 §3.6）
 export interface KnowledgeItem {
@@ -24,13 +25,21 @@ const DEV_FIXTURE: KnowledgeList = {
   ],
 };
 
+/** 后端不可用时的空态：不再回落 DEV_FIXTURE，避免假数据冒充后端（见 backendFallback.ts）。 */
+const EMPTY: KnowledgeList = { items: [] };
+
 export async function fetchEmergencyKnowledge(): Promise<KnowledgeList> {
+  // 纯静态 / 演示模式（未配置后端地址）仍用 fixture，此时不存在误判后端就绪的风险
   if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_FIXTURE);
   try {
     const data = await request<KnowledgeList>({ url: '/emergency/knowledge', method: 'GET' });
-    if (!data || !Array.isArray(data.items)) return DEV_FIXTURE;
+    if (!data || !Array.isArray(data.items)) {
+      backendUnavailableWarn('knowledge', '/emergency/knowledge', REASON_CONTRACT_MISMATCH);
+      return EMPTY;
+    }
     return data;
   } catch {
-    return DEV_FIXTURE;
+    backendUnavailableWarn('knowledge', '/emergency/knowledge');
+    return EMPTY;
   }
 }
