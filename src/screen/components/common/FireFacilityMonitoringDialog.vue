@@ -10,7 +10,6 @@ import {
   type WorkOrderStatus,
 } from '../../lib/data/fireFacilityMonitoringMock';
 import { facilityAlarmToDetail } from '../../lib/data/alarmDetailMock';
-import { equipmentStatus } from '../../lib/data/mock';
 import {
   fetchFireFacilityMonitors,
   fetchFireFacilityLedger,
@@ -291,6 +290,18 @@ const alarmCounts = computed(() => ({
   重要: alarms.value.filter((a) => a.level === '重要' && a.status !== '已闭环').length,
   一般: alarms.value.filter((a) => a.level === '一般' && a.status !== '已闭环').length,
 }));
+
+/** 顶部汇总条改为由已拉取的 monitorSummaries 聚合派生，不再依赖 mock 常量。 */
+const equipmentStatus = computed(() => {
+  const summaries = monitorSummaries.value;
+  const total = summaries.reduce((acc, s) => acc + s.total, 0);
+  const offline = summaries.reduce((acc, s) => acc + s.offline, 0);
+  const fault = summaries.reduce((acc, s) => acc + s.fault, 0);
+  const online = total - offline;
+  const integrityRate = total > 0 ? Math.round(((total - fault) / total) * 100) : 0;
+  const onlineRate = total > 0 ? Math.round((online / total) * 100) : 0;
+  return { total, offline, fault, integrityRate, onlineRate };
+});
 
 watch(
   () => props.open,
