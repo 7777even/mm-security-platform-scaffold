@@ -5,7 +5,12 @@ import {
   type EmergencyPhone,
   type EmergencyPhoneBook,
 } from '@/services/emergencyPhone';
-import type { EmergencyAddressBookTreeNode } from '../../../lib/data/emergencyAddressBookMock';
+/** 组织树节点形状（原 emergencyAddressBookMock 类型；数据已改走 /emergency/phones 按分类动态建树） */
+interface EmergencyAddressBookTreeNode {
+  id: string;
+  label: string;
+  children?: EmergencyAddressBookTreeNode[];
+}
 
 const props = defineProps<{
   open: boolean;

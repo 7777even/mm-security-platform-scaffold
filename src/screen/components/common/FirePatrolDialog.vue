@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import {
-  firePatrolRecords,
   patrolCheckItemDefs,
   patrolShiftOptions,
   patrolStatusOptions,
-  type PatrolRecord,
 } from '../../lib/data/firePatrolMock';
+import { fetchFirePatrols, type FirePatrolRecord } from '@/services/fireMonitoring';
 import { useFirePatrolDialog } from '../../lib/composables/useFirePatrolDialog';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
 
@@ -21,10 +20,23 @@ const shiftFilter = ref<string>('全部班次');
 const statusFilter = ref<string>('全部状态');
 const currentPage = ref(1);
 const PAGE_SIZE = 8;
-const selectedRecord = ref<PatrolRecord | null>(null);
+const selectedRecord = ref<FirePatrolRecord | null>(null);
+
+// 巡检记录走真实后端 /fire/patrols（service 内部失败降级空集合 + 告警）；检查项定义/下拉选项为前端 UI 配置。
+const patrolRecords = ref<FirePatrolRecord[]>([]);
+const patrolLoading = ref(false);
+
+async function loadPatrols(): Promise<void> {
+  patrolLoading.value = true;
+  try {
+    patrolRecords.value = await fetchFirePatrols();
+  } finally {
+    patrolLoading.value = false;
+  }
+}
 
 const filteredRecords = computed(() =>
-  firePatrolRecords.filter((record) => {
+  patrolRecords.value.filter((record) => {
     if (keyword.value.trim()) {
       const q = keyword.value.trim().toLowerCase();
       if (
@@ -54,12 +66,12 @@ const visiblePages = computed(() => {
   return pages;
 });
 
-const abnormalCount = (record: PatrolRecord) =>
+const abnormalCount = (record: FirePatrolRecord) =>
   record.checkItems.filter((item) => item.result === '异常').length;
 
 const groupedCheckItems = computed(() => {
   if (!selectedRecord.value) return [];
-  const groups: { category: string; items: PatrolRecord['checkItems'] }[] = [];
+  const groups: { category: string; items: FirePatrolRecord['checkItems'] }[] = [];
   for (const def of patrolCheckItemDefs) {
     const item = selectedRecord.value.checkItems.find((check) => check.itemCode === def.itemCode);
     if (!item) continue;
@@ -75,16 +87,18 @@ const groupedCheckItems = computed(() => {
 
 watch(
   () => props.open,
-  (visible) => {
+  async (visible) => {
     if (!visible) return;
-    const presetId = firePatrolPresetId.value;
-    selectedRecord.value = presetId
-      ? (firePatrolRecords.find((record) => record.id === presetId) ?? null)
-      : null;
     keyword.value = '';
     shiftFilter.value = '全部班次';
     statusFilter.value = '全部状态';
     currentPage.value = 1;
+    await loadPatrols();
+    // 记录就绪后再按预设 id 定位详情（首次打开时数据尚未加载）
+    const presetId = firePatrolPresetId.value;
+    selectedRecord.value = presetId
+      ? (patrolRecords.value.find((record) => record.id === presetId) ?? null)
+      : null;
   },
 );
 
@@ -112,7 +126,7 @@ function goToPage(page: number) {
   currentPage.value = page;
 }
 
-function openDetail(record: PatrolRecord) {
+function openDetail(record: FirePatrolRecord) {
   selectedRecord.value = record;
 }
 
