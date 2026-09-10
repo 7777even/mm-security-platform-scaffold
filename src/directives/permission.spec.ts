@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { createApp, h, withDirectives, defineComponent } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import { vPermission } from '@/directives/permission';
+import { useAuthStore } from '@/stores/auth';
 
 /** 挂载一个带 v-permission 的元素，返回挂载根节点 */
 function mountProtected(perm: string | string[]): HTMLDivElement {
@@ -20,10 +21,20 @@ function mountProtected(perm: string | string[]): HTMLDivElement {
   return root;
 }
 
-describe('v-permission 按钮级权限指令（脚手架阶段：单一管理员身份，授予全部权限）', () => {
+describe('v-permission 按钮级权限指令（权限码由 /auth/me 下发）', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     document.body.innerHTML = '';
+    // 权限码由后端 GET /auth/me 下发（V32 起退役前端硬编码 ROLE_PERMS），
+    // 指令判定依赖 store 中的 perms 快照，故此处注入一份管理员快照。
+    useAuthStore().setMe({
+      username: 'admin',
+      realName: '系统管理员',
+      role: 'ADMIN',
+      roles: ['ADMIN'],
+      perms: ['fire-alarm:ack', 'fire-alarm:view', 'system:user:view'],
+      mustChangePwd: false,
+    });
   });
 
   it('具备权限时元素保留', () => {

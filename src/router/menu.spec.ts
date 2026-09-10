@@ -81,13 +81,21 @@ describe('installDynamicRoutes：装配到路由实例', () => {
     expect(getInstalledMenuRoutes()).toHaveLength(1);
   });
 
-  it('管理员身份可见全部 fm 五模块（脚手架阶段单一身份，授予全部权限）', () => {
+  it('管理员身份可见全部 fm 五模块（权限码由 /auth/me 下发，未授权则被守卫过滤）', () => {
     const router = createTestRouter();
     installDynamicRoutes(router, DEFAULT_MENUS);
     const auth = useAuthStore();
     const { filterRoutesByPerm } = usePermission();
 
-    auth.setRole('admin');
+    // 模拟后端 /auth/me 下发的管理员权限快照（覆盖五个 fm-* 路由的 meta.perm）
+    auth.setMe({
+      username: 'admin',
+      realName: '系统管理员',
+      role: 'ADMIN',
+      roles: ['ADMIN'],
+      perms: ['dashboard:view', 'fire-alarm:view', 'security:view', 'video:view', 'ops:view'],
+      mustChangePwd: false,
+    });
     const filtered = filterRoutesByPerm(getInstalledMenuRoutes());
     const names = filtered.map((r) => r.name).join(',');
     ['fm-emergency', 'fm-fire', 'fm-security', 'fm-tv', 'fm-production'].forEach((n) =>

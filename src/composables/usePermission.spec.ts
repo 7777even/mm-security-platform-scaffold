@@ -9,21 +9,49 @@ function route(path: string, meta: RouteRecordRaw['meta']): RouteRecordRaw {
   return { path, meta } as RouteRecordRaw;
 }
 
-describe('rbac-permission 能力（脚手架阶段：单一管理员身份，授予全部权限）', () => {
+// 权限码自 V32 起由后端 GET /auth/me 下发（sys_role_menu → sys_menu.perm_code），
+// 前端不再有硬编码权限表。测试用此快照模拟管理员的 /auth/me 响应。
+function seedAdminPerms(): void {
+  useAuthStore().setMe({
+    username: 'admin',
+    realName: '系统管理员',
+    role: 'ADMIN',
+    roles: ['ADMIN'],
+    perms: [
+      'dashboard:view',
+      'fire-alarm:view',
+      'fire-alarm:ack',
+      'security:view',
+      'video:view',
+      'ops:view',
+      'system:user:view',
+    ],
+    mustChangePwd: false,
+  });
+}
+
+describe('rbac-permission 能力（权限码由 /auth/me 下发）', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    seedAdminPerms();
   });
 
   describe('auth store：管理员权限', () => {
-    it('默认身份为管理员，具备 dashboard:view', () => {
+    it('后端下发 perms 后具备 dashboard:view', () => {
       const auth = useAuthStore();
       expect(auth.hasPerm('dashboard:view')).toBe(true);
     });
 
-    it('管理员具备全部模块权限（含 fire-alarm:ack / system:user:view）', () => {
+    it('管理员具备模块权限（含 fire-alarm:ack / system:user:view）', () => {
       const auth = useAuthStore();
       expect(auth.hasPerm('fire-alarm:ack')).toBe(true);
       expect(auth.hasPerm('system:user:view')).toBe(true);
+    });
+
+    it('未下发权限时（未登录 / 未授权）一律不放行', () => {
+      const auth = useAuthStore();
+      auth.clearMe();
+      expect(auth.hasPerm('dashboard:view')).toBe(false);
     });
   });
 
