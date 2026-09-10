@@ -6,7 +6,7 @@
     "x-base-path": "/api/v1",
     "x-contract": "B3",
     "description": "系统管理域接口：用户、角色（含角色-菜单授权）、菜单/权限节点、数据字典的查询与变更。取代前端硬编码的 ROLE_PERMS 权限表与空占位页面。权限模型见 backend-scaffold/openspec/changes/2026-09-10-system-management-rbac/design.md。",
-    "x-auth-note": "本域端点除 GET /system/dicts/{dictCode}（登录即可读，供业务下拉）外，一律要求 ADMIN 角色（后端 @RequireAuth(role=\"ADMIN\")，非管理员返回 403、未登录返回 401）。RBAC 模型：sys_user.role 引用 sys_role.role_code；权限码经 sys_role_menu → sys_menu.perm_code 解析，由 GET /auth/me 的 perms 下发；sys_menu.allowed_roles 为遗留只读列，不参与判定。硬防护：禁操作自己、保护最后一个启用 ADMIN（409）、内置角色/字典禁删（403）、被引用对象禁删（409）。所有写操作由服务端落 fac_audit_log 审计（module=system，不含口令）。"
+    "x-auth-note": "本域端点除 GET /system/dicts/{dictCode}（登录即可读，供业务下拉）与 GET /system/zones（登录即可读，供用户表单防区多选）外，一律要求 ADMIN 角色（后端 @RequireAuth(role=\"ADMIN\")，非管理员返回 403、未登录返回 401）。RBAC 模型：sys_user.role 引用 sys_role.role_code；权限码经 sys_role_menu → sys_menu.perm_code 解析，由 GET /auth/me 的 perms 下发；sys_menu.allowed_roles 为遗留只读列，不参与判定。data_scope 行级 ABAC：sys_role.data_scope（ALL/DEPT/SELF）+ sys_user.zone_codes（逗号串）控制业务数据可见防区，鉴权粒度与数据范围正交叠加。硬防护：禁操作自己、保护最后一个启用 ADMIN（409）、内置角色/字典禁删（403）、被引用对象禁删（409）。所有写操作由服务端落 fac_audit_log 审计（module=system，不含口令）。"
   },
   "servers": [{ "url": "/api/v1", "description": "默认 baseURL（VITE_API_BASE 可覆盖）" }],
   "security": [{ "bearerAuth": [], "replaySign": [] }],
@@ -1652,6 +1652,66 @@
           "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
         }
       }
+    },
+    "/system/zones": {
+      "get": {
+        "tags": ["system"],
+        "operationId": "listSystemZones",
+        "summary": "防区下拉列表",
+        "description": "返回启用且未删除的防区主数据（data_scope 行级 ABAC 维度源），供系统管理用户表单「可访问防区」多选。登录即可读（后端 @RequireAuth 仅要求登录，无 ADMIN 限制）。",
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=ZoneItem[]）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/ZoneItem" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "zoneCode": "LIANYOU",
+                      "zoneName": "炼油区",
+                      "sortOrder": 1,
+                      "status": 1
+                    },
+                    {
+                      "id": 2,
+                      "zoneCode": "YIXI",
+                      "zoneName": "乙烯区",
+                      "sortOrder": 2,
+                      "status": 1
+                    },
+                    {
+                      "id": 3,
+                      "zoneCode": "GUANQU",
+                      "zoneName": "罐区",
+                      "sortOrder": 3,
+                      "status": 1
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
     }
   },
   "components": {
@@ -1682,6 +1742,11 @@
           },
           "roleName": { "type": "string", "description": "角色中文名", "example": "外操" },
           "status": { "type": "integer", "description": "状态：1 启用 / 0 停用", "example": 1 },
+          "zoneCodes": {
+            "type": ["string", "null"],
+            "description": "可访问防区（逗号串，如「炼油区,罐区」；空=未分派，data_scope≠ALL 时看不到任何行）",
+            "example": "炼油区,罐区"
+          },
           "mustChangePwd": {
             "type": "boolean",
             "description": "是否需强制修改口令",
@@ -1724,6 +1789,11 @@
             "type": "integer",
             "description": "状态：1 启用 / 0 停用，缺省 1",
             "example": 1
+          },
+          "zoneCodes": {
+            "type": ["string", "null"],
+            "description": "可访问防区（逗号串，如「炼油区,罐区」；空=未分派，data_scope≠ALL 时看不到任何行）",
+            "example": "炼油区,罐区"
           }
         },
         "required": ["username", "password", "roleCode"]
@@ -1738,8 +1808,29 @@
             "description": "角色标识（须为已启用角色）",
             "example": "SCHEDULER"
           },
-          "status": { "type": "integer", "description": "状态：1 启用 / 0 停用", "example": 1 }
+          "status": { "type": "integer", "description": "状态：1 启用 / 0 停用", "example": 1 },
+          "zoneCodes": {
+            "type": ["string", "null"],
+            "description": "可访问防区（逗号串；空=未分派，data_scope≠ALL 时看不到任何行）",
+            "example": "炼油区,罐区"
+          }
         }
+      },
+      "ZoneItem": {
+        "type": "object",
+        "description": "防区下拉项（GET /system/zones 出参，data_scope 行级 ABAC 维度主数据）。",
+        "properties": {
+          "id": { "type": "integer", "description": "防区 id", "example": 1 },
+          "zoneCode": { "type": "string", "description": "防区编码", "example": "LIANYOU" },
+          "zoneName": {
+            "type": "string",
+            "description": "防区名称（严格对齐业务表 area 取值，如 fac_brigade_team.area）",
+            "example": "炼油区"
+          },
+          "sortOrder": { "type": "integer", "description": "排序", "example": 1 },
+          "status": { "type": "integer", "description": "状态：1 启用 / 0 停用", "example": 1 }
+        },
+        "required": ["id", "zoneCode", "zoneName", "status"]
       },
       "SystemUserPageResult": {
         "type": "object",

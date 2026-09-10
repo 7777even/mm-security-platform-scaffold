@@ -391,6 +391,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/system/zones': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 防区下拉列表
+     * @description 返回启用且未删除的防区主数据（data_scope 行级 ABAC 维度源），供系统管理用户表单「可访问防区」多选。登录即可读（后端 @RequireAuth 仅要求登录，无 ADMIN 限制）。
+     */
+    get: operations['listSystemZones'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -478,6 +498,11 @@ export interface components {
        */
       status: number;
       /**
+       * @description 可访问防区（逗号串，如「炼油区,罐区」；空=未分派，data_scope≠ALL 时看不到任何行）
+       * @example 炼油区,罐区
+       */
+      zoneCodes?: string | null;
+      /**
        * @description 是否需强制修改口令
        * @example false
        */
@@ -520,6 +545,11 @@ export interface components {
        * @example 1
        */
       status?: number;
+      /**
+       * @description 可访问防区（逗号串，如「炼油区,罐区」；空=未分派，data_scope≠ALL 时看不到任何行）
+       * @example 炼油区,罐区
+       */
+      zoneCodes?: string | null;
     };
     /** @description 修改用户 / 分配角色入参（分配角色时只需 roleCode）。 */
     SystemUserUpdate: {
@@ -538,6 +568,39 @@ export interface components {
        * @example 1
        */
       status?: number;
+      /**
+       * @description 可访问防区（逗号串；空=未分派，data_scope≠ALL 时看不到任何行）
+       * @example 炼油区,罐区
+       */
+      zoneCodes?: string | null;
+    };
+    /** @description 防区下拉项（GET /system/zones 出参，data_scope 行级 ABAC 维度主数据）。 */
+    ZoneItem: {
+      /**
+       * @description 防区 id
+       * @example 1
+       */
+      id: number;
+      /**
+       * @description 防区编码
+       * @example LIANYOU
+       */
+      zoneCode: string;
+      /**
+       * @description 防区名称（严格对齐业务表 area 取值，如 fac_brigade_team.area）
+       * @example 炼油区
+       */
+      zoneName: string;
+      /**
+       * @description 排序
+       * @example 1
+       */
+      sortOrder?: number;
+      /**
+       * @description 状态：1 启用 / 0 停用
+       * @example 1
+       */
+      status: number;
     };
     /** @description 用户分页结果（与前端 PageResult 同构）。 */
     SystemUserPageResult: {
@@ -2506,6 +2569,59 @@ export interface operations {
         };
       };
       401: components['responses']['Unauthorized'];
+    };
+  };
+  listSystemZones: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=ZoneItem[]） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": [
+           *         {
+           *           "id": 1,
+           *           "zoneCode": "LIANYOU",
+           *           "zoneName": "炼油区",
+           *           "sortOrder": 1,
+           *           "status": 1
+           *         },
+           *         {
+           *           "id": 2,
+           *           "zoneCode": "YIXI",
+           *           "zoneName": "乙烯区",
+           *           "sortOrder": 2,
+           *           "status": 1
+           *         },
+           *         {
+           *           "id": 3,
+           *           "zoneCode": "GUANQU",
+           *           "zoneName": "罐区",
+           *           "sortOrder": 3,
+           *           "status": 1
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['ZoneItem'][];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
     };
   };
 }

@@ -8,6 +8,7 @@ import PanelCard from '@/components/common/PanelCard.vue';
 import {
   fetchSystemUsers,
   fetchSystemRoles,
+  fetchSystemZones,
   createSystemUser,
   updateSystemUser,
   deleteSystemUser,
@@ -15,12 +16,14 @@ import {
   resetSystemUserPassword,
   type SystemRoleItem,
   type SystemUserItem,
+  type ZoneItem,
 } from '@/services/system';
 
 const loading = ref(false);
 const rows = ref<SystemUserItem[]>([]);
 const total = ref(0);
 const roles = ref<SystemRoleItem[]>([]);
+const zones = ref<ZoneItem[]>([]);
 
 const query = reactive({
   page: 1,
@@ -40,6 +43,7 @@ const form = reactive({
   roleCode: '',
   status: 1,
 });
+const selectedZones = ref<string[]>([]);
 
 const resetVisible = ref(false);
 const tempPassword = ref('');
@@ -78,6 +82,14 @@ async function loadRoles(): Promise<void> {
   }
 }
 
+async function loadZones(): Promise<void> {
+  try {
+    zones.value = await fetchSystemZones();
+  } catch {
+    zones.value = [];
+  }
+}
+
 function onSearch(): void {
   query.page = 1;
   void load();
@@ -91,6 +103,7 @@ function openCreate(): void {
   form.realName = '';
   form.roleCode = roles.value[0]?.roleCode ?? '';
   form.status = 1;
+  selectedZones.value = [];
   dialogVisible.value = true;
 }
 
@@ -102,6 +115,10 @@ function openEdit(row: SystemUserItem): void {
   form.realName = row.realName ?? '';
   form.roleCode = row.roleCode;
   form.status = row.status;
+  selectedZones.value = (row.zoneCodes ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
   dialogVisible.value = true;
 }
 
@@ -126,6 +143,7 @@ async function submit(): Promise<void> {
         realName: form.realName || undefined,
         roleCode: form.roleCode,
         status: form.status,
+        zoneCodes: selectedZones.value.length ? selectedZones.value.join(',') : undefined,
       });
       ElMessage.success('用户已创建（首次登录须改密）');
     } else if (editingId.value != null) {
@@ -133,6 +151,7 @@ async function submit(): Promise<void> {
         realName: form.realName || undefined,
         roleCode: form.roleCode,
         status: form.status,
+        zoneCodes: selectedZones.value.length ? selectedZones.value.join(',') : undefined,
       });
       ElMessage.success('用户已更新');
     }
@@ -204,6 +223,7 @@ async function copyTemp(): Promise<void> {
 
 onMounted(async () => {
   await loadRoles();
+  await loadZones();
   await load();
 });
 </script>
@@ -310,6 +330,23 @@ onMounted(async () => {
               :key="r.id"
               :label="`${r.roleName}（${r.roleCode}）`"
               :value="r.roleCode"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="可访问防区">
+          <el-select
+            v-model="selectedZones"
+            multiple
+            collapse-tags
+            clearable
+            placeholder="留空=按角色 dataScope 默认（ALL 看全部；非空则仅这些防区）"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="z in zones"
+              :key="z.zoneCode"
+              :label="z.zoneName"
+              :value="z.zoneName"
             />
           </el-select>
         </el-form-item>

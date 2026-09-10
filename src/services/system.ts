@@ -20,6 +20,7 @@ export interface SystemUserItem {
   roleCode: string;
   roleName?: string | null;
   status: number;
+  zoneCodes?: string | null;
   mustChangePwd?: boolean;
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -32,6 +33,7 @@ export interface SystemUserCreate {
   realName?: string;
   roleCode: string;
   status?: number;
+  zoneCodes?: string;
 }
 
 /** 修改用户 / 分配角色入参 */
@@ -39,6 +41,16 @@ export interface SystemUserUpdate {
   realName?: string;
   roleCode?: string;
   status?: number;
+  zoneCodes?: string;
+}
+
+/** 防区下拉项（GET /system/zones 出参） */
+export interface ZoneItem {
+  id: number;
+  zoneCode: string;
+  zoneName: string;
+  sortOrder?: number;
+  status: number;
 }
 
 /** 重置口令结果（临时口令仅此一次可见） */
@@ -399,4 +411,9 @@ export function fetchDictOptions(dictCode: string): Promise<DictItemItem[]> {
     url: `/system/dicts/${encodeURIComponent(dictCode)}`,
     method: 'GET',
   });
+}
+
+/** 防区下拉（登录即可读，供用户表单「可访问防区」多选） */
+export function fetchSystemZones(): Promise<ZoneItem[]> {
+  return request<ZoneItem[]>({ url: '/system/zones', method: 'GET' });
 }
