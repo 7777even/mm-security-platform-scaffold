@@ -1,60 +1,106 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import { showToast } from '../../../lib/composables/useToast';
-import { resolveDemoAlarmDetailById } from '../../../lib/data/alarmDetailMock';
+import { perimeterAlarmToDetail } from '../../../lib/data/alarmDetailMock';
 import { useAlarmDetailPanel } from '../../../lib/composables/useAlarmDetailPanel';
 import {
   closeAllAlarmVideoPopups,
   openAlarmVideoPopups,
 } from '../../../lib/composables/useAlarmVideoPopups';
 import type { AlarmItem } from '../../../lib/data/mock';
-import securityPerimeterIntrusion from '../../../assets/semantic-scenes/security-perimeter-intrusion.png';
+import {
+  fetchLatestPerimeterAlarm,
+  fetchPerimeterAlarmSnapshotUrl,
+  type PerimeterAlarmDetail,
+} from '@/services/security';
 
-const alarmActive = ref(true);
+// B6 去 mock：周界入侵告警改由后端 GET /security/perimeter-alarms/latest 提供，
+// 现场抓拍走字节端点取 blob → objectURL（<img> 原生 src 无法带 Authorization 头）。
+const alarm = ref<PerimeterAlarmDetail | null>(null);
+const snapshotUrl = ref<string | null>(null);
+const alarmActive = ref(false);
 const handling = ref(false);
 const { closeAlarmDetail, openAlarmDetail } = useAlarmDetailPanel();
-const perimeterAlarm = resolveDemoAlarmDetailById('demo-intrusion-1')!;
-const perimeterVideoAlarm: AlarmItem = {
-  id: 7,
-  title: '周界入侵报警',
-  titleColor: 'danger',
-  alarmType: '视频识别',
-  source: '周界防范',
-  location: '厂区南门西侧 200 米',
-  time: '2026/08/20 03:22:48',
-  description: '非授权人员翻越周界进入厂区，请立即核实。',
-  status: '未处置',
-  rescueEventId: 7,
-  monitorId: 'CAM-PERI-08',
-  monitorLabel: '南门西侧周界全景',
-  onsiteMonitorId: 'CAM-PERI-07',
-  onsiteMonitorLabel: '南门西侧周界现场',
-  longitude: 110.8872,
-  latitude: 21.6709,
-};
+
+const detail = computed(() =>
+  alarm.value ? perimeterAlarmToDetail(alarm.value, snapshotUrl.value) : null,
+);
+
+const videoAlarm = computed<AlarmItem | null>(() => {
+  const a = alarm.value;
+  if (!a) return null;
+  return {
+    id: a.id,
+    title: a.title,
+    titleColor: a.level === '一级' ? 'danger' : 'warning',
+    alarmType: '视频识别',
+    source: a.source,
+    location: a.location,
+    time: a.time,
+    description: a.description,
+    status: a.status === '已处理' ? '已处置' : a.status === '处理中' ? '处置中' : '未处置',
+    rescueEventId: a.rescueEventId,
+    monitorId: a.monitorId,
+    monitorLabel: a.monitorLabel,
+    onsiteMonitorId: a.deviceId,
+    onsiteMonitorLabel: `${a.objectName}现场`,
+    longitude: a.longitude,
+    latitude: a.latitude,
+  };
+});
+
+/** 卡片时间列：取告警时间的钟点部分（后端格式为 yyyy-MM-dd HH:mm:ss）。 */
+const clockText = computed(() => alarm.value?.time.slice(-8) ?? '—');
+
+async function loadPerimeterAlarm(): Promise<void> {
+  const data = await fetchLatestPerimeterAlarm();
+  alarm.value = data;
+  alarmActive.value = !!data && data.status !== '已处理';
+  handling.value = data?.status === '处理中';
+  if (snapshotUrl.value) {
+    URL.revokeObjectURL(snapshotUrl.value);
+    snapshotUrl.value = null;
+  }
+  snapshotUrl.value = data ? await fetchPerimeterAlarmSnapshotUrl(data.id) : null;
+}
 
 function openDetail(focus: 'disposal' | null = null) {
+  if (!detail.value) {
+    showToast('暂无周界入侵告警数据');
+    return;
+  }
   closeAllAlarmVideoPopups();
-  openAlarmDetail(perimeterAlarm, focus);
+  openAlarmDetail(detail.value, focus);
 }
 
 function openMonitor() {
+  if (!videoAlarm.value) {
+    showToast('暂无周界入侵告警数据');
+    return;
+  }
   closeAlarmDetail();
-  openAlarmVideoPopups(perimeterVideoAlarm);
+  openAlarmVideoPopups(videoAlarm.value);
 }
 
 function startDispatch() {
+  if (!alarm.value) return;
   handling.value = true;
   showToast('已下发安保核查任务，周界摄像机与巡查人员已联动');
   openDetail('disposal');
 }
 
 function resetDemo() {
-  alarmActive.value = true;
+  alarmActive.value = !!alarm.value;
   handling.value = false;
   showToast('已恢复周界入侵报警演示场景');
 }
+
+onMounted(loadPerimeterAlarm);
+
+onUnmounted(() => {
+  if (snapshotUrl.value) URL.revokeObjectURL(snapshotUrl.value);
+});
 </script>
 
 <template>
@@ -65,7 +111,9 @@ function resetDemo() {
         <div class="status-summary__copy">
           <strong>{{ alarmActive ? '存在待处置治安报警' : '厂区治安态势平稳' }}</strong>
           <span>{{
-            alarmActive ? '周界防控区触发 1 起入侵报警' : '周界、门禁及重点区域运行正常'
+            alarmActive
+              ? `${alarm?.objectName ?? '周界防控区'}触发 1 起入侵报警`
+              : '周界、门禁及重点区域运行正常'
           }}</span>
         </div>
         <span class="status-summary__badge">{{ alarmActive ? '1 起报警' : '运行正常' }}</span>
@@ -78,27 +126,29 @@ function resetDemo() {
           aria-label="查看周界入侵现场监控"
           @click.stop="openMonitor"
         >
-          <img :src="securityPerimeterIntrusion" alt="周界入侵现场抓拍" />
+          <img v-if="snapshotUrl" :src="snapshotUrl" alt="周界入侵现场抓拍" />
           <span>▶ 现场监控</span>
         </button>
         <div class="disposal-card__body">
           <header class="disposal-card__head">
-            <div><span class="pulse" /><strong>周界入侵报警</strong></div>
+            <div>
+              <span class="pulse" /><strong>{{ alarm?.title ?? '周界入侵报警' }}</strong>
+            </div>
             <span>{{ handling ? '核查中' : '待处置' }}</span>
           </header>
-          <p>非授权人员翻越围栏进入厂区，已联动周界摄像机。</p>
+          <p>{{ alarm?.description ?? '—' }}</p>
           <dl class="disposal-card__meta">
             <div>
               <dt>时间</dt>
-              <dd>03:22:48</dd>
+              <dd>{{ clockText }}</dd>
             </div>
             <div>
               <dt>位置</dt>
-              <dd>南门西侧周界</dd>
+              <dd>{{ alarm?.objectName ?? '—' }}</dd>
             </div>
             <div>
               <dt>设备</dt>
-              <dd>CAM-PERI-07</dd>
+              <dd>{{ alarm?.deviceId ?? '—' }}</dd>
             </div>
           </dl>
           <footer>

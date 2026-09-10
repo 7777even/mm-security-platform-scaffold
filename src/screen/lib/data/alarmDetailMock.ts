@@ -3,7 +3,7 @@ import type { FireAlarmItem } from '@/services/alarm';
 import type { FacilityAlarmItem } from './fireFacilityMonitoringMock';
 import { fireFacilityFaults } from './fireFacilityMonitoringMock';
 import type { ProductionAlarmItem } from '@/services/production';
-import type { PatrolAlarmItem } from '@/services/security';
+import type { PatrolAlarmItem, PerimeterAlarmDetail } from '@/services/security';
 import fireAlarmPipeRack from '../../assets/semantic-scenes/fire-alarm-pipe-rack.png';
 import securityPerimeterIntrusion from '../../assets/semantic-scenes/security-perimeter-intrusion.png';
 import chemicalFactoryPipes from '../../assets/mock-cameras/chemical_factory_pipes_1782731393637.png';
@@ -91,309 +91,6 @@ function coordsFor(seed: string | number): { longitude: number; latitude: number
 function baseTimeline(time: string, title: string) {
   return [{ time, operator: '系统', action: '产生告警', detail: title }];
 }
-
-export const demoAlarmDetails: AlarmDetailItem[] = [
-  {
-    id: 'demo-dcs-1',
-    alarmCode: 'AL-20260820-001',
-    title: 'DCS温度越限报警',
-    alarmType: 'DCS',
-    source: 'DCS系统',
-    level: '一级',
-    status: '未确认',
-    falseAlarm: '未核实',
-    time: '2026-08-20 09:15:12',
-    objectType: '装置',
-    objectName: '蜡油加氢装置',
-    location: '化工区化工3路4号 蜡油加氢装置区一层',
-    description: '反应器出口温度超过联锁阈值，请立即核实。',
-    deviceType: '温度变送器',
-    deviceId: 'TT-2103',
-    point: 'R-2101 出口',
-    typeFields: {
-      仪表位号: 'TT-2103',
-      工艺参数名: '反应器出口温度',
-      当前值: '218℃',
-      正常范围: '150-200℃',
-      偏差幅度: '+9%',
-    },
-    trend: {
-      unit: '℃',
-      duration: '25min',
-      times: ['11:18', '11:23', '11:28', '11:33', '11:38', '11:43', '11:48', '11:53', '11:58'],
-      series: [{ name: '温度', data: [186, 192, 199, 205, 210, 214, 217, 219, 218] }],
-      thresholds: [
-        { label: '高高值', value: 215 },
-        { label: '高值', value: 205 },
-      ],
-    },
-    ...coordsFor('dcs'),
-    dispatchPersonnel: [],
-    notifyApp: true,
-    notifySms: false,
-    handleResult: '',
-    handleTime: '',
-    attachments: [],
-    timeline: baseTimeline('2026-08-20 09:15:12', 'DCS温度越限报警'),
-    rescueEventId: 1,
-    monitorId: 'cam-dcs-2103',
-    monitorLabel: '蜡油加氢装置现场监控',
-  },
-  {
-    id: 'demo-gds-1',
-    alarmCode: 'AL-20260820-002',
-    title: 'GDS硫化氢浓度报警',
-    alarmType: 'GDS',
-    source: 'GDS系统',
-    level: '二级',
-    status: '已确认',
-    falseAlarm: '否',
-    time: '2026-08-20 08:42:36',
-    objectType: '装置',
-    objectName: '硫磺回收装置',
-    location: '化工区硫磺回收装置东侧',
-    description: '硫化氢检测浓度 12ppm，超过 10ppm 报警阈值。',
-    deviceType: '气体探测器',
-    deviceId: 'GDS-H2S-12',
-    point: 'EA-1201 东侧',
-    typeFields: {
-      气体类型: '硫化氢 H₂S',
-      检测浓度: '12ppm',
-      报警阈值: '10ppm',
-      传感器型号: 'GDS-2100',
-    },
-    trend: {
-      unit: 'ppm',
-      duration: '18min',
-      times: ['11:18', '11:23', '11:28', '11:33', '11:38', '11:43', '11:48', '11:53', '11:58'],
-      series: [{ name: '浓度', data: [3, 5, 7, 9, 11, 12, 12, 11, 10] }],
-      thresholds: [{ label: '报警阈值', value: 10 }],
-    },
-    ...coordsFor('gds'),
-    dispatchPersonnel: ['王成'],
-    notifyApp: true,
-    notifySms: true,
-    handleResult: '已通知属地班组现场复核',
-    handleTime: '2026-08-20 09:02:18',
-    attachments: [],
-    timeline: [
-      ...baseTimeline('2026-08-20 08:42:36', 'GDS硫化氢浓度报警'),
-      {
-        time: '2026-08-20 08:50:02',
-        operator: '高策',
-        action: '确认告警',
-        detail: '确认为真实告警',
-      },
-      {
-        time: '2026-08-20 09:02:18',
-        operator: '高策',
-        action: '提交处置',
-        detail: '已通知属地班组现场复核',
-      },
-    ],
-    monitorId: 'cam-gds-12',
-    monitorLabel: '硫磺回收装置东侧监控',
-  },
-  {
-    id: 'demo-fire-1',
-    alarmCode: 'AL-20260820-003',
-    title: '火灾报警（疑似明火）',
-    alarmType: '消防',
-    source: 'FAS火灾报警',
-    level: '一级',
-    status: '处理中',
-    falseAlarm: '未核实',
-    time: '2026-08-20 07:58:20',
-    objectType: '装置',
-    objectName: '蜡油加氢装置',
-    location: '化工区化工3路4号 蜡油加氢装置区一层',
-    description: '蜡油加氢装置区疑似出现明火，请核实。',
-    deviceType: '感烟探测器',
-    deviceId: 'FAS-SMK-0112',
-    point: '一层西侧',
-    typeFields: {
-      FAS控制器编号: 'FAS-C01',
-      探测器类型: '感烟探测器',
-      探测器地址码: '0112',
-      联动设备: ['消防广播', '声光报警器', 'CCTV-001'],
-    },
-    images: FIRE_IMAGES,
-    imageLabels: ['告警现场', '关联装置现场', '储罐区联动画面'],
-    ...coordsFor('fire'),
-    dispatchPersonnel: ['张三', '王成'],
-    notifyApp: true,
-    notifySms: true,
-    handleResult: '消防队已出动，正在现场核实',
-    handleTime: '2026-08-20 08:12:45',
-    attachments: ['现场照片-01.jpg'],
-    timeline: [
-      ...baseTimeline('2026-08-20 07:58:20', '火灾报警（疑似明火）'),
-      {
-        time: '2026-08-20 08:01:12',
-        operator: '高策',
-        action: '确认告警',
-        detail: '确认为真实告警',
-      },
-      { time: '2026-08-20 08:12:45', operator: '高策', action: '开始处置', detail: '消防队已出动' },
-    ],
-    rescueEventId: 1,
-    monitorId: 'cam-fire-0112',
-    monitorLabel: '蜡油加氢装置区一层监控',
-    workOrderNo: 'WO-20260820-011',
-  },
-  {
-    id: 'demo-video-1',
-    alarmCode: 'AL-20260820-004',
-    title: '视频AI：东门人员聚集',
-    alarmType: '视频AI',
-    source: '视频AI分析',
-    level: '二级',
-    status: '未确认',
-    falseAlarm: '未核实',
-    time: '2026-08-20 06:35:10',
-    objectType: '区域',
-    objectName: '厂区东门',
-    location: '厂区东门 / 卡口02 附近',
-    description: 'AI识别东门区域出现人员聚集，置信度 92%。',
-    deviceType: 'AI摄像机',
-    deviceId: 'CAM-EAST-02',
-    point: '东门卡口',
-    typeFields: {
-      AI算法类型: '人员聚集',
-      置信度: '92%',
-      关联摄像头: 'CAM-EAST-02',
-    },
-    images: SECURITY_IMAGES,
-    imageLabels: ['现场抓拍', 'AI标注图', '录像回放'],
-    ...coordsFor('video'),
-    dispatchPersonnel: [],
-    notifyApp: true,
-    notifySms: false,
-    handleResult: '',
-    handleTime: '',
-    attachments: [],
-    timeline: baseTimeline('2026-08-20 06:35:10', '视频AI：东门人员聚集'),
-    monitorId: 'cam-east-02',
-    monitorLabel: '厂区东门监控',
-  },
-  {
-    id: 'demo-weather-1',
-    alarmCode: 'AL-20260820-005',
-    title: '台风蓝色预警',
-    alarmType: '气象',
-    source: '气象监测',
-    level: '三级',
-    status: '已确认',
-    falseAlarm: '否',
-    time: '2026-08-20 05:00:00',
-    objectType: '全厂',
-    objectName: '茂名石化厂区',
-    location: '全厂范围',
-    description: '台风“海鸥”逼近，预计 24 小时内影响厂区，启动防台防汛Ⅲ级响应。',
-    typeFields: {
-      预警类型: '台风',
-      预警等级: '蓝色',
-      影响区域: '全厂范围',
-    },
-    ...coordsFor('weather'),
-    dispatchPersonnel: [],
-    notifyApp: true,
-    notifySms: true,
-    handleResult: '已发布防台防汛通知',
-    handleTime: '2026-08-20 05:20:00',
-    attachments: [],
-    timeline: [
-      ...baseTimeline('2026-08-20 05:00:00', '台风蓝色预警'),
-      {
-        time: '2026-08-20 05:20:00',
-        operator: '杨恒朋',
-        action: '确认告警',
-        detail: '已确认并发布通知',
-      },
-    ],
-  },
-  {
-    id: 'demo-lightning-1',
-    alarmCode: 'AL-20260820-006',
-    title: '雷电橙色预警',
-    alarmType: '雷电',
-    source: '雷电监测',
-    level: '二级',
-    status: '处理中',
-    falseAlarm: '未核实',
-    time: '2026-08-20 04:10:32',
-    objectType: '区域',
-    objectName: '罐区',
-    location: '储运部罐区',
-    description: '电场强度快速升高，预计 30 分钟内发生雷暴，注意防雷。',
-    typeFields: {
-      电场强度: '2.8kV/m',
-      预警等级: '橙色',
-      预计影响时间: '04:40 前后',
-    },
-    trend: {
-      unit: 'kV/m',
-      duration: '20min',
-      times: ['03:50', '03:55', '04:00', '04:05', '04:10', '04:15', '04:20', '04:25', '04:30'],
-      series: [{ name: '电场强度', data: [0.8, 1.1, 1.5, 1.9, 2.4, 2.6, 2.8, 2.7, 2.5] }],
-      thresholds: [{ label: '橙色阈值', value: 2.5 }],
-    },
-    ...coordsFor('lightning'),
-    dispatchPersonnel: ['李四'],
-    notifyApp: true,
-    notifySms: true,
-    handleResult: '已通知储运部暂停高处作业',
-    handleTime: '2026-08-20 04:25:00',
-    attachments: [],
-    timeline: [
-      ...baseTimeline('2026-08-20 04:10:32', '雷电橙色预警'),
-      { time: '2026-08-20 04:16:20', operator: '高策', action: '确认告警', detail: '确认预警' },
-      {
-        time: '2026-08-20 04:25:00',
-        operator: '高策',
-        action: '开始处置',
-        detail: '通知储运部暂停高处作业',
-      },
-    ],
-  },
-  {
-    id: 'demo-intrusion-1',
-    alarmCode: 'AL-20260820-007',
-    title: '周界入侵告警',
-    alarmType: '周界',
-    source: '周界防范',
-    level: '一级',
-    status: '未确认',
-    falseAlarm: '未核实',
-    time: '2026-08-20 03:22:48',
-    objectType: '区域',
-    objectName: '南门西侧周界',
-    location: '厂区南门西侧 200 米',
-    description: '非授权人员翻越周界进入厂区，请立即核实。',
-    deviceType: '周界摄像机',
-    deviceId: 'CAM-PERI-07',
-    point: '南门西侧 200 米',
-    typeFields: {
-      入侵位置: '南门西侧 200 米',
-      入侵方式: '翻越围栏',
-      关联摄像机: 'CAM-PERI-07',
-    },
-    images: SECURITY_IMAGES,
-    imageLabels: ['现场抓拍', '视频截图', '录像回放'],
-    // 贴近「边界.geojson」南侧周界线，避免详情打开后点位飞到厂区外较远位置。
-    longitude: 110.8872,
-    latitude: 21.6709,
-    dispatchPersonnel: [],
-    notifyApp: true,
-    notifySms: false,
-    handleResult: '',
-    handleTime: '',
-    attachments: [],
-    timeline: baseTimeline('2026-08-20 03:22:48', '周界入侵告警'),
-    monitorId: 'cam-peri-07',
-    monitorLabel: '南门西侧周界监控',
-  },
-];
 
 function normalizeFireType(alarmType: string): AlarmDetailType {
   if (alarmType === 'GDS报警' || alarmType === 'GDS') return 'GDS';
@@ -606,6 +303,70 @@ export function patrolAlarmToDetail(item: PatrolAlarmItem): AlarmDetailItem {
   };
 }
 
-export function resolveDemoAlarmDetailById(id: string): AlarmDetailItem | undefined {
-  return demoAlarmDetails.find((item) => item.id === id);
+export function perimeterAlarmToDetail(
+  alarm: PerimeterAlarmDetail,
+  snapshotUrl?: string | null,
+): AlarmDetailItem {
+  const timeline = [
+    { time: alarm.time, operator: '系统', action: '产生告警', detail: alarm.title },
+  ];
+  if (alarm.handleTime) {
+    timeline.push({
+      time: alarm.handleTime,
+      operator: '安保值守',
+      action: '处置完成',
+      detail: alarm.handleResult || '已处置并闭环',
+    });
+  }
+  return {
+    id: `perimeter-${alarm.id}`,
+    alarmCode: alarm.alarmCode,
+    title: alarm.title,
+    alarmType: '周界',
+    source: alarm.source,
+    level: alarm.level,
+    status: normalizePerimeterStatus(alarm.status),
+    falseAlarm: normalizeFalseAlarm(alarm.falseAlarm),
+    time: alarm.time,
+    objectType: alarm.objectType,
+    objectName: alarm.objectName,
+    location: alarm.location,
+    description: alarm.description,
+    deviceType: alarm.deviceType,
+    deviceId: alarm.deviceId,
+    point: alarm.point,
+    typeFields: {
+      入侵位置: alarm.intrusionPosition,
+      入侵方式: alarm.intrusionMethod,
+      关联摄像机: alarm.relatedCamera,
+    },
+    images: snapshotUrl ? [snapshotUrl] : [],
+    imageLabels: snapshotUrl ? [alarm.snapshotLabel || '现场抓拍'] : [],
+    longitude: alarm.longitude,
+    latitude: alarm.latitude,
+    dispatchPersonnel: alarm.dispatchPersonnel ?? [],
+    notifyApp: alarm.notifyApp,
+    notifySms: alarm.notifySms,
+    handleResult: alarm.handleResult,
+    handleTime: alarm.handleTime,
+    attachments: [],
+    timeline,
+    rescueEventId: alarm.rescueEventId,
+    monitorId: alarm.monitorId,
+    monitorLabel: alarm.monitorLabel,
+    workOrderNo: alarm.workOrderNo || undefined,
+  };
+}
+
+function normalizePerimeterStatus(status: string): AlarmDetailStatus {
+  if (status === '已确认') return '已确认';
+  if (status === '处理中') return '处理中';
+  if (status === '已处理') return '已处理';
+  return '未确认';
+}
+
+function normalizeFalseAlarm(falseAlarm: string): FalseAlarmStatus {
+  if (falseAlarm === '是') return '是';
+  if (falseAlarm === '否') return '否';
+  return '未核实';
 }
