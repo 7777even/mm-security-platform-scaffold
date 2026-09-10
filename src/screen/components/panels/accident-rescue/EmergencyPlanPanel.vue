@@ -3,16 +3,13 @@ import { ref } from 'vue';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
 import EmergencyPlanSwitchDialog from './EmergencyPlanSwitchDialog.vue';
 import PlanPanoramaDialog from './PlanPanoramaDialog.vue';
-import {
-  emergencyPlanLevels,
-  type EmergencyPlanLevel,
-  type IncidentDetailField,
-} from '../../../lib/data/accidentRescueMock';
+import { emergencyPlanLevels, type EmergencyPlanLevel } from '../../../lib/data/accidentRescueMock';
 import {
   usePlanMatrix,
   planSwitchTabToRowId,
   type SelectableEmergencyPlan,
 } from '../../../lib/composables/usePlanMatrix';
+import type { IncidentDetailField } from '@/services/accidentRescue';
 
 const props = withDefaults(
   defineProps<{

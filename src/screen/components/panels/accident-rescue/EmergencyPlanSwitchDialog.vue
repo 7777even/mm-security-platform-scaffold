@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import type { IncidentDetailField } from '../../../lib/data/accidentRescueMock';
+import type { IncidentDetailField } from '@/services/accidentRescue';
 import {
   emergencyPlanSwitchOptions,
   emergencyPlanSwitchTabs,

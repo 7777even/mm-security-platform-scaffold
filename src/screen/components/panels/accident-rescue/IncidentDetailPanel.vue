@@ -11,7 +11,7 @@ import {
   drillResponseFields,
   drillVideoFields,
 } from '../../../lib/data/drillRescueMock';
-import type { IncidentDetailField } from '../../../lib/data/accidentRescueMock';
+import type { IncidentDetailField } from '@/services/accidentRescue';
 import EmergencyResponseCommandPanel from './EmergencyResponseCommandPanel.vue';
 
 const props = withDefaults(

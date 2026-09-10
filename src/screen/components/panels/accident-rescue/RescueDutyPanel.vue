@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
-import { rescueDutyPersons } from '../../../lib/data/accidentRescueMock';
 import { fetchDutyRoster, type DutyMember } from '@/services/duty';
 import { UserFilled } from '@element-plus/icons-vue';
 
@@ -28,10 +27,8 @@ onMounted(async () => {
 
 const shift = ref<'day' | 'night'>('day');
 const dutyShiftLabel = computed(() => (shift.value === 'day' ? '白班' : '夜班'));
-// 真实数据优先；未启动 / 异常时回落内置 mock，保证 UI 可见
-const persons = computed<DutyMember[]>(
-  () => realDutyMembers.value ?? (rescueDutyPersons as unknown as DutyMember[]),
-);
+// 真实值班值守优先；后端不可用（含纯静态演示未配置 VITE_API_BASE）时回落空数组，绝不冒充真实数据
+const persons = computed<DutyMember[]>(() => realDutyMembers.value ?? []);
 const activePersons = computed(() =>
   persons.value
     .filter((person) => (person.shift ?? '白班') === dutyShiftLabel.value)

@@ -31,11 +31,14 @@ import SandboxMapOverlay from '../components/map/SandboxMapOverlay.vue';
 import {
   resolveAccidentRescueIncident,
   eventCommandDetailTabs,
-  type EmergencyDispatchResource,
   accidentRescueRouteWaypoints,
 } from '../lib/data/accidentRescueMock';
 import { resolveDrillRescueIncident } from '../lib/data/drillRescueMock';
-import { fetchAccidentIncident, type AccidentRescuePayload } from '@/services/accidentRescue';
+import {
+  fetchAccidentIncident,
+  type AccidentRescuePayload,
+  type EmergencyDispatchResource,
+} from '@/services/accidentRescue';
 import { getSharedMap } from '../lib/composables/sharedCesiumBridge';
 import {
   buildEvacuationRouteFromGeoJson,

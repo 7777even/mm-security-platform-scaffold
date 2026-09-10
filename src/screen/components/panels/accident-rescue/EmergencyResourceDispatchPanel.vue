@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import {
-  emergencyDispatchResources,
-  type EmergencyDispatchResource,
-} from '../../../lib/data/accidentRescueMock';
+import type { EmergencyDispatchResource } from '@/services/accidentRescue';
 
 const props = withDefaults(
   defineProps<{
     resources?: EmergencyDispatchResource[];
     scenario?: 'accident' | 'weather';
   }>(),
-  { resources: () => emergencyDispatchResources, scenario: 'accident' },
+  { resources: () => [], scenario: 'accident' },
 );
 
 const emit = defineEmits<{
