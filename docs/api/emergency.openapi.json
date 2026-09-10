@@ -351,6 +351,90 @@
           "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
         }
       }
+    },
+    "/emergency/process/node-configs": {
+      "get": {
+        "summary": "应急流程节点联动配置列表",
+        "description": "返回应急流程各节点（接警研判/1min/3min/5min/装置区/全厂/政府/完成处置/总结与恢复）的镜头锚点优先级、左右面板显隐与值班自动排班配置，按 sort_no 升序。",
+        "tags": ["emergency"],
+        "responses": {
+          "200": {
+            "description": "节点联动配置列表",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NodePhaseConfigList" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "nodeId": "alarmJudgement",
+                      "nodeName": "1. 接警研判",
+                      "mapCamera": {
+                        "anchorPriorityList": [
+                          "alarm_phone_location",
+                          "event_device",
+                          "alarm_phone_zone",
+                          "factory_center"
+                        ],
+                        "customCenter": null,
+                        "bufferRadiusMeters": 260
+                      },
+                      "rightPanelHiddenTabs": [],
+                      "leftPanelHiddenPanels": [],
+                      "duty": { "autoRoster": true }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      },
+      "put": {
+        "summary": "保存应急流程节点联动配置",
+        "description": "按 nodeId 整体 upsert（存在则更新，不存在则新建）流程节点联动配置；入参为前端整表单次提交的全部节点配置，返回落库后的全量列表。",
+        "tags": ["emergency"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/NodePhaseConfigList" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "保存后的节点联动配置列表",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NodePhaseConfigList" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "nodeId": "3min",
+                      "nodeName": "3. 三分钟退守稳态",
+                      "mapCamera": {
+                        "anchorPriorityList": ["event_device", "factory_center"],
+                        "customCenter": null,
+                        "bufferRadiusMeters": 320
+                      },
+                      "rightPanelHiddenTabs": ["dynamics"],
+                      "leftPanelHiddenPanels": ["info"],
+                      "duty": { "autoRoster": true }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
     }
   },
   "components": {
@@ -660,6 +744,78 @@
             "example": "00:18"
           }
         }
+      },
+      "NodePhaseMapCamera": {
+        "type": "object",
+        "description": "3D 地图镜头配置",
+        "properties": {
+          "anchorPriorityList": {
+            "type": "array",
+            "description": "镜头中心锚点优先级（按序降级：事件装置 → 报警电话位置 → 防区 → 抢险队 GPS → 全厂 → 自定义）",
+            "items": {
+              "type": "string",
+              "enum": [
+                "event_device",
+                "alarm_phone_location",
+                "alarm_phone_zone",
+                "first_responder_gps",
+                "factory_center",
+                "custom"
+              ],
+              "example": "event_device"
+            }
+          },
+          "customCenter": {
+            "type": "array",
+            "description": "自定义镜头中心 [lon, lat]；未配置为 null",
+            "items": { "type": "number", "example": 110.9265 }
+          },
+          "bufferRadiusMeters": {
+            "type": "integer",
+            "description": "缓冲区半径（米）",
+            "example": 260
+          }
+        }
+      },
+      "NodePhaseDuty": {
+        "type": "object",
+        "description": "节点值班配置",
+        "properties": {
+          "autoRoster": {
+            "type": "boolean",
+            "description": "是否按节点切换值班小组自动排班",
+            "example": true
+          }
+        }
+      },
+      "NodePhaseConfig": {
+        "type": "object",
+        "description": "应急流程节点联动配置（镜头锚点 / 左右面板显隐 / 值班排班）",
+        "properties": {
+          "nodeId": {
+            "type": "string",
+            "description": "节点 id（alarmJudgement/1min/3min/5min/plantArea/companyLevel/govLevel/handling/archive）",
+            "example": "alarmJudgement"
+          },
+          "nodeName": { "type": "string", "description": "节点名称", "example": "1. 接警研判" },
+          "mapCamera": { "$ref": "#/components/schemas/NodePhaseMapCamera" },
+          "rightPanelHiddenTabs": {
+            "type": "array",
+            "description": "右侧面板隐藏页签（duty/auxiliary/dynamics 的子集）",
+            "items": { "type": "string", "example": "dynamics" }
+          },
+          "leftPanelHiddenPanels": {
+            "type": "array",
+            "description": "左侧面板隐藏面板（incident/plan/info 的子集）",
+            "items": { "type": "string", "example": "info" }
+          },
+          "duty": { "$ref": "#/components/schemas/NodePhaseDuty" }
+        }
+      },
+      "NodePhaseConfigList": {
+        "type": "array",
+        "description": "节点联动配置列表",
+        "items": { "$ref": "#/components/schemas/NodePhaseConfig" }
       }
     }
   }

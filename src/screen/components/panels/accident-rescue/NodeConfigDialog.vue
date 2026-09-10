@@ -3,7 +3,6 @@ import { computed, ref, watch } from 'vue';
 import {
   ALL_NODE_IDS,
   CAMERA_ANCHOR_METADATA,
-  DEFAULT_NODE_PHASE_CONFIGS,
   type CameraAnchorType,
   type NodePhaseConfig,
 } from '../../../lib/data/nodeConfigData';
@@ -76,22 +75,22 @@ function toggleLeftPanel(id: string) {
   else list.push(id);
 }
 
-function handleSave() {
+async function handleSave() {
   const next = {
     ...process.nodeConfigs.value,
     [selectedNodeId.value]: JSON.parse(JSON.stringify(draft.value)),
   };
-  process.saveNodeConfig(next);
+  if (!(await process.saveNodeConfig(next))) return;
+  draft.value = JSON.parse(JSON.stringify(process.nodeConfigs.value[selectedNodeId.value]));
   savedTip.value = true;
   setTimeout(() => {
     savedTip.value = false;
   }, 1600);
 }
 
-function handleReset() {
-  const next = JSON.parse(JSON.stringify(DEFAULT_NODE_PHASE_CONFIGS));
-  process.saveNodeConfig(next);
-  draft.value = JSON.parse(JSON.stringify(next[selectedNodeId.value]));
+async function handleReset() {
+  if (!(await process.resetNodeConfig())) return;
+  draft.value = JSON.parse(JSON.stringify(process.nodeConfigs.value[selectedNodeId.value]));
 }
 
 const nodeLabel = (id: string) => process.nodeConfigs.value[id]?.nodeName ?? id;

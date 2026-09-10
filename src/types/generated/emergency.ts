@@ -139,6 +139,131 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/emergency/process/node-configs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 应急流程节点联动配置列表
+     * @description 返回应急流程各节点（接警研判/1min/3min/5min/装置区/全厂/政府/完成处置/总结与恢复）的镜头锚点优先级、左右面板显隐与值班自动排班配置，按 sort_no 升序。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 节点联动配置列表 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": [
+             *         {
+             *           "nodeId": "alarmJudgement",
+             *           "nodeName": "1. 接警研判",
+             *           "mapCamera": {
+             *             "anchorPriorityList": [
+             *               "alarm_phone_location",
+             *               "event_device",
+             *               "alarm_phone_zone",
+             *               "factory_center"
+             *             ],
+             *             "customCenter": null,
+             *             "bufferRadiusMeters": 260
+             *           },
+             *           "rightPanelHiddenTabs": [],
+             *           "leftPanelHiddenPanels": [],
+             *           "duty": {
+             *             "autoRoster": true
+             *           }
+             *         }
+             *       ]
+             *     }
+             */
+            'application/json': components['schemas']['NodePhaseConfigList'];
+          };
+        };
+        401: components['responses']['Unauthorized'];
+      };
+    };
+    /**
+     * 保存应急流程节点联动配置
+     * @description 按 nodeId 整体 upsert（存在则更新，不存在则新建）流程节点联动配置；入参为前端整表单次提交的全部节点配置，返回落库后的全量列表。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['NodePhaseConfigList'];
+        };
+      };
+      responses: {
+        /** @description 保存后的节点联动配置列表 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": [
+             *         {
+             *           "nodeId": "3min",
+             *           "nodeName": "3. 三分钟退守稳态",
+             *           "mapCamera": {
+             *             "anchorPriorityList": [
+             *               "event_device",
+             *               "factory_center"
+             *             ],
+             *             "customCenter": null,
+             *             "bufferRadiusMeters": 320
+             *           },
+             *           "rightPanelHiddenTabs": [
+             *             "dynamics"
+             *           ],
+             *           "leftPanelHiddenPanels": [
+             *             "info"
+             *           ],
+             *           "duty": {
+             *             "autoRoster": true
+             *           }
+             *         }
+             *       ]
+             *     }
+             */
+            'application/json': components['schemas']['NodePhaseConfigList'];
+          };
+        };
+        401: components['responses']['Unauthorized'];
+        403: components['responses']['Forbidden'];
+      };
+    };
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -530,6 +655,54 @@ export interface components {
        */
       duration?: string;
     };
+    /** @description 3D 地图镜头配置 */
+    NodePhaseMapCamera: {
+      /** @description 镜头中心锚点优先级（按序降级：事件装置 → 报警电话位置 → 防区 → 抢险队 GPS → 全厂 → 自定义） */
+      anchorPriorityList?: (
+        | 'event_device'
+        | 'alarm_phone_location'
+        | 'alarm_phone_zone'
+        | 'first_responder_gps'
+        | 'factory_center'
+        | 'custom'
+      )[];
+      /** @description 自定义镜头中心 [lon, lat]；未配置为 null */
+      customCenter?: number[];
+      /**
+       * @description 缓冲区半径（米）
+       * @example 260
+       */
+      bufferRadiusMeters?: number;
+    };
+    /** @description 节点值班配置 */
+    NodePhaseDuty: {
+      /**
+       * @description 是否按节点切换值班小组自动排班
+       * @example true
+       */
+      autoRoster?: boolean;
+    };
+    /** @description 应急流程节点联动配置（镜头锚点 / 左右面板显隐 / 值班排班） */
+    NodePhaseConfig: {
+      /**
+       * @description 节点 id（alarmJudgement/1min/3min/5min/plantArea/companyLevel/govLevel/handling/archive）
+       * @example alarmJudgement
+       */
+      nodeId?: string;
+      /**
+       * @description 节点名称
+       * @example 1. 接警研判
+       */
+      nodeName?: string;
+      mapCamera?: components['schemas']['NodePhaseMapCamera'];
+      /** @description 右侧面板隐藏页签（duty/auxiliary/dynamics 的子集） */
+      rightPanelHiddenTabs?: string[];
+      /** @description 左侧面板隐藏面板（incident/plan/info 的子集） */
+      leftPanelHiddenPanels?: string[];
+      duty?: components['schemas']['NodePhaseDuty'];
+    };
+    /** @description 节点联动配置列表 */
+    NodePhaseConfigList: components['schemas']['NodePhaseConfig'][];
   };
   responses: {
     /** @description 未认证 / 令牌失效 */

@@ -1,32 +1,19 @@
 /**
  * 流程节点联动配置模型（移植自 mm-safety-master emergency-command types/nodeConfig.ts）
  * 简化适配 UI-project：地图视角锚点、右侧面板显隐、左侧面板显隐、值班自动排班。
+ *
+ * 契约类型（CameraAnchorType / MapCameraConfig / NodePhaseConfig）已上收至
+ * `@/services/emergencyProcess`（对齐 emergency.openapi.json）；此处只保留前端展示所需的
+ * 锚点元数据、默认值与 localStorage 离线缓存（无后端演示模式兜底）。
  */
 
-export type CameraAnchorType =
-  | 'event_device'
-  | 'alarm_phone_location'
-  | 'alarm_phone_zone'
-  | 'first_responder_gps'
-  | 'factory_center'
-  | 'custom';
+import type {
+  CameraAnchorType,
+  MapCameraConfig,
+  NodePhaseConfig,
+} from '@/services/emergencyProcess';
 
-export interface MapCameraConfig {
-  anchorPriorityList: CameraAnchorType[];
-  customCenter?: [number, number];
-  bufferRadiusMeters: number;
-}
-
-export interface NodePhaseConfig {
-  nodeId: string;
-  nodeName: string;
-  mapCamera: MapCameraConfig;
-  rightPanelHiddenTabs: string[];
-  leftPanelHiddenPanels: string[];
-  duty: {
-    autoRoster: boolean;
-  };
-}
+export type { CameraAnchorType, MapCameraConfig, NodePhaseConfig };
 
 export const CAMERA_ANCHOR_METADATA: Record<CameraAnchorType, { label: string; desc: string }> = {
   event_device: {
@@ -220,31 +207,56 @@ export const DEFAULT_NODE_PHASE_CONFIGS: Record<string, NodePhaseConfig> = {
 
 export const ALL_NODE_IDS = Object.keys(DEFAULT_NODE_PHASE_CONFIGS);
 
+/** 深拷贝一份默认节点配置（恢复默认 / 离线兜底用）。 */
+export function cloneDefaultNodeConfigs(): Record<string, NodePhaseConfig> {
+  return JSON.parse(JSON.stringify(DEFAULT_NODE_PHASE_CONFIGS)) as Record<string, NodePhaseConfig>;
+}
+
+/**
+ * 离线兜底：默认值 + localStorage 缓存逐节点合并（缓存缺项回退默认值），保证 9 个节点键齐全。
+ * 有后端时以 `mergeNodeConfigs(await fetchNodePhaseConfigs())` 的结果为准。
+ */
 export function loadNodeConfigs(): Record<string, NodePhaseConfig> {
-  const defaults = JSON.parse(JSON.stringify(DEFAULT_NODE_PHASE_CONFIGS)) as Record<
-    string,
-    NodePhaseConfig
-  >;
+  const merged = cloneDefaultNodeConfigs();
   try {
     const raw = localStorage.getItem('mmsafety_ui_node_phase_configs');
-    if (!raw) return defaults;
+    if (!raw) return merged;
     const parsed = JSON.parse(raw) as Record<string, NodePhaseConfig>;
-    for (const key of Object.keys(defaults)) {
+    for (const key of Object.keys(merged)) {
       if (parsed[key]) {
-        defaults[key] = {
-          ...defaults[key],
+        merged[key] = {
+          ...merged[key],
           ...parsed[key],
-          mapCamera: { ...defaults[key].mapCamera, ...(parsed[key].mapCamera ?? {}) },
-          duty: { ...defaults[key].duty, ...(parsed[key].duty ?? {}) },
+          mapCamera: { ...merged[key].mapCamera, ...(parsed[key].mapCamera ?? {}) },
+          duty: { ...merged[key].duty, ...(parsed[key].duty ?? {}) },
         };
       }
     }
   } catch {
     // fallback to defaults
   }
-  return defaults;
+  return merged;
 }
 
+/** 把后端返回的节点配置列表折成 Record，并逐节点覆盖到默认值之上（保证节点键齐全）。 */
+export function mergeNodeConfigs(list: NodePhaseConfig[]): Record<string, NodePhaseConfig> {
+  const merged = cloneDefaultNodeConfigs();
+  for (const item of list) {
+    if (!item?.nodeId) continue;
+    const base = merged[item.nodeId];
+    merged[item.nodeId] = base
+      ? {
+          ...base,
+          ...item,
+          mapCamera: { ...base.mapCamera, ...(item.mapCamera ?? {}) },
+          duty: { ...base.duty, ...(item.duty ?? {}) },
+        }
+      : item;
+  }
+  return merged;
+}
+
+/** 写 localStorage 离线缓存（无后端演示模式兜底）；失败静默忽略。 */
 export function saveNodeConfigs(configs: Record<string, NodePhaseConfig>) {
   try {
     localStorage.setItem('mmsafety_ui_node_phase_configs', JSON.stringify(configs));

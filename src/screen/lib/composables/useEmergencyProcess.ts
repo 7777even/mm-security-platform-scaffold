@@ -8,7 +8,15 @@ import {
   type ProcessStage,
 } from '../data/emergencyProcessData';
 import { mockDutyRoster, mockNodeGuidances, type NodeGuidance } from '../data/nodeGuidanceData';
-import { loadNodeConfigs, saveNodeConfigs, type NodePhaseConfig } from '../data/nodeConfigData';
+import {
+  cloneDefaultNodeConfigs,
+  loadNodeConfigs,
+  mergeNodeConfigs,
+  saveNodeConfigs,
+  type NodePhaseConfig,
+} from '../data/nodeConfigData';
+import { fetchNodePhaseConfigs, saveNodePhaseConfigs } from '@/services/emergencyProcess';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 
 const STAGE_ID_TO_NODE_ID: Record<number, string> = {
   1: 'alarmJudgement',
@@ -68,6 +76,25 @@ const state = reactive({
 });
 
 const nodeConfigs = ref<Record<string, NodePhaseConfig>>(loadNodeConfigs());
+
+/** 是否落库：配置了 VITE_API_BASE 时才读写后端，否则维持本地缓存（纯静态演示模式）。 */
+function nodeConfigsToBackend(): boolean {
+  return Boolean(import.meta.env.VITE_API_BASE);
+}
+
+/** 拉取后端节点联动配置并覆盖到本地（失败保持现有本地态并告警，不白屏）。 */
+export async function loadNodeConfigsRemote(): Promise<void> {
+  if (!nodeConfigsToBackend()) return;
+  try {
+    const list = await fetchNodePhaseConfigs();
+    if (!Array.isArray(list) || list.length === 0) return;
+    nodeConfigs.value = mergeNodeConfigs(list);
+    saveNodeConfigs(nodeConfigs.value);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '请求失败';
+    backendUnavailableWarn('emergency-process', '/emergency/process/node-configs', message);
+  }
+}
 
 let autoDemoTimer: ReturnType<typeof setInterval> | null = null;
 const autoDemoRunning = ref(false);
@@ -254,20 +281,41 @@ export function useEmergencyProcess() {
 
   function openNodeConfig() {
     state.nodeConfigOpen = true;
+    void loadNodeConfigsRemote();
   }
 
   function closeNodeConfig() {
     state.nodeConfigOpen = false;
   }
 
-  function saveNodeConfig(configs: Record<string, NodePhaseConfig>) {
-    nodeConfigs.value = JSON.parse(JSON.stringify(configs));
-    saveNodeConfigs(nodeConfigs.value);
+  /**
+   * 保存节点联动配置（整表提交）。有后端时先落库再回写本地，失败不假成功（返回 false 且本地态不变）；
+   * 无 VITE_API_BASE 的纯静态演示模式仅写本地缓存。
+   */
+  async function saveNodeConfig(configs: Record<string, NodePhaseConfig>): Promise<boolean> {
+    if (!nodeConfigsToBackend()) {
+      nodeConfigs.value = JSON.parse(JSON.stringify(configs));
+      saveNodeConfigs(nodeConfigs.value);
+      return true;
+    }
+    try {
+      const saved = await saveNodePhaseConfigs(Object.values(configs));
+      nodeConfigs.value =
+        Array.isArray(saved) && saved.length > 0
+          ? mergeNodeConfigs(saved)
+          : (JSON.parse(JSON.stringify(configs)) as Record<string, NodePhaseConfig>);
+      saveNodeConfigs(nodeConfigs.value);
+      return true;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '请求失败';
+      backendUnavailableWarn('emergency-process', 'PUT /emergency/process/node-configs', message);
+      return false;
+    }
   }
 
-  function resetNodeConfig() {
-    nodeConfigs.value = loadNodeConfigs();
-    saveNodeConfigs(nodeConfigs.value);
+  /** 恢复默认节点配置（默认值即 V30 种子），走与保存相同的落库路径。 */
+  async function resetNodeConfig(): Promise<boolean> {
+    return saveNodeConfig(cloneDefaultNodeConfigs());
   }
 
   function requestPhaseDecision(escalatePhase: EmergencyPhase | null) {
@@ -380,6 +428,7 @@ export function useEmergencyProcess() {
     closeNodeConfig,
     saveNodeConfig,
     resetNodeConfig,
+    loadNodeConfigsRemote,
     advanceNext,
     startAutoDemo,
     stopAutoDemo,
