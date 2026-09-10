@@ -13,8 +13,8 @@ import {
   MapLocation,
   Connection,
 } from '@element-plus/icons-vue';
-import { eventCommandAuxiliaryItems } from '../../../lib/data/accidentRescueMock';
 import { fetchEmergencyStrength } from '@/services/emergency';
+import { fetchEmergencyKnowledge } from '@/services/knowledge';
 
 const props = withDefaults(
   defineProps<{
@@ -65,21 +65,41 @@ async function loadRescueStats() {
   }
 }
 
+// 应急指挥布局：知识库卡片改由后端 /emergency/knowledge 提供（原 eventCommandAuxiliaryItems 已移除）。
+// 后端返回 { items: [{ id, title, count, icon }] }，图标按返回顺序轮转 KNOWLEDGE_ICONS。
+const knowledgeItems = ref<{ label: string; value: string; iconIndex: number }[]>([]);
+const loadingKnowledge = ref(false);
+
+async function loadKnowledge() {
+  loadingKnowledge.value = true;
+  try {
+    const { items: knowledge } = await fetchEmergencyKnowledge();
+    knowledgeItems.value = knowledge.map((k, index) => ({
+      label: k.title,
+      value: String(k.count),
+      iconIndex: index % KNOWLEDGE_ICONS.length,
+    }));
+  } finally {
+    loadingKnowledge.value = false;
+  }
+}
+
 onMounted(() => {
   if (props.layout === 'rescue') void loadRescueStats();
+  else void loadKnowledge();
 });
 
 const total = computed(() => items.value.reduce((sum, item) => sum + Number(item.value || 0), 0));
 
 const items = computed(() =>
-  props.layout === 'eventCommand' ? eventCommandAuxiliaryItems : rescueItems.value,
+  props.layout === 'eventCommand' ? knowledgeItems.value : rescueItems.value,
 );
 
 /* 与 rescueAuxiliaryStats.iconIndex 一一对应（0..7）：
    应急专家/应急物资/救援队伍/装备车辆/应急场所/医疗机构/应急车辆/消防设施 */
 const RESCUE_ICONS = [UserFilled, Box, Avatar, Van, OfficeBuilding, FirstAidKit, Van, Warning];
 
-/* eventCommandAuxiliaryItems：岗位应急处置卡/危险化学品知识库/疏散路线图/应急预案/生产工艺流程 */
+/* eventCommand 布局图标轮转序列：与后端 /emergency/knowledge 返回顺序对应 */
 const KNOWLEDGE_ICONS = [Document, Box, MapLocation, Document, Connection];
 
 const iconList = computed(() => (props.layout === 'eventCommand' ? KNOWLEDGE_ICONS : RESCUE_ICONS));

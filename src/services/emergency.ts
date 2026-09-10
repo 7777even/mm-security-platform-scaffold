@@ -54,3 +54,111 @@ export async function fetchEmergencyStrength(): Promise<EmergencyStrength> {
     return EMPTY;
   }
 }
+
+// 应急指挥指令（B4 去 mock：原 accidentRescueMock 的 fixedCommandGroups/tempCommandGroups/
+// commandDetailDefaults/commandLogs 已迁至后端 fac_emergency_cmd，由下面两个服务函数拉取）。
+export type EmergencyCommandInstructionStatus = '待处置' | '已处置' | '待派发';
+export type CommandNotifyChannel = 'app' | 'sms' | 'voice';
+
+export interface EmergencyCommandInstruction {
+  id: string;
+  type: string;
+  name: string;
+  location: string;
+  status: EmergencyCommandInstructionStatus;
+  actionLabel?: string;
+  done?: boolean;
+}
+
+export interface EmergencyCommandGroup {
+  id: string;
+  label: string;
+  items: EmergencyCommandInstruction[];
+}
+
+export interface CommandActionRecipient {
+  id: string;
+  role: string;
+  name: string;
+  phone: string;
+}
+
+export interface CommandActionMedia {
+  id: string;
+  type: 'image' | 'video' | 'audio';
+  name: string;
+  src?: string;
+  duration?: string;
+}
+
+export interface CommandActionDynamicEntry {
+  id: string;
+  time: string;
+  type: string;
+  operator: string;
+  result: string;
+  content: string;
+  attachment?: string;
+  media?: CommandActionMedia[];
+}
+
+export interface CommandActionDetail {
+  id: string;
+  name: string;
+  type: string;
+  notifyChannels: CommandNotifyChannel[];
+  status: EmergencyCommandInstructionStatus;
+  dispatchMode: string;
+  location: string;
+  description: string;
+  attachment?: string;
+  addressBookRecipients: CommandActionRecipient[];
+  dutyRecipients: CommandActionRecipient[];
+  dynamics: CommandActionDynamicEntry[];
+}
+
+const EMPTY_GROUPS: EmergencyCommandGroup[] = [];
+
+/**
+ * 应急指挥指令分组列表（固定 / 临时）。后端就绪时走真实服务；
+ * 纯静态演示（无 VITE_API_BASE）回落空态——不回灌 mock 假数据（零下行控制红线）。
+ */
+export async function fetchEmergencyCommandGroups(
+  tab?: 'fixed' | 'temp',
+): Promise<EmergencyCommandGroup[]> {
+  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(EMPTY_GROUPS);
+  try {
+    const data = await request<EmergencyCommandGroup[]>({
+      url: '/emergency/commands',
+      method: 'GET',
+      params: tab ? { tab } : undefined,
+    });
+    if (!data || !Array.isArray(data)) {
+      backendUnavailableWarn('emergency', '/emergency/commands', REASON_CONTRACT_MISMATCH);
+      return EMPTY_GROUPS;
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('emergency', '/emergency/commands');
+    return EMPTY_GROUPS;
+  }
+}
+
+/**
+ * 单条指令行动详情（派发对象 / 执行日志等）。未知 id 后端返回 200 空包络，此处归一为 null。
+ */
+export async function fetchEmergencyCommandDetail(
+  commandId: string,
+): Promise<CommandActionDetail | null> {
+  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(null);
+  try {
+    const data = await request<CommandActionDetail>({
+      url: `/emergency/commands/${commandId}`,
+      method: 'GET',
+    });
+    return data ?? null;
+  } catch {
+    backendUnavailableWarn('emergency', `/emergency/commands/${commandId}`);
+    return null;
+  }
+}

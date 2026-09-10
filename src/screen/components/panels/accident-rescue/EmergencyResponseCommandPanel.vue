@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import {
   emergencyCommandInstructionTabs,
   emergencyCommandPhaseFilterOptions,
   emergencyCommandStatusFilterOptions,
-  resolveEmergencyCommandGroups,
+} from '../../../lib/data/accidentRescueMock';
+import {
+  fetchEmergencyCommandGroups,
+  type EmergencyCommandGroup,
   type EmergencyCommandInstruction,
   type EmergencyCommandInstructionStatus,
-} from '../../../lib/data/accidentRescueMock';
+} from '@/services/emergency';
 import { openCommandActionDetail } from '../../../lib/composables/useCommandActionDetail';
 
 withDefaults(
@@ -29,7 +32,16 @@ const statusFilter = ref('all');
 
 const commandTab = computed(() => (activeTab.value === 0 ? 'fixed' : 'temp'));
 
-const groups = computed(() => resolveEmergencyCommandGroups(commandTab.value));
+// B4 去 mock：指令分组改由后端服务拉取（原 resolveEmergencyCommandGroups 已删除）。
+// 切换 tab / 初次挂载时重新加载；后端不可用时 service 内部降级为空数组并告警。
+const groups = ref<EmergencyCommandGroup[]>([]);
+
+async function loadGroups(): Promise<void> {
+  groups.value = await fetchEmergencyCommandGroups(commandTab.value);
+}
+
+onMounted(loadGroups);
+watch(commandTab, loadGroups);
 
 const filteredGroups = computed(() => {
   const statusMap: Record<string, EmergencyCommandInstructionStatus | null> = {

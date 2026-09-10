@@ -214,6 +214,143 @@
           "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
         }
       }
+    },
+    "/emergency/commands": {
+      "get": {
+        "tags": ["emergency"],
+        "operationId": "getEmergencyCommandGroups",
+        "summary": "应急指挥指令分组列表",
+        "description": "返回固定/临时指令分组（一键通知/一键调度/临时通知/临时调度），可按 tab 过滤。",
+        "parameters": [
+          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "name": "tab",
+            "in": "query",
+            "required": false,
+            "description": "指令分类：fixed=固定指令，temp=临时指令；缺省返回全部",
+            "schema": { "type": "string", "enum": ["fixed", "temp"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=EmergencyCommandGroup[]）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/EmergencyCommandGroup" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": "notify",
+                      "label": "一键通知",
+                      "items": [
+                        {
+                          "id": "n1",
+                          "type": "通知",
+                          "name": "通知值班人员",
+                          "location": "中海壳牌石油化工有限公司",
+                          "status": "待处置",
+                          "done": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/emergency/commands/{commandId}": {
+      "get": {
+        "tags": ["emergency"],
+        "operationId": "getEmergencyCommandDetail",
+        "summary": "应急指挥指令行动详情",
+        "description": "返回单条指令的派发渠道/对象/执行日志等富文本详情。",
+        "parameters": [
+          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "name": "commandId",
+            "in": "path",
+            "required": true,
+            "description": "指令 ID（如 n1/d1/t2）",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=CommandActionDetail）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/CommandActionDetail" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": "n1",
+                    "name": "通知值班人员",
+                    "type": "通知",
+                    "notifyChannels": ["app", "sms", "voice"],
+                    "status": "待处置",
+                    "dispatchMode": "自动派发",
+                    "location": "中海壳牌石油化工有限公司",
+                    "description": "【2026-04-27 14:55:24】装置区发生疑似火灾事故，请按预案开展通知与前置处置，保持信息同步。",
+                    "attachment": "—",
+                    "addressBookRecipients": [
+                      {
+                        "id": "ab1",
+                        "role": "公司总值班室",
+                        "name": "宋文帅",
+                        "phone": "13792536966"
+                      }
+                    ],
+                    "dutyRecipients": [
+                      { "id": "dy1", "role": "值班领导", "name": "杨恒朋", "phone": "13792536966" }
+                    ],
+                    "dynamics": [
+                      {
+                        "id": "n1-1",
+                        "time": "2026-04-27 14:56:10",
+                        "type": "系统",
+                        "operator": "应急指挥平台",
+                        "result": "已记录",
+                        "content": "根据公司级应急预案自动生成「通知值班人员」指令，共匹配 6 名当日值班人员。"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
     }
   },
   "components": {
@@ -351,6 +488,176 @@
             "type": "string",
             "description": "图标名（Element Plus icon 名）",
             "example": "Document"
+          }
+        }
+      },
+      "EmergencyCommandGroup": {
+        "type": "object",
+        "description": "应急指挥指令分组（固定/临时）",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "分组 ID（notify/dispatch/temp-notify/temp-dispatch）",
+            "example": "notify"
+          },
+          "label": { "type": "string", "description": "分组名称", "example": "一键通知" },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmergencyCommandInstruction" },
+            "description": "分组内指令卡片列表"
+          }
+        }
+      },
+      "EmergencyCommandInstruction": {
+        "type": "object",
+        "description": "应急指挥单条指令卡片",
+        "properties": {
+          "id": { "type": "string", "description": "指令 ID", "example": "n1" },
+          "type": {
+            "type": "string",
+            "description": "指令类型",
+            "enum": ["通知", "任务"],
+            "example": "通知"
+          },
+          "name": { "type": "string", "description": "指令名称", "example": "通知值班人员" },
+          "location": {
+            "type": "string",
+            "description": "作用位置",
+            "example": "中海壳牌石油化工有限公司"
+          },
+          "status": {
+            "type": "string",
+            "description": "处置状态",
+            "enum": ["待处置", "已处置", "待派发"],
+            "example": "待处置"
+          },
+          "actionLabel": {
+            "type": "string",
+            "description": "操作按钮文案（如「一键派发」），无则为空",
+            "example": "一键派发"
+          },
+          "done": { "type": "boolean", "description": "是否已处置完毕", "example": false }
+        }
+      },
+      "CommandActionDetail": {
+        "type": "object",
+        "description": "应急指挥指令行动详情",
+        "properties": {
+          "id": { "type": "string", "description": "指令 ID", "example": "n1" },
+          "name": { "type": "string", "description": "指令名称", "example": "通知值班人员" },
+          "type": {
+            "type": "string",
+            "description": "指令类型",
+            "enum": ["通知", "任务"],
+            "example": "通知"
+          },
+          "notifyChannels": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["app", "sms", "voice"] },
+            "description": "通知渠道"
+          },
+          "status": {
+            "type": "string",
+            "description": "处置状态",
+            "enum": ["待处置", "已处置", "待派发"],
+            "example": "待处置"
+          },
+          "dispatchMode": { "type": "string", "description": "派发方式", "example": "自动派发" },
+          "location": {
+            "type": "string",
+            "description": "作用位置",
+            "example": "中海壳牌石油化工有限公司"
+          },
+          "description": { "type": "string", "description": "指令描述/背景" },
+          "attachment": {
+            "type": "string",
+            "description": "附件说明，无则为「—」",
+            "example": "—"
+          },
+          "addressBookRecipients": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandActionRecipient" },
+            "description": "通讯录派发对象"
+          },
+          "dutyRecipients": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandActionRecipient" },
+            "description": "值班人员派发对象"
+          },
+          "dynamics": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandActionDynamicEntry" },
+            "description": "指令执行日志"
+          }
+        }
+      },
+      "CommandActionRecipient": {
+        "type": "object",
+        "description": "指令派发对象",
+        "properties": {
+          "id": { "type": "string", "description": "对象 ID", "example": "ab1" },
+          "role": { "type": "string", "description": "角色/单位", "example": "公司总值班室" },
+          "name": { "type": "string", "description": "姓名", "example": "宋文帅" },
+          "phone": { "type": "string", "description": "联系电话", "example": "13792536966" }
+        }
+      },
+      "CommandActionDynamicEntry": {
+        "type": "object",
+        "description": "指令执行日志条目",
+        "properties": {
+          "id": { "type": "string", "description": "日志 ID", "example": "n1-1" },
+          "time": { "type": "string", "description": "时间", "example": "2026-04-27 14:56:10" },
+          "type": {
+            "type": "string",
+            "description": "环节类型",
+            "enum": ["系统", "派发", "签收", "执行", "现场反馈", "异常", "完成"],
+            "example": "系统"
+          },
+          "operator": { "type": "string", "description": "操作人", "example": "应急指挥平台" },
+          "result": {
+            "type": "string",
+            "description": "结果",
+            "enum": ["已记录", "成功", "进行中", "异常", "已完成"],
+            "example": "已记录"
+          },
+          "content": {
+            "type": "string",
+            "description": "内容",
+            "example": "根据公司级应急预案自动生成「通知值班人员」指令。"
+          },
+          "attachment": {
+            "type": "string",
+            "description": "附件说明，无则为空",
+            "example": "现场人员清点表.xlsx"
+          },
+          "media": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommandActionMedia" },
+            "description": "回传媒体（图片/视频/语音）"
+          }
+        }
+      },
+      "CommandActionMedia": {
+        "type": "object",
+        "description": "指令回传媒体",
+        "properties": {
+          "id": { "type": "string", "description": "媒体 ID", "example": "n1-image" },
+          "type": {
+            "type": "string",
+            "description": "媒体类型",
+            "enum": ["image", "video", "audio"],
+            "example": "image"
+          },
+          "name": { "type": "string", "description": "媒体名称", "example": "装置区警戒隔离现场" },
+          "src": {
+            "type": "string",
+            "description": "媒体地址（受保护端点需带鉴权），无则为空",
+            "example": ""
+          },
+          "duration": {
+            "type": "string",
+            "description": "音视频时长（mm:ss），无则为空",
+            "example": "00:18"
           }
         }
       }

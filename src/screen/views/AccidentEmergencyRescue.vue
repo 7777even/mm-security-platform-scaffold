@@ -30,7 +30,6 @@ import SandboxPanel from '../components/panels/accident-rescue/SandboxPanel.vue'
 import SandboxMapOverlay from '../components/map/SandboxMapOverlay.vue';
 import {
   resolveAccidentRescueIncident,
-  resolveEmergencyCommandDetail,
   eventCommandDetailTabs,
   type EmergencyDispatchResource,
   accidentRescueRouteWaypoints,
@@ -45,12 +44,14 @@ import {
 import { pickPointAlongRoute, type EvacuationPerson } from '../lib/data/evacuationPeopleMock';
 import { fetchEvacuationPeople } from '@/services/emergencyEvent';
 import {
-  resolveMonitoringAlarms,
-  resolveMonitoringPoints,
+  fetchMonitoringPoints,
+  fetchMonitoringAlarms,
   type MonitoringPoint,
+  type MonitoringAlarm,
 } from '@/services/hazard';
 import { useMapControls } from '../lib/composables/useMapControls';
-import { resolveFacilityDetail } from '@/services/hazard';
+import { fetchFacilityDetail, type FacilityDetailInfo } from '@/services/hazard';
+import { fetchEmergencyCommandDetail, type CommandActionDetail } from '@/services/emergency';
 import { facilityDetailOpen, closeFacilityDetail } from '../lib/composables/useFacilityDetail';
 import {
   commandDrawerVisible,
@@ -101,13 +102,27 @@ watch(
   },
 );
 
-const facilityDetail = computed(() => resolveFacilityDetail(incident.value.facilityName));
+// 设施详情：生产模式走真实后端 /facilities/detail（services 内 dev 回落 fixture），不再用 mock 解析器
+const facilityDetail = ref<FacilityDetailInfo>({} as FacilityDetailInfo);
+async function loadFacilityDetail(): Promise<void> {
+  facilityDetail.value = await fetchFacilityDetail(incident.value.facilityName);
+}
 
 const showFacilityDetail = facilityDetailOpen;
-const commandDetail = computed(() => {
-  const id = selectedCommandActionId.value;
-  return id ? resolveEmergencyCommandDetail(id) : null;
-});
+// B4 去 mock：指令详情改由后端服务拉取（原 resolveEmergencyCommandDetail 已删除）；
+// selectedCommandActionId 变化时重新加载，未知 id 后端返回空包络归并为 null。
+const commandDetail = ref<CommandActionDetail | null>(null);
+watch(
+  selectedCommandActionId,
+  async (id) => {
+    if (!id) {
+      commandDetail.value = null;
+      return;
+    }
+    commandDetail.value = await fetchEmergencyCommandDetail(id);
+  },
+  { immediate: true },
+);
 const responseStarted = ref(false);
 const activeLeftTab = ref<'info' | 'response' | 'dispatch'>('info');
 const focusedDispatchResource = ref<EmergencyDispatchResource | null>(null);
@@ -136,7 +151,7 @@ const mapMonitoringPoints = computed(() => {
   return [...abnormal, ...normal.filter((_, index) => index % 3 === 0)].slice(0, 7);
 });
 const focusedMonitoringId = ref<string | null>(null);
-const monitoringAlarms = ref(resolveMonitoringAlarms());
+const monitoringAlarms = ref<MonitoringAlarm[]>([]);
 const rescueRouteVehiclePlate = ref('粤PV1527');
 const rescueRouteTimeRange = ref('2026-03-22 11:37:29 - 2026-03-22 14:08:14');
 const rescueRouteVehicleType = ref('消防救援车');
@@ -214,7 +229,10 @@ watch(activeLeftTab, (tab) => {
 });
 
 watch(showFacilityDetail, (open) => {
-  if (open) closeCommandActionDetail();
+  if (open) {
+    closeCommandActionDetail();
+    void loadFacilityDetail();
+  }
 });
 
 onMounted(() => {
@@ -382,7 +400,7 @@ function exitEvacuationScene() {
   void flyToIncident();
 }
 
-function enterMonitoringScene() {
+async function enterMonitoringScene() {
   sceneMode.value = 'monitoring';
   focusedMonitoringId.value = null;
   // 取消尚未执行的事件视角飞行，避免排队任务覆盖监测点框选
@@ -390,7 +408,8 @@ function enterMonitoringScene() {
   closeFacilityDetail();
   closeCommandActionDetail();
   closeToolMenu();
-  monitoringPoints.value = resolveMonitoringPoints();
+  monitoringPoints.value = await fetchMonitoringPoints();
+  monitoringAlarms.value = await fetchMonitoringAlarms();
   const focusPoints = mapMonitoringPoints.value;
   const focusCenter = focusPoints.reduce(
     (sum, point) => ({

@@ -99,6 +99,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/emergency/commands': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 应急指挥指令分组列表
+     * @description 返回固定/临时指令分组（一键通知/一键调度/临时通知/临时调度），可按 tab 过滤。
+     */
+    get: operations['getEmergencyCommandGroups'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/emergency/commands/{commandId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 应急指挥指令行动详情
+     * @description 返回单条指令的派发渠道/对象/执行日志等富文本详情。
+     */
+    get: operations['getEmergencyCommandDetail'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -290,6 +330,205 @@ export interface components {
        * @example Document
        */
       icon?: string;
+    };
+    /** @description 应急指挥指令分组（固定/临时） */
+    EmergencyCommandGroup: {
+      /**
+       * @description 分组 ID（notify/dispatch/temp-notify/temp-dispatch）
+       * @example notify
+       */
+      id?: string;
+      /**
+       * @description 分组名称
+       * @example 一键通知
+       */
+      label?: string;
+      /** @description 分组内指令卡片列表 */
+      items?: components['schemas']['EmergencyCommandInstruction'][];
+    };
+    /** @description 应急指挥单条指令卡片 */
+    EmergencyCommandInstruction: {
+      /**
+       * @description 指令 ID
+       * @example n1
+       */
+      id?: string;
+      /**
+       * @description 指令类型
+       * @example 通知
+       * @enum {string}
+       */
+      type?: '通知' | '任务';
+      /**
+       * @description 指令名称
+       * @example 通知值班人员
+       */
+      name?: string;
+      /**
+       * @description 作用位置
+       * @example 中海壳牌石油化工有限公司
+       */
+      location?: string;
+      /**
+       * @description 处置状态
+       * @example 待处置
+       * @enum {string}
+       */
+      status?: '待处置' | '已处置' | '待派发';
+      /**
+       * @description 操作按钮文案（如「一键派发」），无则为空
+       * @example 一键派发
+       */
+      actionLabel?: string;
+      /**
+       * @description 是否已处置完毕
+       * @example false
+       */
+      done?: boolean;
+    };
+    /** @description 应急指挥指令行动详情 */
+    CommandActionDetail: {
+      /**
+       * @description 指令 ID
+       * @example n1
+       */
+      id?: string;
+      /**
+       * @description 指令名称
+       * @example 通知值班人员
+       */
+      name?: string;
+      /**
+       * @description 指令类型
+       * @example 通知
+       * @enum {string}
+       */
+      type?: '通知' | '任务';
+      /** @description 通知渠道 */
+      notifyChannels?: ('app' | 'sms' | 'voice')[];
+      /**
+       * @description 处置状态
+       * @example 待处置
+       * @enum {string}
+       */
+      status?: '待处置' | '已处置' | '待派发';
+      /**
+       * @description 派发方式
+       * @example 自动派发
+       */
+      dispatchMode?: string;
+      /**
+       * @description 作用位置
+       * @example 中海壳牌石油化工有限公司
+       */
+      location?: string;
+      /** @description 指令描述/背景 */
+      description?: string;
+      /**
+       * @description 附件说明，无则为「—」
+       * @example —
+       */
+      attachment?: string;
+      /** @description 通讯录派发对象 */
+      addressBookRecipients?: components['schemas']['CommandActionRecipient'][];
+      /** @description 值班人员派发对象 */
+      dutyRecipients?: components['schemas']['CommandActionRecipient'][];
+      /** @description 指令执行日志 */
+      dynamics?: components['schemas']['CommandActionDynamicEntry'][];
+    };
+    /** @description 指令派发对象 */
+    CommandActionRecipient: {
+      /**
+       * @description 对象 ID
+       * @example ab1
+       */
+      id?: string;
+      /**
+       * @description 角色/单位
+       * @example 公司总值班室
+       */
+      role?: string;
+      /**
+       * @description 姓名
+       * @example 宋文帅
+       */
+      name?: string;
+      /**
+       * @description 联系电话
+       * @example 13792536966
+       */
+      phone?: string;
+    };
+    /** @description 指令执行日志条目 */
+    CommandActionDynamicEntry: {
+      /**
+       * @description 日志 ID
+       * @example n1-1
+       */
+      id?: string;
+      /**
+       * @description 时间
+       * @example 2026-04-27 14:56:10
+       */
+      time?: string;
+      /**
+       * @description 环节类型
+       * @example 系统
+       * @enum {string}
+       */
+      type?: '系统' | '派发' | '签收' | '执行' | '现场反馈' | '异常' | '完成';
+      /**
+       * @description 操作人
+       * @example 应急指挥平台
+       */
+      operator?: string;
+      /**
+       * @description 结果
+       * @example 已记录
+       * @enum {string}
+       */
+      result?: '已记录' | '成功' | '进行中' | '异常' | '已完成';
+      /**
+       * @description 内容
+       * @example 根据公司级应急预案自动生成「通知值班人员」指令。
+       */
+      content?: string;
+      /**
+       * @description 附件说明，无则为空
+       * @example 现场人员清点表.xlsx
+       */
+      attachment?: string;
+      /** @description 回传媒体（图片/视频/语音） */
+      media?: components['schemas']['CommandActionMedia'][];
+    };
+    /** @description 指令回传媒体 */
+    CommandActionMedia: {
+      /**
+       * @description 媒体 ID
+       * @example n1-image
+       */
+      id?: string;
+      /**
+       * @description 媒体类型
+       * @example image
+       * @enum {string}
+       */
+      type?: 'image' | 'video' | 'audio';
+      /**
+       * @description 媒体名称
+       * @example 装置区警戒隔离现场
+       */
+      name?: string;
+      /**
+       * @description 媒体地址（受保护端点需带鉴权），无则为空
+       * @example
+       */
+      src?: string;
+      /**
+       * @description 音视频时长（mm:ss），无则为空
+       * @example 00:18
+       */
+      duration?: string;
     };
   };
   responses: {
@@ -563,6 +802,133 @@ export interface operations {
            */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['KnowledgeList'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  getEmergencyCommandGroups: {
+    parameters: {
+      query?: {
+        /** @description 指令分类：fixed=固定指令，temp=临时指令；缺省返回全部 */
+        tab?: 'fixed' | 'temp';
+      };
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=EmergencyCommandGroup[]） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": [
+           *         {
+           *           "id": "notify",
+           *           "label": "一键通知",
+           *           "items": [
+           *             {
+           *               "id": "n1",
+           *               "type": "通知",
+           *               "name": "通知值班人员",
+           *               "location": "中海壳牌石油化工有限公司",
+           *               "status": "待处置",
+           *               "done": false
+           *             }
+           *           ]
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['EmergencyCommandGroup'][];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  getEmergencyCommandDetail: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path: {
+        /** @description 指令 ID（如 n1/d1/t2） */
+        commandId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=CommandActionDetail） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": "n1",
+           *         "name": "通知值班人员",
+           *         "type": "通知",
+           *         "notifyChannels": [
+           *           "app",
+           *           "sms",
+           *           "voice"
+           *         ],
+           *         "status": "待处置",
+           *         "dispatchMode": "自动派发",
+           *         "location": "中海壳牌石油化工有限公司",
+           *         "description": "【2026-04-27 14:55:24】装置区发生疑似火灾事故，请按预案开展通知与前置处置，保持信息同步。",
+           *         "attachment": "—",
+           *         "addressBookRecipients": [
+           *           {
+           *             "id": "ab1",
+           *             "role": "公司总值班室",
+           *             "name": "宋文帅",
+           *             "phone": "13792536966"
+           *           }
+           *         ],
+           *         "dutyRecipients": [
+           *           {
+           *             "id": "dy1",
+           *             "role": "值班领导",
+           *             "name": "杨恒朋",
+           *             "phone": "13792536966"
+           *           }
+           *         ],
+           *         "dynamics": [
+           *           {
+           *             "id": "n1-1",
+           *             "time": "2026-04-27 14:56:10",
+           *             "type": "系统",
+           *             "operator": "应急指挥平台",
+           *             "result": "已记录",
+           *             "content": "根据公司级应急预案自动生成「通知值班人员」指令，共匹配 6 名当日值班人员。"
+           *           }
+           *         ]
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['CommandActionDetail'];
           };
         };
       };

@@ -5,7 +5,7 @@ import type {
   CommandActionDetail,
   CommandActionDynamicEntry,
   CommandNotifyChannel,
-} from '../../../lib/data/accidentRescueMock';
+} from '@/services/emergency';
 import { closeCommandActionDetail } from '../../../lib/composables/useCommandActionDetail';
 
 defineProps<{
