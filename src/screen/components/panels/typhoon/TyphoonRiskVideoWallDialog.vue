@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import SurveillanceVideoDialog from '../../common/SurveillanceVideoDialog.vue';
 import floodCctvGridUrl from '../../../assets/semantic-scenes/typhoon-flood-cctv-grid.png';
-import type { TyphoonLiveVideo, TyphoonMapRiskPoint } from '../../../lib/data/typhoonEmergencyMock';
+import type { TyphoonLiveVideo, TyphoonMapRiskPoint } from '@/services/typhoonEmergency';
 import { ref, watch } from 'vue';
 
 const props = defineProps<{

@@ -12,7 +12,7 @@ import SatelliteCloudMapDialog from '../components/panels/typhoon/SatelliteCloud
 import TyphoonRiskVideoWallDialog from '../components/panels/typhoon/TyphoonRiskVideoWallDialog.vue';
 import { resolveTyphoonEmergencyIncidentV2 } from '../lib/data/typhoonEmergencyMock';
 import { fetchTyphoonIncident } from '@/services/typhoonEmergency';
-import type { TyphoonEmergencyIncident } from '../lib/data/typhoonEmergencyMock';
+import type { TyphoonEmergencyIncident } from '@/services/typhoonEmergency';
 import { useShellRoute } from '../lib/composables/useShellRoute';
 
 use([LineChart, GridComponent, MarkLineComponent, TooltipComponent, CanvasRenderer]);

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
-import type { TyphoonMapRiskPoint } from '../../lib/data/typhoonEmergencyMock';
+import type { TyphoonMapRiskPoint } from '@/services/typhoonEmergency';
 
 const props = defineProps<{
   points: TyphoonMapRiskPoint[];

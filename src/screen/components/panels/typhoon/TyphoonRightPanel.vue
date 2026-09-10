@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
 import { UserFilled, Document, Box, MapLocation } from '@element-plus/icons-vue';
-import type { TyphoonEmergencyIncident } from '../../../lib/data/typhoonEmergencyMock';
+import type { TyphoonEmergencyIncident } from '@/services/typhoonEmergency';
 import floodCctvGridUrl from '../../../assets/semantic-scenes/typhoon-flood-cctv-grid.png';
 import SurveillanceVideoDialog from '../../common/SurveillanceVideoDialog.vue';
 import { prepareEventVideoWall } from '../../video-wall/videoWallStore';

@@ -10,7 +10,7 @@ import EmergencyResourceDispatchPanel from '../accident-rescue/EmergencyResource
 import WeatherDetailsDialog from '../../layout/WeatherDetailsDialog.vue';
 import { fetchTyphoonDispatchResources } from '@/services/typhoonEmergency';
 import type { EmergencyDispatchResource } from '../../../lib/data/accidentRescueMock';
-import type { TyphoonEmergencyIncident } from '../../../lib/data/typhoonEmergencyMock';
+import type { TyphoonEmergencyIncident } from '@/services/typhoonEmergency';
 
 use([LineChart, GridComponent, MarkLineComponent, TooltipComponent, CanvasRenderer]);
 
