@@ -1,4 +1,4 @@
-import { request } from '@/services/http';
+import http, { request } from '@/services/http';
 
 // 视频控制/视频墙大屏接口（fm-video-control / fm-video-wall），对齐 docs/api/video.openapi.json。
 // 取代前端硬编码的 videoControlMock / videoLinkageMock 业务数据；
@@ -84,4 +84,16 @@ export async function fetchVideoLinkageRules(configCode: string): Promise<VideoL
     url: `/video/linkages/${encodeURIComponent(configCode)}/rules`,
     method: 'GET',
   });
+}
+
+/**
+ * 摄像头静态截图（演示）：带 JWT 的 http 客户端取字节端点，转 objectURL 供 <img> 渲染。
+ * 直接走 /video/cameras/{id}/snapshot，规避 <img src> 无法携带 Authorization 头的鉴权坑
+ * （视频域接口需 JWT，裸 <img> 请求会被 401）。
+ */
+export async function fetchVideoSnapshotUrl(id: number): Promise<string> {
+  const resp = await http.get<Blob>(`/video/cameras/${id}/snapshot`, {
+    responseType: 'blob',
+  });
+  return URL.createObjectURL(resp.data);
 }

@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { fetchVideoCameras, type GridLayout, type VideoCameraPage } from '@/services/video';
 import { useScreenAsyncState } from '../../lib/composables/useScreenAsyncState';
-import { videoControlFrameStyle } from '../../utils/tvSpriteConfig';
+import { useCameraSnapshots } from '../../lib/composables/useCameraSnapshot';
 
 const props = defineProps<{
   page: number;
@@ -66,6 +66,10 @@ const visibleCells = computed(() => {
   return cells.value.slice(0, count);
 });
 
+// 由后端传静态截图：按可见摄像头 id 预取 blob→objectURL，供 <img> 渲染（带 JWT，规避 <img> 鉴权坑）。
+const snapshotIds = computed(() => visibleCells.value.map((c) => c.id));
+const { map: snapshots } = useCameraSnapshots(snapshotIds);
+
 const gridClass = computed(() => `vc-grid--${props.layout}`);
 
 function cellIndex(index: number) {
@@ -85,16 +89,19 @@ function cellIndex(index: number) {
       </header>
 
       <div class="vc-cell__video">
-        <div
-          v-if="cell.status !== 'loading'"
+        <img
+          v-if="snapshots[cell.id]?.url"
+          :src="snapshots[cell.id].url"
           class="vc-cell__frame"
-          :style="videoControlFrameStyle(cell.thumbIndex)"
+          alt=""
         />
-        <div v-if="cell.status === 'loading'" class="vc-cell__loading">
+        <div v-else-if="snapshots[cell.id]?.loading" class="vc-cell__frame vc-cell__frame--loading">
           <i class="vc-cell__spinner" aria-hidden="true" />
-          <span>正在打开视频流，请稍候...</span>
+          <span>加载画面…</span>
         </div>
-        <div v-else-if="cell.status === 'ai'" class="vc-cell__ai-boxes">
+        <div v-else class="vc-cell__frame vc-cell__frame--error">画面暂不可用</div>
+
+        <div v-if="cell.status === 'ai'" class="vc-cell__ai-boxes">
           <span class="vc-cell__ai-box vc-cell__ai-box--1" />
           <span class="vc-cell__ai-box vc-cell__ai-box--2" />
           <span class="vc-cell__ai-box vc-cell__ai-box--3" />
@@ -202,6 +209,28 @@ function cellIndex(index: number) {
 .vc-cell__frame {
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vc-cell__frame--loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgb(0 8 20 / 82%);
+  font-size: 14px;
+  color: #9ed8ff;
+}
+
+.vc-cell__frame--error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 8 20 / 82%);
+  font-size: 13px;
+  color: var(--color-text-muted);
 }
 
 .vc-cell__loading {
