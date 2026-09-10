@@ -435,6 +435,134 @@
           "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
         }
       }
+    },
+    "/emergency/process/panorama": {
+      "get": {
+        "summary": "应急流程全景",
+        "description": "返回应急响应流程全景：5 个阶段（班组处置/运行部级/公司级/政府级/收尾）、4 个响应模式选项，以及 15 个流程节点（含前置态势、处置动作、完成判据、子阶段与升级规则）。数据源 V31 fac_emergency_phase / fac_emergency_response_mode / fac_emergency_process_stage。",
+        "tags": ["emergency"],
+        "responses": {
+          "200": {
+            "description": "流程全景聚合",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmergencyProcessPanorama" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "phases": [
+                      {
+                        "id": "phase-team",
+                        "name": "班组处置",
+                        "start": 1,
+                        "end": 4,
+                        "tone": "blue"
+                      }
+                    ],
+                    "responseModes": [{ "value": "team", "label": "一、班组处置", "stageId": 1 }],
+                    "stages": [
+                      {
+                        "id": 1,
+                        "name": "接警研判",
+                        "shortName": "1. 接警研判",
+                        "leadRole": "🧑 现场第一发现人 / 岗位带班",
+                        "leadTitle": "巡检员 / 内操员",
+                        "commandLevel": "班组处置",
+                        "description": "通过巡检、仪器报警第一时间捕捉险情，按三要素（地点、介质、伤员）上报。",
+                        "previousContext": ["10:00:00 - 厂区 GDS 检测到气体异常"],
+                        "currentActions": [
+                          {
+                            "id": "act-1-1",
+                            "label": "按三要素向运行部调度核实报告",
+                            "done": true,
+                            "type": "primary"
+                          }
+                        ],
+                        "criteriaChecklist": [
+                          { "id": "cri-1-1", "label": "确定事故点位与介质", "checked": true }
+                        ],
+                        "subStages": [],
+                        "escalationRule": {
+                          "triggerCondition": "确认工况异常或发生真实泄漏，启动班组初始应急",
+                          "fromRole": "现场第一发现人",
+                          "toRole": "现场班组长",
+                          "details": {
+                            "location": "加氢制氢部 T103 塔底泵 P101B 处",
+                            "substance": "加氢裂化重油 / 硫化氢（H2S）",
+                            "casualty": "无人员受伤",
+                            "currentStatus": "现场有轻度泄漏，报警系统正常响应"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/emergency/process/guidances": {
+      "get": {
+        "summary": "应急流程节点处置指引",
+        "description": "返回实时值班表与各节点处置指引（上报链路、内操/外操/班长岗位任务、通用注意事项）。数据源 V31 fac_emergency_guidance_roster / fac_emergency_node_guidance。",
+        "tags": ["emergency"],
+        "responses": {
+          "200": {
+            "description": "节点处置指引聚合",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmergencyProcessGuidance" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "dutyRoster": {
+                      "shiftGroup": "乙班（白班）",
+                      "supervisor": "李明辉（加氢制氢部值班长）",
+                      "supervisorPhone": "138-0288-3456",
+                      "boardOperator": "张建国（DCS 内操人员）",
+                      "boardOperatorPhone": "139-0668-2233",
+                      "fieldOperator": "王安全（现场外操巡检员）",
+                      "fieldOperatorPhone": "137-0668-8378"
+                    },
+                    "guidances": [
+                      {
+                        "nodeId": "1",
+                        "nodeName": "节点 1：接警研判",
+                        "reportingChain": [
+                          {
+                            "step": 1,
+                            "fromRole": "外操 (巡检员·王安全)",
+                            "toRole": "内操 (控制室·张建国)",
+                            "method": "防爆对讲机 1 号频道",
+                            "notice": "立即汇报现场泄漏/火灾具体位号及肉眼观察规模"
+                          }
+                        ],
+                        "roleTasks": [
+                          {
+                            "roleName": "内操",
+                            "roleTitle": "DCS 中控室内操控制员",
+                            "personName": "张建国",
+                            "avatarIcon": "🧑‍💻",
+                            "phone": "139-0668-2233",
+                            "tasks": ["密切监视 DCS 趋势图，核对 T103 塔底泵压力、温度曲线"]
+                          }
+                        ],
+                        "generalNotice": "⚠ 接警研判阶段切记「安全第一、快速切断」。"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
     }
   },
   "components": {
@@ -816,6 +944,319 @@
         "type": "array",
         "description": "节点联动配置列表",
         "items": { "$ref": "#/components/schemas/NodePhaseConfig" }
+      },
+      "EmergencyPhase": {
+        "type": "object",
+        "description": "应急阶段",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "阶段编码（phase-team / phase-plant / phase-company / phase-gov / phase-close）",
+            "example": "phase-team"
+          },
+          "name": { "type": "string", "description": "阶段名称", "example": "班组处置" },
+          "start": { "type": "integer", "description": "起始节点号（含）", "example": 1 },
+          "end": { "type": "integer", "description": "结束节点号（含）", "example": 4 },
+          "tone": {
+            "type": "string",
+            "description": "阶段配色（blue/cyan/amber/red/green）",
+            "example": "blue"
+          }
+        }
+      },
+      "ResponseModeOption": {
+        "type": "object",
+        "description": "应急响应模式选项",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "模式编码（team/plant/company/government）",
+            "example": "team"
+          },
+          "label": { "type": "string", "description": "模式名称", "example": "一、班组处置" },
+          "stageId": { "type": "integer", "description": "该模式对应起始节点号", "example": 1 }
+        }
+      },
+      "ProcessAction": {
+        "type": "object",
+        "description": "流程节点处置动作项",
+        "properties": {
+          "id": { "type": "string", "description": "动作 id", "example": "act-1-1" },
+          "label": {
+            "type": "string",
+            "description": "动作文案",
+            "example": "按三要素向运行部调度核实报告"
+          },
+          "done": { "type": "boolean", "description": "是否已完成", "example": true },
+          "type": {
+            "type": "string",
+            "description": "动作强调色：primary / danger / warning；无则不着色",
+            "enum": ["primary", "danger", "warning"],
+            "example": "primary"
+          }
+        }
+      },
+      "CriteriaChecklistItem": {
+        "type": "object",
+        "description": "节点完成判据项",
+        "properties": {
+          "id": { "type": "string", "description": "判据 id", "example": "cri-1-1" },
+          "label": { "type": "string", "description": "判据文案", "example": "确定事故点位与介质" },
+          "checked": { "type": "boolean", "description": "是否已勾选", "example": true }
+        }
+      },
+      "SubStageItem": {
+        "type": "object",
+        "description": "节点子阶段项",
+        "properties": {
+          "id": { "type": "string", "description": "子阶段 id", "example": "sub-5-1" },
+          "code": { "type": "string", "description": "子阶段编码", "example": "5.1" },
+          "name": { "type": "string", "description": "子阶段名称", "example": "装置区警戒隔离" },
+          "shortName": { "type": "string", "description": "子阶段简称", "example": "警戒隔离" },
+          "description": {
+            "type": "string",
+            "description": "子阶段说明",
+            "example": "划定警戒区并疏散无关人员"
+          }
+        }
+      },
+      "StageEscalationDetails": {
+        "type": "object",
+        "description": "升级规则现场概况",
+        "properties": {
+          "location": { "type": "string", "description": "事发位置", "example": "加氢裂化装置区" },
+          "substance": {
+            "type": "string",
+            "description": "涉及介质",
+            "example": "加氢裂化重油 / 硫化氢"
+          },
+          "casualty": { "type": "string", "description": "伤员情况", "example": "0人受伤" },
+          "currentStatus": {
+            "type": "string",
+            "description": "当前处置状态",
+            "example": "现场处置推进中"
+          }
+        }
+      },
+      "StageEscalationRule": {
+        "type": "object",
+        "description": "节点升级规则",
+        "properties": {
+          "triggerCondition": {
+            "type": "string",
+            "description": "触发升级的条件",
+            "example": "当前级别处置无法控制险情，需升级到上一级应急响应"
+          },
+          "fromRole": {
+            "type": "string",
+            "description": "升级请求方角色",
+            "example": "当前级别现场指挥"
+          },
+          "toRole": {
+            "type": "string",
+            "description": "升级接收方角色",
+            "example": "上一级应急指挥部"
+          },
+          "details": { "$ref": "#/components/schemas/StageEscalationDetails" }
+        }
+      },
+      "ProcessStage": {
+        "type": "object",
+        "description": "应急流程节点",
+        "properties": {
+          "id": { "type": "integer", "description": "节点号（1-15）", "example": 1 },
+          "name": { "type": "string", "description": "节点名称", "example": "接警研判" },
+          "shortName": {
+            "type": "string",
+            "description": "节点简称（流程条用）",
+            "example": "1. 接警研判"
+          },
+          "leadRole": {
+            "type": "string",
+            "description": "牵头角色（含图标）",
+            "example": "🧑 现场第一发现人"
+          },
+          "leadTitle": {
+            "type": "string",
+            "description": "牵头岗位",
+            "example": "巡检员 / 内操员"
+          },
+          "commandLevel": { "type": "string", "description": "指挥层级", "example": "班组处置" },
+          "description": {
+            "type": "string",
+            "description": "节点说明",
+            "example": "通过巡检、仪器报警第一时间捕捉险情，按三要素上报。"
+          },
+          "previousContext": {
+            "type": "array",
+            "description": "前置态势（上一节点以来的关键时间线）",
+            "items": { "type": "string", "example": "10:00:00 - 厂区 GDS 检测到气体异常" }
+          },
+          "currentActions": {
+            "type": "array",
+            "description": "当前处置动作清单",
+            "items": { "$ref": "#/components/schemas/ProcessAction" }
+          },
+          "criteriaChecklist": {
+            "type": "array",
+            "description": "完成判据清单",
+            "items": { "$ref": "#/components/schemas/CriteriaChecklistItem" }
+          },
+          "subStages": {
+            "type": "array",
+            "description": "子阶段清单（装置区等节点使用）",
+            "items": { "$ref": "#/components/schemas/SubStageItem" }
+          },
+          "escalationRule": { "$ref": "#/components/schemas/StageEscalationRule" }
+        }
+      },
+      "EmergencyProcessPanorama": {
+        "type": "object",
+        "description": "应急流程全景聚合（阶段 + 响应模式 + 节点）",
+        "properties": {
+          "phases": {
+            "type": "array",
+            "description": "应急阶段（5 个，按起始节点升序）",
+            "items": { "$ref": "#/components/schemas/EmergencyPhase" }
+          },
+          "responseModes": {
+            "type": "array",
+            "description": "响应模式选项（4 个）",
+            "items": { "$ref": "#/components/schemas/ResponseModeOption" }
+          },
+          "stages": {
+            "type": "array",
+            "description": "流程节点（15 个，按节点号升序）",
+            "items": { "$ref": "#/components/schemas/ProcessStage" }
+          }
+        }
+      },
+      "NodeGuidanceReportingStep": {
+        "type": "object",
+        "description": "指引上报链路步骤",
+        "properties": {
+          "step": { "type": "integer", "description": "步骤序号", "example": 1 },
+          "fromRole": {
+            "type": "string",
+            "description": "上报方（角色·姓名）",
+            "example": "外操 (巡检员·王安全)"
+          },
+          "toRole": {
+            "type": "string",
+            "description": "接收方（角色·姓名）",
+            "example": "内操 (控制室·张建国)"
+          },
+          "method": {
+            "type": "string",
+            "description": "上报方式",
+            "example": "防爆对讲机 1 号频道"
+          },
+          "notice": {
+            "type": "string",
+            "description": "上报要点",
+            "example": "立即汇报现场泄漏具体位号及肉眼观察规模"
+          }
+        }
+      },
+      "NodeGuidanceRoleTask": {
+        "type": "object",
+        "description": "指引岗位任务",
+        "properties": {
+          "roleName": {
+            "type": "string",
+            "description": "岗位名（内操/外操/班长）",
+            "example": "内操"
+          },
+          "roleTitle": {
+            "type": "string",
+            "description": "岗位职责标题",
+            "example": "DCS 中控室内操控制员"
+          },
+          "personName": { "type": "string", "description": "值班人姓名", "example": "张建国" },
+          "avatarIcon": { "type": "string", "description": "头像图标", "example": "🧑‍💻" },
+          "phone": { "type": "string", "description": "联系电话", "example": "139-0668-2233" },
+          "tasks": {
+            "type": "array",
+            "description": "该岗位本节点任务清单",
+            "items": { "type": "string", "example": "密切监视 DCS 趋势图并核对关键参数" }
+          }
+        }
+      },
+      "NodeGuidance": {
+        "type": "object",
+        "description": "节点处置指引",
+        "properties": {
+          "nodeId": { "type": "string", "description": "节点 id", "example": "1" },
+          "nodeName": {
+            "type": "string",
+            "description": "节点名称",
+            "example": "节点 1：接警研判"
+          },
+          "reportingChain": {
+            "type": "array",
+            "description": "上报链路",
+            "items": { "$ref": "#/components/schemas/NodeGuidanceReportingStep" }
+          },
+          "roleTasks": {
+            "type": "array",
+            "description": "岗位任务分工",
+            "items": { "$ref": "#/components/schemas/NodeGuidanceRoleTask" }
+          },
+          "generalNotice": {
+            "type": "string",
+            "description": "通用注意事项",
+            "example": "⚠ 接警研判阶段切记「安全第一、快速切断」。"
+          }
+        }
+      },
+      "GuidanceDutyRoster": {
+        "type": "object",
+        "description": "应急指引实时值班表",
+        "properties": {
+          "shiftGroup": { "type": "string", "description": "值班班组", "example": "乙班（白班）" },
+          "supervisor": {
+            "type": "string",
+            "description": "班组长（含岗位）",
+            "example": "李明辉（加氢制氢部值班长）"
+          },
+          "supervisorPhone": {
+            "type": "string",
+            "description": "班组长电话",
+            "example": "138-0288-3456"
+          },
+          "boardOperator": {
+            "type": "string",
+            "description": "内操（含岗位）",
+            "example": "张建国（DCS 内操人员）"
+          },
+          "boardOperatorPhone": {
+            "type": "string",
+            "description": "内操电话",
+            "example": "139-0668-2233"
+          },
+          "fieldOperator": {
+            "type": "string",
+            "description": "外操（含岗位）",
+            "example": "王安全（现场外操巡检员）"
+          },
+          "fieldOperatorPhone": {
+            "type": "string",
+            "description": "外操电话",
+            "example": "137-0668-8378"
+          }
+        }
+      },
+      "EmergencyProcessGuidance": {
+        "type": "object",
+        "description": "应急流程节点指引聚合（值班表 + 各节点指引）",
+        "properties": {
+          "dutyRoster": { "$ref": "#/components/schemas/GuidanceDutyRoster" },
+          "guidances": {
+            "type": "array",
+            "description": "节点处置指引（按节点号升序）",
+            "items": { "$ref": "#/components/schemas/NodeGuidance" }
+          }
+        }
       }
     }
   }

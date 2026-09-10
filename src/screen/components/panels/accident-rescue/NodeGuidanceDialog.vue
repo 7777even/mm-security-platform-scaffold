@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useEmergencyProcess } from '../../../lib/composables/useEmergencyProcess';
 
 const process = useEmergencyProcess();
+
+/** 实时值班表（来自后端指引接口，加载前为本地默认值）。 */
+const roster = computed(() => process.dutyRoster.value);
 </script>
 
 <template>
@@ -33,17 +37,17 @@ const process = useEmergencyProcess();
           <div class="guidance-body">
             <div class="guidance-roster">
               <span class="guidance-roster__group">
-                👥 实时值班表 <b>{{ process.mockDutyRoster.shiftGroup }}</b>
+                👥 实时值班表 <b>{{ roster.shiftGroup }}</b>
               </span>
               <div class="guidance-roster__tags">
                 <span class="guidance-roster__tag"
-                  >🧑‍💼 班组长 <b>{{ process.mockDutyRoster.supervisor }}</b></span
+                  >🧑‍💼 班组长 <b>{{ roster.supervisor }}</b></span
                 >
                 <span class="guidance-roster__tag"
-                  >🧑‍💻 内操 <b>{{ process.mockDutyRoster.boardOperator }}</b></span
+                  >🧑‍💻 内操 <b>{{ roster.boardOperator }}</b></span
                 >
                 <span class="guidance-roster__tag"
-                  >🧑‍🔧 外操 <b>{{ process.mockDutyRoster.fieldOperator }}</b></span
+                  >🧑‍🔧 外操 <b>{{ roster.fieldOperator }}</b></span
                 >
               </div>
             </div>

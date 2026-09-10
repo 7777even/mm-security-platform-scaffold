@@ -264,6 +264,196 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/emergency/process/panorama': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 应急流程全景
+     * @description 返回应急响应流程全景：5 个阶段（班组处置/运行部级/公司级/政府级/收尾）、4 个响应模式选项，以及 15 个流程节点（含前置态势、处置动作、完成判据、子阶段与升级规则）。数据源 V31 fac_emergency_phase / fac_emergency_response_mode / fac_emergency_process_stage。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 流程全景聚合 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "phases": [
+             *           {
+             *             "id": "phase-team",
+             *             "name": "班组处置",
+             *             "start": 1,
+             *             "end": 4,
+             *             "tone": "blue"
+             *           }
+             *         ],
+             *         "responseModes": [
+             *           {
+             *             "value": "team",
+             *             "label": "一、班组处置",
+             *             "stageId": 1
+             *           }
+             *         ],
+             *         "stages": [
+             *           {
+             *             "id": 1,
+             *             "name": "接警研判",
+             *             "shortName": "1. 接警研判",
+             *             "leadRole": "🧑 现场第一发现人 / 岗位带班",
+             *             "leadTitle": "巡检员 / 内操员",
+             *             "commandLevel": "班组处置",
+             *             "description": "通过巡检、仪器报警第一时间捕捉险情，按三要素（地点、介质、伤员）上报。",
+             *             "previousContext": [
+             *               "10:00:00 - 厂区 GDS 检测到气体异常"
+             *             ],
+             *             "currentActions": [
+             *               {
+             *                 "id": "act-1-1",
+             *                 "label": "按三要素向运行部调度核实报告",
+             *                 "done": true,
+             *                 "type": "primary"
+             *               }
+             *             ],
+             *             "criteriaChecklist": [
+             *               {
+             *                 "id": "cri-1-1",
+             *                 "label": "确定事故点位与介质",
+             *                 "checked": true
+             *               }
+             *             ],
+             *             "subStages": [],
+             *             "escalationRule": {
+             *               "triggerCondition": "确认工况异常或发生真实泄漏，启动班组初始应急",
+             *               "fromRole": "现场第一发现人",
+             *               "toRole": "现场班组长",
+             *               "details": {
+             *                 "location": "加氢制氢部 T103 塔底泵 P101B 处",
+             *                 "substance": "加氢裂化重油 / 硫化氢（H2S）",
+             *                 "casualty": "无人员受伤",
+             *                 "currentStatus": "现场有轻度泄漏，报警系统正常响应"
+             *               }
+             *             }
+             *           }
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['EmergencyProcessPanorama'];
+          };
+        };
+        401: components['responses']['Unauthorized'];
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/emergency/process/guidances': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 应急流程节点处置指引
+     * @description 返回实时值班表与各节点处置指引（上报链路、内操/外操/班长岗位任务、通用注意事项）。数据源 V31 fac_emergency_guidance_roster / fac_emergency_node_guidance。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 节点处置指引聚合 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "dutyRoster": {
+             *           "shiftGroup": "乙班（白班）",
+             *           "supervisor": "李明辉（加氢制氢部值班长）",
+             *           "supervisorPhone": "138-0288-3456",
+             *           "boardOperator": "张建国（DCS 内操人员）",
+             *           "boardOperatorPhone": "139-0668-2233",
+             *           "fieldOperator": "王安全（现场外操巡检员）",
+             *           "fieldOperatorPhone": "137-0668-8378"
+             *         },
+             *         "guidances": [
+             *           {
+             *             "nodeId": "1",
+             *             "nodeName": "节点 1：接警研判",
+             *             "reportingChain": [
+             *               {
+             *                 "step": 1,
+             *                 "fromRole": "外操 (巡检员·王安全)",
+             *                 "toRole": "内操 (控制室·张建国)",
+             *                 "method": "防爆对讲机 1 号频道",
+             *                 "notice": "立即汇报现场泄漏/火灾具体位号及肉眼观察规模"
+             *               }
+             *             ],
+             *             "roleTasks": [
+             *               {
+             *                 "roleName": "内操",
+             *                 "roleTitle": "DCS 中控室内操控制员",
+             *                 "personName": "张建国",
+             *                 "avatarIcon": "🧑‍💻",
+             *                 "phone": "139-0668-2233",
+             *                 "tasks": [
+             *                   "密切监视 DCS 趋势图，核对 T103 塔底泵压力、温度曲线"
+             *                 ]
+             *               }
+             *             ],
+             *             "generalNotice": "⚠ 接警研判阶段切记「安全第一、快速切断」。"
+             *           }
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['EmergencyProcessGuidance'];
+          };
+        };
+        401: components['responses']['Unauthorized'];
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -703,6 +893,344 @@ export interface components {
     };
     /** @description 节点联动配置列表 */
     NodePhaseConfigList: components['schemas']['NodePhaseConfig'][];
+    /** @description 应急阶段 */
+    EmergencyPhase: {
+      /**
+       * @description 阶段编码（phase-team / phase-plant / phase-company / phase-gov / phase-close）
+       * @example phase-team
+       */
+      id?: string;
+      /**
+       * @description 阶段名称
+       * @example 班组处置
+       */
+      name?: string;
+      /**
+       * @description 起始节点号（含）
+       * @example 1
+       */
+      start?: number;
+      /**
+       * @description 结束节点号（含）
+       * @example 4
+       */
+      end?: number;
+      /**
+       * @description 阶段配色（blue/cyan/amber/red/green）
+       * @example blue
+       */
+      tone?: string;
+    };
+    /** @description 应急响应模式选项 */
+    ResponseModeOption: {
+      /**
+       * @description 模式编码（team/plant/company/government）
+       * @example team
+       */
+      value?: string;
+      /**
+       * @description 模式名称
+       * @example 一、班组处置
+       */
+      label?: string;
+      /**
+       * @description 该模式对应起始节点号
+       * @example 1
+       */
+      stageId?: number;
+    };
+    /** @description 流程节点处置动作项 */
+    ProcessAction: {
+      /**
+       * @description 动作 id
+       * @example act-1-1
+       */
+      id?: string;
+      /**
+       * @description 动作文案
+       * @example 按三要素向运行部调度核实报告
+       */
+      label?: string;
+      /**
+       * @description 是否已完成
+       * @example true
+       */
+      done?: boolean;
+      /**
+       * @description 动作强调色：primary / danger / warning；无则不着色
+       * @example primary
+       * @enum {string}
+       */
+      type?: 'primary' | 'danger' | 'warning';
+    };
+    /** @description 节点完成判据项 */
+    CriteriaChecklistItem: {
+      /**
+       * @description 判据 id
+       * @example cri-1-1
+       */
+      id?: string;
+      /**
+       * @description 判据文案
+       * @example 确定事故点位与介质
+       */
+      label?: string;
+      /**
+       * @description 是否已勾选
+       * @example true
+       */
+      checked?: boolean;
+    };
+    /** @description 节点子阶段项 */
+    SubStageItem: {
+      /**
+       * @description 子阶段 id
+       * @example sub-5-1
+       */
+      id?: string;
+      /**
+       * @description 子阶段编码
+       * @example 5.1
+       */
+      code?: string;
+      /**
+       * @description 子阶段名称
+       * @example 装置区警戒隔离
+       */
+      name?: string;
+      /**
+       * @description 子阶段简称
+       * @example 警戒隔离
+       */
+      shortName?: string;
+      /**
+       * @description 子阶段说明
+       * @example 划定警戒区并疏散无关人员
+       */
+      description?: string;
+    };
+    /** @description 升级规则现场概况 */
+    StageEscalationDetails: {
+      /**
+       * @description 事发位置
+       * @example 加氢裂化装置区
+       */
+      location?: string;
+      /**
+       * @description 涉及介质
+       * @example 加氢裂化重油 / 硫化氢
+       */
+      substance?: string;
+      /**
+       * @description 伤员情况
+       * @example 0人受伤
+       */
+      casualty?: string;
+      /**
+       * @description 当前处置状态
+       * @example 现场处置推进中
+       */
+      currentStatus?: string;
+    };
+    /** @description 节点升级规则 */
+    StageEscalationRule: {
+      /**
+       * @description 触发升级的条件
+       * @example 当前级别处置无法控制险情，需升级到上一级应急响应
+       */
+      triggerCondition?: string;
+      /**
+       * @description 升级请求方角色
+       * @example 当前级别现场指挥
+       */
+      fromRole?: string;
+      /**
+       * @description 升级接收方角色
+       * @example 上一级应急指挥部
+       */
+      toRole?: string;
+      details?: components['schemas']['StageEscalationDetails'];
+    };
+    /** @description 应急流程节点 */
+    ProcessStage: {
+      /**
+       * @description 节点号（1-15）
+       * @example 1
+       */
+      id?: number;
+      /**
+       * @description 节点名称
+       * @example 接警研判
+       */
+      name?: string;
+      /**
+       * @description 节点简称（流程条用）
+       * @example 1. 接警研判
+       */
+      shortName?: string;
+      /**
+       * @description 牵头角色（含图标）
+       * @example 🧑 现场第一发现人
+       */
+      leadRole?: string;
+      /**
+       * @description 牵头岗位
+       * @example 巡检员 / 内操员
+       */
+      leadTitle?: string;
+      /**
+       * @description 指挥层级
+       * @example 班组处置
+       */
+      commandLevel?: string;
+      /**
+       * @description 节点说明
+       * @example 通过巡检、仪器报警第一时间捕捉险情，按三要素上报。
+       */
+      description?: string;
+      /** @description 前置态势（上一节点以来的关键时间线） */
+      previousContext?: string[];
+      /** @description 当前处置动作清单 */
+      currentActions?: components['schemas']['ProcessAction'][];
+      /** @description 完成判据清单 */
+      criteriaChecklist?: components['schemas']['CriteriaChecklistItem'][];
+      /** @description 子阶段清单（装置区等节点使用） */
+      subStages?: components['schemas']['SubStageItem'][];
+      escalationRule?: components['schemas']['StageEscalationRule'];
+    };
+    /** @description 应急流程全景聚合（阶段 + 响应模式 + 节点） */
+    EmergencyProcessPanorama: {
+      /** @description 应急阶段（5 个，按起始节点升序） */
+      phases?: components['schemas']['EmergencyPhase'][];
+      /** @description 响应模式选项（4 个） */
+      responseModes?: components['schemas']['ResponseModeOption'][];
+      /** @description 流程节点（15 个，按节点号升序） */
+      stages?: components['schemas']['ProcessStage'][];
+    };
+    /** @description 指引上报链路步骤 */
+    NodeGuidanceReportingStep: {
+      /**
+       * @description 步骤序号
+       * @example 1
+       */
+      step?: number;
+      /**
+       * @description 上报方（角色·姓名）
+       * @example 外操 (巡检员·王安全)
+       */
+      fromRole?: string;
+      /**
+       * @description 接收方（角色·姓名）
+       * @example 内操 (控制室·张建国)
+       */
+      toRole?: string;
+      /**
+       * @description 上报方式
+       * @example 防爆对讲机 1 号频道
+       */
+      method?: string;
+      /**
+       * @description 上报要点
+       * @example 立即汇报现场泄漏具体位号及肉眼观察规模
+       */
+      notice?: string;
+    };
+    /** @description 指引岗位任务 */
+    NodeGuidanceRoleTask: {
+      /**
+       * @description 岗位名（内操/外操/班长）
+       * @example 内操
+       */
+      roleName?: string;
+      /**
+       * @description 岗位职责标题
+       * @example DCS 中控室内操控制员
+       */
+      roleTitle?: string;
+      /**
+       * @description 值班人姓名
+       * @example 张建国
+       */
+      personName?: string;
+      /**
+       * @description 头像图标
+       * @example 🧑‍💻
+       */
+      avatarIcon?: string;
+      /**
+       * @description 联系电话
+       * @example 139-0668-2233
+       */
+      phone?: string;
+      /** @description 该岗位本节点任务清单 */
+      tasks?: string[];
+    };
+    /** @description 节点处置指引 */
+    NodeGuidance: {
+      /**
+       * @description 节点 id
+       * @example 1
+       */
+      nodeId?: string;
+      /**
+       * @description 节点名称
+       * @example 节点 1：接警研判
+       */
+      nodeName?: string;
+      /** @description 上报链路 */
+      reportingChain?: components['schemas']['NodeGuidanceReportingStep'][];
+      /** @description 岗位任务分工 */
+      roleTasks?: components['schemas']['NodeGuidanceRoleTask'][];
+      /**
+       * @description 通用注意事项
+       * @example ⚠ 接警研判阶段切记「安全第一、快速切断」。
+       */
+      generalNotice?: string;
+    };
+    /** @description 应急指引实时值班表 */
+    GuidanceDutyRoster: {
+      /**
+       * @description 值班班组
+       * @example 乙班（白班）
+       */
+      shiftGroup?: string;
+      /**
+       * @description 班组长（含岗位）
+       * @example 李明辉（加氢制氢部值班长）
+       */
+      supervisor?: string;
+      /**
+       * @description 班组长电话
+       * @example 138-0288-3456
+       */
+      supervisorPhone?: string;
+      /**
+       * @description 内操（含岗位）
+       * @example 张建国（DCS 内操人员）
+       */
+      boardOperator?: string;
+      /**
+       * @description 内操电话
+       * @example 139-0668-2233
+       */
+      boardOperatorPhone?: string;
+      /**
+       * @description 外操（含岗位）
+       * @example 王安全（现场外操巡检员）
+       */
+      fieldOperator?: string;
+      /**
+       * @description 外操电话
+       * @example 137-0668-8378
+       */
+      fieldOperatorPhone?: string;
+    };
+    /** @description 应急流程节点指引聚合（值班表 + 各节点指引） */
+    EmergencyProcessGuidance: {
+      dutyRoster?: components['schemas']['GuidanceDutyRoster'];
+      /** @description 节点处置指引（按节点号升序） */
+      guidances?: components['schemas']['NodeGuidance'][];
+    };
   };
   responses: {
     /** @description 未认证 / 令牌失效 */

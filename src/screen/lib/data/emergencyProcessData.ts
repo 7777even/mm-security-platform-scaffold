@@ -1,59 +1,37 @@
 /**
- * 应急响应流程数据（15 节点 / 5 阶段）
+ * 应急响应流程数据（15 节点 / 5 阶段）——**离线兜底默认值**。
  * - 班组处置（1-4）：必走，按客户“135”原则；
  * - 运行部级（5-7）/ 公司级（8-10）/ 政府级（11-13）：各 3 个节点，逐级升级；
  * - 收尾阶段（14-15）：任意级别处置完成即跳转。
+ *
+ * 契约类型已上收至 `@/services/emergencyProcess`（对齐 emergency.openapi.json #/EmergencyPhase 等）；
+ * 本文件只保留默认值——有后端时由 `loadEmergencyProcessRemote()` 覆盖，
+ * 无 `VITE_API_BASE` 的纯静态演示模式回落到此处。
  */
 
-export type EmergencyResponseMode = 'team' | 'plant' | 'company' | 'government';
+import type {
+  CriteriaChecklistItem,
+  EmergencyPhase,
+  EmergencyResponseMode,
+  ProcessAction,
+  ProcessStage,
+  ResponseModeOption,
+  StageEscalationDetails,
+  StageEscalationRule,
+  SubStageItem,
+} from '@/services/emergencyProcess';
 
-export interface SubStageItem {
-  id: string;
-  code: string;
-  name: string;
-  shortName: string;
-  description: string;
-}
-
-export interface ProcessAction {
-  id: string;
-  label: string;
-  done: boolean;
-  type?: 'primary' | 'danger' | 'warning';
-}
-
-export interface ProcessStage {
-  id: number;
-  name: string;
-  shortName: string;
-  leadRole: string;
-  leadTitle: string;
-  commandLevel: string;
-  description: string;
-  previousContext: string[];
-  currentActions: ProcessAction[];
-  criteriaChecklist: Array<{ id: string; label: string; checked: boolean }>;
-  subStages?: SubStageItem[];
-  escalationRule: {
-    triggerCondition: string;
-    fromRole: string;
-    toRole: string;
-    details: {
-      location: string;
-      substance: string;
-      casualty: string;
-      currentStatus: string;
-    };
-  };
-}
-
-export interface EmergencyPhase {
-  id: string;
-  name: string;
-  start: number;
-  end: number;
-  tone: 'blue' | 'cyan' | 'amber' | 'red' | 'green';
-}
+export type {
+  CriteriaChecklistItem,
+  EmergencyPhase,
+  EmergencyResponseMode,
+  ProcessAction,
+  ProcessStage,
+  ResponseModeOption,
+  StageEscalationDetails,
+  StageEscalationRule,
+  SubStageItem,
+};
 
 export const EMERGENCY_PHASES: EmergencyPhase[] = [
   { id: 'phase-team', name: '班组处置', start: 1, end: 4, tone: 'blue' },
@@ -63,18 +41,14 @@ export const EMERGENCY_PHASES: EmergencyPhase[] = [
   { id: 'phase-close', name: '收尾阶段', start: 14, end: 15, tone: 'green' },
 ];
 
-export const RESPONSE_MODE_OPTIONS: Array<{
-  value: EmergencyResponseMode;
-  label: string;
-  stageId: number;
-}> = [
+export const RESPONSE_MODE_OPTIONS: ResponseModeOption[] = [
   { value: 'team', label: '一、班组处置', stageId: 1 },
   { value: 'plant', label: '二、运行部级应急', stageId: 5 },
   { value: 'company', label: '三、公司级应急', stageId: 8 },
   { value: 'government', label: '四、政府级应急', stageId: 11 },
 ];
 
-const baseEscalationRule = {
+const baseEscalationRule: StageEscalationRule = {
   triggerCondition: '当前级别处置无法控制险情，需升级到上一级应急响应',
   fromRole: '当前级别现场指挥',
   toRole: '上一级应急指挥部',

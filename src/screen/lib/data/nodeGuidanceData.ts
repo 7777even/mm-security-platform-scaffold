@@ -1,31 +1,15 @@
 /**
- * 流程节点处置过程指导数据（移植自 mm-safety-master emergency-command）
+ * 流程节点处置过程指导数据（移植自 mm-safety-master emergency-command）——**离线兜底默认值**。
+ *
+ * 契约类型已上收至 `@/services/emergencyProcess`（对齐 emergency.openapi.json #/NodeGuidance 等）；
+ * 有后端时由 `loadEmergencyProcessRemote()` 覆盖，无 `VITE_API_BASE` 的纯静态演示模式回落到此处。
  */
 
-export interface RoleTask {
-  roleName: '内操' | '外操' | '班长';
-  roleTitle: string;
-  personName: string;
-  avatarIcon: string;
-  phone: string;
-  tasks: string[];
-}
+import type { GuidanceDutyRoster, NodeGuidance } from '@/services/emergencyProcess';
 
-export interface NodeGuidance {
-  nodeId: string;
-  nodeName: string;
-  reportingChain: Array<{
-    step: number;
-    fromRole: string;
-    toRole: string;
-    method: string;
-    notice: string;
-  }>;
-  roleTasks: RoleTask[];
-  generalNotice: string;
-}
+export type { GuidanceDutyRoster, NodeGuidance };
 
-export const mockDutyRoster = {
+export const mockDutyRoster: GuidanceDutyRoster = {
   shiftGroup: '乙班（白班）',
   supervisor: '李明辉（加氢制氢部值班长）',
   supervisorPhone: '138-0288-3456',

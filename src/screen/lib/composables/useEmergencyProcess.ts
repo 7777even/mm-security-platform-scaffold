@@ -15,7 +15,13 @@ import {
   saveNodeConfigs,
   type NodePhaseConfig,
 } from '../data/nodeConfigData';
-import { fetchNodePhaseConfigs, saveNodePhaseConfigs } from '@/services/emergencyProcess';
+import {
+  fetchEmergencyProcessGuidances,
+  fetchEmergencyProcessPanorama,
+  fetchNodePhaseConfigs,
+  saveNodePhaseConfigs,
+  type ResponseModeOption,
+} from '@/services/emergencyProcess';
 import { backendUnavailableWarn } from '@/services/backendFallback';
 
 const STAGE_ID_TO_NODE_ID: Record<number, string> = {
@@ -77,6 +83,15 @@ const state = reactive({
 
 const nodeConfigs = ref<Record<string, NodePhaseConfig>>(loadNodeConfigs());
 
+/** 应急阶段（默认值起步，`loadEmergencyProcessRemote()` 成功后被后端数据覆盖）。 */
+const phases = ref<EmergencyPhase[]>([...EMERGENCY_PHASES]);
+/** 响应模式选项（同上）。 */
+const responseModes = ref<ResponseModeOption[]>([...RESPONSE_MODE_OPTIONS]);
+/** 节点处置指引（按节点 id 索引；同上）。 */
+const guidances = ref<Record<string, NodeGuidance>>({ ...mockNodeGuidances });
+/** 实时值班表（同上）。 */
+const dutyRoster = ref({ ...mockDutyRoster });
+
 /** 是否落库：配置了 VITE_API_BASE 时才读写后端，否则维持本地缓存（纯静态演示模式）。 */
 function nodeConfigsToBackend(): boolean {
   return Boolean(import.meta.env.VITE_API_BASE);
@@ -96,6 +111,46 @@ export async function loadNodeConfigsRemote(): Promise<void> {
   }
 }
 
+/**
+ * 拉取后端「应急流程全景」（阶段 / 响应模式 / 15 节点）与「节点处置指引」（值班表 + 各节点指引），
+ * 逐项覆盖本地默认值；失败保持本地默认值并告警（纯静态演示模式回落到 data/*.ts 常量）。
+ */
+export async function loadEmergencyProcessRemote(): Promise<void> {
+  if (!nodeConfigsToBackend()) return;
+  try {
+    const [panorama, guidance] = await Promise.all([
+      fetchEmergencyProcessPanorama(),
+      fetchEmergencyProcessGuidances(),
+    ]);
+    if (panorama) {
+      if (Array.isArray(panorama.phases) && panorama.phases.length > 0) {
+        phases.value = panorama.phases;
+      }
+      if (Array.isArray(panorama.responseModes) && panorama.responseModes.length > 0) {
+        responseModes.value = panorama.responseModes;
+      }
+      if (Array.isArray(panorama.stages) && panorama.stages.length > 0) {
+        state.stages = panorama.stages;
+      }
+    }
+    if (guidance) {
+      if (guidance.dutyRoster) {
+        dutyRoster.value = { ...dutyRoster.value, ...guidance.dutyRoster };
+      }
+      if (Array.isArray(guidance.guidances) && guidance.guidances.length > 0) {
+        const merged: Record<string, NodeGuidance> = { ...guidances.value };
+        for (const node of guidance.guidances) {
+          if (node?.nodeId) merged[node.nodeId] = node;
+        }
+        guidances.value = merged;
+      }
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '请求失败';
+    backendUnavailableWarn('emergency-process', '/emergency/process/panorama', message);
+  }
+}
+
 let autoDemoTimer: ReturnType<typeof setInterval> | null = null;
 const autoDemoRunning = ref(false);
 
@@ -112,8 +167,7 @@ function modeFromStage(stageId: number): EmergencyResponseMode {
 
 function phaseOf(stageId: number): EmergencyPhase {
   return (
-    EMERGENCY_PHASES.find((phase) => stageId >= phase.start && stageId <= phase.end) ??
-    EMERGENCY_PHASES[0]
+    phases.value.find((phase) => stageId >= phase.start && stageId <= phase.end) ?? phases.value[0]
   );
 }
 
@@ -134,7 +188,7 @@ export function useEmergencyProcess() {
 
   const currentNodeGuidance = computed<NodeGuidance>(() => {
     const stage = currentStage.value;
-    const existing = mockNodeGuidances[String(stage.id)];
+    const existing = guidances.value[String(stage.id)];
     if (existing) return existing;
     return {
       nodeId: String(stage.id),
@@ -152,25 +206,25 @@ export function useEmergencyProcess() {
         {
           roleName: '班长',
           roleTitle: stage.leadTitle,
-          personName: mockDutyRoster.supervisor,
+          personName: dutyRoster.value.supervisor,
           avatarIcon: '🧑‍💼',
-          phone: mockDutyRoster.supervisorPhone,
+          phone: dutyRoster.value.supervisorPhone,
           tasks: [stage.description],
         },
         {
           roleName: '内操',
           roleTitle: 'DCS 中控室内操',
-          personName: mockDutyRoster.boardOperator,
+          personName: dutyRoster.value.boardOperator,
           avatarIcon: '🧑‍💻',
-          phone: mockDutyRoster.boardOperatorPhone,
+          phone: dutyRoster.value.boardOperatorPhone,
           tasks: ['执行工艺参数控制并持续通报现场态势'],
         },
         {
           roleName: '外操',
           roleTitle: '现场外操巡检员',
-          personName: mockDutyRoster.fieldOperator,
+          personName: dutyRoster.value.fieldOperator,
           avatarIcon: '🧑‍🔧',
-          phone: mockDutyRoster.fieldOperatorPhone,
+          phone: dutyRoster.value.fieldOperatorPhone,
           tasks: ['落实现场处置动作并确认完成标准'],
         },
       ],
@@ -221,11 +275,11 @@ export function useEmergencyProcess() {
   function canEnterPhase(phase: EmergencyPhase): boolean {
     if (phase.id === 'phase-team') return true;
     if (phase.id === 'phase-close') {
-      const team = EMERGENCY_PHASES[0];
+      const team = phases.value[0];
       return isPhaseCompleted(team);
     }
-    const index = EMERGENCY_PHASES.findIndex((p) => p.id === phase.id);
-    const prev = EMERGENCY_PHASES[index - 1];
+    const index = phases.value.findIndex((p) => p.id === phase.id);
+    const prev = phases.value[index - 1];
     return prev ? isPhaseCompleted(prev) : false;
   }
 
@@ -273,6 +327,7 @@ export function useEmergencyProcess() {
   function openGuidance(nodeId?: string) {
     state.guidanceModal.nodeId = nodeId ?? String(state.activePhaseId);
     state.guidanceModal.show = true;
+    void loadEmergencyProcessRemote();
   }
 
   function closeGuidance() {
@@ -355,8 +410,8 @@ export function useEmergencyProcess() {
     if (state.activePhaseId >= state.stages.length) return;
     if (phase.end === state.activePhaseId) {
       if (phase.id === 'phase-close') return;
-      const phaseIndex = EMERGENCY_PHASES.findIndex((item) => item.id === phase.id);
-      const nextPhase = EMERGENCY_PHASES[phaseIndex + 1];
+      const phaseIndex = phases.value.findIndex((item) => item.id === phase.id);
+      const nextPhase = phases.value[phaseIndex + 1];
       if (!nextPhase || nextPhase.id === 'phase-close') {
         selectStage(14);
         return;
@@ -402,8 +457,10 @@ export function useEmergencyProcess() {
     rightPanelVisible,
     nodeConfigs,
     autoDemoRunning,
-    mockDutyRoster,
-    responseModeOptions: RESPONSE_MODE_OPTIONS,
+    dutyRoster,
+    phases,
+    responseModeOptions: responseModes,
+    loadEmergencyProcessRemote,
     phaseDecision: state.phaseDecision,
     unlockedPhaseIds: state.unlockedPhaseIds,
     requestPhaseDecision,

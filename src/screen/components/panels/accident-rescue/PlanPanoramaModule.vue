@@ -4,7 +4,7 @@ import type { PlanActionCard, PlanCombatResource } from '../../../lib/data/planM
 import { usePlanMatrix } from '../../../lib/composables/usePlanMatrix';
 import { useEmergencyProcess } from '../../../lib/composables/useEmergencyProcess';
 import { getSharedMap } from '../../../lib/composables/sharedCesiumBridge';
-import { EMERGENCY_PHASES, type EmergencyPhase } from '../../../lib/data/emergencyProcessData';
+import type { EmergencyPhase } from '../../../lib/data/emergencyProcessData';
 import ActionCardDetailDialog from './ActionCardDetailDialog.vue';
 import NodeGuidanceDialog from './NodeGuidanceDialog.vue';
 import EscalateConfirmDialog from './EscalateConfirmDialog.vue';
@@ -26,6 +26,11 @@ const props = withDefaults(
 
 const plan = usePlanMatrix();
 const process = useEmergencyProcess();
+
+/** 应急阶段（来自后端全景，`loadEmergencyProcessRemote()` 前为本地默认值）。 */
+const phaseList = computed<EmergencyPhase[]>(() => process.phases.value);
+/** 实时值班表（同上）。 */
+const roster = computed(() => process.dutyRoster.value);
 
 const presentLevel = ref<'strip' | 'panel'>(
   (sessionStorage.getItem('ppm_present_level') as 'strip' | 'panel' | null) ?? 'panel',
@@ -147,10 +152,10 @@ function onThumbUp() {
 
 const activePhase = computed<EmergencyPhase>(
   () =>
-    EMERGENCY_PHASES.find(
+    phaseList.value.find(
       (phase) =>
         process.state.activePhaseId >= phase.start && process.state.activePhaseId <= phase.end,
-    ) ?? EMERGENCY_PHASES[0],
+    ) ?? phaseList.value[0],
 );
 
 const nodeToPhaseMap = computed<Record<number, string>>(() => {
@@ -198,7 +203,7 @@ function nodesOfPhase(phase: EmergencyPhase) {
 }
 
 const unlockedPhases = computed(() =>
-  EMERGENCY_PHASES.filter((phase) => process.isPhaseUnlocked(phase)),
+  phaseList.value.filter((phase) => process.isPhaseUnlocked(phase)),
 );
 
 interface ResponsePlanInfo {
@@ -374,7 +379,7 @@ const cardStatusLabel: Record<PlanActionCard['status'], string> = {
 };
 
 function handleNodeClick(stageId: number) {
-  const stagePhase = EMERGENCY_PHASES.find(
+  const stagePhase = phaseList.value.find(
     (phase) => stageId >= phase.start && stageId <= phase.end,
   );
   if (stagePhase && !process.canEnterPhase(stagePhase)) return;
@@ -430,6 +435,7 @@ function toggleAction(actionId: string) {
 }
 
 onMounted(() => {
+  void process.loadEmergencyProcessRemote();
   requestAnimationFrame(() => {
     scrollNodeIntoView(process.state.activePhaseId);
     nextTick(updateScrollState);
@@ -594,7 +600,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 
         <div v-if="false" class="ppm__variant-c">
           <div
-            v-for="phase in EMERGENCY_PHASES"
+            v-for="phase in phaseList"
             :key="phase.id"
             class="ppm__card"
             :class="[`ppm__card--${phase.tone}`, { 'is-active': activePhase.id === phase.id }]"
@@ -739,17 +745,17 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
         <div class="ppm__stage-card__body">
           <div class="ppm__roster">
             <span class="ppm__roster__group"
-              >👥 实时值班表 <b>{{ process.mockDutyRoster.shiftGroup }}</b></span
+              >👥 实时值班表 <b>{{ roster.shiftGroup }}</b></span
             >
             <div class="ppm__roster__tags">
               <span class="ppm__roster__tag"
-                >班组长 <b>{{ process.mockDutyRoster.supervisor }}</b></span
+                >班组长 <b>{{ roster.supervisor }}</b></span
               >
               <span class="ppm__roster__tag"
-                >内操 <b>{{ process.mockDutyRoster.boardOperator }}</b></span
+                >内操 <b>{{ roster.boardOperator }}</b></span
               >
               <span class="ppm__roster__tag"
-                >外操 <b>{{ process.mockDutyRoster.fieldOperator }}</b></span
+                >外操 <b>{{ roster.fieldOperator }}</b></span
               >
             </div>
           </div>
