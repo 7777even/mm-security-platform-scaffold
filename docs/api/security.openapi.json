@@ -310,6 +310,224 @@
           }
         }
       }
+    },
+    "/security/track/timeline": {
+      "get": {
+        "tags": ["security"],
+        "operationId": "getSecurityTrackTimeline",
+        "summary": "巡更/通行轨迹时间轴",
+        "description": "返回指定模式（vehicle/person）下某实体（车辆/人员）的通行轨迹节点；该实体无记录时回落到该模式的默认轨迹。",
+        "parameters": [
+          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": true,
+            "description": "轨迹模式：vehicle=车辆，person=人员",
+            "schema": { "type": "string", "enum": ["vehicle", "person"] }
+          },
+          {
+            "name": "entityId",
+            "in": "query",
+            "required": false,
+            "description": "实体 ID（车辆/人员主键）；缺省或该实体无轨迹时使用默认轨迹",
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SecurityTrackTimelineItem[]）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/SecurityTrackTimelineItem" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "location": "东门-入",
+                      "status": "入厂",
+                      "statusTone": "enter",
+                      "time": "2026-01-20 09:12:08",
+                      "captureHint": "东门卡口"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/security/track/summary": {
+      "get": {
+        "tags": ["security"],
+        "operationId": "getSecurityTrackSummary",
+        "summary": "轨迹概要（起止点 + 时间范围）",
+        "description": "返回该模式轨迹的起点/终点标签与时间范围；时间范围由时间轴首尾节点推导，无节点时为「—」。",
+        "parameters": [
+          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": true,
+            "description": "轨迹模式：vehicle=车辆，person=人员",
+            "schema": { "type": "string", "enum": ["vehicle", "person"] }
+          },
+          {
+            "name": "entityId",
+            "in": "query",
+            "required": false,
+            "description": "实体 ID（车辆/人员主键）",
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SecurityTrackSummary）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/SecurityTrackSummary" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "startLabel": "东门",
+                    "endLabel": "装卸点",
+                    "timeRange": "2026-01-20 09:12:08 - 2026-01-20 10:05:12"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/security/search/vehicle/{id}": {
+      "get": {
+        "tags": ["security"],
+        "operationId": "getVehicleSearchDetail",
+        "summary": "车辆识别检索详情",
+        "description": "返回单条车辆通行记录的详情（车牌/驾驶员/单位/预约/货物等）。",
+        "parameters": [
+          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "车辆检索记录主键",
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=VehicleSearchDetail）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/VehicleSearchDetail" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "plate": "粤KA4543",
+                    "vehicleType": "危化品运输车",
+                    "driverName": "刘师傅",
+                    "destination": "炼油一区装卸点"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/security/search/person/{id}": {
+      "get": {
+        "tags": ["security"],
+        "operationId": "getPersonSearchDetail",
+        "summary": "人员识别检索详情",
+        "description": "返回单条人员通行记录的详情（姓名/单位/证件/预约/特种作业等）。",
+        "parameters": [
+          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "人员检索记录主键",
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=PersonSearchDetail）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/PersonSearchDetail" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "name": "张三",
+                    "gender": "男",
+                    "company": "茂名石化检修公司",
+                    "specialOperation": "高处作业"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
     }
   },
   "components": {
@@ -386,6 +604,130 @@
           "direction": { "type": "string", "description": "进出方向（进/出）" },
           "level": { "type": "integer", "description": "权限等级（1/2/3）" },
           "ts": { "type": "string", "description": "事件时间" }
+        }
+      },
+      "SecurityTrackTimelineItem": {
+        "type": "object",
+        "description": "轨迹时间轴节点",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "节点主键" },
+          "location": { "type": "string", "description": "节点位置", "example": "东门-入" },
+          "status": {
+            "type": "string",
+            "description": "节点状态（入厂/通行/到达/停留/作业）",
+            "example": "入厂"
+          },
+          "statusTone": {
+            "type": "string",
+            "description": "展示色阶",
+            "enum": ["enter", "exit", "pass"],
+            "example": "enter"
+          },
+          "time": { "type": "string", "description": "发生时间", "example": "2026-01-20 09:12:08" },
+          "captureHint": {
+            "type": "string",
+            "description": "抓拍来源提示，无则为空",
+            "example": "东门卡口"
+          }
+        }
+      },
+      "SecurityTrackSummary": {
+        "type": "object",
+        "description": "轨迹概要",
+        "properties": {
+          "startLabel": { "type": "string", "description": "起点标签", "example": "东门" },
+          "endLabel": { "type": "string", "description": "终点标签", "example": "装卸点" },
+          "timeRange": {
+            "type": "string",
+            "description": "时间范围（首节点 - 末节点，无节点为「—」）",
+            "example": "2026-01-20 09:12:08 - 2026-01-20 10:05:12"
+          }
+        }
+      },
+      "VehicleSearchDetail": {
+        "type": "object",
+        "description": "车辆识别检索详情（检索结果 + 派单/货物扩展）",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "记录主键" },
+          "plate": { "type": "string", "description": "车牌号" },
+          "confidence": {
+            "type": "integer",
+            "nullable": true,
+            "description": "识别置信度（0-100，识别失败为空）"
+          },
+          "gate": { "type": "string", "description": "卡口" },
+          "status": { "type": "string", "description": "进出状态" },
+          "time": { "type": "string", "description": "识别时间" },
+          "vehicleType": { "type": "string", "description": "车辆类型", "example": "危化品运输车" },
+          "driverName": { "type": "string", "description": "驾驶员姓名", "example": "刘师傅" },
+          "driverPhone": {
+            "type": "string",
+            "description": "驾驶员电话（脱敏）",
+            "example": "138****4521"
+          },
+          "company": {
+            "type": "string",
+            "description": "所属单位",
+            "example": "茂名顺达物流有限公司"
+          },
+          "appointmentNo": {
+            "type": "string",
+            "description": "预约单号",
+            "example": "YY202601200018"
+          },
+          "appointmentTime": {
+            "type": "string",
+            "description": "预约时段",
+            "example": "2026-01-20 09:00 — 18:00"
+          },
+          "visitPurpose": { "type": "string", "description": "来访事由", "example": "原料配送" },
+          "waybillNo": { "type": "string", "description": "运单号", "example": "YD202601200031" },
+          "cargo": { "type": "string", "description": "货物", "example": "工业乙醇" },
+          "destination": { "type": "string", "description": "目的地", "example": "炼油一区装卸点" }
+        }
+      },
+      "PersonSearchDetail": {
+        "type": "object",
+        "description": "人员识别检索详情（检索结果 + 访客/作业扩展）",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "记录主键" },
+          "name": { "type": "string", "description": "人员姓名" },
+          "gate": { "type": "string", "description": "卡口" },
+          "status": { "type": "string", "description": "进出状态" },
+          "date": { "type": "string", "description": "日期" },
+          "gender": { "type": "string", "description": "性别", "example": "男" },
+          "phone": {
+            "type": "string",
+            "description": "联系电话（脱敏）",
+            "example": "138****1001"
+          },
+          "company": { "type": "string", "description": "所属单位", "example": "茂名石化检修公司" },
+          "idNumber": {
+            "type": "string",
+            "description": "证件号（脱敏）",
+            "example": "4409**********1234"
+          },
+          "appointmentNo": {
+            "type": "string",
+            "description": "预约单号",
+            "example": "YY202601200021"
+          },
+          "appointmentTime": {
+            "type": "string",
+            "description": "预约时段",
+            "example": "2026-01-20 08:00 — 17:00"
+          },
+          "visitPurpose": { "type": "string", "description": "来访事由", "example": "设备检修" },
+          "specialOperation": {
+            "type": "string",
+            "description": "特种作业类型，无则为「—」",
+            "example": "高处作业"
+          },
+          "operationArea": {
+            "type": "string",
+            "description": "作业区域，无则为「—」",
+            "example": "炼油二区"
+          }
         }
       }
     }

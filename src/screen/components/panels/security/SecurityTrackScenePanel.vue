@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
-  resolveSecurityTrackPersonDetail,
-  resolveSecurityTrackTimeline,
-  resolveSecurityTrackTimeRange,
-  resolveSecurityTrackVehicleDetail,
+  fetchPersonSearchDetail,
+  fetchSecurityTrackSummary,
+  fetchSecurityTrackTimeline,
+  fetchVehicleSearchDetail,
+  type PersonSearchDetail,
   type SecurityTrackMode,
+  type SecurityTrackTimelineItem,
+  type VehicleSearchDetail,
 } from '@/services/security';
 
 const props = defineProps<{
@@ -51,10 +54,36 @@ const activeTab = computed({
   },
 });
 
-const vehicleDetail = computed(() => resolveSecurityTrackVehicleDetail(props.entityId));
-const personDetail = computed(() => resolveSecurityTrackPersonDetail(props.entityId));
-const timeline = computed(() => resolveSecurityTrackTimeline(props.mode, props.entityId));
-const timeRange = computed(() => resolveSecurityTrackTimeRange(props.mode, props.entityId));
+// B5 去 mock：轨迹时间轴/概要/车辆·人员详情改由后端服务拉取（原 resolveSecurityTrack* 已删除）。
+const vehicleDetail = ref<VehicleSearchDetail | null>(null);
+const personDetail = ref<PersonSearchDetail | null>(null);
+const timeline = ref<SecurityTrackTimelineItem[]>([]);
+const timeRange = ref('—');
+
+async function loadTrack(): Promise<void> {
+  const { mode, entityId } = props;
+  const [tl, summary] = await Promise.all([
+    fetchSecurityTrackTimeline(mode, entityId),
+    fetchSecurityTrackSummary(mode, entityId),
+  ]);
+  timeline.value = tl;
+  timeRange.value = summary?.timeRange ?? '—';
+  if (mode === 'vehicle') {
+    personDetail.value = null;
+    vehicleDetail.value = await fetchVehicleSearchDetail(entityId ?? 1);
+  } else {
+    vehicleDetail.value = null;
+    personDetail.value = await fetchPersonSearchDetail(entityId ?? 1);
+  }
+}
+
+watch(
+  () => [props.open, props.mode, props.entityId] as const,
+  () => {
+    if (props.open) void loadTrack();
+  },
+  { immediate: true },
+);
 
 const panelTitle = computed(() => (isVehicle.value ? '车辆关联信息' : '人员关联信息'));
 const primaryLabel = computed(() =>

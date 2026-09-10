@@ -119,6 +119,86 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/security/track/timeline': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 巡更/通行轨迹时间轴
+     * @description 返回指定模式（vehicle/person）下某实体（车辆/人员）的通行轨迹节点；该实体无记录时回落到该模式的默认轨迹。
+     */
+    get: operations['getSecurityTrackTimeline'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/security/track/summary': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 轨迹概要（起止点 + 时间范围）
+     * @description 返回该模式轨迹的起点/终点标签与时间范围；时间范围由时间轴首尾节点推导，无节点时为「—」。
+     */
+    get: operations['getSecurityTrackSummary'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/security/search/vehicle/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 车辆识别检索详情
+     * @description 返回单条车辆通行记录的详情（车牌/驾驶员/单位/预约/货物等）。
+     */
+    get: operations['getVehicleSearchDetail'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/security/search/person/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 人员识别检索详情
+     * @description 返回单条人员通行记录的详情（姓名/单位/证件/预约/特种作业等）。
+     */
+    get: operations['getPersonSearchDetail'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -265,6 +345,187 @@ export interface components {
       level?: number;
       /** @description 事件时间 */
       ts?: string;
+    };
+    /** @description 轨迹时间轴节点 */
+    SecurityTrackTimelineItem: {
+      /**
+       * Format: int64
+       * @description 节点主键
+       */
+      id?: number;
+      /**
+       * @description 节点位置
+       * @example 东门-入
+       */
+      location?: string;
+      /**
+       * @description 节点状态（入厂/通行/到达/停留/作业）
+       * @example 入厂
+       */
+      status?: string;
+      /**
+       * @description 展示色阶
+       * @example enter
+       * @enum {string}
+       */
+      statusTone?: 'enter' | 'exit' | 'pass';
+      /**
+       * @description 发生时间
+       * @example 2026-01-20 09:12:08
+       */
+      time?: string;
+      /**
+       * @description 抓拍来源提示，无则为空
+       * @example 东门卡口
+       */
+      captureHint?: string;
+    };
+    /** @description 轨迹概要 */
+    SecurityTrackSummary: {
+      /**
+       * @description 起点标签
+       * @example 东门
+       */
+      startLabel?: string;
+      /**
+       * @description 终点标签
+       * @example 装卸点
+       */
+      endLabel?: string;
+      /**
+       * @description 时间范围（首节点 - 末节点，无节点为「—」）
+       * @example 2026-01-20 09:12:08 - 2026-01-20 10:05:12
+       */
+      timeRange?: string;
+    };
+    /** @description 车辆识别检索详情（检索结果 + 派单/货物扩展） */
+    VehicleSearchDetail: {
+      /**
+       * Format: int64
+       * @description 记录主键
+       */
+      id?: number;
+      /** @description 车牌号 */
+      plate?: string;
+      /** @description 识别置信度（0-100，识别失败为空） */
+      confidence?: number | null;
+      /** @description 卡口 */
+      gate?: string;
+      /** @description 进出状态 */
+      status?: string;
+      /** @description 识别时间 */
+      time?: string;
+      /**
+       * @description 车辆类型
+       * @example 危化品运输车
+       */
+      vehicleType?: string;
+      /**
+       * @description 驾驶员姓名
+       * @example 刘师傅
+       */
+      driverName?: string;
+      /**
+       * @description 驾驶员电话（脱敏）
+       * @example 138****4521
+       */
+      driverPhone?: string;
+      /**
+       * @description 所属单位
+       * @example 茂名顺达物流有限公司
+       */
+      company?: string;
+      /**
+       * @description 预约单号
+       * @example YY202601200018
+       */
+      appointmentNo?: string;
+      /**
+       * @description 预约时段
+       * @example 2026-01-20 09:00 — 18:00
+       */
+      appointmentTime?: string;
+      /**
+       * @description 来访事由
+       * @example 原料配送
+       */
+      visitPurpose?: string;
+      /**
+       * @description 运单号
+       * @example YD202601200031
+       */
+      waybillNo?: string;
+      /**
+       * @description 货物
+       * @example 工业乙醇
+       */
+      cargo?: string;
+      /**
+       * @description 目的地
+       * @example 炼油一区装卸点
+       */
+      destination?: string;
+    };
+    /** @description 人员识别检索详情（检索结果 + 访客/作业扩展） */
+    PersonSearchDetail: {
+      /**
+       * Format: int64
+       * @description 记录主键
+       */
+      id?: number;
+      /** @description 人员姓名 */
+      name?: string;
+      /** @description 卡口 */
+      gate?: string;
+      /** @description 进出状态 */
+      status?: string;
+      /** @description 日期 */
+      date?: string;
+      /**
+       * @description 性别
+       * @example 男
+       */
+      gender?: string;
+      /**
+       * @description 联系电话（脱敏）
+       * @example 138****1001
+       */
+      phone?: string;
+      /**
+       * @description 所属单位
+       * @example 茂名石化检修公司
+       */
+      company?: string;
+      /**
+       * @description 证件号（脱敏）
+       * @example 4409**********1234
+       */
+      idNumber?: string;
+      /**
+       * @description 预约单号
+       * @example YY202601200021
+       */
+      appointmentNo?: string;
+      /**
+       * @description 预约时段
+       * @example 2026-01-20 08:00 — 17:00
+       */
+      appointmentTime?: string;
+      /**
+       * @description 来访事由
+       * @example 设备检修
+       */
+      visitPurpose?: string;
+      /**
+       * @description 特种作业类型，无则为「—」
+       * @example 高处作业
+       */
+      specialOperation?: string;
+      /**
+       * @description 作业区域，无则为「—」
+       * @example 炼油二区
+       */
+      operationArea?: string;
     };
   };
   responses: {
@@ -568,6 +829,179 @@ export interface operations {
           };
         };
       };
+    };
+  };
+  getSecurityTrackTimeline: {
+    parameters: {
+      query: {
+        /** @description 轨迹模式：vehicle=车辆，person=人员 */
+        mode: 'vehicle' | 'person';
+        /** @description 实体 ID（车辆/人员主键）；缺省或该实体无轨迹时使用默认轨迹 */
+        entityId?: number;
+      };
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=SecurityTrackTimelineItem[]） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": [
+           *         {
+           *           "id": 1,
+           *           "location": "东门-入",
+           *           "status": "入厂",
+           *           "statusTone": "enter",
+           *           "time": "2026-01-20 09:12:08",
+           *           "captureHint": "东门卡口"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['SecurityTrackTimelineItem'][];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  getSecurityTrackSummary: {
+    parameters: {
+      query: {
+        /** @description 轨迹模式：vehicle=车辆，person=人员 */
+        mode: 'vehicle' | 'person';
+        /** @description 实体 ID（车辆/人员主键） */
+        entityId?: number;
+      };
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=SecurityTrackSummary） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "startLabel": "东门",
+           *         "endLabel": "装卸点",
+           *         "timeRange": "2026-01-20 09:12:08 - 2026-01-20 10:05:12"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['SecurityTrackSummary'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  getVehicleSearchDetail: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path: {
+        /** @description 车辆检索记录主键 */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=VehicleSearchDetail） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 1,
+           *         "plate": "粤KA4543",
+           *         "vehicleType": "危化品运输车",
+           *         "driverName": "刘师傅",
+           *         "destination": "炼油一区装卸点"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['VehicleSearchDetail'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  getPersonSearchDetail: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path: {
+        /** @description 人员检索记录主键 */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=PersonSearchDetail） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 1,
+           *         "name": "张三",
+           *         "gender": "男",
+           *         "company": "茂名石化检修公司",
+           *         "specialOperation": "高处作业"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['PersonSearchDetail'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
     };
   };
 }

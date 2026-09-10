@@ -1,7 +1,7 @@
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
-  getPersonSearchDetail,
-  getVehicleSearchDetail,
+  fetchPersonSearchDetail,
+  fetchVehicleSearchDetail,
   type PersonSearchDetail,
   type VehicleSearchDetail,
 } from '@/services/security';
@@ -13,13 +13,20 @@ export const securitySearchDetailOpen = computed(
   () => selectedVehicleSearchId.value != null || selectedPersonSearchId.value != null,
 );
 
-export const selectedVehicleDetail = computed<VehicleSearchDetail | null>(() =>
-  getVehicleSearchDetail(selectedVehicleSearchId.value),
-);
+// B5 去 mock：详情由后端 /security/search/{vehicle|person}/{id} 拉取（原 getVehicleSearchDetail/
+// getPersonSearchDetail 假数据解析器已删除）；选中 id 变化时异步加载，未选中为空。
+const selectedVehicleDetail = ref<VehicleSearchDetail | null>(null);
+const selectedPersonDetail = ref<PersonSearchDetail | null>(null);
 
-export const selectedPersonDetail = computed<PersonSearchDetail | null>(() =>
-  getPersonSearchDetail(selectedPersonSearchId.value),
-);
+watch(selectedVehicleSearchId, async (id) => {
+  selectedVehicleDetail.value = id == null ? null : await fetchVehicleSearchDetail(id);
+});
+
+watch(selectedPersonSearchId, async (id) => {
+  selectedPersonDetail.value = id == null ? null : await fetchPersonSearchDetail(id);
+});
+
+export { selectedVehicleDetail, selectedPersonDetail };
 
 export function selectVehicleSearchResult(id: number) {
   selectedPersonSearchId.value = null;

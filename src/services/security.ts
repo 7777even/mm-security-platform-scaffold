@@ -1,5 +1,6 @@
 import { request } from '@/services/http';
 import * as searchFixture from '@/services/map-data/securitySearchMock';
+import type { SecurityTrackMode } from '@/services/map-data/securityTrackMock';
 
 // 安全防恐数据域：复用共享 fixture 层（services/map-data/*）作为 dev 降级源，
 // 并叠加 B3 契约 GET 封装（生产环境 VITE_API_BASE 命中时走 request，否则返回 fixture）。
@@ -8,6 +9,117 @@ import * as searchFixture from '@/services/map-data/securitySearchMock';
 export * from '@/services/map-data/securityMock';
 export * from '@/services/map-data/securityTrackMock';
 export * from '@/services/map-data/securitySearchMock';
+
+// === B5 巡更/通行轨迹 + 检索详情（原 track/search 假数据已迁至后端） ===
+export interface SecurityTrackTimelineItem {
+  id: number;
+  location: string;
+  status: string;
+  statusTone: 'enter' | 'exit' | 'pass';
+  time: string;
+  captureHint?: string;
+}
+
+export interface SecurityTrackSummary {
+  startLabel: string;
+  endLabel: string;
+  timeRange: string;
+}
+
+export interface VehicleSearchDetail extends searchFixture.VehicleSearchResult {
+  vehicleType: string;
+  driverName: string;
+  driverPhone: string;
+  company: string;
+  appointmentNo: string;
+  appointmentTime: string;
+  visitPurpose: string;
+  waybillNo: string;
+  cargo: string;
+  destination: string;
+}
+
+export interface PersonSearchDetail extends searchFixture.PersonSearchResult {
+  gender: string;
+  phone: string;
+  company: string;
+  idNumber: string;
+  appointmentNo: string;
+  appointmentTime: string;
+  visitPurpose: string;
+  specialOperation: string;
+  operationArea: string;
+}
+
+const EMPTY_TIMELINE: SecurityTrackTimelineItem[] = [];
+
+/** 巡更/通行轨迹时间轴：按模式 + 实体拉取；无 VITE_API_BASE 时返回空态（不回灌假数据）。 */
+export async function fetchSecurityTrackTimeline(
+  mode: SecurityTrackMode,
+  entityId?: number | null,
+): Promise<SecurityTrackTimelineItem[]> {
+  if (!import.meta.env.VITE_API_BASE) return EMPTY_TIMELINE;
+  try {
+    const data = await request<SecurityTrackTimelineItem[]>({
+      url: '/security/track/timeline',
+      method: 'GET',
+      params: entityId != null ? { mode, entityId } : { mode },
+    });
+    return Array.isArray(data) ? data : EMPTY_TIMELINE;
+  } catch {
+    backendUnavailableWarn('security', '/security/track/timeline');
+    return EMPTY_TIMELINE;
+  }
+}
+
+/** 轨迹概要（起止点标签 + 时间范围）。 */
+export async function fetchSecurityTrackSummary(
+  mode: SecurityTrackMode,
+  entityId?: number | null,
+): Promise<SecurityTrackSummary | null> {
+  if (!import.meta.env.VITE_API_BASE) return null;
+  try {
+    const data = await request<SecurityTrackSummary>({
+      url: '/security/track/summary',
+      method: 'GET',
+      params: entityId != null ? { mode, entityId } : { mode },
+    });
+    return data ?? null;
+  } catch {
+    backendUnavailableWarn('security', '/security/track/summary');
+    return null;
+  }
+}
+
+/** 车辆识别检索详情；未找到返回 null。 */
+export async function fetchVehicleSearchDetail(id: number): Promise<VehicleSearchDetail | null> {
+  if (!import.meta.env.VITE_API_BASE) return null;
+  try {
+    const data = await request<VehicleSearchDetail>({
+      url: `/security/search/vehicle/${id}`,
+      method: 'GET',
+    });
+    return data ?? null;
+  } catch {
+    backendUnavailableWarn('security', `/security/search/vehicle/${id}`);
+    return null;
+  }
+}
+
+/** 人员识别检索详情；未找到返回 null。 */
+export async function fetchPersonSearchDetail(id: number): Promise<PersonSearchDetail | null> {
+  if (!import.meta.env.VITE_API_BASE) return null;
+  try {
+    const data = await request<PersonSearchDetail>({
+      url: `/security/search/person/${id}`,
+      method: 'GET',
+    });
+    return data ?? null;
+  } catch {
+    backendUnavailableWarn('security', `/security/search/person/${id}`);
+    return null;
+  }
+}
 
 export type PatrolCameraStatus = '正常' | '离线' | '故障';
 
