@@ -4,6 +4,16 @@
 > 盘点方法：① 静态比对「前端实际调用 URL」vs「契约 openapi.json」；② 启动后端（8787）跑全量 GET 冒烟，统计真实返回数据量；③ 扫描 `src/screen` 仍直读本地常量的组件。
 > 结论先行：**代码接线层面已基本完成**（前端调用 0 条超出契约、100 个 GET 端点 92 个 code=0），剩余缺口集中在「4 处前端直读常量 + 后端数据密度 + 通道验证 + 写侧与门禁」四类。
 
+## 收尾状态（2026-09-10 二次全量审计）
+
+对 `src/screen` 做逐条 `import` 解析（区分 `import type` 与值导入）后确认：
+
+- **A1/A2/A3/A4 已全部接线**（巡更联动点位、视频联动选项、派单人员、通讯录组织树均改走后端 service）。
+- **全量收尾审计发现并修复 1 处残留红线**：`components/panels/DutyInfoPanel.vue` 曾在 `fetchDutyRoster()` 为空时回退本地 `mock.dutyPersons`（假数据冒充后端）——已改为严格空态，并删除 `lib/data/mock.ts` 中已死的 `dutyPersons` 导出。
+- **其余所有 `lib/data` 值引用均为 by-design**（几何 / UI 结构 / DEV 回落解析器 / 演练仿真 / DTO→视图适配器 / 静态撒点），已逐条 review 并登记进门禁白名单。
+- **门禁已落地并强校验**：`scripts/screen-local-data-gate.mjs`（`npm run gate:screen`）改为白名单**强校验** —— 白名单之外的任何 `lib/data` 值导入直接 FAIL，`import type` 放行；另含 4 处已后端化组件的回归守卫。正向 PASS、负向（注入未登记导入）FAIL 双向验证通过。
+- **结论**：就「大屏端数据全部由后端服务提供」而言，业务数据已无本地兜底；残余本地内容仅为渲染所需的几何/UI/DTO 适配，属设计内保留。
+
 ## 0. 已达成基线（不要重复劳动）
 
 | 项                                        | 实测结果                                                                                                                               |
@@ -48,9 +58,9 @@
 
 - **写回后端仅 5 处**（不计 system/auth 域）：告警 CRUD、预案行动卡、黑名单删除、视频联动配置、应急流程节点配置。
   仍为纯前端的交互：应急指令下发 / 状态推进、台风应急资源调度、巡更记录、值班签到。
-- **缺自动门禁**：目前「大屏是否还有本地业务数据」靠人工 grep。建议加一条脚本守门——扫描 `src/screen` 下对 `lib/data/*Mock*`、`*Options` 的模板直引用，白名单之外的报失败，进 CI。
+- **自动门禁（已落地）**：`scripts/screen-local-data-gate.mjs`（`npm run gate:screen`）对 `src/screen` 逐条解析 `import`，白名单之外的 `lib/data` **值导入**直接 FAIL，`import type` 放行；另含 4 处已后端化组件的回归守卫。正向 PASS / 负向 FAIL 已双向验证。建议纳入 CI 流水线。
 
-## 5. 按设计保留本地（**不是缺口，勿动**）
+## 5. 按设计保留本地（**不是缺口，勿动**；已固化为门禁白名单 `BY_DESIGN_VALUE_IMPORTS`）
 
 - 几何：`plantAreas.ts`、`rescueMapCoords.ts`、`accidentRescueRouteWaypoints`、`tvInspectionScanPointsByCircle`
 - 演示 / 演练：`drillRescueMock`、`drillGuidanceSteps`、`fireEmergencyDrillEventGroups`、卫星云图时间轴 `buildLocalTickTimes`

@@ -17,6 +17,7 @@
     "stylelint": "stylelint \"src/**/*.{css,vue}\"",
     "test": "vitest run",
     "test:watch": "vitest",
+    "gate:screen": "node scripts/screen-local-data-gate.mjs",
     "prepare": "husky"
   },
   "dependencies": {
