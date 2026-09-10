@@ -162,3 +162,38 @@ export async function fetchEmergencyCommandDetail(
     return null;
   }
 }
+
+// 应急派单人员名册（A3 去 mock：替代前端 AlarmDetailPanel 硬编码的 5 个人名）。
+export interface DispatchPersonnelOption {
+  id: number;
+  name: string;
+  role: string;
+  department: string;
+  phone: string;
+}
+
+/**
+ * 告警详情「派单人员」下拉选项源。后端就绪时走 /emergency/dispatch-personnel；
+ * 纯静态演示（无 VITE_API_BASE）回落空数组——不回灌假人名（零下行控制红线）。
+ */
+export async function fetchDispatchPersonnel(): Promise<DispatchPersonnelOption[]> {
+  if (!import.meta.env.VITE_API_BASE) return Promise.resolve([]);
+  try {
+    const data = await request<DispatchPersonnelOption[]>({
+      url: '/emergency/dispatch-personnel',
+      method: 'GET',
+    });
+    if (!data || !Array.isArray(data)) {
+      backendUnavailableWarn(
+        'emergency',
+        '/emergency/dispatch-personnel',
+        REASON_CONTRACT_MISMATCH,
+      );
+      return [];
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('emergency', '/emergency/dispatch-personnel');
+    return [];
+  }
+}

@@ -237,6 +237,76 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/video/linkage-options': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 视频联动配置下拉选项
+     * @description 返回视频联动配置弹窗所需的四组下拉选项：监控器名称、预置点、业务对象分类、业务对象。相机名与相机类型由摄像头表派生，预置点与业务对象来自视频联动选项表。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 视频联动配置下拉选项 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "monitorNames": [
+             *           "炼油区-1",
+             *           "炼油区-2",
+             *           "催化区-1"
+             *         ],
+             *         "presetPoints": [
+             *           "预置点1",
+             *           "预置点2",
+             *           "预置点3"
+             *         ],
+             *         "businessObjectCategories": [
+             *           "云台",
+             *           "固定点机",
+             *           "枪机",
+             *           "球机"
+             *         ],
+             *         "businessObjects": [
+             *           "石脑油罐区",
+             *           "催化裂化装置",
+             *           "储油罐区"
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['ApiResponse'] & {
+              data?: components['schemas']['VideoLinkageOptions'];
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/video/linkages/{configCode}': {
     parameters: {
       query?: never;
@@ -642,6 +712,41 @@ export interface components {
        * @example 石脑油罐区
        */
       objectName?: string;
+    };
+    /** @description 视频联动配置弹窗的四组下拉选项 */
+    VideoLinkageOptions: {
+      /**
+       * @description 监控器名称（派生自摄像头表 name）
+       * @example [
+       *       "炼油区-1",
+       *       "炼油区-2"
+       *     ]
+       */
+      monitorNames?: string[];
+      /**
+       * @description 预置点选项（视频联动选项表 PRESET_POINT）
+       * @example [
+       *       "预置点1",
+       *       "预置点2"
+       *     ]
+       */
+      presetPoints?: string[];
+      /**
+       * @description 业务对象分类（派生自摄像头表 camera_type 去重）
+       * @example [
+       *       "云台",
+       *       "球机"
+       *     ]
+       */
+      businessObjectCategories?: string[];
+      /**
+       * @description 业务对象选项（视频联动选项表 BUSINESS_OBJECT）
+       * @example [
+       *       "石脑油罐区",
+       *       "催化裂化装置"
+       *     ]
+       */
+      businessObjects?: string[];
     };
     /** @description 联动配置列表 */
     VideoLinkageList: components['schemas']['VideoLinkageItem'][];

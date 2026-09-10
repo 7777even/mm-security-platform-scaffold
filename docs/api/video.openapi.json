@@ -164,6 +164,43 @@
         }
       }
     },
+    "/video/linkage-options": {
+      "get": {
+        "summary": "视频联动配置下拉选项",
+        "description": "返回视频联动配置弹窗所需的四组下拉选项：监控器名称、预置点、业务对象分类、业务对象。相机名与相机类型由摄像头表派生，预置点与业务对象来自视频联动选项表。",
+        "tags": ["video"],
+        "responses": {
+          "200": {
+            "description": "视频联动配置下拉选项",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/VideoLinkageOptions" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "monitorNames": ["炼油区-1", "炼油区-2", "催化区-1"],
+                    "presetPoints": ["预置点1", "预置点2", "预置点3"],
+                    "businessObjectCategories": ["云台", "固定点机", "枪机", "球机"],
+                    "businessObjects": ["石脑油罐区", "催化裂化装置", "储油罐区"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/video/linkages/{configCode}": {
       "put": {
         "summary": "更新视频联动配置",
@@ -429,6 +466,36 @@
             "example": "重大危险源"
           },
           "objectName": { "type": "string", "description": "联动对象名称", "example": "石脑油罐区" }
+        }
+      },
+      "VideoLinkageOptions": {
+        "type": "object",
+        "description": "视频联动配置弹窗的四组下拉选项",
+        "properties": {
+          "monitorNames": {
+            "type": "array",
+            "description": "监控器名称（派生自摄像头表 name）",
+            "items": { "type": "string" },
+            "example": ["炼油区-1", "炼油区-2"]
+          },
+          "presetPoints": {
+            "type": "array",
+            "description": "预置点选项（视频联动选项表 PRESET_POINT）",
+            "items": { "type": "string" },
+            "example": ["预置点1", "预置点2"]
+          },
+          "businessObjectCategories": {
+            "type": "array",
+            "description": "业务对象分类（派生自摄像头表 camera_type 去重）",
+            "items": { "type": "string" },
+            "example": ["云台", "球机"]
+          },
+          "businessObjects": {
+            "type": "array",
+            "description": "业务对象选项（视频联动选项表 BUSINESS_OBJECT）",
+            "items": { "type": "string" },
+            "example": ["石脑油罐区", "催化裂化装置"]
+          }
         }
       },
       "VideoLinkageList": {

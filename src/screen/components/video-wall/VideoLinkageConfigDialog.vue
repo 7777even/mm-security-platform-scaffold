@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
-import {
-  businessObjectCategoryOptions,
-  businessObjectOptions,
-  monitorNameOptions,
-  presetPointOptions,
-} from '../../lib/data/videoLinkageOptions';
+import { fetchVideoLinkageOptions, type VideoLinkageOptionSet } from '@/services/video';
 import type { VideoLinkageItem, VideoLinkageSaveRequest } from '@/services/video';
 import {
   cancelLinkageEdit,
@@ -27,7 +22,15 @@ const currentPage = ref(1);
 const PAGE_SIZE = 6;
 const savedTip = ref(false);
 
-const monitorName = ref(monitorNameOptions[0]);
+// 视频联动四组下拉选项（后端 /video/linkage-options 提供，替代原 videoLinkageOptions 本地常量）。
+const linkageOptions = ref<VideoLinkageOptionSet>({
+  monitorNames: [],
+  presetPoints: [],
+  businessObjectCategories: [],
+  businessObjects: [],
+});
+
+const monitorName = ref('');
 const monitorCode = ref('HKJK-5124870');
 
 const categoryByMonitor = reactive<Record<string, string>>({
@@ -67,6 +70,9 @@ watch(linkageDialogOpen, (open) => {
   categoryFilter.value = '全部类别';
   currentPage.value = 1;
   void loadLinkageConfigs();
+  void fetchVideoLinkageOptions().then((opts) => {
+    linkageOptions.value = opts;
+  });
 });
 
 watch(linkageEditMode, (edit) => {
@@ -75,14 +81,14 @@ watch(linkageEditMode, (edit) => {
     monitorName.value = editingConfig.value.name;
     monitorCode.value = editingConfig.value.code;
   } else {
-    monitorName.value = monitorNameOptions[0];
+    monitorName.value = linkageOptions.value.monitorNames[0] ?? '';
     monitorCode.value = 'HKJK-5124870';
     editingRules.value = [
       {
         id: `r-${Date.now()}`,
-        presetPoint: presetPointOptions[0],
-        objectCategory: businessObjectCategoryOptions[0],
-        objectName: businessObjectOptions[0],
+        presetPoint: linkageOptions.value.presetPoints[0] ?? '',
+        objectCategory: linkageOptions.value.businessObjectCategories[0] ?? '',
+        objectName: linkageOptions.value.businessObjects[0] ?? '',
       },
     ];
   }
@@ -90,16 +96,16 @@ watch(linkageEditMode, (edit) => {
 
 watch(monitorName, (name) => {
   if (linkageEditMode.value && !editingConfig.value) {
-    monitorCode.value = `HKJK-5124${String(860 + monitorNameOptions.indexOf(name))}`;
+    monitorCode.value = `HKJK-5124${String(860 + linkageOptions.value.monitorNames.indexOf(name))}`;
   }
 });
 
 function addRule() {
   editingRules.value.push({
     id: `r-${Date.now()}`,
-    presetPoint: presetPointOptions[0],
-    objectCategory: businessObjectCategoryOptions[0],
-    objectName: businessObjectOptions[0],
+    presetPoint: linkageOptions.value.presetPoints[0] ?? '',
+    objectCategory: linkageOptions.value.businessObjectCategories[0] ?? '',
+    objectName: linkageOptions.value.businessObjects[0] ?? '',
   });
 }
 
@@ -258,7 +264,7 @@ function goToPage(page: number) {
                 <label class="linkage-dialog__field">
                   <span>监控名称</span>
                   <select v-model="monitorName" class="linkage-dialog__input">
-                    <option v-for="opt in monitorNameOptions" :key="opt" :value="opt">
+                    <option v-for="opt in linkageOptions.monitorNames" :key="opt" :value="opt">
                       {{ opt }}
                     </option>
                   </select>
@@ -266,7 +272,7 @@ function goToPage(page: number) {
                 <label class="linkage-dialog__field">
                   <span>监控类别</span>
                   <input
-                    v-model="categoryByMonitor[monitorName]"
+                    :value="categoryByMonitor[monitorName] ?? '枪机'"
                     class="linkage-dialog__input"
                     type="text"
                     readonly
@@ -298,7 +304,11 @@ function goToPage(page: number) {
                           v-model="rule.presetPoint"
                           class="linkage-dialog__input linkage-dialog__input--cell"
                         >
-                          <option v-for="opt in presetPointOptions" :key="opt" :value="opt">
+                          <option
+                            v-for="opt in linkageOptions.presetPoints"
+                            :key="opt"
+                            :value="opt"
+                          >
                             {{ opt }}
                           </option>
                         </select>
@@ -309,7 +319,7 @@ function goToPage(page: number) {
                           class="linkage-dialog__input linkage-dialog__input--cell"
                         >
                           <option
-                            v-for="opt in businessObjectCategoryOptions"
+                            v-for="opt in linkageOptions.businessObjectCategories"
                             :key="opt"
                             :value="opt"
                           >
@@ -322,7 +332,11 @@ function goToPage(page: number) {
                           v-model="rule.objectName"
                           class="linkage-dialog__input linkage-dialog__input--cell"
                         >
-                          <option v-for="opt in businessObjectOptions" :key="opt" :value="opt">
+                          <option
+                            v-for="opt in linkageOptions.businessObjects"
+                            :key="opt"
+                            :value="opt"
+                          >
                             {{ opt }}
                           </option>
                         </select>

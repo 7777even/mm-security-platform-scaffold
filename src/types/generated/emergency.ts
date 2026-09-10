@@ -99,6 +99,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/emergency/dispatch-personnel': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 应急派单人员名册
+     * @description 返回应急指挥可指派的人员名册，供告警详情「派单人员」下拉使用。数据来自 fac_dispatch_personnel 参考表，按 sort_no 升序，仅返回启用人员。
+     */
+    get: operations['getDispatchPersonnel'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/emergency/commands': {
     parameters: {
       query?: never;
@@ -645,6 +665,34 @@ export interface components {
        * @example Document
        */
       icon?: string;
+    };
+    /** @description 应急派单人员项（告警详情「派单人员」下拉） */
+    DispatchPersonnel: {
+      /**
+       * @description 人员 ID
+       * @example 1
+       */
+      id?: number;
+      /**
+       * @description 姓名（不脱敏，派单需可辨识）
+       * @example 杨恒朋
+       */
+      name?: string;
+      /**
+       * @description 岗位，如值班领导 / 消防队长 / 工艺处置组长
+       * @example 值班领导
+       */
+      role?: string;
+      /**
+       * @description 所属部门
+       * @example 公司总值班室
+       */
+      department?: string;
+      /**
+       * @description 联系电话
+       * @example 137-9253-6966
+       */
+      phone?: string;
     };
     /** @description 应急指挥指令分组（固定/临时） */
     EmergencyCommandGroup: {
@@ -1503,6 +1551,54 @@ export interface operations {
            */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['KnowledgeList'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  getDispatchPersonnel: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=DispatchPersonnel[]） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": [
+           *         {
+           *           "id": 1,
+           *           "name": "杨恒朋",
+           *           "role": "值班领导",
+           *           "department": "公司总值班室",
+           *           "phone": "137-9253-6966"
+           *         },
+           *         {
+           *           "id": 3,
+           *           "name": "王钰",
+           *           "role": "消防队长",
+           *           "department": "炼油消防一中队",
+           *           "phone": "183-0055-6145"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['DispatchPersonnel'][];
           };
         };
       };

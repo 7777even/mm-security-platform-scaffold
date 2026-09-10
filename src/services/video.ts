@@ -143,3 +143,49 @@ export async function fetchVideoSnapshotUrl(id: number): Promise<string> {
   });
   return URL.createObjectURL(resp.data);
 }
+
+// 视频联动配置弹窗的四组下拉选项（A2 去 mock：替代前端 videoLinkageOptions 本地常量）。
+export interface VideoLinkageOptionSet {
+  /** 监控器名称（派生自摄像头表 name） */
+  monitorNames: string[];
+  /** 预置点（视频联动选项表 PRESET_POINT） */
+  presetPoints: string[];
+  /** 业务对象分类（派生自摄像头表 camera_type 去重） */
+  businessObjectCategories: string[];
+  /** 业务对象（视频联动选项表 BUSINESS_OBJECT） */
+  businessObjects: string[];
+}
+
+const EMPTY_LINKAGE_OPTIONS: VideoLinkageOptionSet = {
+  monitorNames: [],
+  presetPoints: [],
+  businessObjectCategories: [],
+  businessObjects: [],
+};
+
+/**
+ * 视频联动配置弹窗下拉选项。后端就绪时走 /video/linkage-options；
+ * 纯静态演示（无 VITE_API_BASE）回落空选项——不回灌假选项（零下行控制红线）。
+ */
+export async function fetchVideoLinkageOptions(): Promise<VideoLinkageOptionSet> {
+  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(EMPTY_LINKAGE_OPTIONS);
+  try {
+    const data = await request<VideoLinkageOptionSet>({
+      url: '/video/linkage-options',
+      method: 'GET',
+    });
+    if (!data || typeof data !== 'object') {
+      return EMPTY_LINKAGE_OPTIONS;
+    }
+    return {
+      monitorNames: Array.isArray(data.monitorNames) ? data.monitorNames : [],
+      presetPoints: Array.isArray(data.presetPoints) ? data.presetPoints : [],
+      businessObjectCategories: Array.isArray(data.businessObjectCategories)
+        ? data.businessObjectCategories
+        : [],
+      businessObjects: Array.isArray(data.businessObjects) ? data.businessObjects : [],
+    };
+  } catch {
+    return EMPTY_LINKAGE_OPTIONS;
+  }
+}

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { alarmDetailPersonnelOptions, type AlarmDetailItem } from '../../lib/data/alarmDetailMock';
+import { type AlarmDetailItem } from '../../lib/data/alarmDetailMock';
+import { fetchDispatchPersonnel, type DispatchPersonnelOption } from '@/services/emergency';
 import { useAlarmDetailPanel } from '../../lib/composables/useAlarmDetailPanel';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
 import { showToast } from '../../lib/composables/useToast';
@@ -21,6 +22,19 @@ const selectedPersonnel = ref<string>('');
 const fileInput = ref<HTMLInputElement | null>(null);
 const detailBody = ref<HTMLElement | null>(null);
 const disposalSection = ref<HTMLElement | null>(null);
+
+// 派单人员下拉选项（后端 /emergency/dispatch-personnel 提供，替代原硬编码 5 人名）。
+const dispatchPersonnelOptions = ref<DispatchPersonnelOption[]>([]);
+watch(
+  alarmDetailOpen,
+  (open) => {
+    if (open)
+      void fetchDispatchPersonnel().then((list) => {
+        dispatchPersonnelOptions.value = list;
+      });
+  },
+  { immediate: true },
+);
 
 const detail = computed(() => activeAlarmDetail.value);
 
@@ -374,8 +388,12 @@ function trendX(item: AlarmDetailItem, index: number): number {
             <div class="alarm-detail__dispatch">
               <select v-model="selectedPersonnel" class="alarm-detail__select">
                 <option value="">选择人员</option>
-                <option v-for="person in alarmDetailPersonnelOptions" :key="person" :value="person">
-                  {{ person }}
+                <option
+                  v-for="person in dispatchPersonnelOptions"
+                  :key="person.id"
+                  :value="person.name"
+                >
+                  {{ person.name }}<template v-if="person.role">（{{ person.role }}）</template>
                 </option>
               </select>
               <button type="button" class="alarm-detail__add-btn" @click="addPersonnel">

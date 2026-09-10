@@ -215,6 +215,59 @@
         }
       }
     },
+    "/emergency/dispatch-personnel": {
+      "get": {
+        "tags": ["emergency"],
+        "operationId": "getDispatchPersonnel",
+        "summary": "应急派单人员名册",
+        "description": "返回应急指挥可指派的人员名册，供告警详情「派单人员」下拉使用。数据来自 fac_dispatch_personnel 参考表，按 sort_no 升序，仅返回启用人员。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DispatchPersonnel[]）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/DispatchPersonnel" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "name": "杨恒朋",
+                      "role": "值班领导",
+                      "department": "公司总值班室",
+                      "phone": "137-9253-6966"
+                    },
+                    {
+                      "id": 3,
+                      "name": "王钰",
+                      "role": "消防队长",
+                      "department": "炼油消防一中队",
+                      "phone": "183-0055-6145"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
     "/emergency/commands": {
       "get": {
         "tags": ["emergency"],
@@ -701,6 +754,29 @@
             "description": "图标名（Element Plus icon 名）",
             "example": "Document"
           }
+        }
+      },
+      "DispatchPersonnel": {
+        "type": "object",
+        "description": "应急派单人员项（告警详情「派单人员」下拉）",
+        "properties": {
+          "id": { "type": "integer", "description": "人员 ID", "example": 1 },
+          "name": {
+            "type": "string",
+            "description": "姓名（不脱敏，派单需可辨识）",
+            "example": "杨恒朋"
+          },
+          "role": {
+            "type": "string",
+            "description": "岗位，如值班领导 / 消防队长 / 工艺处置组长",
+            "example": "值班领导"
+          },
+          "department": {
+            "type": "string",
+            "description": "所属部门",
+            "example": "公司总值班室"
+          },
+          "phone": { "type": "string", "description": "联系电话", "example": "137-9253-6966" }
         }
       },
       "EmergencyCommandGroup": {
