@@ -252,6 +252,55 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/video/cameras/{id}/snapshot': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 摄像头静态截图（演示）
+     * @description 返回该摄像头 snapshot_bytes 列中的静态图（JPEG）。当前为演示占位图，由 dev 启动时的 VideoSnapshotSeeder 生成；后续接真流时替换为媒体网关转发的流地址/截图。鉴权同 /video/*（需 JWT），前端用带 token 的 http 客户端取 blob 渲染。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 摄像头 id（取自 /video/cameras 列表） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 静态图字节（image/jpeg） */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'image/jpeg': string;
+          };
+        };
+        /** @description 该摄像头无截图（snapshot_bytes 为空） */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
