@@ -79,5 +79,5 @@
 - [x] `tasks.md` 生产域（P2-生产）全部勾选，验收标准逐条满足；video/communication 仍为 `#TODO-确认` 显式递延，不阻塞本期切片。
 - [x] 受影响目标 `npm test` / type-check / eslint（受改动路径）0 error（按 §2 矩阵对应行）。
 - [x] 新增 `docs/api/production.openapi.json` 契约 + `src/types/generated/production.ts` 生成类型；行为改动已同步契约（短期记录不写进 `docs/UI规范-*.md`）。
-- [ ] 提交按 scope 拆分：`type(screen): 描述`，单行成句、禁止 `- ` 分点列表；临时输出文件不入库。
+- [x] 提交按 scope 拆分：`type(screen): 描述`，单行成句、禁止 `- ` 分点列表；临时输出文件不入库。（2026-09-10 续做切片：前端 81481ae/81e9473/9b81b14，后端 dab0dfa/f208b36，均按 scope 拆分并推送）
 - [x] L3 完成后写 `engineering/qa/production-mock-to-service.md` + `engineering/retro/`（见对应文件）。
