@@ -58,6 +58,16 @@
 
 - [ ] 仅确认 `drillRescueMock` 在 SPA 侧引用已随 P0 事故应急接清；`fm-drill` 子应用侧不在本变更范围。
 
+## 8. 2026-09-10 续做 · 大屏残留 mock 清零（V24 后端数据集 + 四端点四同步）
+
+- [x] 盘点确认最后真缺口：`fireEquipment`/`systemMessages`（`mock.ts`）与 `tvVideoMapPoints`/`tvVideoMonitorDetails`（`tvMock.ts`），其余面板均已接 service。
+- [x] 后端 V24 `screen_panel_dataset`：4 表 + 种子（消防设备分类 12 项 count=665、系统消息 2 条、电视地图撒点 15 点、监控档案 15 条）；列名避开 H2 保留字（`equip_count`/`point_height`/`height_text`/`msg_type`/`monitor_type` 等）。
+- [x] 后端 3 域新增 4 端点：`GET /fire/equipment`、`GET /dashboard/messages`、`GET /tv/map-points`、`GET /tv/monitors/{code}`（TvController 无 `@RequireAuth` 但受全局 JwtFilter 管控，/tv/* 无 token 返 401 为预期）；补 `FireMonitoringServiceTest.equipment_mapsCategoryTable`、`DashboardServiceTest.systemMessages_mapsRealTable`。
+- [x] 契约四同步：`fire-monitoring/dashboard/tv.openapi.json` 增端点+schema（修复 `tv.openapi.json` line103 缺逗号导致的整体解析跳过）；`check-api-contract.mjs --strict` 路由 0 差异 / schema 0 漂移；`npm run gen:api-types` 生成 3 文件无 churn。
+- [x] 前端接线：`FireEquipment.vue`→`fetchFireEquipment`、`SystemMessageBar.vue`→`fetchDashboardMessages`（无 DEV 兜底直连）、`TvMap.vue`→`fetchTvMapPoints`（保留 `tvAlarmMarker`/`tvMapControls` 静态几何）、`useTvVideoDetail`→`fetchTvMonitor`（catch 回退本地解析）。
+- [x] 门禁：`vue-tsc --noEmit` 0 错；后端 8787 四端点冒烟全 `code=0`（12 项/2 条/15 点/9 字段档案）；后端单测、前端 vitest 复验绿（当日复跑）。
+- [ ] `#TODO-确认` `services/video.ts` 接线 `videoControlMock`/`videoLinkageMock`（含流媒体，复杂度高，继续显式递延）。
+
 ## 7. 守门测试与验证
 
 - [x] [TDD] 受影响 service 集成测试经 `npm test` 必绿（alarm/emergency/weather 及本次 production）。
