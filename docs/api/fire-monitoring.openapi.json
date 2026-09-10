@@ -144,6 +144,48 @@
         }
       }
     },
+    "/fire/equipment": {
+      "get": {
+        "tags": ["fire-monitoring"],
+        "operationId": "listFireEquipment",
+        "summary": "消防设备分类清单",
+        "description": "返回消防设备各分类（火灾自动报警系统/消防水源/室外消火栓系统等）及其数量，用于消防监控页「消防设备」面板的分类卡片网格。数据来自 V24 fac_fire_equipment_category 真实表，取代前端硬编码 fireEquipment。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=消防设备分类列表）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/FireEquipmentItem" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    { "id": 1, "name": "火灾自动报警系统", "count": 665 },
+                    { "id": 2, "name": "消防水源", "count": 665 }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
     "/fire/patrols": {
       "get": {
         "tags": ["fire-monitoring"],
@@ -233,6 +275,15 @@
             "description": "作业类型名称（动火作业/盲板抽堵/吊装作业/动土作业/受限空间/高处作业/临时用电/断路作业）"
           },
           "count": { "type": "integer", "description": "当前在建数量，0 时前端渲染为灰色零值态" }
+        }
+      },
+      "FireEquipmentItem": {
+        "type": "object",
+        "description": "消防设备分类项",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "分类 id", "example": 1 },
+          "name": { "type": "string", "description": "设备分类名", "example": "火灾自动报警系统" },
+          "count": { "type": "integer", "description": "该分类设备数量", "example": 665 }
         }
       },
       "FireEquipmentStatus": {

@@ -59,6 +59,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/fire/equipment': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 消防设备分类清单
+     * @description 返回消防设备各分类（火灾自动报警系统/消防水源/室外消火栓系统等）及其数量，用于消防监控页「消防设备」面板的分类卡片网格。数据来自 V24 fac_fire_equipment_category 真实表，取代前端硬编码 fireEquipment。
+     */
+    get: operations['listFireEquipment'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/fire/patrols': {
     parameters: {
       query?: never;
@@ -143,6 +163,25 @@ export interface components {
       /** @description 作业类型名称（动火作业/盲板抽堵/吊装作业/动土作业/受限空间/高处作业/临时用电/断路作业） */
       label?: string;
       /** @description 当前在建数量，0 时前端渲染为灰色零值态 */
+      count?: number;
+    };
+    /** @description 消防设备分类项 */
+    FireEquipmentItem: {
+      /**
+       * Format: int64
+       * @description 分类 id
+       * @example 1
+       */
+      id?: number;
+      /**
+       * @description 设备分类名
+       * @example 火灾自动报警系统
+       */
+      name?: string;
+      /**
+       * @description 该分类设备数量
+       * @example 665
+       */
       count?: number;
     };
     /** @description 消防设施设备整体状态（单行聚合） */
@@ -382,6 +421,51 @@ export interface operations {
            */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['FireEquipmentStatus'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  listFireEquipment: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=消防设备分类列表） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": [
+           *         {
+           *           "id": 1,
+           *           "name": "火灾自动报警系统",
+           *           "count": 665
+           *         },
+           *         {
+           *           "id": 2,
+           *           "name": "消防水源",
+           *           "count": 665
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['FireEquipmentItem'][];
           };
         };
       };

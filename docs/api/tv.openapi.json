@@ -99,10 +99,154 @@
           }
         }
       }
+    },
+    "/tv/map-points": {
+      "get": {
+        "summary": "工业电视地图撒点",
+        "description": "返回工业电视大屏地图上的视频点位（高空AR/重点部位/危险源/厂界四类）及其 WGS84 经纬度、挂高与在线状态。数据来自 V24 fac_tv_map_point 真实表，取代前端硬编码 tvVideoMapPoints。",
+        "tags": ["tv"],
+        "responses": {
+          "200": {
+            "description": "地图撒点列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/TvMapPoint" }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": "ar-01",
+                      "label": "高空AR-01",
+                      "group": "high-ar",
+                      "longitude": 110.881979,
+                      "latitude": 21.685692,
+                      "height": 74,
+                      "online": true
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tv/monitors/{code}": {
+      "get": {
+        "summary": "视频监控点位档案",
+        "description": "按点位编码返回视频监控档案（名称、在线状态、完好程度、类型、责任部门、坐标描述、挂高、角度）。数据来自 V24 fac_tv_monitor 真实表，取代前端硬编码 tvVideoMonitorDetails 与默认档案。",
+        "tags": ["tv"],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "description": "监控点位编码（与地图撒点 point_code 一致，如 ar-01）",
+            "schema": { "type": "string" },
+            "example": "ar-01"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "视频监控点位档案",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TvMonitorDetail" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": "ar-01",
+                    "name": "高空AR-01",
+                    "online": true,
+                    "integrity": "良好",
+                    "monitorType": "球机",
+                    "department": "安环部",
+                    "location": "110.881979, 21.685692",
+                    "height": "24m",
+                    "angle": "56°"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "点位档案不存在",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TvMonitorDetail" },
+                "example": {
+                  "code": 404,
+                  "message": "监控点位不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "TvMapPoint": {
+        "type": "object",
+        "description": "工业电视地图视频点位",
+        "properties": {
+          "id": { "type": "string", "description": "点位编码", "example": "ar-01" },
+          "label": { "type": "string", "description": "点位名称", "example": "高空AR-01" },
+          "group": {
+            "type": "string",
+            "description": "点位分组：high-ar 高空AR / focus 重点部位 / hazard 危险源 / boundary 厂界",
+            "example": "high-ar"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "经度",
+            "example": 110.881979
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "纬度",
+            "example": 21.685692
+          },
+          "height": { "type": "integer", "description": "挂高（米）", "example": 74 },
+          "online": { "type": "boolean", "description": "是否在线", "example": true }
+        }
+      },
+      "TvMonitorDetail": {
+        "type": "object",
+        "description": "视频监控点位档案",
+        "properties": {
+          "id": { "type": "string", "description": "点位编码", "example": "ar-01" },
+          "name": { "type": "string", "description": "监控名称", "example": "高空AR-01" },
+          "online": { "type": "boolean", "description": "是否在线", "example": true },
+          "integrity": {
+            "type": "string",
+            "description": "完好程度（良好 / 一般 / 损坏）",
+            "example": "良好"
+          },
+          "monitorType": {
+            "type": "string",
+            "description": "监控类型（球机 / 枪机）",
+            "example": "球机"
+          },
+          "department": { "type": "string", "description": "责任部门", "example": "安环部" },
+          "location": {
+            "type": "string",
+            "description": "安装位置坐标描述",
+            "example": "110.881979, 21.685692"
+          },
+          "height": { "type": "string", "description": "挂高", "example": "24m" },
+          "angle": { "type": "string", "description": "安装角度", "example": "56°" }
+        }
+      },
       "TvOverviewItem": {
         "type": "object",
         "description": "视频概览卡片项",

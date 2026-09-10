@@ -79,6 +79,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/dashboard/messages': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 大屏滚动系统消息
+     * @description 返回大屏底部滚动播报的系统消息（危险/预警两类），数据来源为 V24 fac_system_message 真实表，取代前端硬编码 systemMessages。
+     */
+    get: operations['getDashboardMessages'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -124,6 +144,35 @@ export interface components {
       data?: unknown;
       /** @example a1b2c3d4 */
       traceId?: string;
+    };
+    /** @description 大屏滚动系统消息项。 */
+    SystemMessageItem: {
+      /**
+       * Format: int64
+       * @description 消息 id
+       * @example 1
+       */
+      id?: number;
+      /**
+       * @description 消息级别：danger 危险 / warning 预警
+       * @example danger
+       */
+      type?: string;
+      /**
+       * @description 消息标题
+       * @example 人员违规进入
+       */
+      title?: string;
+      /**
+       * @description 发生时间
+       * @example 2026-03-17 14:21:30
+       */
+      time?: string;
+      /**
+       * @description 消息正文
+       * @example A装置区域发现非注册人员，请核实。
+       */
+      content?: string;
     };
     DashboardOverview: {
       /** @description 当前活动报警数 */
@@ -401,6 +450,48 @@ export interface operations {
            */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['RiskHeatItem'][];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  getDashboardMessages: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=SystemMessageItem[]） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": [
+           *         {
+           *           "id": 1,
+           *           "type": "danger",
+           *           "title": "人员违规进入",
+           *           "time": "2026-03-17 14:21:30",
+           *           "content": "A装置区域发现非注册人员，请核实。"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['SystemMessageItem'][];
           };
         };
       };

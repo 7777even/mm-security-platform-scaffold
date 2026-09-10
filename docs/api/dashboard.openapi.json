@@ -181,10 +181,80 @@
           "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
         }
       }
+    },
+    "/dashboard/messages": {
+      "get": {
+        "tags": ["dashboard"],
+        "operationId": "getDashboardMessages",
+        "summary": "大屏滚动系统消息",
+        "description": "返回大屏底部滚动播报的系统消息（危险/预警两类），数据来源为 V24 fac_system_message 真实表，取代前端硬编码 systemMessages。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemMessageItem[]）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/SystemMessageItem" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "type": "danger",
+                      "title": "人员违规进入",
+                      "time": "2026-03-17 14:21:30",
+                      "content": "A装置区域发现非注册人员，请核实。"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "SystemMessageItem": {
+        "type": "object",
+        "description": "大屏滚动系统消息项。",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "消息 id", "example": 1 },
+          "type": {
+            "type": "string",
+            "description": "消息级别：danger 危险 / warning 预警",
+            "example": "danger"
+          },
+          "title": { "type": "string", "description": "消息标题", "example": "人员违规进入" },
+          "time": {
+            "type": "string",
+            "description": "发生时间",
+            "example": "2026-03-17 14:21:30"
+          },
+          "content": {
+            "type": "string",
+            "description": "消息正文",
+            "example": "A装置区域发现非注册人员，请核实。"
+          }
+        }
+      },
       "DashboardOverview": {
         "type": "object",
         "properties": {

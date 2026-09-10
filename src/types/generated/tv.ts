@@ -170,6 +170,140 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/tv/map-points': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 工业电视地图撒点
+     * @description 返回工业电视大屏地图上的视频点位（高空AR/重点部位/危险源/厂界四类）及其 WGS84 经纬度、挂高与在线状态。数据来自 V24 fac_tv_map_point 真实表，取代前端硬编码 tvVideoMapPoints。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 地图撒点列表 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": [
+             *         {
+             *           "id": "ar-01",
+             *           "label": "高空AR-01",
+             *           "group": "high-ar",
+             *           "longitude": 110.881979,
+             *           "latitude": 21.685692,
+             *           "height": 74,
+             *           "online": true
+             *         }
+             *       ]
+             *     }
+             */
+            'application/json': components['schemas']['TvMapPoint'][];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/tv/monitors/{code}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 视频监控点位档案
+     * @description 按点位编码返回视频监控档案（名称、在线状态、完好程度、类型、责任部门、坐标描述、挂高、角度）。数据来自 V24 fac_tv_monitor 真实表，取代前端硬编码 tvVideoMonitorDetails 与默认档案。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /**
+           * @description 监控点位编码（与地图撒点 point_code 一致，如 ar-01）
+           * @example ar-01
+           */
+          code: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 视频监控点位档案 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": "ar-01",
+             *         "name": "高空AR-01",
+             *         "online": true,
+             *         "integrity": "良好",
+             *         "monitorType": "球机",
+             *         "department": "安环部",
+             *         "location": "110.881979, 21.685692",
+             *         "height": "24m",
+             *         "angle": "56°"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['TvMonitorDetail'];
+          };
+        };
+        /** @description 点位档案不存在 */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 404,
+             *       "message": "监控点位不存在",
+             *       "data": null
+             *     }
+             */
+            'application/json': components['schemas']['TvMonitorDetail'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -215,6 +349,94 @@ export interface components {
       data?: unknown;
       /** @example a1b2c3d4 */
       traceId?: string;
+    };
+    /** @description 工业电视地图视频点位 */
+    TvMapPoint: {
+      /**
+       * @description 点位编码
+       * @example ar-01
+       */
+      id?: string;
+      /**
+       * @description 点位名称
+       * @example 高空AR-01
+       */
+      label?: string;
+      /**
+       * @description 点位分组：high-ar 高空AR / focus 重点部位 / hazard 危险源 / boundary 厂界
+       * @example high-ar
+       */
+      group?: string;
+      /**
+       * Format: double
+       * @description 经度
+       * @example 110.881979
+       */
+      longitude?: number;
+      /**
+       * Format: double
+       * @description 纬度
+       * @example 21.685692
+       */
+      latitude?: number;
+      /**
+       * @description 挂高（米）
+       * @example 74
+       */
+      height?: number;
+      /**
+       * @description 是否在线
+       * @example true
+       */
+      online?: boolean;
+    };
+    /** @description 视频监控点位档案 */
+    TvMonitorDetail: {
+      /**
+       * @description 点位编码
+       * @example ar-01
+       */
+      id?: string;
+      /**
+       * @description 监控名称
+       * @example 高空AR-01
+       */
+      name?: string;
+      /**
+       * @description 是否在线
+       * @example true
+       */
+      online?: boolean;
+      /**
+       * @description 完好程度（良好 / 一般 / 损坏）
+       * @example 良好
+       */
+      integrity?: string;
+      /**
+       * @description 监控类型（球机 / 枪机）
+       * @example 球机
+       */
+      monitorType?: string;
+      /**
+       * @description 责任部门
+       * @example 安环部
+       */
+      department?: string;
+      /**
+       * @description 安装位置坐标描述
+       * @example 110.881979, 21.685692
+       */
+      location?: string;
+      /**
+       * @description 挂高
+       * @example 24m
+       */
+      height?: string;
+      /**
+       * @description 安装角度
+       * @example 56°
+       */
+      angle?: string;
     };
     /** @description 视频概览卡片项 */
     TvOverviewItem: {
