@@ -199,6 +199,66 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/security/perimeter-alarms/latest': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 最新周界入侵告警
+     * @description 返回告警时间最新的一条周界入侵告警详情（含位置/设备/处置状态/关联监控与现场抓拍路径），供安防态势面板展示待处置告警。数据来自 fac_perimeter_alarm 真实表；表为空时 data=null。
+     */
+    get: operations['getLatestPerimeterAlarm'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/security/perimeter-alarms/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 周界入侵告警详情
+     * @description 按主键返回单条周界入侵告警详情；未找到时 data=null。
+     */
+    get: operations['getPerimeterAlarm'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/security/perimeter-alarms/{id}/snapshot': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 周界入侵告警现场抓拍
+     * @description 返回该告警 snapshot_bytes 列中的现场抓拍（JPEG）。当前为演示占位图，由 dev 启动时的 PerimeterAlarmSnapshotSeeder 生成；后续接真流时替换为媒体网关写入的实时抓拍。鉴权同 /security/*（需 JWT），前端用带 token 的 http 客户端取 blob 后转 objectURL 渲染。
+     */
+    get: operations['getPerimeterAlarmSnapshot'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -526,6 +586,170 @@ export interface components {
        * @example 炼油二区
        */
       operationArea?: string;
+    };
+    /** @description 周界入侵告警详情（前端由 perimeterAlarmToDetail 适配为 AlarmDetailItem） */
+    PerimeterAlarmDetail: {
+      /**
+       * Format: int64
+       * @description 告警主键
+       */
+      id?: number;
+      /**
+       * @description 告警编号
+       * @example AL-20260820-007
+       */
+      alarmCode?: string;
+      /**
+       * @description 告警标题
+       * @example 周界入侵告警
+       */
+      title?: string;
+      /**
+       * @description 告警类型
+       * @example 周界
+       */
+      alarmType?: string;
+      /**
+       * @description 告警来源
+       * @example 周界防范
+       */
+      source?: string;
+      /**
+       * @description 告警级别
+       * @example 一级
+       */
+      level?: string;
+      /**
+       * @description 处置状态（未确认/已确认/处理中/已处理）
+       * @example 未确认
+       */
+      status?: string;
+      /**
+       * @description 是否误报（是/否/未核实）
+       * @example 未核实
+       */
+      falseAlarm?: string;
+      /**
+       * @description 告警时间
+       * @example 2026-08-20 03:22:48
+       */
+      time?: string;
+      /**
+       * @description 告警对象类型
+       * @example 区域
+       */
+      objectType?: string;
+      /**
+       * @description 告警对象名称
+       * @example 南门西侧周界
+       */
+      objectName?: string;
+      /**
+       * @description 告警位置
+       * @example 厂区南门西侧 200 米
+       */
+      location?: string;
+      /**
+       * @description 告警描述
+       * @example 非授权人员翻越周界进入厂区，请立即核实。
+       */
+      description?: string;
+      /**
+       * @description 触发设备类型
+       * @example 周界摄像机
+       */
+      deviceType?: string;
+      /**
+       * @description 触发设备编号
+       * @example CAM-PERI-07
+       */
+      deviceId?: string;
+      /**
+       * @description 报警点位
+       * @example 南门西侧 200 米
+       */
+      point?: string;
+      /**
+       * @description 入侵位置
+       * @example 南门西侧 200 米
+       */
+      intrusionPosition?: string;
+      /**
+       * @description 入侵方式
+       * @example 翻越围栏
+       */
+      intrusionMethod?: string;
+      /**
+       * @description 关联摄像机
+       * @example CAM-PERI-07
+       */
+      relatedCamera?: string;
+      /**
+       * @description 经度
+       * @example 110.8872
+       */
+      longitude?: number;
+      /**
+       * @description 纬度
+       * @example 21.6709
+       */
+      latitude?: number;
+      /**
+       * @description 已派发人员，未派发为空数组
+       * @example []
+       */
+      dispatchPersonnel?: string[];
+      /**
+       * @description 是否 App 通知
+       * @example true
+       */
+      notifyApp?: boolean;
+      /**
+       * @description 是否短信通知
+       * @example false
+       */
+      notifySms?: boolean;
+      /**
+       * @description 处置结果，未处置为空串
+       * @example
+       */
+      handleResult?: string;
+      /**
+       * @description 处置时间，未处置为空串
+       * @example
+       */
+      handleTime?: string;
+      /**
+       * Format: int64
+       * @description 关联应急事件 ID，用于处置调度/一键应急
+       * @example 7
+       */
+      rescueEventId?: number;
+      /**
+       * @description 关联监控点位编号
+       * @example cam-peri-07
+       */
+      monitorId?: string;
+      /**
+       * @description 关联监控点位名称
+       * @example 南门西侧周界监控
+       */
+      monitorLabel?: string;
+      /**
+       * @description 处置工单号，无则为空
+       * @example
+       */
+      workOrderNo?: string;
+      /**
+       * @description 现场抓拍字节端点相对路径（需带 JWT 取 blob 后渲染），无抓拍为空串
+       * @example /api/v1/security/perimeter-alarms/1/snapshot
+       */
+      snapshotPath?: string;
+      /**
+       * @description 现场抓拍说明文字，无抓拍为空串
+       * @example 现场抓拍
+       */
+      snapshotLabel?: string;
     };
   };
   responses: {
@@ -1002,6 +1226,122 @@ export interface operations {
         };
       };
       401: components['responses']['Unauthorized'];
+    };
+  };
+  getLatestPerimeterAlarm: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=PerimeterAlarmDetail，无告警时为 null） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 1,
+           *         "alarmCode": "AL-20260820-007",
+           *         "title": "周界入侵告警",
+           *         "status": "未确认",
+           *         "time": "2026-08-20 03:22:48",
+           *         "location": "厂区南门西侧 200 米",
+           *         "deviceId": "CAM-PERI-07",
+           *         "snapshotPath": "/api/v1/security/perimeter-alarms/1/snapshot"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['PerimeterAlarmDetail'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  getPerimeterAlarm: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path: {
+        /** @description 周界入侵告警主键 */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=PerimeterAlarmDetail） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 2,
+           *         "alarmCode": "AL-20260819-003",
+           *         "title": "周界入侵告警",
+           *         "status": "已处理",
+           *         "time": "2026-08-19 21:10:05",
+           *         "location": "厂区西门北侧 120 米",
+           *         "handleResult": "经核实为检修人员临时跨越通道，已现场纠正并封闭临时开口。"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['PerimeterAlarmDetail'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  getPerimeterAlarmSnapshot: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 周界入侵告警 id（取自 /security/perimeter-alarms/latest） */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description 现场抓拍字节（image/jpeg） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'image/jpeg': string;
+        };
+      };
+      /** @description 该告警无现场抓拍（snapshot_bytes 为空） */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
     };
   };
 }

@@ -1,4 +1,4 @@
-import { request } from '@/services/http';
+import http, { request } from '@/services/http';
 import * as searchFixture from '@/services/map-data/securitySearchMock';
 import type { SecurityTrackMode } from '@/services/map-data/securityTrackMock';
 
@@ -117,6 +117,88 @@ export async function fetchPersonSearchDetail(id: number): Promise<PersonSearchD
     return data ?? null;
   } catch {
     backendUnavailableWarn('security', `/security/search/person/${id}`);
+    return null;
+  }
+}
+
+// === B6 周界入侵告警（原 SecurityStatusPanel 的 demo 常量已迁至后端） ===
+export interface PerimeterAlarmDetail {
+  id: number;
+  alarmCode: string;
+  title: string;
+  alarmType: string;
+  source: string;
+  level: string;
+  status: string;
+  falseAlarm: string;
+  time: string;
+  objectType: string;
+  objectName: string;
+  location: string;
+  description: string;
+  deviceType: string;
+  deviceId: string;
+  point: string;
+  intrusionPosition: string;
+  intrusionMethod: string;
+  relatedCamera: string;
+  longitude: number;
+  latitude: number;
+  dispatchPersonnel: string[];
+  notifyApp: boolean;
+  notifySms: boolean;
+  handleResult: string;
+  handleTime: string;
+  rescueEventId: number;
+  monitorId: string;
+  monitorLabel: string;
+  workOrderNo: string;
+  snapshotPath: string;
+  snapshotLabel: string;
+}
+
+/** 最新一条周界入侵告警；无告警返回 null。 */
+export async function fetchLatestPerimeterAlarm(): Promise<PerimeterAlarmDetail | null> {
+  if (!import.meta.env.VITE_API_BASE) return null;
+  try {
+    const data = await request<PerimeterAlarmDetail>({
+      url: '/security/perimeter-alarms/latest',
+      method: 'GET',
+    });
+    return data ?? null;
+  } catch {
+    backendUnavailableWarn('security', '/security/perimeter-alarms/latest');
+    return null;
+  }
+}
+
+/** 指定周界入侵告警详情；未找到返回 null。 */
+export async function fetchPerimeterAlarm(id: number): Promise<PerimeterAlarmDetail | null> {
+  if (!import.meta.env.VITE_API_BASE) return null;
+  try {
+    const data = await request<PerimeterAlarmDetail>({
+      url: `/security/perimeter-alarms/${id}`,
+      method: 'GET',
+    });
+    return data ?? null;
+  } catch {
+    backendUnavailableWarn('security', `/security/perimeter-alarms/${id}`);
+    return null;
+  }
+}
+
+/**
+ * 周界入侵告警现场抓拍（blob → objectURL）。
+ * 鉴权 seam：抓拍端点需带 token，原生 <img src> 拿不到，故由带鉴权的 http 客户端取字节后转 objectURL。
+ */
+export async function fetchPerimeterAlarmSnapshotUrl(id: number): Promise<string | null> {
+  if (!import.meta.env.VITE_API_BASE) return null;
+  try {
+    const resp = await http.get<Blob>(`/security/perimeter-alarms/${id}/snapshot`, {
+      responseType: 'blob',
+    });
+    return URL.createObjectURL(resp.data);
+  } catch {
     return null;
   }
 }
