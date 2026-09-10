@@ -7,13 +7,32 @@ import { reportAudit } from '@/services/audit';
 // 静态仅保留布局壳与 404；页面路由由 /auth/menus 动态装配（B3 AUTH-05）
 // mock 菜单不可达时降级装配 DEFAULT_MENUS（menu.ts），保证不白屏
 // 二级页面（hidden）：不进顶部导航，由一级页面「更多/查看全部」跳转进入。
-// 权限码沿用 RBAC 表（ROLE_PERMS），守卫自动校验 meta.perm。
+// 权限码自 V32 起由后端 GET /auth/me 下发（sys_role_menu → sys_menu.perm_code），
+// 前端不再维护硬编码权限表；守卫自动校验 meta.perm。
 const SECONDARY_ROUTES: RouteRecordRaw[] = [
   {
     path: '/system/users',
     name: 'system-users',
     component: () => import('@/views/system/users.vue'),
-    meta: { title: '用户与权限', perm: 'system:user:view', hidden: true },
+    meta: { title: '用户管理', perm: 'system:user:view', hidden: true },
+  },
+  {
+    path: '/system/roles',
+    name: 'system-roles',
+    component: () => import('@/views/system/roles.vue'),
+    meta: { title: '角色管理', perm: 'system:role:view', hidden: true },
+  },
+  {
+    path: '/system/menus',
+    name: 'system-menus',
+    component: () => import('@/views/system/menus.vue'),
+    meta: { title: '菜单权限', perm: 'system:menu:view', hidden: true },
+  },
+  {
+    path: '/system/dicts',
+    name: 'system-dicts',
+    component: () => import('@/views/system/dict.vue'),
+    meta: { title: '数据字典', perm: 'system:dict:view', hidden: true },
   },
   {
     path: '/system/device-code',
