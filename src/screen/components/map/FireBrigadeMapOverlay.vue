@@ -3,14 +3,19 @@ import { computed } from 'vue';
 import { assets } from '../../utils/designAssets';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
-import { fireBrigadeTeams, getFireBrigadeTeam } from '../../lib/data/fireBrigadeMock';
-import { selectedFireBrigadeId, selectFireBrigade } from '../../lib/composables/useFireBrigadeView';
+import {
+  fireBrigadeItems,
+  selectedFireBrigade,
+  selectedFireBrigadeId,
+  selectFireBrigade,
+} from '../../lib/composables/useFireBrigadeView';
 
-const activeTeam = computed(() => getFireBrigadeTeam(selectedFireBrigadeId.value));
+// 数据来源统一收敛到 useFireBrigadeView（fetchFireBrigades / 初始 fixture），不再直读本地 mock 常量。
+const activeTeam = computed(() => selectedFireBrigade.value);
 
 const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(() => {
   const height = getSharedMap()?.getBoundaryModelTopHeight?.() ?? 72.05;
-  return fireBrigadeTeams.map((team) => ({
+  return fireBrigadeItems.value.map((team) => ({
     key: String(team.id),
     longitude: team.longitude,
     latitude: team.latitude,
@@ -22,7 +27,7 @@ const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(() => {
 <template>
   <div class="brigade-map" aria-hidden="true">
     <div
-      v-for="team in fireBrigadeTeams"
+      v-for="team in fireBrigadeItems"
       :key="team.id"
       class="brigade-marker"
       :class="{ 'brigade-marker--active': selectedFireBrigadeId === team.id }"

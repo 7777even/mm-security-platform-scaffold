@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import PanelCard from '../common/PanelCard.vue';
 import StatCard from '../common/StatCard.vue';
-import { rescueStats } from '../../lib/data/mock';
+import { onMounted, ref } from 'vue';
+import { fetchRescueForces, type RescueForceStat } from '@/services/fireMonitoring';
 import {
   openFireBrigadeView,
   closeFireBrigadeView,
@@ -23,6 +24,12 @@ import { closeSpecialOperationView } from '../../lib/composables/useSpecialOpera
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 
 const { scaleAreaCount } = usePlantArea();
+
+// 消防救援力量统计：直连真后端 /fire/rescue-forces（无后端时 service 回落 dev fixture）。
+const rescueStats = ref<RescueForceStat[]>([]);
+onMounted(async () => {
+  rescueStats.value = await fetchRescueForces();
+});
 
 function handleStatClick(label: string) {
   closeSpecialOperationView();

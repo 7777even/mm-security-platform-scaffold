@@ -8,6 +8,7 @@ import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
 import { coordsForFireBrigadeTeam } from '../data/rescueMapCoords';
+import { fireBrigadeTeams } from '../data/fireBrigadeMock';
 import { restoreRescueMapView, runRescueMapFocus } from './useRescueMapFocus';
 
 export const FIRE_BRIGADE_PAGE_SIZE = 5;
@@ -18,8 +19,9 @@ export const fireBrigadeCurrentPage = ref(1);
 export const fireBrigadeKeyword = ref('');
 export const fireBrigadeAreaFilter = ref('全部区域');
 
-const fireBrigadeData = ref<FireBrigadeList>({ areas: [], items: [] });
-const fireBrigadeItems = computed<FireBrigadeTeam[]>(() => fireBrigadeData.value.items);
+// 初始态预填本地 fixture（fireBrigadeMock），避免空态；openFireBrigadeView 触发后端 load 后整体替换。
+const fireBrigadeData = ref<FireBrigadeList>({ areas: [], items: fireBrigadeTeams });
+export const fireBrigadeItems = computed<FireBrigadeTeam[]>(() => fireBrigadeData.value.items);
 
 /** 筛选下拉选项（含“全部”哨兵值），由后端返回的区域列表派生。 */
 export const fireBrigadeAreas = computed(() => ['全部区域', ...fireBrigadeData.value.areas]);
@@ -62,7 +64,16 @@ async function loadFireBrigades() {
   fireBrigadeLoading.value = true;
   fireBrigadeError.value = null;
   try {
-    fireBrigadeData.value = await fetchFireBrigades();
+    const raw = await fetchFireBrigades();
+    const items = (raw as { items?: unknown }).items;
+    if (!raw || !Array.isArray(items)) {
+      // 后端返回结构异常：保留本地 fixture，绝不覆盖为清空状态。
+      console.warn(
+        '[useFireBrigadeView] /rescue-resources/brigades 返回结构异常，保留本地 fixture',
+      );
+      return;
+    }
+    fireBrigadeData.value = raw;
   } catch (e) {
     fireBrigadeError.value = e instanceof Error ? e.message : String(e);
   } finally {
