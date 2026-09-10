@@ -56,6 +56,7 @@
 ## 7. 门禁基线
 
 - `vitest run` 约 **378 passed**；`vue-tsc -p tsconfig.app.json --noEmit` **0 错**。
+- `node scripts/validate-api-contracts.mjs` **通过（27 域）**；铁律 ④（2xx 响应需 `example`）对**二进制响应窄豁免**——仅当响应**无 `application/json`** 且**全部媒体类型**为 `image|audio|video/*`、`application/octet-stream` 或 `schema.format=binary` 时跳过，JSON 分支缺 example 仍报错（2026-09-10 起，修订掉 V26/V29 快照端点的 2 处误报）。
 - 单测 fake timers **禁用 `setTimeout(r,0)`** 冲刷 fetch，改 `await Promise.resolve()` 循环。
 
 ## 8. 里程碑速记
