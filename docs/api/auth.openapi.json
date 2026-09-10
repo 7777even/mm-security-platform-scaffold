@@ -122,10 +122,10 @@
         "tags": ["auth"],
         "operationId": "getCurrentUser",
         "summary": "当前登录用户",
-        "description": "返回当前用户基本信息（username/realName/role）。",
+        "description": "返回当前用户身份与权限码全集（roles/perms）。perms 由 sys_role_menu → sys_menu.perm_code 解析（V32 起取代前端硬编码 ROLE_PERMS），是前端路由守卫与 v-permission 的唯一权威来源；mustChangePwd=true 时前端须强制跳转改密页。",
         "responses": {
           "200": {
-            "description": "B3 成功包络（data=CurrentUser）",
+            "description": "B3 成功包络（data=MeResult）",
             "content": {
               "application/json": {
                 "schema": {
@@ -133,20 +133,116 @@
                     { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
                     {
                       "type": "object",
-                      "properties": { "data": { "$ref": "#/components/schemas/CurrentUser" } }
+                      "properties": { "data": { "$ref": "#/components/schemas/MeResult" } }
                     }
                   ]
                 },
                 "example": {
                   "code": 0,
                   "message": "ok",
-                  "data": { "username": "admin", "realName": "系统管理员", "role": "ADMIN" }
+                  "data": {
+                    "username": "admin",
+                    "realName": "系统管理员",
+                    "role": "ADMIN",
+                    "roles": ["ADMIN"],
+                    "perms": [
+                      "dashboard:view",
+                      "fire-alarm:ack",
+                      "fire-alarm:view",
+                      "security:view",
+                      "system:user:create",
+                      "system:user:view"
+                    ],
+                    "mustChangePwd": false
+                  }
                 }
               }
             }
           },
           "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
           "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/auth/password": {
+      "post": {
+        "tags": ["auth"],
+        "operationId": "changePassword",
+        "summary": "本人修改口令",
+        "description": "校验旧口令与新口令复杂度（长度 / 字符类别 / 不含用户名 / 不与旧口令相同）后修改。成功后清除 mustChangePwd 标记与强制改密缓存。旧口令错误或不符合策略返回 code=100（HTTP 200）。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PasswordChangeRequest" },
+              "example": { "oldPassword": "admin@2026", "newPassword": "Sino@2026sec" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=null）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    { "type": "object", "properties": { "data": { "type": "null" } } }
+                  ]
+                },
+                "example": { "code": 0, "message": "ok", "data": null }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/auth/profile": {
+      "put": {
+        "tags": ["auth"],
+        "operationId": "updateProfile",
+        "summary": "本人资料修改",
+        "description": "仅允许修改本人真实姓名（角色 / 状态不可自改，防自我提权）。返回最新的 MeResult（含权限码）。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ProfileUpdateRequest" },
+              "example": { "realName": "系统管理员" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=MeResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/MeResult" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "username": "admin",
+                    "realName": "系统管理员",
+                    "role": "ADMIN",
+                    "roles": ["ADMIN"],
+                    "perms": ["emergency:view", "system:user:view"],
+                    "mustChangePwd": false
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
         }
       }
     },
@@ -217,9 +313,9 @@
         },
         "required": ["accessToken", "expiresIn", "tokenType"]
       },
-      "CurrentUser": {
+      "MeResult": {
         "type": "object",
-        "description": "当前登录用户。",
+        "description": "当前登录用户（GET /auth/me、PUT /auth/profile 返回）。roles/perms 由后端按 sys_role_menu 解析下发，前端不再硬编码角色权限表。",
         "properties": {
           "username": {
             "type": "string",
@@ -233,10 +329,60 @@
           },
           "role": {
             "type": "string",
-            "description": "角色码（ADMIN 为管理员，其余为普通角色）",
+            "description": "当前角色标识（单角色；ADMIN 为管理员）",
             "example": "ADMIN"
+          },
+          "roles": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "角色标识列表（当前为长度 1 的列表，预留多角色演进）",
+            "example": ["ADMIN"]
+          },
+          "perms": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "权限码全集（由 sys_role_menu 解析、去重、排序），前端权限判定的唯一权威来源",
+            "example": [
+              "dashboard:view",
+              "fire-alarm:ack",
+              "fire-alarm:view",
+              "security:view",
+              "system:user:create",
+              "system:user:view"
+            ]
+          },
+          "mustChangePwd": {
+            "type": "boolean",
+            "description": "是否需强制修改口令（true 时前端须跳转改密页，后端亦拒绝变更类请求）",
+            "example": false
           }
-        }
+        },
+        "required": ["username", "realName", "role", "roles", "perms", "mustChangePwd"]
+      },
+      "PasswordChangeRequest": {
+        "type": "object",
+        "description": "本人修改口令入参（POST /auth/password）。",
+        "properties": {
+          "oldPassword": {
+            "type": "string",
+            "description": "旧口令（须与库中哈希匹配）",
+            "example": "admin@2026"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "新口令（须通过复杂度策略）",
+            "example": "Sino@2026sec"
+          }
+        },
+        "required": ["oldPassword", "newPassword"]
+      },
+      "ProfileUpdateRequest": {
+        "type": "object",
+        "description": "本人资料修改入参（PUT /auth/profile）。",
+        "properties": {
+          "realName": { "type": "string", "description": "真实姓名", "example": "系统管理员" }
+        },
+        "required": ["realName"]
       },
       "MenuItem": {
         "type": "object",

@@ -68,10 +68,50 @@ export interface paths {
     };
     /**
      * 当前登录用户
-     * @description 返回当前用户基本信息（username/realName/role）。
+     * @description 返回当前用户身份与权限码全集（roles/perms）。perms 由 sys_role_menu → sys_menu.perm_code 解析（V32 起取代前端硬编码 ROLE_PERMS），是前端路由守卫与 v-permission 的唯一权威来源；mustChangePwd=true 时前端须强制跳转改密页。
      */
     get: operations['getCurrentUser'];
     put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/password': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 本人修改口令
+     * @description 校验旧口令与新口令复杂度（长度 / 字符类别 / 不含用户名 / 不与旧口令相同）后修改。成功后清除 mustChangePwd 标记与强制改密缓存。旧口令错误或不符合策略返回 code=100（HTTP 200）。
+     */
+    post: operations['changePassword'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/auth/profile': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 本人资料修改
+     * @description 仅允许修改本人真实姓名（角色 / 状态不可自改，防自我提权）。返回最新的 MeResult（含权限码）。
+     */
+    put: operations['updateProfile'];
     post?: never;
     delete?: never;
     options?: never;
@@ -173,23 +213,68 @@ export interface components {
        */
       tokenType: string;
     };
-    /** @description 当前登录用户。 */
-    CurrentUser: {
+    /** @description 当前登录用户（GET /auth/me、PUT /auth/profile 返回）。roles/perms 由后端按 sys_role_menu 解析下发，前端不再硬编码角色权限表。 */
+    MeResult: {
       /**
        * @description 登录用户名（唯一标识）
        * @example admin
        */
-      username?: string;
+      username: string;
       /**
        * @description 用户真实姓名（展示用）
        * @example 系统管理员
        */
-      realName?: string;
+      realName: string;
       /**
-       * @description 角色码（ADMIN 为管理员，其余为普通角色）
+       * @description 当前角色标识（单角色；ADMIN 为管理员）
        * @example ADMIN
        */
-      role?: string;
+      role: string;
+      /**
+       * @description 角色标识列表（当前为长度 1 的列表，预留多角色演进）
+       * @example [
+       *       "ADMIN"
+       *     ]
+       */
+      roles: string[];
+      /**
+       * @description 权限码全集（由 sys_role_menu 解析、去重、排序），前端权限判定的唯一权威来源
+       * @example [
+       *       "dashboard:view",
+       *       "fire-alarm:ack",
+       *       "fire-alarm:view",
+       *       "security:view",
+       *       "system:user:create",
+       *       "system:user:view"
+       *     ]
+       */
+      perms: string[];
+      /**
+       * @description 是否需强制修改口令（true 时前端须跳转改密页，后端亦拒绝变更类请求）
+       * @example false
+       */
+      mustChangePwd: boolean;
+    };
+    /** @description 本人修改口令入参（POST /auth/password）。 */
+    PasswordChangeRequest: {
+      /**
+       * @description 旧口令（须与库中哈希匹配）
+       * @example admin@2026
+       */
+      oldPassword: string;
+      /**
+       * @description 新口令（须通过复杂度策略）
+       * @example Sino@2026sec
+       */
+      newPassword: string;
+    };
+    /** @description 本人资料修改入参（PUT /auth/profile）。 */
+    ProfileUpdateRequest: {
+      /**
+       * @description 真实姓名
+       * @example 系统管理员
+       */
+      realName: string;
     };
     /** @description 菜单项（可递归嵌套 children）。 */
     MenuItem: {
@@ -378,7 +463,7 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description B3 成功包络（data=CurrentUser） */
+      /** @description B3 成功包络（data=MeResult） */
       200: {
         headers: {
           [name: string]: unknown;
@@ -391,17 +476,120 @@ export interface operations {
            *       "data": {
            *         "username": "admin",
            *         "realName": "系统管理员",
-           *         "role": "ADMIN"
+           *         "role": "ADMIN",
+           *         "roles": [
+           *           "ADMIN"
+           *         ],
+           *         "perms": [
+           *           "dashboard:view",
+           *           "fire-alarm:ack",
+           *           "fire-alarm:view",
+           *           "security:view",
+           *           "system:user:create",
+           *           "system:user:view"
+           *         ],
+           *         "mustChangePwd": false
            *       }
            *     }
            */
           'application/json': components['schemas']['ApiResponse'] & {
-            data?: components['schemas']['CurrentUser'];
+            data?: components['schemas']['MeResult'];
           };
         };
       };
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
+    };
+  };
+  changePassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "oldPassword": "admin@2026",
+         *       "newPassword": "Sino@2026sec"
+         *     }
+         */
+        'application/json': components['schemas']['PasswordChangeRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=null） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: null;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  updateProfile: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "realName": "系统管理员"
+         *     }
+         */
+        'application/json': components['schemas']['ProfileUpdateRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=MeResult） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "username": "admin",
+           *         "realName": "系统管理员",
+           *         "role": "ADMIN",
+           *         "roles": [
+           *           "ADMIN"
+           *         ],
+           *         "perms": [
+           *           "emergency:view",
+           *           "system:user:view"
+           *         ],
+           *         "mustChangePwd": false
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['MeResult'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
     };
   };
   getMenus: {

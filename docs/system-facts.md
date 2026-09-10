@@ -41,6 +41,10 @@
 - `vue-tsc` 报 `TS2503 Cannot find namespace 'vi'` → 改 `import { vi, type Mock } from 'vitest'`。
 - Vue 模板 `img.src` 拒 `string|null` → 契约可空字段需 `?? ''` 兜底。
 - `vite.config.ts` `testTimeout` 已提至 **15000ms**（本机慢机偶发 5s 超时非缺陷）。
+- **权限码来源已后端化（2026-09-10，V32）**：`stores/auth.ts` **不再有** `ROLE_PERMS` / `RoleId` / `ROLE_NAMES`，`role` 为 `string`；权限码由 `GET /auth/me` 的 `perms` 下发（`sys_role_menu → sys_menu.perm_code`），`setMe(me)` / `clearMe()` / `loadMe()` 维护快照。启动时序**必须**在装配路由前完成 `loadMe()`（否则守卫在 `meta.perm` 判定时拿到空权限集 → 受保护页面误跳 404），见 `main.ts#hydrateUser`。
+- `stores/auth.ts` 的 `perms` 与 `role` 经 `WujieHost.vue#sharedProps` 下传子应用（`user` / `perms`），改名时须同步该处。
+- **无后端演示模式**（`VITE_USE_DEV_MOCK=true`）下 `main.ts` 用 `DEV_MOCK_PERMS` 常量兜底注入（覆盖 5 个 fm-* 路由 meta.perm + 系统管理二级页 + `fire-alarm:ack`），真实后端模式一律以 `/auth/me` 为准。
+- 权限相关测试需显式 `auth.setMe({...perms})` 造快照（`usePermission.spec.ts` / `permission.spec.ts` / `menu.spec.ts`），**不再有「默认管理员自带全部权限」的隐含前提**。
 
 ## 6. 去 mock 决策判据（复用）
 
@@ -55,8 +59,8 @@
 
 ## 7. 门禁基线
 
-- `vitest run` 约 **378 passed**；`vue-tsc -p tsconfig.app.json --noEmit` **0 错**。
-- `node scripts/validate-api-contracts.mjs` **通过（27 域）**；铁律 ④（2xx 响应需 `example`）对**二进制响应窄豁免**——仅当响应**无 `application/json`** 且**全部媒体类型**为 `image|audio|video/*`、`application/octet-stream` 或 `schema.format=binary` 时跳过，JSON 分支缺 example 仍报错（2026-09-10 起，修订掉 V26/V29 快照端点的 2 处误报）。
+- `vitest run` 约 **379 passed**；`vue-tsc -p tsconfig.app.json --noEmit` **0 错**。
+- `node scripts/validate-api-contracts.mjs` **通过（28 域）**；铁律 ④（2xx 响应需 `example`）对**二进制响应窄豁免**——仅当响应**无 `application/json`** 且**全部媒体类型**为 `image|audio|video/*`、`application/octet-stream` 或 `schema.format=binary` 时跳过，JSON 分支缺 example 仍报错（2026-09-10 起，修订掉 V26/V29 快照端点的 2 处误报）。
 - 单测 fake timers **禁用 `setTimeout(r,0)`** 冲刷 fetch，改 `await Promise.resolve()` 循环。
 
 ## 8. 里程碑速记
@@ -71,3 +75,4 @@
 - 2026-09-10（写侧第 3 块）：视频联动配置保存/删除改接后端——`video.openapi.json` `/video/linkages` 增 `post`、新增 `/video/linkages/{configCode}`（`put`+`delete`）+2 schema（`VideoLinkageSaveRequest`/`VideoLinkageRuleInput`）+本地 `DeleteResult`；`services/video.ts` 加 `createVideoLinkage/updateVideoLinkage/deleteVideoLinkage`；`useVideoLinkageConfig.ts` 的 `saveLinkageEdit(payload)` 改 async 落库、新增 `removeLinkageConfig`（守卫 `videoLinkageWritesToBackend()`＝有 `VITE_API_BASE`，失败不假成功），`VideoLinkageConfigDialog.vue` 提交/删除改接改。门禁 `vue-tsc 0` / `vitest 378` / 守门 strict 0/0（可比 163）。
 - 2026-09-10（写侧第 4 块）：应急流程「节点联动配置」读+写后端化——`emergency.openapi.json` 新增 `GET/PUT /emergency/process/node-configs` +3 schema（`NodePhaseConfig`/`NodePhaseMapCamera`/`NodePhaseDuty`）；新增 `services/emergencyProcess.ts`（契约类型 `CameraAnchorType`/`MapCameraConfig`/`NodePhaseConfig` 归此，`nodeConfigData.ts` 改为 re-export 并保留默认值 + localStorage 离线缓存 + `mergeNodeConfigs/cloneDefaultNodeConfigs`）；`screen/lib/composables/useEmergencyProcess.ts` 的 `openNodeConfig` 触发 `loadNodeConfigsRemote()`、`saveNodeConfig/resetNodeConfig` 改 async 落库（守卫有 `VITE_API_BASE`，失败不改本地不假成功）；`NodeConfigDialog.vue` 保存/恢复默认改 async。门禁 `vue-tsc 0` / `vitest 378` / 守门 strict 0/0。
 - 2026-09-10（③类·应急流程全景后端化）：`emergency.openapi.json` 新增 `GET /emergency/process/panorama`（5 阶段 + 4 响应模式 + 15 节点）与 `GET /emergency/process/guidances`（实时值班表 + 9 条节点指引）+ **14 个 schema**；`services/emergencyProcess.ts` 成为该域契约类型唯一来源（`EmergencyPhase`/`ResponseModeOption`/`ProcessStage`/`ProcessAction`/`CriteriaChecklistItem`/`SubStageItem`/`StageEscalationRule`/`StageEscalationDetails`/`EmergencyProcessPanorama`/`NodeGuidance`/`NodeGuidanceReportingStep`/`NodeGuidanceRoleTask`/`GuidanceDutyRoster`/`EmergencyProcessGuidance`）；`screen/lib/data/emergencyProcessData.ts` 与 `nodeGuidanceData.ts` 改为「re-export 契约类型 + 保留常量」，仅作无 `VITE_API_BASE` 演示兜底；`useEmergencyProcess` 的 phases / 响应模式 / stages / 指引 / 值班表改 ref，新增 `loadEmergencyProcessRemote()`（并发拉两接口，成功逐项覆盖、失败 `backendUnavailableWarn` 保留默认值），由 `PlanPanoramaModule` onMounted 与 `openGuidance()` 触发；`PlanPanoramaModule`（2308 行）不再直引 `EMERGENCY_PHASES`，改用组件内 computed `phaseList`，`process.mockDutyRoster` 更名 `process.dutyRoster`（该组件与 `NodeGuidanceDialog` 各加 computed `roster` 解包）。门禁 `vue-tsc 0` / `vitest 378` / eslint 0 / 守门 strict 0/0（可比 177）。
+- 2026-09-10（③类最后一项·系统管理域 + RBAC 前端落地）：新增契约 `docs/api/system.openapi.json`（tags: `system`，18 schema：用户/角色/菜单权限/字典四组），`auth.openapi.json` 的 `/auth/me` 由 `CurrentUser` 改 **`MeResult`**（增 `roles`/`perms`/`mustChangePwd`）+ 新增 `/auth/password`、`/auth/profile`；**权限码来源后端化**——`stores/auth.ts` 退役 `ROLE_PERMS`/`RoleId`/`ROLE_NAMES`，改 `setMe/clearMe/loadMe`，`main.ts#hydrateUser` 在装配路由前拉 `/auth/me`（时序错了会全量 404）；新增 `services/system.ts`（30 个 REST 封装）与 `services/auth.ts` 的 `fetchCurrentUser(MeResult)`/`changePassword`/`updateProfile`；`views/system/users.vue` 由占位改为真实用户管理（列表/筛选/增改/启停用/重置口令），新增 `roles.vue`（角色 CRUD + 授权树）、`menus.vue`（菜单权限树 + 权限码字典）、`dict.vue`（字典类型 + 字典项两级）；`router/index.ts` 二级路由增至 5 条（users/roles/menus/dicts/device-code）。`WujieHost.vue` 下传字段 `auth.roleId` → `auth.role`。门禁 `vue-tsc 0` / `vitest 379` / 契约校验 28 域通过 / 后端守门 strict 0/0（可比 197）。

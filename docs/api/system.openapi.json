@@ -1,0 +1,2089 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "系统管理 System API",
+    "version": "1.0.0",
+    "x-base-path": "/api/v1",
+    "x-contract": "B3",
+    "description": "系统管理域接口：用户、角色（含角色-菜单授权）、菜单/权限节点、数据字典的查询与变更。取代前端硬编码的 ROLE_PERMS 权限表与空占位页面。权限模型见 backend-scaffold/openspec/changes/2026-09-10-system-management-rbac/design.md。",
+    "x-auth-note": "本域端点除 GET /system/dicts/{dictCode}（登录即可读，供业务下拉）外，一律要求 ADMIN 角色（后端 @RequireAuth(role=\"ADMIN\")，非管理员返回 403、未登录返回 401）。RBAC 模型：sys_user.role 引用 sys_role.role_code；权限码经 sys_role_menu → sys_menu.perm_code 解析，由 GET /auth/me 的 perms 下发；sys_menu.allowed_roles 为遗留只读列，不参与判定。硬防护：禁操作自己、保护最后一个启用 ADMIN（409）、内置角色/字典禁删（403）、被引用对象禁删（409）。所有写操作由服务端落 fac_audit_log 审计（module=system，不含口令）。"
+  },
+  "servers": [{ "url": "/api/v1", "description": "默认 baseURL（VITE_API_BASE 可覆盖）" }],
+  "security": [{ "bearerAuth": [], "replaySign": [] }],
+  "tags": [{ "name": "system", "description": "系统管理（用户 / 角色 / 菜单权限 / 字典）" }],
+  "paths": {
+    "/system/users": {
+      "get": {
+        "tags": ["system"],
+        "operationId": "listSystemUsers",
+        "summary": "用户分页查询",
+        "description": "分页查询系统用户。keyword 同时模糊匹配用户名与真实姓名；status / roleCode 为精确过滤。返回项不含口令哈希。",
+        "parameters": [
+          { "$ref": "./_shared.json#/components/parameters/page" },
+          { "$ref": "./_shared.json#/components/parameters/size" },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "关键字（用户名或姓名模糊匹配）"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "enum": [0, 1] },
+            "description": "状态过滤：1 启用 / 0 停用"
+          },
+          {
+            "name": "roleCode",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "角色标识精确过滤"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemUserPageResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/SystemUserPageResult" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "list": [
+                      {
+                        "id": 1,
+                        "username": "admin",
+                        "realName": "系统管理员",
+                        "roleCode": "ADMIN",
+                        "roleName": "系统管理员",
+                        "status": 1,
+                        "mustChangePwd": true,
+                        "createdAt": "2026-09-10 12:00:00",
+                        "updatedAt": "2026-09-10 12:00:00"
+                      }
+                    ],
+                    "total": 1,
+                    "page": 1,
+                    "size": 10
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["system"],
+        "operationId": "createSystemUser",
+        "summary": "新增用户",
+        "description": "新增系统用户。用户名唯一（冲突 409）；角色须为已启用角色（否则 100）；初始口令须通过复杂度策略。新用户置 mustChangePwd=true，首次登录强制改密。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SystemUserCreate" },
+              "example": {
+                "username": "zhang.san",
+                "password": "Init@12345",
+                "realName": "张三",
+                "roleCode": "OUTER_OPER",
+                "status": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemUserItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/SystemUserItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 2,
+                    "username": "zhang.san",
+                    "realName": "张三",
+                    "roleCode": "OUTER_OPER",
+                    "roleName": "外操",
+                    "status": 1,
+                    "mustChangePwd": true,
+                    "createdAt": "2026-09-10 12:30:00",
+                    "updatedAt": "2026-09-10 12:30:00"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/users/{id}": {
+      "get": {
+        "tags": ["system"],
+        "operationId": "getSystemUser",
+        "summary": "用户详情",
+        "description": "按 id 查询用户详情；不存在返回 404。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "用户 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemUserItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/SystemUserItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 2,
+                    "username": "zhang.san",
+                    "realName": "张三",
+                    "roleCode": "OUTER_OPER",
+                    "roleName": "外操",
+                    "status": 1,
+                    "mustChangePwd": false,
+                    "createdAt": "2026-09-10 12:30:00",
+                    "updatedAt": "2026-09-10 12:31:00"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "put": {
+        "tags": ["system"],
+        "operationId": "updateSystemUser",
+        "summary": "修改用户",
+        "description": "修改用户姓名 / 角色 / 状态。改角色或停用时执行硬防护：不可修改自己的角色（403）、不可停用自己（403）、不可使启用 ADMIN 归零（409）。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "用户 id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SystemUserUpdate" },
+              "example": { "realName": "张三", "roleCode": "SCHEDULER", "status": 1 }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemUserItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/SystemUserItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 2,
+                    "username": "zhang.san",
+                    "realName": "张三",
+                    "roleCode": "SCHEDULER",
+                    "roleName": "值班调度",
+                    "status": 1,
+                    "mustChangePwd": false,
+                    "createdAt": "2026-09-10 12:30:00",
+                    "updatedAt": "2026-09-10 12:40:00"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "delete": {
+        "tags": ["system"],
+        "operationId": "deleteSystemUser",
+        "summary": "删除用户",
+        "description": "逻辑删除用户（deleted=1）。禁删自己（403）、禁删最后一个启用 ADMIN（409）。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "用户 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DeleteResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/DeleteResult" } }
+                    }
+                  ]
+                },
+                "example": { "code": 0, "message": "ok", "data": { "ok": true } }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/users/{id}/status": {
+      "put": {
+        "tags": ["system"],
+        "operationId": "updateSystemUserStatus",
+        "summary": "启用 / 停用用户",
+        "description": "status=1 启用、0 停用。停用执行硬防护：不可停用自己（403）、不可使启用 ADMIN 归零（409）。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "用户 id"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "integer", "enum": [0, 1] },
+            "description": "目标状态：1 启用 / 0 停用"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemUserItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/SystemUserItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 2,
+                    "username": "zhang.san",
+                    "realName": "张三",
+                    "roleCode": "SCHEDULER",
+                    "roleName": "值班调度",
+                    "status": 0,
+                    "mustChangePwd": false,
+                    "createdAt": "2026-09-10 12:30:00",
+                    "updatedAt": "2026-09-10 12:45:00"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/users/{id}/role": {
+      "put": {
+        "tags": ["system"],
+        "operationId": "assignSystemUserRole",
+        "summary": "分配用户角色",
+        "description": "单独调整用户角色（请求体只需 roleCode）。硬防护同修改用户：不可改自己角色（403）、不可使启用 ADMIN 归零（409）。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "用户 id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SystemUserUpdate" },
+              "example": { "roleCode": "SCHEDULER" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemUserItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/SystemUserItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 2,
+                    "username": "zhang.san",
+                    "realName": "张三",
+                    "roleCode": "SCHEDULER",
+                    "roleName": "值班调度",
+                    "status": 1,
+                    "mustChangePwd": false,
+                    "createdAt": "2026-09-10 12:30:00",
+                    "updatedAt": "2026-09-10 12:50:00"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/users/{id}/password/reset": {
+      "post": {
+        "tags": ["system"],
+        "operationId": "resetSystemUserPassword",
+        "summary": "重置用户口令",
+        "description": "由服务端生成随机临时口令（12 位、含多类字符，非固定值），置 mustChangePwd=true 并返回一次性临时口令。响应与审计均不含口令哈希。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "用户 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=PasswordResetResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/PasswordResetResult" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": { "temporaryPassword": "Ab3!xyZ9Qw2t", "mustChangePwd": true }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/roles": {
+      "get": {
+        "tags": ["system"],
+        "operationId": "listSystemRoles",
+        "summary": "角色列表",
+        "description": "全部角色（按 sortOrder、id 排序），含各角色用户数（userCount），供角色管理列表与用户表单下拉共用。",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "关键字（角色标识或名称模糊匹配）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemRoleItem[]）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/SystemRoleItem" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "roleCode": "ADMIN",
+                      "roleName": "系统管理员",
+                      "description": "内置超级管理员，拥有全部菜单与权限",
+                      "dataScope": "ALL",
+                      "status": 1,
+                      "builtIn": true,
+                      "sortOrder": 0,
+                      "userCount": 1,
+                      "createdAt": "2026-09-10 12:00:00"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["system"],
+        "operationId": "createSystemRole",
+        "summary": "新增角色",
+        "description": "新增角色。roleCode 唯一（冲突 409，保存时统一大写）；dataScope 仅接受 ALL/DEPT/SELF（否则 100）。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SystemRoleSaveRequest" },
+              "example": {
+                "roleCode": "scheduler",
+                "roleName": "值班调度",
+                "description": "值班调度岗",
+                "dataScope": "DEPT",
+                "status": 1,
+                "sortOrder": 20
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemRoleItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/SystemRoleItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 7,
+                    "roleCode": "SCHEDULER",
+                    "roleName": "值班调度",
+                    "description": "值班调度岗",
+                    "dataScope": "DEPT",
+                    "status": 1,
+                    "builtIn": false,
+                    "sortOrder": 20,
+                    "userCount": 0,
+                    "createdAt": "2026-09-10 12:20:00"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/roles/{id}": {
+      "get": {
+        "tags": ["system"],
+        "operationId": "getSystemRole",
+        "summary": "角色详情",
+        "description": "按 id 查询角色；不存在返回 404。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "角色 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemRoleItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/SystemRoleItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 7,
+                    "roleCode": "SCHEDULER",
+                    "roleName": "值班调度",
+                    "description": "值班调度岗",
+                    "dataScope": "DEPT",
+                    "status": 1,
+                    "builtIn": false,
+                    "sortOrder": 20,
+                    "userCount": 2,
+                    "createdAt": "2026-09-10 12:20:00"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "put": {
+        "tags": ["system"],
+        "operationId": "updateSystemRole",
+        "summary": "修改角色",
+        "description": "修改角色。内置角色禁改 roleCode、禁停用（403）；roleCode 冲突返回 409。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "角色 id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SystemRoleSaveRequest" },
+              "example": {
+                "roleCode": "SCHEDULER",
+                "roleName": "值班调度员",
+                "description": "值班调度岗",
+                "dataScope": "DEPT",
+                "status": 1,
+                "sortOrder": 21
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemRoleItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/SystemRoleItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 7,
+                    "roleCode": "SCHEDULER",
+                    "roleName": "值班调度员",
+                    "description": "值班调度岗",
+                    "dataScope": "DEPT",
+                    "status": 1,
+                    "builtIn": false,
+                    "sortOrder": 21,
+                    "userCount": 2,
+                    "createdAt": "2026-09-10 12:20:00"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "delete": {
+        "tags": ["system"],
+        "operationId": "deleteSystemRole",
+        "summary": "删除角色",
+        "description": "逻辑删除角色。内置角色禁删（403）；仍被用户引用时禁删（409）。同时清除该角色的菜单授权。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "角色 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DeleteResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/DeleteResult" } }
+                    }
+                  ]
+                },
+                "example": { "code": 0, "message": "ok", "data": { "ok": true } }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/roles/{id}/status": {
+      "put": {
+        "tags": ["system"],
+        "operationId": "updateSystemRoleStatus",
+        "summary": "启用 / 停用角色",
+        "description": "status=1 启用、0 停用。内置角色禁停用（403）。停用角色等价于回收该角色全部权限。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "角色 id"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "integer", "enum": [0, 1] },
+            "description": "目标状态：1 启用 / 0 停用"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemRoleItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/SystemRoleItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 7,
+                    "roleCode": "SCHEDULER",
+                    "roleName": "值班调度",
+                    "description": "值班调度岗",
+                    "dataScope": "DEPT",
+                    "status": 0,
+                    "builtIn": false,
+                    "sortOrder": 20,
+                    "userCount": 2,
+                    "createdAt": "2026-09-10 12:20:00"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/roles/{id}/menus": {
+      "get": {
+        "tags": ["system"],
+        "operationId": "getSystemRoleMenus",
+        "summary": "查询角色已授权节点",
+        "description": "返回该角色已授权的菜单/权限节点 id 集合，供授权树回显。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "角色 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=integer[]）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "type": "array", "items": { "type": "integer" } } }
+                    }
+                  ]
+                },
+                "example": { "code": 0, "message": "ok", "data": [1, 2, 3, 6, 10, 11] }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "put": {
+        "tags": ["system"],
+        "operationId": "assignSystemRoleMenus",
+        "summary": "保存角色授权",
+        "description": "整体覆盖该角色的菜单/权限授权（空数组表示回收全部授权）。ADMIN 角色不可清空（409）。保存后权限解析缓存即时失效，授权立即生效。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "角色 id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SystemRoleMenuAssign" },
+              "example": { "menuIds": [1, 2, 3, 6, 10, 11] }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=integer[]，返回保存后的授权 id 集合）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "type": "array", "items": { "type": "integer" } } }
+                    }
+                  ]
+                },
+                "example": { "code": 0, "message": "ok", "data": [1, 2, 3, 6, 10, 11] }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/menus": {
+      "get": {
+        "tags": ["system"],
+        "operationId": "listSystemMenus",
+        "summary": "菜单权限树",
+        "description": "返回全量菜单/权限节点树（含 DIR/MENU/BUTTON 与停用节点），用于菜单维护与角色授权树。",
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemMenuNode[]，children 递归）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/SystemMenuNode" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 6,
+                      "parentId": 0,
+                      "name": "系统管理",
+                      "code": "system",
+                      "path": "/system",
+                      "icon": "Setting",
+                      "sortOrder": 900,
+                      "menuType": "DIR",
+                      "permCode": null,
+                      "visible": 1,
+                      "status": 1,
+                      "children": [
+                        {
+                          "id": 7,
+                          "parentId": 6,
+                          "name": "用户管理",
+                          "code": "system-user",
+                          "path": "/system/users",
+                          "icon": null,
+                          "sortOrder": 901,
+                          "menuType": "MENU",
+                          "permCode": "system:user:view",
+                          "visible": 1,
+                          "status": 1,
+                          "children": [
+                            {
+                              "id": 12,
+                              "parentId": 7,
+                              "name": "新增用户",
+                              "code": "system-user-create",
+                              "path": null,
+                              "icon": null,
+                              "sortOrder": 9101,
+                              "menuType": "BUTTON",
+                              "permCode": "system:user:create",
+                              "visible": 0,
+                              "status": 1,
+                              "children": null
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["system"],
+        "operationId": "createSystemMenu",
+        "summary": "新增菜单/权限节点",
+        "description": "新增节点。code 唯一（冲突 409）；menuType 仅接受 DIR/MENU/BUTTON（否则 100）。BUTTON 节点不参与导航，仅贡献权限码。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SystemMenuSaveRequest" },
+              "example": {
+                "parentId": 7,
+                "name": "导出用户",
+                "code": "system-user-export",
+                "menuType": "BUTTON",
+                "permCode": "system:user:export",
+                "visible": 0,
+                "status": 1,
+                "sortOrder": 9106
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemMenuNode）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/SystemMenuNode" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 40,
+                    "parentId": 7,
+                    "name": "导出用户",
+                    "code": "system-user-export",
+                    "path": null,
+                    "icon": null,
+                    "sortOrder": 9106,
+                    "menuType": "BUTTON",
+                    "permCode": "system:user:export",
+                    "visible": 0,
+                    "status": 1,
+                    "children": null
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/menus/{id}": {
+      "put": {
+        "tags": ["system"],
+        "operationId": "updateSystemMenu",
+        "summary": "修改菜单/权限节点",
+        "description": "修改节点。code 冲突返回 409；父节点不能是自己（100）。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "节点 id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SystemMenuSaveRequest" },
+              "example": {
+                "parentId": 7,
+                "name": "用户导出",
+                "code": "system-user-export",
+                "menuType": "BUTTON",
+                "permCode": "system:user:export",
+                "visible": 0,
+                "status": 1,
+                "sortOrder": 9107
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SystemMenuNode）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/SystemMenuNode" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 40,
+                    "parentId": 7,
+                    "name": "用户导出",
+                    "code": "system-user-export",
+                    "path": null,
+                    "icon": null,
+                    "sortOrder": 9107,
+                    "menuType": "BUTTON",
+                    "permCode": "system:user:export",
+                    "visible": 0,
+                    "status": 1,
+                    "children": null
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "delete": {
+        "tags": ["system"],
+        "operationId": "deleteSystemMenu",
+        "summary": "删除菜单/权限节点",
+        "description": "删除节点。存在子节点（409）或已被角色授权（409）时拒绝，须先解绑 / 先删子节点。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "节点 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DeleteResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/DeleteResult" } }
+                    }
+                  ]
+                },
+                "example": { "code": 0, "message": "ok", "data": { "ok": true } }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/permissions": {
+      "get": {
+        "tags": ["system"],
+        "operationId": "listSystemPermissions",
+        "summary": "权限码字典",
+        "description": "聚合所有 perm_code 非空的菜单/权限节点（去重、按权限码排序），供角色授权界面展示与前后端权限码核对。",
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=PermissionCodeItem[]）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/PermissionCodeItem" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [{ "permCode": "system:user:create", "name": "新增用户", "menuId": 12 }]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/dict-types": {
+      "get": {
+        "tags": ["system"],
+        "operationId": "listDictTypes",
+        "summary": "字典类型分页",
+        "description": "分页查询字典类型；keyword 模糊匹配字典标识与名称。",
+        "parameters": [
+          { "$ref": "./_shared.json#/components/parameters/page" },
+          { "$ref": "./_shared.json#/components/parameters/size" },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "关键字（字典标识或名称模糊匹配）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DictTypePageResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/DictTypePageResult" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "list": [
+                      {
+                        "id": 1,
+                        "dictCode": "alarm_level",
+                        "dictName": "报警等级",
+                        "description": "报警分级字典",
+                        "status": 1,
+                        "builtIn": false,
+                        "createdAt": "2026-09-10 13:00:00"
+                      }
+                    ],
+                    "total": 1,
+                    "page": 1,
+                    "size": 10
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["system"],
+        "operationId": "createDictType",
+        "summary": "新增字典类型",
+        "description": "新增字典类型。dictCode 唯一（冲突 409，保存时归一为小写）。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DictTypeSaveRequest" },
+              "example": {
+                "dictCode": "alarm_level",
+                "dictName": "报警等级",
+                "description": "报警分级字典",
+                "status": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DictTypeItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/DictTypeItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "dictCode": "alarm_level",
+                    "dictName": "报警等级",
+                    "description": "报警分级字典",
+                    "status": 1,
+                    "builtIn": false,
+                    "createdAt": "2026-09-10 13:00:00"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/dict-types/{id}": {
+      "put": {
+        "tags": ["system"],
+        "operationId": "updateDictType",
+        "summary": "修改字典类型",
+        "description": "修改字典类型。内置字典禁改标识（403）；标识变更时同步迁移其字典项，避免孤儿项。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "字典类型 id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DictTypeSaveRequest" },
+              "example": {
+                "dictCode": "alarm_level",
+                "dictName": "报警级别",
+                "description": "报警分级字典",
+                "status": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DictTypeItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/DictTypeItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "dictCode": "alarm_level",
+                    "dictName": "报警级别",
+                    "description": "报警分级字典",
+                    "status": 1,
+                    "builtIn": false,
+                    "createdAt": "2026-09-10 13:00:00"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "delete": {
+        "tags": ["system"],
+        "operationId": "deleteDictType",
+        "summary": "删除字典类型",
+        "description": "删除字典类型。内置字典禁删（403）；仍有字典项时禁删（409）。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "字典类型 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DeleteResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/DeleteResult" } }
+                    }
+                  ]
+                },
+                "example": { "code": 0, "message": "ok", "data": { "ok": true } }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/dict-items": {
+      "get": {
+        "tags": ["system"],
+        "operationId": "listDictItems",
+        "summary": "字典项分页",
+        "description": "分页查询指定字典下的字典项（含停用项）。dictCode 必填，缺失返回 100。",
+        "parameters": [
+          {
+            "name": "dictCode",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "字典标识（必填）"
+          },
+          { "$ref": "./_shared.json#/components/parameters/page" },
+          { "$ref": "./_shared.json#/components/parameters/size" }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DictItemPageResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/DictItemPageResult" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "list": [
+                      {
+                        "id": 1,
+                        "dictCode": "alarm_level",
+                        "itemValue": "1",
+                        "itemLabel": "一级",
+                        "sortOrder": 1,
+                        "status": 1,
+                        "description": "最高等级"
+                      }
+                    ],
+                    "total": 1,
+                    "page": 1,
+                    "size": 20
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["system"],
+        "operationId": "createDictItem",
+        "summary": "新增字典项",
+        "description": "新增字典项。所属字典类型须已存在（否则 100）。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DictItemSaveRequest" },
+              "example": {
+                "dictCode": "alarm_level",
+                "itemValue": "1",
+                "itemLabel": "一级",
+                "sortOrder": 1,
+                "status": 1,
+                "description": "最高等级"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DictItemItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/DictItemItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "dictCode": "alarm_level",
+                    "itemValue": "1",
+                    "itemLabel": "一级",
+                    "sortOrder": 1,
+                    "status": 1,
+                    "description": "最高等级"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/dict-items/{id}": {
+      "put": {
+        "tags": ["system"],
+        "operationId": "updateDictItem",
+        "summary": "修改字典项",
+        "description": "修改字典项；所属字典类型须已存在。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "字典项 id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DictItemSaveRequest" },
+              "example": {
+                "dictCode": "alarm_level",
+                "itemValue": "1",
+                "itemLabel": "一级(红)",
+                "sortOrder": 1,
+                "status": 1,
+                "description": "最高等级"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DictItemItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/DictItemItem" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "dictCode": "alarm_level",
+                    "itemValue": "1",
+                    "itemLabel": "一级(红)",
+                    "sortOrder": 1,
+                    "status": 1,
+                    "description": "最高等级"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "delete": {
+        "tags": ["system"],
+        "operationId": "deleteDictItem",
+        "summary": "删除字典项",
+        "description": "逻辑删除字典项。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "字典项 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DeleteResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/DeleteResult" } }
+                    }
+                  ]
+                },
+                "example": { "code": 0, "message": "ok", "data": { "ok": true } }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/dicts/{dictCode}": {
+      "get": {
+        "tags": ["system"],
+        "operationId": "getDictOptions",
+        "summary": "业务读取字典项",
+        "description": "按字典标识读取**启用**字典项（按 sortOrder 排序），供各业务下拉。任何已登录用户可访问（不要求 ADMIN），结果走服务端缓存。",
+        "parameters": [
+          {
+            "name": "dictCode",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "字典标识"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DictItemItem[]）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/DictItemItem" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "dictCode": "alarm_level",
+                      "itemValue": "1",
+                      "itemLabel": "一级",
+                      "sortOrder": 1,
+                      "status": 1,
+                      "description": "最高等级"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DeleteResult": {
+        "type": "object",
+        "description": "删除结果（与后端 dto/DeleteResult 同名对齐）。",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "description": "删除是否成功（逻辑删除命中行数 > 0 为 true）",
+            "example": true
+          }
+        },
+        "required": ["ok"]
+      },
+      "SystemUserItem": {
+        "type": "object",
+        "description": "系统用户列表项 / 详情。不含口令哈希；realName 在 ADMIN 端点明文返回（用户管理需可辨识）。",
+        "properties": {
+          "id": { "type": "integer", "description": "用户 id", "example": 2 },
+          "username": { "type": "string", "description": "登录用户名", "example": "zhang.san" },
+          "realName": { "type": "string", "description": "真实姓名", "example": "张三" },
+          "roleCode": {
+            "type": "string",
+            "description": "角色标识（引用 sys_role.role_code）",
+            "example": "OUTER_OPER"
+          },
+          "roleName": { "type": "string", "description": "角色中文名", "example": "外操" },
+          "status": { "type": "integer", "description": "状态：1 启用 / 0 停用", "example": 1 },
+          "mustChangePwd": {
+            "type": "boolean",
+            "description": "是否需强制修改口令",
+            "example": false
+          },
+          "createdAt": {
+            "type": ["string", "null"],
+            "description": "创建时间",
+            "example": "2026-09-10 12:30:00"
+          },
+          "updatedAt": {
+            "type": ["string", "null"],
+            "description": "更新时间",
+            "example": "2026-09-10 12:40:00"
+          }
+        },
+        "required": ["id", "username", "roleCode", "status"]
+      },
+      "SystemUserCreate": {
+        "type": "object",
+        "description": "新增用户入参。",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "登录用户名（唯一）",
+            "example": "zhang.san"
+          },
+          "password": {
+            "type": "string",
+            "description": "初始口令（按复杂度策略校验后 BCrypt 存储）",
+            "example": "Init@12345"
+          },
+          "realName": { "type": "string", "description": "真实姓名", "example": "张三" },
+          "roleCode": {
+            "type": "string",
+            "description": "角色标识（须为已启用角色）",
+            "example": "OUTER_OPER"
+          },
+          "status": {
+            "type": "integer",
+            "description": "状态：1 启用 / 0 停用，缺省 1",
+            "example": 1
+          }
+        },
+        "required": ["username", "password", "roleCode"]
+      },
+      "SystemUserUpdate": {
+        "type": "object",
+        "description": "修改用户 / 分配角色入参（分配角色时只需 roleCode）。",
+        "properties": {
+          "realName": { "type": "string", "description": "真实姓名", "example": "张三" },
+          "roleCode": {
+            "type": "string",
+            "description": "角色标识（须为已启用角色）",
+            "example": "SCHEDULER"
+          },
+          "status": { "type": "integer", "description": "状态：1 启用 / 0 停用", "example": 1 }
+        }
+      },
+      "SystemUserPageResult": {
+        "type": "object",
+        "description": "用户分页结果（与前端 PageResult 同构）。",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SystemUserItem" },
+            "description": "当前页数据"
+          },
+          "total": { "type": "integer", "description": "总记录数", "example": 12 },
+          "page": { "type": "integer", "description": "当前页码（1-based）", "example": 1 },
+          "size": { "type": "integer", "description": "每页大小", "example": 10 }
+        },
+        "required": ["list", "total", "page", "size"]
+      },
+      "PasswordResetResult": {
+        "type": "object",
+        "description": "管理员重置口令结果。临时口令仅此一次可见。",
+        "properties": {
+          "temporaryPassword": {
+            "type": "string",
+            "description": "服务端随机生成的临时口令（非固定值）",
+            "example": "Ab3!xyZ9Qw2t"
+          },
+          "mustChangePwd": {
+            "type": "boolean",
+            "description": "是否需强制修改口令（重置后恒为 true）",
+            "example": true
+          }
+        },
+        "required": ["temporaryPassword", "mustChangePwd"]
+      },
+      "SystemRoleItem": {
+        "type": "object",
+        "description": "角色列表项 / 详情。",
+        "properties": {
+          "id": { "type": "integer", "description": "角色 id", "example": 7 },
+          "roleCode": {
+            "type": "string",
+            "description": "角色标识（唯一）",
+            "example": "SCHEDULER"
+          },
+          "roleName": { "type": "string", "description": "角色中文名", "example": "值班调度" },
+          "description": {
+            "type": ["string", "null"],
+            "description": "角色说明",
+            "example": "值班调度岗"
+          },
+          "dataScope": {
+            "type": ["string", "null"],
+            "description": "数据范围（ALL/DEPT/SELF，本期仅登记不参与过滤）",
+            "example": "DEPT"
+          },
+          "status": { "type": "integer", "description": "状态：1 启用 / 0 停用", "example": 1 },
+          "builtIn": {
+            "type": "boolean",
+            "description": "是否内置角色（内置禁删、禁改标识、禁停用）",
+            "example": false
+          },
+          "sortOrder": { "type": "integer", "description": "排序值", "example": 20 },
+          "userCount": { "type": "integer", "description": "该角色下的用户数", "example": 2 },
+          "createdAt": {
+            "type": ["string", "null"],
+            "description": "创建时间",
+            "example": "2026-09-10 12:20:00"
+          }
+        },
+        "required": ["id", "roleCode", "roleName", "status", "builtIn"]
+      },
+      "SystemRoleSaveRequest": {
+        "type": "object",
+        "description": "新增 / 修改角色入参。",
+        "properties": {
+          "roleCode": {
+            "type": "string",
+            "description": "角色标识（唯一，保存时统一大写；内置角色禁改）",
+            "example": "SCHEDULER"
+          },
+          "roleName": { "type": "string", "description": "角色中文名", "example": "值班调度" },
+          "description": { "type": "string", "description": "角色说明", "example": "值班调度岗" },
+          "dataScope": {
+            "type": "string",
+            "description": "数据范围：ALL / DEPT / SELF（缺省 SELF）",
+            "example": "DEPT"
+          },
+          "status": {
+            "type": "integer",
+            "description": "状态：1 启用 / 0 停用，缺省 1",
+            "example": 1
+          },
+          "sortOrder": { "type": "integer", "description": "排序值，缺省 0", "example": 20 }
+        },
+        "required": ["roleCode", "roleName"]
+      },
+      "SystemRoleMenuAssign": {
+        "type": "object",
+        "description": "角色菜单授权入参（整表覆盖语义）。",
+        "properties": {
+          "menuIds": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "description": "授权菜单/权限节点 id 集合（全量覆盖；空数组表示回收该角色全部授权）",
+            "example": [1, 2, 3, 6, 10, 11]
+          }
+        },
+        "required": ["menuIds"]
+      },
+      "SystemMenuNode": {
+        "type": "object",
+        "description": "菜单 / 权限节点（children 递归）。menuType=BUTTON 的节点不参与导航，仅贡献 permCode。",
+        "properties": {
+          "id": { "type": "integer", "description": "节点 id", "example": 7 },
+          "parentId": {
+            "type": ["integer", "null"],
+            "description": "父节点 id（0 为顶层）",
+            "example": 6
+          },
+          "name": { "type": "string", "description": "菜单名称", "example": "用户管理" },
+          "code": {
+            "type": ["string", "null"],
+            "description": "节点编码（fm-* 与前端路由 key 对齐）",
+            "example": "system-user"
+          },
+          "path": {
+            "type": ["string", "null"],
+            "description": "前端路由路径",
+            "example": "/system/users"
+          },
+          "icon": { "type": ["string", "null"], "description": "图标标识", "example": "Setting" },
+          "sortOrder": { "type": ["integer", "null"], "description": "排序值", "example": 901 },
+          "menuType": {
+            "type": ["string", "null"],
+            "description": "节点类型：DIR 目录 / MENU 菜单 / BUTTON 按钮",
+            "example": "MENU"
+          },
+          "permCode": {
+            "type": ["string", "null"],
+            "description": "权限标识（如 system:user:view），DIR 可为空",
+            "example": "system:user:view"
+          },
+          "visible": {
+            "type": ["integer", "null"],
+            "description": "是否显示：1 显示 / 0 隐藏",
+            "example": 1
+          },
+          "status": {
+            "type": ["integer", "null"],
+            "description": "状态：1 启用 / 0 停用",
+            "example": 1
+          },
+          "children": {
+            "type": ["array", "null"],
+            "items": { "$ref": "#/components/schemas/SystemMenuNode" },
+            "description": "子节点"
+          }
+        },
+        "required": ["id", "name", "menuType"]
+      },
+      "SystemMenuSaveRequest": {
+        "type": "object",
+        "description": "新增 / 修改菜单权限节点入参。",
+        "properties": {
+          "parentId": { "type": "integer", "description": "父节点 id（0 为顶层）", "example": 7 },
+          "name": { "type": "string", "description": "菜单名称", "example": "导出用户" },
+          "code": {
+            "type": "string",
+            "description": "节点编码（唯一）",
+            "example": "system-user-export"
+          },
+          "path": { "type": "string", "description": "前端路由路径", "example": "/system/users" },
+          "icon": { "type": "string", "description": "图标标识", "example": "Setting" },
+          "sortOrder": { "type": "integer", "description": "排序值，缺省 0", "example": 9106 },
+          "menuType": {
+            "type": "string",
+            "description": "节点类型：DIR / MENU / BUTTON",
+            "example": "BUTTON"
+          },
+          "permCode": {
+            "type": "string",
+            "description": "权限标识（如 system:user:export）",
+            "example": "system:user:export"
+          },
+          "visible": {
+            "type": "integer",
+            "description": "是否显示：1 显示 / 0 隐藏，缺省 1",
+            "example": 0
+          },
+          "status": {
+            "type": "integer",
+            "description": "状态：1 启用 / 0 停用，缺省 1",
+            "example": 1
+          }
+        },
+        "required": ["name", "code", "menuType"]
+      },
+      "PermissionCodeItem": {
+        "type": "object",
+        "description": "权限码字典项（由 perm_code 非空的菜单节点聚合）。",
+        "properties": {
+          "permCode": {
+            "type": "string",
+            "description": "权限码（如 system:user:create）",
+            "example": "system:user:create"
+          },
+          "name": {
+            "type": ["string", "null"],
+            "description": "权限中文名（取节点名称）",
+            "example": "新增用户"
+          },
+          "menuId": { "type": ["integer", "null"], "description": "所属节点 id", "example": 12 }
+        },
+        "required": ["permCode"]
+      },
+      "DictTypeItem": {
+        "type": "object",
+        "description": "字典类型列表项 / 详情。",
+        "properties": {
+          "id": { "type": "integer", "description": "字典类型 id", "example": 1 },
+          "dictCode": {
+            "type": "string",
+            "description": "字典标识（唯一）",
+            "example": "alarm_level"
+          },
+          "dictName": { "type": "string", "description": "字典名称", "example": "报警等级" },
+          "description": {
+            "type": ["string", "null"],
+            "description": "说明",
+            "example": "报警分级字典"
+          },
+          "status": { "type": "integer", "description": "状态：1 启用 / 0 停用", "example": 1 },
+          "builtIn": {
+            "type": "boolean",
+            "description": "是否内置字典（内置禁删）",
+            "example": false
+          },
+          "createdAt": {
+            "type": ["string", "null"],
+            "description": "创建时间",
+            "example": "2026-09-10 13:00:00"
+          }
+        },
+        "required": ["id", "dictCode", "dictName", "status", "builtIn"]
+      },
+      "DictTypeSaveRequest": {
+        "type": "object",
+        "description": "新增 / 修改字典类型入参。",
+        "properties": {
+          "dictCode": {
+            "type": "string",
+            "description": "字典标识（唯一，保存时归一为小写）",
+            "example": "alarm_level"
+          },
+          "dictName": { "type": "string", "description": "字典名称", "example": "报警等级" },
+          "description": { "type": "string", "description": "说明", "example": "报警分级字典" },
+          "status": {
+            "type": "integer",
+            "description": "状态：1 启用 / 0 停用，缺省 1",
+            "example": 1
+          }
+        },
+        "required": ["dictCode", "dictName"]
+      },
+      "DictTypePageResult": {
+        "type": "object",
+        "description": "字典类型分页结果（与前端 PageResult 同构）。",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DictTypeItem" },
+            "description": "当前页数据"
+          },
+          "total": { "type": "integer", "description": "总记录数", "example": 1 },
+          "page": { "type": "integer", "description": "当前页码（1-based）", "example": 1 },
+          "size": { "type": "integer", "description": "每页大小", "example": 10 }
+        },
+        "required": ["list", "total", "page", "size"]
+      },
+      "DictItemItem": {
+        "type": "object",
+        "description": "字典项。",
+        "properties": {
+          "id": { "type": "integer", "description": "字典项 id", "example": 1 },
+          "dictCode": {
+            "type": ["string", "null"],
+            "description": "所属字典标识",
+            "example": "alarm_level"
+          },
+          "itemValue": { "type": ["string", "null"], "description": "字典值", "example": "1" },
+          "itemLabel": {
+            "type": ["string", "null"],
+            "description": "字典显示名",
+            "example": "一级"
+          },
+          "sortOrder": { "type": ["integer", "null"], "description": "排序值", "example": 1 },
+          "status": {
+            "type": ["integer", "null"],
+            "description": "状态：1 启用 / 0 停用",
+            "example": 1
+          },
+          "description": {
+            "type": ["string", "null"],
+            "description": "说明",
+            "example": "最高等级"
+          }
+        },
+        "required": ["id"]
+      },
+      "DictItemPageResult": {
+        "type": "object",
+        "description": "字典项分页结果（与前端 PageResult 同构）。",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DictItemItem" },
+            "description": "当前页数据"
+          },
+          "total": { "type": "integer", "description": "总记录数", "example": 1 },
+          "page": { "type": "integer", "description": "当前页码（1-based）", "example": 1 },
+          "size": { "type": "integer", "description": "每页大小", "example": 20 }
+        },
+        "required": ["list", "total", "page", "size"]
+      },
+      "DictItemSaveRequest": {
+        "type": "object",
+        "description": "新增 / 修改字典项入参。",
+        "properties": {
+          "dictCode": {
+            "type": "string",
+            "description": "所属字典标识（须为已存在的字典类型）",
+            "example": "alarm_level"
+          },
+          "itemValue": { "type": "string", "description": "字典值", "example": "1" },
+          "itemLabel": { "type": "string", "description": "字典显示名", "example": "一级" },
+          "sortOrder": { "type": "integer", "description": "排序值，缺省 0", "example": 1 },
+          "status": {
+            "type": "integer",
+            "description": "状态：1 启用 / 0 停用，缺省 1",
+            "example": 1
+          },
+          "description": { "type": "string", "description": "说明", "example": "最高等级" }
+        },
+        "required": ["dictCode", "itemValue", "itemLabel"]
+      }
+    }
+  }
+}
