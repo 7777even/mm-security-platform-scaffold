@@ -59,6 +59,26 @@ export interface VideoLinkageRuleRow {
   objectName: string;
 }
 
+/** 联动规则行入参（对齐契约 VideoLinkageRuleInput）。 */
+export interface VideoLinkageRuleInput {
+  presetPoint: string;
+  objectCategory: string;
+  objectName: string;
+}
+
+/** 联动配置保存入参（新建/更新共用；linkageCount 与 businessObjects 由后端推导）。 */
+export interface VideoLinkageSaveRequest {
+  name: string;
+  code: string;
+  category: string;
+  rules: VideoLinkageRuleInput[];
+}
+
+/** 删除结果（对齐契约 DeleteResult）。 */
+export interface VideoLinkageDeleteResult {
+  ok: boolean;
+}
+
 /** 左侧导航：顶部分类（扁平）+ 分组树。 */
 export async function fetchVideoNavigation(): Promise<VideoNavigation> {
   return request<VideoNavigation>({ url: '/video/navigation', method: 'GET' });
@@ -84,6 +104,32 @@ export async function fetchVideoLinkageRules(configCode: string): Promise<VideoL
     url: `/video/linkages/${encodeURIComponent(configCode)}/rules`,
     method: 'GET',
   });
+}
+
+/** 新建联动配置（configCode 由后端生成），返回落库后的配置。 */
+export async function createVideoLinkage(body: VideoLinkageSaveRequest): Promise<VideoLinkageItem> {
+  return request<VideoLinkageItem>({ url: '/video/linkages', method: 'POST', data: body });
+}
+
+/** 更新联动配置并整表替换规则行；未命中 configCode 时返回 null。 */
+export async function updateVideoLinkage(
+  configCode: string,
+  body: VideoLinkageSaveRequest,
+): Promise<VideoLinkageItem | null> {
+  return request<VideoLinkageItem | null>({
+    url: `/video/linkages/${encodeURIComponent(configCode)}`,
+    method: 'PUT',
+    data: body,
+  });
+}
+
+/** 删除联动配置及其规则行，返回是否删除成功。 */
+export async function deleteVideoLinkage(configCode: string): Promise<boolean> {
+  const result = await request<VideoLinkageDeleteResult>({
+    url: `/video/linkages/${encodeURIComponent(configCode)}`,
+    method: 'DELETE',
+  });
+  return Boolean(result?.ok);
 }
 
 /**

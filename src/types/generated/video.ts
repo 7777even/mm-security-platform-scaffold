@@ -189,8 +189,144 @@ export interface paths {
       };
     };
     put?: never;
-    post?: never;
+    /**
+     * 新建视频联动配置
+     * @description 新建一条视频联动配置及其规则行。configCode 由服务端按 lk-NNN 规则生成；linkageCount 与 businessObjects 由 rules 推导（不接受前端传入）。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['VideoLinkageSaveRequest'];
+        };
+      };
+      responses: {
+        /** @description 新建后的联动配置 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": "lk-006",
+             *         "name": "北2路33#枪机",
+             *         "code": "HKJK-5124999",
+             *         "category": "枪机",
+             *         "linkageCount": 1,
+             *         "businessObjects": "储油罐区"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['VideoLinkageItem'];
+          };
+        };
+      };
+    };
     delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/video/linkages/{configCode}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 更新视频联动配置
+     * @description 更新指定联动配置的名称/设备编码/类型，并整表替换其规则行；未命中 configCode 时 data 为 null。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 联动配置编码（取自 linkages[].id，如 lk-001） */
+          configCode: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['VideoLinkageSaveRequest'];
+        };
+      };
+      responses: {
+        /** @description 更新后的联动配置；未命中时为 null */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": "lk-001",
+             *         "name": "XX强3-2棚伯",
+             *         "code": "HKJK-5124863",
+             *         "category": "枪机",
+             *         "linkageCount": 2,
+             *         "businessObjects": "石脑油罐区、催化裂化装置"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['VideoLinkageItem'];
+          };
+        };
+      };
+    };
+    post?: never;
+    /**
+     * 删除视频联动配置
+     * @description 删除指定联动配置及其全部规则行；未命中 configCode 时 ok 为 false（不抛异常）。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 联动配置编码（取自 linkages[].id，如 lk-001） */
+          configCode: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除结果 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "ok": true
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['DeleteResult'];
+          };
+        };
+      };
+    };
     options?: never;
     head?: never;
     patch?: never;
@@ -511,6 +647,52 @@ export interface components {
     VideoLinkageList: components['schemas']['VideoLinkageItem'][];
     /** @description 联动规则行列表 */
     VideoLinkageRuleList: components['schemas']['VideoLinkageRuleRow'][];
+    /** @description 联动规则行入参 */
+    VideoLinkageRuleInput: {
+      /**
+       * @description 预置位名称
+       * @example 石脑油罐区-东南角
+       */
+      presetPoint: string;
+      /**
+       * @description 联动对象分类（重大危险源/生产装置/储罐/库区/摄像头）
+       * @example 重大危险源
+       */
+      objectCategory: string;
+      /**
+       * @description 联动对象名称
+       * @example 石脑油罐区
+       */
+      objectName: string;
+    };
+    /** @description 视频联动配置保存入参（新建/更新共用）。linkageCount 与 businessObjects 由服务端按 rules 推导。 */
+    VideoLinkageSaveRequest: {
+      /**
+       * @description 摄像头名称
+       * @example XX强3-2棚伯
+       */
+      name: string;
+      /**
+       * @description 设备编码
+       * @example HKJK-5124863
+       */
+      code: string;
+      /**
+       * @description 设备类型（枪机/球机/高空AR）
+       * @example 枪机
+       */
+      category: string;
+      /** @description 联动规则行；空数组表示无联动规则 */
+      rules?: components['schemas']['VideoLinkageRuleInput'][];
+    };
+    /** @description 删除结果 */
+    DeleteResult: {
+      /**
+       * @description 删除是否成功（命中行数 > 0 为 true）
+       * @example true
+       */
+      ok?: boolean;
+    };
   };
   responses: {
     /** @description 未认证 / 令牌失效 */

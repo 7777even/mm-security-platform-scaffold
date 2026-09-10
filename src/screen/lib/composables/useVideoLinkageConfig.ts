@@ -1,9 +1,14 @@
 import { computed, ref } from 'vue';
 import {
+  createVideoLinkage,
+  deleteVideoLinkage,
   fetchVideoLinkageRules,
   fetchVideoLinkages,
+  updateVideoLinkage,
   type VideoLinkageItem,
+  type VideoLinkageRuleInput,
   type VideoLinkageRuleRow,
+  type VideoLinkageSaveRequest,
 } from '@/services/video';
 import { backendUnavailableWarn } from '@/services/backendFallback';
 
@@ -78,11 +83,84 @@ export function cancelLinkageEdit() {
   editingRules.value = [];
 }
 
-export function saveLinkageEdit() {
-  // 占位：高保真演示，保存后回到列表（联动规则暂无写端点）
+/** 是否落库：配置了 VITE_API_BASE 时才走写接口，否则维持本地演示改（纯静态模式）。 */
+function videoLinkageWritesToBackend(): boolean {
+  return Boolean(import.meta.env.VITE_API_BASE);
+}
+
+/** 由规则行推导「联动业务对象」概览（与后端 applyLinkageFields 同口径：去重 + 顿号连接）。 */
+function deriveBusinessObjects(rules: VideoLinkageRuleInput[]): string {
+  return Array.from(new Set(rules.map((r) => r.objectName).filter((n) => n && n.trim()))).join(
+    '、',
+  );
+}
+
+function resetLinkageEditState(): void {
   linkageEditMode.value = false;
   editingConfigId.value = null;
   editingRules.value = [];
+}
+
+/** 本地演示改（无后端时）：按 payload 新增/覆盖列表项，linkageCount/businessObjects 同步推导。 */
+function applyLocalLinkageSave(id: string | null, payload: VideoLinkageSaveRequest): void {
+  const item: VideoLinkageItem = {
+    id: id ?? `lk-local-${Date.now()}`,
+    name: payload.name,
+    code: payload.code,
+    category: payload.category,
+    linkageCount: payload.rules.length,
+    businessObjects: deriveBusinessObjects(payload.rules),
+  };
+  const index = id ? configs.value.findIndex((entry) => entry.id === id) : -1;
+  if (index >= 0) configs.value.splice(index, 1, item);
+  else configs.value.push(item);
+}
+
+/**
+ * 保存联动配置（新建或更新，由 editingConfigId 判定）。
+ *
+ * <p>有后端时落库并把返回的配置写回列表；失败不假成功（返回 false 且列表不动）。
+ * 无 VITE_API_BASE 的纯静态演示模式维持本地改，不请求后端。</p>
+ */
+export async function saveLinkageEdit(payload: VideoLinkageSaveRequest): Promise<boolean> {
+  const id = editingConfigId.value;
+  if (!videoLinkageWritesToBackend()) {
+    applyLocalLinkageSave(id, payload);
+    resetLinkageEditState();
+    return true;
+  }
+  try {
+    const saved = id ? await updateVideoLinkage(id, payload) : await createVideoLinkage(payload);
+    if (!saved) {
+      backendUnavailableWarn('video', `/video/linkages/${id}`, '配置不存在');
+      return false;
+    }
+    const index = configs.value.findIndex((item) => item.id === saved.id);
+    if (index >= 0) configs.value.splice(index, 1, saved);
+    else configs.value.push(saved);
+    resetLinkageEditState();
+    return true;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '请求失败';
+    backendUnavailableWarn('video', id ? `/video/linkages/${id}` : '/video/linkages', message);
+    return false;
+  }
+}
+
+/** 删除联动配置：有后端时落库，失败不删（不假成功）；无后端时仅本地移除。 */
+export async function removeLinkageConfig(config: VideoLinkageItem): Promise<void> {
+  const index = configs.value.findIndex((item) => item.id === config.id);
+  if (index < 0) return;
+  if (videoLinkageWritesToBackend()) {
+    try {
+      await deleteVideoLinkage(config.id);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '请求失败';
+      backendUnavailableWarn('video', `/video/linkages/${config.id}`, message);
+      return;
+    }
+  }
+  configs.value.splice(index, 1);
 }
 
 export function useVideoLinkageConfig() {
@@ -97,6 +175,7 @@ export function useVideoLinkageConfig() {
     startLinkageEdit,
     cancelLinkageEdit,
     saveLinkageEdit,
+    removeLinkageConfig,
     configs,
     loadLinkageConfigs,
   };

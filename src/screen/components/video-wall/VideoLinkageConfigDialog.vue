@@ -6,7 +6,7 @@ import {
   monitorNameOptions,
   presetPointOptions,
 } from '../../lib/data/videoLinkageOptions';
-import type { VideoLinkageItem } from '@/services/video';
+import type { VideoLinkageItem, VideoLinkageSaveRequest } from '@/services/video';
 import {
   cancelLinkageEdit,
   closeLinkageDialog,
@@ -15,6 +15,7 @@ import {
   linkageDialogOpen,
   linkageEditMode,
   loadLinkageConfigs,
+  removeLinkageConfig,
   saveLinkageEdit,
   startLinkageEdit,
   configs as linkageConfigs,
@@ -107,17 +108,25 @@ function removeRule(id: string) {
 }
 
 function removeConfig(config: VideoLinkageItem) {
-  // 演示行为：后端暂无删除端点，仅从前端列表移除
-  const index = linkageConfigs.value.findIndex((item) => item.id === config.id);
-  if (index >= 0) linkageConfigs.value.splice(index, 1);
+  void removeLinkageConfig(config);
 }
 
-function submitEdit() {
+async function submitEdit() {
+  const payload: VideoLinkageSaveRequest = {
+    name: monitorName.value,
+    code: monitorCode.value,
+    category: categoryByMonitor[monitorName.value] ?? '枪机',
+    rules: editingRules.value.map((rule) => ({
+      presetPoint: rule.presetPoint,
+      objectCategory: rule.objectCategory,
+      objectName: rule.objectName,
+    })),
+  };
+  if (!(await saveLinkageEdit(payload))) return;
   savedTip.value = true;
   window.setTimeout(() => {
     savedTip.value = false;
-    saveLinkageEdit();
-  }, 800);
+  }, 1600);
 }
 
 function goToPage(page: number) {

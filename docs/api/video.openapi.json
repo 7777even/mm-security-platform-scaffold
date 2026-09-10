@@ -127,6 +127,116 @@
             }
           }
         }
+      },
+      "post": {
+        "summary": "新建视频联动配置",
+        "description": "新建一条视频联动配置及其规则行。configCode 由服务端按 lk-NNN 规则生成；linkageCount 与 businessObjects 由 rules 推导（不接受前端传入）。",
+        "tags": ["video"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/VideoLinkageSaveRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "新建后的联动配置",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/VideoLinkageItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": "lk-006",
+                    "name": "北2路33#枪机",
+                    "code": "HKJK-5124999",
+                    "category": "枪机",
+                    "linkageCount": 1,
+                    "businessObjects": "储油罐区"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/video/linkages/{configCode}": {
+      "put": {
+        "summary": "更新视频联动配置",
+        "description": "更新指定联动配置的名称/设备编码/类型，并整表替换其规则行；未命中 configCode 时 data 为 null。",
+        "tags": ["video"],
+        "parameters": [
+          {
+            "name": "configCode",
+            "in": "path",
+            "required": true,
+            "description": "联动配置编码（取自 linkages[].id，如 lk-001）",
+            "schema": { "type": "string", "example": "lk-001" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/VideoLinkageSaveRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新后的联动配置；未命中时为 null",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/VideoLinkageItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": "lk-001",
+                    "name": "XX强3-2棚伯",
+                    "code": "HKJK-5124863",
+                    "category": "枪机",
+                    "linkageCount": 2,
+                    "businessObjects": "石脑油罐区、催化裂化装置"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除视频联动配置",
+        "description": "删除指定联动配置及其全部规则行；未命中 configCode 时 ok 为 false（不抛异常）。",
+        "tags": ["video"],
+        "parameters": [
+          {
+            "name": "configCode",
+            "in": "path",
+            "required": true,
+            "description": "联动配置编码（取自 linkages[].id，如 lk-001）",
+            "schema": { "type": "string", "example": "lk-001" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除结果",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DeleteResult" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": { "ok": true }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/video/linkages/{configCode}/rules": {
@@ -330,6 +440,54 @@
         "type": "array",
         "description": "联动规则行列表",
         "items": { "$ref": "#/components/schemas/VideoLinkageRuleRow" }
+      },
+      "VideoLinkageRuleInput": {
+        "type": "object",
+        "description": "联动规则行入参",
+        "properties": {
+          "presetPoint": {
+            "type": "string",
+            "description": "预置位名称",
+            "example": "石脑油罐区-东南角"
+          },
+          "objectCategory": {
+            "type": "string",
+            "description": "联动对象分类（重大危险源/生产装置/储罐/库区/摄像头）",
+            "example": "重大危险源"
+          },
+          "objectName": { "type": "string", "description": "联动对象名称", "example": "石脑油罐区" }
+        },
+        "required": ["presetPoint", "objectCategory", "objectName"]
+      },
+      "VideoLinkageSaveRequest": {
+        "type": "object",
+        "description": "视频联动配置保存入参（新建/更新共用）。linkageCount 与 businessObjects 由服务端按 rules 推导。",
+        "properties": {
+          "name": { "type": "string", "description": "摄像头名称", "example": "XX强3-2棚伯" },
+          "code": { "type": "string", "description": "设备编码", "example": "HKJK-5124863" },
+          "category": {
+            "type": "string",
+            "description": "设备类型（枪机/球机/高空AR）",
+            "example": "枪机"
+          },
+          "rules": {
+            "type": "array",
+            "description": "联动规则行；空数组表示无联动规则",
+            "items": { "$ref": "#/components/schemas/VideoLinkageRuleInput" }
+          }
+        },
+        "required": ["name", "code", "category"]
+      },
+      "DeleteResult": {
+        "type": "object",
+        "description": "删除结果",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "description": "删除是否成功（命中行数 > 0 为 true）",
+            "example": true
+          }
+        }
       }
     }
   }
