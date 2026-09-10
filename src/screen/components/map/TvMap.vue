@@ -8,6 +8,7 @@ import { tvAssets } from '../../utils/designAssets';
 import { tvSprites } from '../../utils/tvSpriteConfig';
 import { tvAlarmMarker, tvMapControls, tvVideoMapPoints } from '../../lib/data/tvMock';
 import { fetchTvMapPoints, type TvMapPoint } from '@/services/tv';
+import { fetchAlarmPoints } from '@/services/map';
 import { useMapControls } from '../../lib/composables/useMapControls';
 import {
   useCesiumScreenAnchor,
@@ -34,8 +35,31 @@ const videoPointGroupOptions: Array<{ value: VideoPointGroup; label: string }> =
 ];
 // 初始态以 tvMock 点位兜底（演示/导入期立即可见），挂载后由后端 GET /tv/map-points 接管。
 const tvMapPoints = ref<TvMapPoint[]>(tvVideoMapPoints as unknown as TvMapPoint[]);
+// 告警钉：初始态以 tvMock 兜底（演示/无后端立即可见），挂载后由后端 GET /map/alarms 首条接管。
+interface TvAlarmMarkerView {
+  location: string;
+  status: string;
+  longitude: number;
+  latitude: number;
+}
+const alarmMarker = ref<TvAlarmMarkerView>({
+  location: tvAlarmMarker.location,
+  status: tvAlarmMarker.status,
+  longitude: tvAlarmMarker.longitude,
+  latitude: tvAlarmMarker.latitude,
+});
 onMounted(async () => {
   tvMapPoints.value = await fetchTvMapPoints();
+  const alarmPoints = await fetchAlarmPoints();
+  const first = alarmPoints.find((p) => Number.isFinite(p.lng) && Number.isFinite(p.lat));
+  if (first) {
+    alarmMarker.value = {
+      location: first.name,
+      status: first.status ?? '未处置',
+      longitude: first.lng,
+      latitude: first.lat,
+    };
+  }
 });
 
 const visibleVideoMapPoints = computed(() =>
@@ -62,8 +86,8 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
   const map = getSharedMap();
   const height = map?.getBoundaryModelTopHeight?.() ?? 66.25;
   return {
-    longitude: tvAlarmMarker.longitude,
-    latitude: tvAlarmMarker.latitude,
+    longitude: alarmMarker.value.longitude,
+    latitude: alarmMarker.value.latitude,
     height,
   };
 });
@@ -104,11 +128,11 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
       <div class="alarm-marker__popup">
         <img class="alarm-marker__popup-bg" :src="tvAssets.alarmPopupBg" alt="" />
         <div class="alarm-marker__popup-text">
-          <div>位置：{{ tvAlarmMarker.location }}</div>
+          <div>位置：{{ alarmMarker.location }}</div>
           <div class="alarm-marker__status">
             <span>状态：</span>
             <img :src="tvAssets.alarmStatusDot" alt="" />
-            <span class="alarm-marker__status-text">{{ tvAlarmMarker.status }}</span>
+            <span class="alarm-marker__status-text">{{ alarmMarker.status }}</span>
           </div>
         </div>
       </div>

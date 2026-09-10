@@ -15,6 +15,7 @@ import { usePlantArea } from '../../lib/composables/usePlantArea';
 import { getPlantAreaDefinition } from '../../lib/data/plantAreas';
 import { fetchFireSituationMarkers } from '@/services/fireSituation';
 import type { FireSituationMarkerItem } from '@/services/fireSituation';
+import { fetchAlarmPoints } from '@/services/map';
 import { useRouter } from 'vue-router';
 import { fireAlarmToDetail } from '../../lib/data/alarmDetailMock';
 import {
@@ -27,9 +28,14 @@ const { alarmDetailOpen, openAlarmDetail } = useAlarmDetailPanel();
 const { selectedPlantArea } = usePlantArea();
 const router = useRouter();
 
+// 告警飞掠目标：初始态以 mock 兜底（演示/无后端立即可用），挂载后由后端 GET /map/alarms 首条接管。
+const alarmTarget = ref<{ longitude: number; latitude: number }>({
+  longitude: fireAlarmMarker.longitude,
+  latitude: fireAlarmMarker.latitude,
+});
 const alarmWorldPosition = computed(() => {
   if (selectedPlantArea.value === 'all' || selectedPlantArea.value === 'refinery') {
-    return { longitude: fireAlarmMarker.longitude, latitude: fireAlarmMarker.latitude };
+    return alarmTarget.value;
   }
   return getPlantAreaDefinition(selectedPlantArea.value).centers[0];
 });
@@ -70,6 +76,10 @@ onMounted(() => {
       fireSituationMarkers.value = data.items;
     })
     .catch(() => {});
+  void fetchAlarmPoints().then((points) => {
+    const first = points.find((p) => Number.isFinite(p.lng) && Number.isFinite(p.lat));
+    if (first) alarmTarget.value = { longitude: first.lng, latitude: first.lat };
+  });
 });
 </script>
 
