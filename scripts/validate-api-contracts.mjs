@@ -7,6 +7,8 @@
  *   ② 每个 path 操作具备 summary + description
  *   ③ 每个 schema 字段具备 description（中文）
  *   ④ 200 响应具备 example（或 content schema 带 example）
+ *      —— 例外：二进制响应（image|audio|video/*、application/octet-stream、schema.format=binary）
+ *         不适用 JSON example，予以豁免；仅当「响应无 application/json 且全部媒体类型均为二进制」才豁免。
  * 另：相对 $ref 必须可解析（./_shared.json#/... 与 #/...）。
  *
  * 退出码 1 = 存在违规；0 = 通过。
@@ -92,9 +94,28 @@ function resolveRef(ref, mergedDoc, shared) {
   return true; // 外部/URL 不在此校验
 }
 
+/**
+ * 是否为「纯二进制」响应内容。
+ *
+ * 快照 JPEG / 附件 / 文件导出这类端点的响应体本就不是 JSON，不存在可内联的 JSON example，
+ * 不应被铁律 ④ 误判。判定刻意写窄：必须【没有 application/json】且【每个媒体类型都是二进制】，
+ * 以免放过真正漏写 example 的 JSON 端点。
+ */
+function isBinaryOnlyContent(content) {
+  const entries = Object.entries(content || {});
+  if (entries.length === 0 || content['application/json']) return false;
+  return entries.every(
+    ([media, c]) =>
+      /^(image|audio|video)\//.test(media) ||
+      media === 'application/octet-stream' ||
+      c?.schema?.format === 'binary',
+  );
+}
+
 function hasExample(resp) {
   if (!resp) return false;
   if (!resp.content) return true; // 无响应体（如 204 No Content）无需 example
+  if (isBinaryOnlyContent(resp.content)) return true; // 二进制响应不适用 JSON example
   const ct = resp.content['application/json'] || Object.values(resp.content)[0];
   if (!ct) return false;
   if (ct.example !== undefined || ct.examples !== undefined) return true;

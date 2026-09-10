@@ -10,6 +10,7 @@
 2. **每个接口有 `summary` + `description`**：一句话摘要 + 说明（含是否触及硬控、MDM 编码等约束）。
 3. **每个字段有中文 `description`**：`schema.properties.*.description` 必须中文，说明含义与取值。
 4. **每个接口有成功响应 `example`**：`responses.200.content.*.example` 提供可落地的成功响应样例（B3 包络 `code=0` 取 `data`）。
+   - **例外（二进制响应）**：快照 JPEG / 附件 / 文件导出等端点返回的是字节流而非 JSON，不存在可内联的 JSON example，**不适用本条**，无需补占位 example。校验脚本 `scripts/validate-api-contracts.mjs` 已内置窄豁免：仅当响应**没有 `application/json`** 且**每个媒体类型都是二进制**（`image|audio|video/*`、`application/octet-stream`、或 `schema.format=binary`）时跳过。若某响应的 JSON 分支缺 example，仍会报错。
 
 ## 共享组件 `_shared.json`
 
