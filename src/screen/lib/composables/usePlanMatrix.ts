@@ -1,7 +1,10 @@
 import { computed, ref } from 'vue';
 import {
+  createPlanActionCard,
+  deletePlanActionCard,
   fetchEmergencyPlanOptions,
   fetchPlanMatrix,
+  updatePlanActionCard,
   type PlanActionCard,
   type PlanCombatResource,
   type PlanInstance,
@@ -10,6 +13,7 @@ import {
   type PlanSubPhase,
   type SelectableEmergencyPlan,
 } from '@/services/emergencyPlan';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 import type { PlanCardStatus } from '../data/planMatrixMock';
 
 /** 预案 Tab 键 → 面板行 id（联动高亮），与 emergencyPlanSwitchMock 对齐。 */
@@ -189,25 +193,72 @@ function closeCard() {
   selectedCardId.value = null;
 }
 
-function setCardStatus(cardId: string, status: PlanCardStatus) {
+/** 是否落库：配置了 VITE_API_BASE 且已加载到预案实例时才走后端写接口，否则维持本地改（纯静态演示）。 */
+function planWritesToBackend(): boolean {
+  return Boolean(import.meta.env.VITE_API_BASE) && Boolean(currentPlan.value.id);
+}
+
+async function setCardStatus(cardId: string, status: PlanCardStatus) {
   const card = currentPlan.value.actionCards.find((item) => item.id === cardId);
-  if (card) {
+  if (!card) return;
+  if (!planWritesToBackend()) {
     card.status = status;
+    return;
+  }
+  try {
+    const updated = await updatePlanActionCard(currentPlan.value.id, cardId, { status });
+    card.status = (updated?.status ?? status) as PlanCardStatus;
+  } catch {
+    backendUnavailableWarn(
+      'plan-action-card',
+      'PUT /emergency-plans/{planId}/action-cards/{cardId}',
+    );
   }
 }
 
-function removeActionCard(cardId: string) {
+async function removeActionCard(cardId: string) {
   const index = currentPlan.value.actionCards.findIndex((item) => item.id === cardId);
-  if (index >= 0) {
-    currentPlan.value.actionCards.splice(index, 1);
+  if (index < 0) return;
+  if (planWritesToBackend()) {
+    try {
+      await deletePlanActionCard(currentPlan.value.id, cardId);
+    } catch {
+      backendUnavailableWarn(
+        'plan-action-card',
+        'DELETE /emergency-plans/{planId}/action-cards/{cardId}',
+      );
+      return;
+    }
   }
+  currentPlan.value.actionCards.splice(index, 1);
   if (selectedCardId.value === cardId) {
     selectedCardId.value = null;
   }
 }
 
-function addActionCard(card: PlanActionCard) {
-  currentPlan.value.actionCards.push({ ...card, id: card.id || `c-new-${Date.now()}` });
+async function addActionCard(card: PlanActionCard) {
+  if (!planWritesToBackend()) {
+    currentPlan.value.actionCards.push({ ...card, id: card.id || `c-new-${Date.now()}` });
+    return;
+  }
+  try {
+    const created = await createPlanActionCard(currentPlan.value.id, {
+      resourceId: card.resourceId,
+      title: card.title,
+      content: card.content,
+      description: card.description,
+      startSubPhaseId: card.startSubPhaseId,
+      endSubPhaseId: card.endSubPhaseId,
+      riskEventId: card.riskEventId,
+      status: card.status,
+      isGlobal: card.isGlobal,
+    });
+    if (created) {
+      currentPlan.value.actionCards.push(created);
+    }
+  } catch {
+    backendUnavailableWarn('plan-action-card', 'POST /emergency-plans/{planId}/action-cards');
+  }
 }
 
 function loadColumnWidths() {

@@ -49,7 +49,7 @@ watch(
 
 function handleSave() {
   if (!form.title.trim() || !form.resourceId || !form.startSubPhaseId) return;
-  addActionCard({
+  void addActionCard({
     id: `c-new-${Date.now()}`,
     resourceId: form.resourceId,
     title: form.title.trim(),

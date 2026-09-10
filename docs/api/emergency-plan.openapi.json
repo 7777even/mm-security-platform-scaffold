@@ -124,6 +124,143 @@
           }
         }
       }
+    },
+    "/emergency-plans/{planId}/action-cards": {
+      "post": {
+        "summary": "新建预案行动卡片",
+        "description": "在指定预案实例下新建一张行动卡片。planId 为预案实例编码；未命中实例时返回 data 为 null。",
+        "tags": ["emergency-plan"],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "description": "预案实例编码（plan_code）",
+            "schema": { "type": "string", "example": "plan-t103-002" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PlanActionCardCreate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "新建后的行动卡片",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PlanActionCard" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": "ac-3f9a1c2b4d5e",
+                    "resourceId": "res-flood-3",
+                    "title": "启动排水泵",
+                    "content": "开启 3# 排水泵并确认出水",
+                    "description": "泵房积水排放作业",
+                    "startSubPhaseId": "sp4_3_2",
+                    "endSubPhaseId": "sp4_4_2",
+                    "riskEventId": "re4_1",
+                    "status": "pending",
+                    "isGlobal": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/emergency-plans/{planId}/action-cards/{cardId}": {
+      "put": {
+        "summary": "更新预案行动卡片",
+        "description": "局部更新行动卡片字段（null 不覆盖），前端主要用于执行状态流转。未命中实例或卡片时返回 data 为 null。",
+        "tags": ["emergency-plan"],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "description": "预案实例编码（plan_code）",
+            "schema": { "type": "string", "example": "plan-t103-002" }
+          },
+          {
+            "name": "cardId",
+            "in": "path",
+            "required": true,
+            "description": "行动卡片编码（card_code）",
+            "schema": { "type": "string", "example": "c-flood-401" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PlanActionCardUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新后的行动卡片",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PlanActionCard" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": "c-flood-401",
+                    "resourceId": "res-flood-3",
+                    "title": "使用漏电测试仪对配电房周边水体检测",
+                    "content": "检测强排低洼淹没区有无动力漏电",
+                    "startSubPhaseId": "sp4_3_2",
+                    "endSubPhaseId": "sp4_4_2",
+                    "status": "in-progress",
+                    "isGlobal": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除预案行动卡片",
+        "description": "删除指定行动卡片；未命中实例或卡片时 ok 为 false（不抛异常）。",
+        "tags": ["emergency-plan"],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "description": "预案实例编码（plan_code）",
+            "schema": { "type": "string", "example": "plan-t103-002" }
+          },
+          {
+            "name": "cardId",
+            "in": "path",
+            "required": true,
+            "description": "行动卡片编码（card_code）",
+            "schema": { "type": "string", "example": "c-flood-401" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除结果",
+            "content": {
+              "application/json": {
+                "schema": { "type": "boolean" },
+                "example": { "code": 0, "message": "ok", "data": true }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -322,6 +459,103 @@
             "type": "array",
             "description": "行动卡片列表",
             "items": { "$ref": "#/components/schemas/PlanActionCard" }
+          }
+        }
+      },
+      "PlanActionCardCreate": {
+        "type": "object",
+        "description": "新建预案行动卡片入参",
+        "required": ["resourceId", "title", "startSubPhaseId", "endSubPhaseId"],
+        "properties": {
+          "resourceId": {
+            "type": "string",
+            "description": "关联作战资源 id",
+            "example": "res-flood-3"
+          },
+          "title": { "type": "string", "description": "卡片标题", "example": "启动排水泵" },
+          "content": {
+            "type": "string",
+            "description": "卡片内容（可选）",
+            "example": "开启 3# 排水泵并确认出水"
+          },
+          "description": {
+            "type": "string",
+            "description": "卡片描述（可选）",
+            "example": "泵房积水排放作业"
+          },
+          "startSubPhaseId": {
+            "type": "string",
+            "description": "起始子阶段 id",
+            "example": "sp4_3_2"
+          },
+          "endSubPhaseId": {
+            "type": "string",
+            "description": "结束子阶段 id",
+            "example": "sp4_4_2"
+          },
+          "riskEventId": {
+            "type": "string",
+            "description": "关联风险事件 id（可选）",
+            "example": "re4_1"
+          },
+          "status": {
+            "type": "string",
+            "description": "状态：pending 待执行 / in-progress 执行中 / completed 已完成；可空，缺省 pending",
+            "enum": ["pending", "in-progress", "completed"],
+            "example": "pending"
+          },
+          "isGlobal": {
+            "type": "boolean",
+            "description": "是否跨阶段全局卡；可空，缺省 false",
+            "example": false
+          }
+        }
+      },
+      "PlanActionCardUpdate": {
+        "type": "object",
+        "description": "更新预案行动卡片入参（局部更新，null 不覆盖）",
+        "properties": {
+          "resourceId": {
+            "type": "string",
+            "description": "关联作战资源 id（可选）",
+            "example": "res-flood-3"
+          },
+          "title": { "type": "string", "description": "卡片标题（可选）", "example": "启动排水泵" },
+          "content": {
+            "type": "string",
+            "description": "卡片内容（可选）",
+            "example": "开启 3# 排水泵并确认出水"
+          },
+          "description": {
+            "type": "string",
+            "description": "卡片描述（可选）",
+            "example": "泵房积水排放作业"
+          },
+          "startSubPhaseId": {
+            "type": "string",
+            "description": "起始子阶段 id（可选）",
+            "example": "sp4_3_2"
+          },
+          "endSubPhaseId": {
+            "type": "string",
+            "description": "结束子阶段 id（可选）",
+            "example": "sp4_4_2"
+          },
+          "riskEventId": {
+            "type": "string",
+            "description": "关联风险事件 id（可选）",
+            "example": "re4_1"
+          },
+          "status": {
+            "type": "string",
+            "description": "状态：pending / in-progress / completed（可选）",
+            "enum": ["pending", "in-progress", "completed"],
+            "example": "in-progress"
+          },
+          "isGlobal": {
+            "type": "boolean",
+            "description": "是否跨阶段全局卡（可选）",
+            "example": false
           }
         }
       }

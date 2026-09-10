@@ -216,7 +216,7 @@ function handleContextAction(action: 'view' | 'add' | 'delete') {
     addCardInit.value = { resourceId: card.resourceId, subPhaseId: card.startSubPhaseId };
     addCardOpen.value = true;
   } else if (action === 'delete') {
-    removeActionCard(card.id);
+    void removeActionCard(card.id);
   }
 }
 

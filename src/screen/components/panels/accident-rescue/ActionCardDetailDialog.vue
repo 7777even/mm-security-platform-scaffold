@@ -69,7 +69,7 @@ function showToast(text: string) {
 }
 
 function handleStatusChange(status: PlanCardStatus) {
-  setCardStatus(props.card.id, status);
+  void setCardStatus(props.card.id, status);
   showToast(`状态已切换为「${statusLabel[status]}」`);
 }
 
