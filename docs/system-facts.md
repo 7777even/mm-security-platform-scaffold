@@ -50,7 +50,7 @@
 2. mock 分支是否真有引用方（传该 module 的调用点）。
    两者满足即为死代码，可直接统一走 service 并删常量，**零行为回归**。
 
-> 状态（2026-09-09 复核）：早年「12 缺口清单」已全部过时——清单里 12 个面板前端早已接好 service（带本地 fixture 兜底演示）。真正残留 mock 已清零：消防设施顶部汇总条改由 `monitorSummaries` 聚合派生；演练/几何/静态项为刻意本地常量。P4 渲染层去 mock 序列实际已完成；唯一剩的演示/几何常量若想接后端需新增端点（V+ 迁移 + 契约四同步），已非纯前端接线。
+> 状态（2026-09-10 收尾完成）：早年「12 缺口清单」已过时，多数面板已接 `fetch*` 服务。原残留的 3 处「组件直读 mock 常量」已全部接线后端（端点本就就绪，无需改后端/契约）：① 主壳 `src/components/layout/SystemMessageBar.vue` → `fetchDashboardMessages()`（`/dashboard/messages`）；② `src/screen/components/panels/FireRescueForce.vue` → `fetchRescueForces()`（`/fire/rescue-forces`）；③ `src/screen/components/map/FireBrigadeMapOverlay.vue` → 消费 `useFireBrigadeView()` 的 `fireBrigadeItems` / `selectedFireBrigade`（`/rescue-resources/brigades`）——其 composable 初始态预填 `fireBrigadeMock` fixture + loader `Array.isArray` 守卫，避免空态与清空回归。**死 mock 已清**：两个副本 `src/services/map-data/mock.ts` 与 `src/screen/lib/data/mock.ts` 中，`specialOperations`/`fireEquipment`/`equipmentStatus`/`rescueStats`/`systemMessages`/`alarms` 六个无引用常量已删；保留仍被引用的 `fireEquipmentCategories`（同级 `fireFacilityMonitoringMock.ts` 相对 `./mock` 引用）、`fireAlarmMarker`、`dutyPersons`、`mapControls` 与全部类型。⚠️ 这两个 `mock.ts` 是**双副本、各被相对 `./mock` 引用**（`alarmDetailMock.ts` / `fireFacilityMonitoringMock.ts`，两侧各一份），勿整体删除、删常量前须 grep 相对路径。剩 2 处演示告警单点硬钉（`TvMap` `tvAlarmMarker`、`CenterMap` `fireAlarmMarker`）**已于 2026-09-10 接 `/map/alarms`**：两处均「初始态 fixture 兜底 + onMounted 取首条有限坐标接管」（TvMap 换 `alarmMarker` ref 的位置/状态并联动屏幕锚点；CenterMap 换 `alarmTarget` ref 的飞掠目标；`fetchAlarmPoints` 失败自带 FALLBACK 点位，绝不白屏）。`MapAlarmVideoPopups` 与 `alarmDetailMock` 对 `fireAlarmMarker` 的引用是**兜底坐标/fixture 内部引用**，非展示硬钉，保留。按设计本地、非缺口：地图控件按钮数组、路线几何、工具栏/动态 tab、处置指引 `guidanceSteps`。
 
 ## 7. 门禁基线
 
@@ -62,3 +62,4 @@
 - 2026-09-08：两仓 CI/CD + 跨库契约守门；openspec 回填。
 - 2026-09-09：生产应急域、video/tv/special-operation 三域全栈接线；大屏去 mock 收尾（V24 + 4 域端点）；服务层 DEV 兜底 + 全局错误兜底 + WS 实时化。
 - 2026-09-10：续验 `vue-tsc` 全绿、4 端点冒烟 `code=0`；本系统事实基线分库落地。
+- 2026-09-10（收尾）：主壳 SystemMessageBar / FireRescueForce / 大屏 FireBrigadeMapOverlay 三处 mock 直读全部接线后端；TvMap 告警钉与 CenterMap 飞掠目标接 `/map/alarms`；两个 `mock.ts` 副本清死常量；门禁 `vitest 378 passed` + `vue-tsc 0 错`。至此大屏/主壳展示数据无硬编码 mock 钉。
