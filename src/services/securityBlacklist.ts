@@ -29,3 +29,26 @@ export interface BlacklistSummary {
 export async function fetchBlacklist(): Promise<BlacklistSummary> {
   return request<BlacklistSummary>({ url: '/security/blacklist', method: 'GET' });
 }
+
+/** 删除结果（对齐契约 DeleteResult）。 */
+export interface BlacklistDeleteResult {
+  ok: boolean;
+}
+
+/** 从车辆黑名单移除记录，返回是否删除成功。 */
+export async function removeBlacklistVehicle(id: number): Promise<boolean> {
+  const result = await request<BlacklistDeleteResult>({
+    url: `/security/blacklist/vehicles/${encodeURIComponent(String(id))}`,
+    method: 'DELETE',
+  });
+  return Boolean(result?.ok);
+}
+
+/** 从人员黑名单移除记录，返回是否删除成功。 */
+export async function removeBlacklistPerson(id: number): Promise<boolean> {
+  const result = await request<BlacklistDeleteResult>({
+    url: `/security/blacklist/persons/${encodeURIComponent(String(id))}`,
+    method: 'DELETE',
+  });
+  return Boolean(result?.ok);
+}

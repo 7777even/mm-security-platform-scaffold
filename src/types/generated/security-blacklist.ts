@@ -65,6 +65,108 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/security/blacklist/vehicles/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * 从车辆黑名单移除记录
+     * @description 删除指定 id 的车辆黑名单条目；id 不存在或类型不符时 ok 为 false（不抛异常）。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 黑名单记录 id */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除结果 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "ok": true
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['DeleteResult'];
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/security/blacklist/persons/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * 从人员黑名单移除记录
+     * @description 删除指定 id 的人员黑名单条目；id 不存在或类型不符时 ok 为 false（不抛异常）。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 黑名单记录 id */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除结果 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "ok": true
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['DeleteResult'];
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -180,6 +282,14 @@ export interface components {
       vehicles?: components['schemas']['BlacklistVehicleItem'][];
       /** @description 黑名单人员列表 */
       persons?: components['schemas']['BlacklistPersonItem'][];
+    };
+    /** @description 删除结果 */
+    DeleteResult: {
+      /**
+       * @description 删除是否成功（命中行数 > 0 为 true）
+       * @example true
+       */
+      ok?: boolean;
     };
   };
   responses: {

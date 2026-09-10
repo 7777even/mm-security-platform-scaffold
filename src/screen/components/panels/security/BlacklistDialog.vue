@@ -2,9 +2,12 @@
 import { ref, watch } from 'vue';
 import {
   fetchBlacklist,
+  removeBlacklistPerson,
+  removeBlacklistVehicle,
   type BlacklistPersonItem,
   type BlacklistVehicleItem,
 } from '@/services/securityBlacklist';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 
 const props = defineProps<{
   open: boolean;
@@ -33,14 +36,39 @@ watch(
   },
 );
 
-function removeVehicle(item: BlacklistVehicleItem) {
-  const index = vehicleBlacklist.value.findIndex((v) => v.id === item.id);
-  if (index >= 0) vehicleBlacklist.value.splice(index, 1);
+/** 是否落库：配置了 VITE_API_BASE 才走后端删除，否则维持本地移除（纯静态演示）。 */
+function blacklistWritesToBackend(): boolean {
+  return Boolean(import.meta.env.VITE_API_BASE);
 }
 
-function removePerson(item: BlacklistPersonItem) {
+async function removeVehicle(item: BlacklistVehicleItem) {
+  const index = vehicleBlacklist.value.findIndex((v) => v.id === item.id);
+  if (index < 0) return;
+  if (blacklistWritesToBackend()) {
+    try {
+      const ok = await removeBlacklistVehicle(item.id);
+      if (!ok) return;
+    } catch {
+      backendUnavailableWarn('security-blacklist', 'DELETE /security/blacklist/vehicles/{id}');
+      return;
+    }
+  }
+  vehicleBlacklist.value.splice(index, 1);
+}
+
+async function removePerson(item: BlacklistPersonItem) {
   const index = personBlacklist.value.findIndex((p) => p.id === item.id);
-  if (index >= 0) personBlacklist.value.splice(index, 1);
+  if (index < 0) return;
+  if (blacklistWritesToBackend()) {
+    try {
+      const ok = await removeBlacklistPerson(item.id);
+      if (!ok) return;
+    } catch {
+      backendUnavailableWarn('security-blacklist', 'DELETE /security/blacklist/persons/{id}');
+      return;
+    }
+  }
+  personBlacklist.value.splice(index, 1);
 }
 </script>
 
