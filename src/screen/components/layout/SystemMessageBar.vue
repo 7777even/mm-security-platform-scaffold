@@ -1,8 +1,8 @@
 ﻿<script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import ClipImage from '../common/ClipImage.vue';
 import { footerLabelClip } from '../../utils/footerClipConfig';
-import { systemMessages } from '../../lib/data/mock';
+import { fetchDashboardMessages, type SystemMessageItem } from '@/services/dashboard';
 import type { DesignModule } from '../../utils/designAssets';
 
 const props = defineProps<{
@@ -10,6 +10,12 @@ const props = defineProps<{
 }>();
 
 const labelClip = computed(() => footerLabelClip(props.module));
+
+// 初始态以空数组占位，挂载后由后端 GET /dashboard/messages 接管。
+const messages = ref<SystemMessageItem[]>([]);
+onMounted(async () => {
+  messages.value = await fetchDashboardMessages();
+});
 </script>
 
 <template>
@@ -21,7 +27,7 @@ const labelClip = computed(() => footerLabelClip(props.module));
     <div class="message-bar__ticker">
       <div class="message-bar__track">
         <div
-          v-for="(msg, index) in [...systemMessages, ...systemMessages]"
+          v-for="(msg, index) in [...messages, ...messages]"
           :key="`${msg.id}-${index}`"
           class="message-item"
           :class="`message-item--${msg.type}`"

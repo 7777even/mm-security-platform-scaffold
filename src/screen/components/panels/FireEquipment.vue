@@ -1,12 +1,19 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
 import EquipmentItemCard from '../common/EquipmentItemCard.vue';
-import { fireEquipment } from '../../lib/data/mock';
+import { fetchFireEquipment, type FireEquipmentItem } from '@/services/fireMonitoring';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 
 const { openFireFacilityMonitoring } = useFireFacilityMonitoringDialog();
 const { scaleAreaCount } = usePlantArea();
+
+// 初始态以空数组占位，挂载后由后端 GET /fire/equipment 接管。
+const equipment = ref<FireEquipmentItem[]>([]);
+onMounted(async () => {
+  equipment.value = await fetchFireEquipment();
+});
 
 function openFromCard(equipmentType: string) {
   openFireFacilityMonitoring({ tab: 'problem', facilityType: equipmentType });
@@ -22,7 +29,7 @@ function openFromCard(equipmentType: string) {
   >
     <div class="equipment-grid">
       <button
-        v-for="item in fireEquipment"
+        v-for="item in equipment"
         :key="item.id"
         type="button"
         class="equipment-grid__item"

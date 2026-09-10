@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import SpriteImage from '../common/SpriteImage.vue';
 import MapLayerPanel from '../common/MapLayerPanel.vue';
@@ -7,6 +7,7 @@ import MapCleanModeButton from './MapCleanModeButton.vue';
 import { tvAssets } from '../../utils/designAssets';
 import { tvSprites } from '../../utils/tvSpriteConfig';
 import { tvAlarmMarker, tvMapControls, tvVideoMapPoints } from '../../lib/data/tvMock';
+import { fetchTvMapPoints, type TvMapPoint } from '@/services/tv';
 import { useMapControls } from '../../lib/composables/useMapControls';
 import {
   useCesiumScreenAnchor,
@@ -31,10 +32,16 @@ const videoPointGroupOptions: Array<{ value: VideoPointGroup; label: string }> =
   { value: 'hazard', label: '重大危险源' },
   { value: 'boundary', label: '厂界及出入口' },
 ];
+// 初始态以 tvMock 点位兜底（演示/导入期立即可见），挂载后由后端 GET /tv/map-points 接管。
+const tvMapPoints = ref<TvMapPoint[]>(tvVideoMapPoints as unknown as TvMapPoint[]);
+onMounted(async () => {
+  tvMapPoints.value = await fetchTvMapPoints();
+});
+
 const visibleVideoMapPoints = computed(() =>
   selectedVideoPointGroup.value === 'all'
-    ? tvVideoMapPoints
-    : tvVideoMapPoints.filter((point) => point.group === selectedVideoPointGroup.value),
+    ? tvMapPoints.value
+    : tvMapPoints.value.filter((point) => point.group === selectedVideoPointGroup.value),
 );
 const { styleFor: videoPointStyleFor } = useWorldMarkerScreenPositions(
   () =>

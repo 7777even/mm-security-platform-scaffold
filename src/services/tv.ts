@@ -58,6 +58,33 @@ export interface TvInspectionSummary {
   persons: TvInspectionItem[];
 }
 
+/** 工业电视地图视频点位（高空AR/重点部位/危险源/厂界四类） */
+export interface TvMapPoint {
+  id: string;
+  label: string;
+  /** high-ar 高空AR / focus 重点部位 / hazard 危险源 / boundary 厂界 */
+  group: string;
+  longitude: number;
+  latitude: number;
+  height: number;
+  online: boolean;
+}
+
+/** 视频监控点位档案（点击地图撒点时调取） */
+export interface TvMonitorDetail {
+  id: string;
+  name: string;
+  online: boolean;
+  /** 完好程度：良好 / 一般 / 损坏 */
+  integrity: string;
+  /** 监控类型：球机 / 枪机 */
+  monitorType: string;
+  department: string;
+  location: string;
+  height: string;
+  angle: string;
+}
+
 /** 首屏聚合：概览卡片 + 运行统计 + 维保工单 + 事件分析。 */
 export async function fetchTvOverview(): Promise<TvOverview> {
   return request<TvOverview>({ url: '/tv/overview', method: 'GET' });
@@ -66,4 +93,14 @@ export async function fetchTvOverview(): Promise<TvOverview> {
 /** 入厂巡检聚合：车辆列表 + 人员列表。 */
 export async function fetchTvInspections(): Promise<TvInspectionSummary> {
   return request<TvInspectionSummary>({ url: '/tv/inspections', method: 'GET' });
+}
+
+/** 工业电视地图撒点：GET /tv/map-points（取代前端硬编码 tvVideoMapPoints） */
+export async function fetchTvMapPoints(): Promise<TvMapPoint[]> {
+  return request<TvMapPoint[]>({ url: '/tv/map-points', method: 'GET' });
+}
+
+/** 视频监控点位档案：GET /tv/monitors/{code}（取代前端硬编码 tvVideoMonitorDetails） */
+export async function fetchTvMonitor(code: string): Promise<TvMonitorDetail> {
+  return request<TvMonitorDetail>({ url: `/tv/monitors/${code}`, method: 'GET' });
 }

@@ -30,6 +30,13 @@ export interface FireEquipmentStatus {
   onlineRate: number;
 }
 
+/** 消防设备分类项（消防设备面板分类卡片网格） */
+export interface FireEquipmentItem {
+  id: number;
+  name: string;
+  count: number;
+}
+
 export type PatrolShift = '上午' | '下午' | '夜间';
 export type PatrolResult = '正常' | '异常' | '不适用';
 
@@ -174,6 +181,39 @@ export async function fetchFirePatrols(): Promise<FirePatrolRecord[]> {
     return asArray(data, isPatrolRecord, '/fire/patrols');
   } catch {
     backendUnavailableWarn('fire-monitoring', '/fire/patrols');
+    return [];
+  }
+}
+
+const DEV_FIRE_EQUIPMENT: FireEquipmentItem[] = [
+  '火灾自动报警系统',
+  '消防水源',
+  '室外消火栓系统',
+  '自动喷水灭火系统',
+  '气体灭火系统',
+  '泡沫灭火系统',
+  '干粉灭火系统',
+  '防烟排烟系统',
+  '防火分隔设施',
+  '消防应急广播',
+  '应急照明及疏散指示系统',
+  '消防电源',
+].map((name, index) => ({ id: index + 1, name, count: 665 }));
+
+function isFireEquipmentItem(v: unknown): v is FireEquipmentItem {
+  if (!v || typeof v !== 'object') return false;
+  const o = v as Record<string, unknown>;
+  return typeof o.id === 'number' && typeof o.name === 'string' && typeof o.count === 'number';
+}
+
+/** 消防设备分类清单：GET /fire/equipment（取代前端硬编码 fireEquipment） */
+export async function fetchFireEquipment(): Promise<FireEquipmentItem[]> {
+  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_FIRE_EQUIPMENT);
+  try {
+    const data = await request<unknown>({ url: '/fire/equipment', method: 'GET' });
+    return asArray(data, isFireEquipmentItem, '/fire/equipment');
+  } catch {
+    backendUnavailableWarn('fire-monitoring', '/fire/equipment');
     return [];
   }
 }
