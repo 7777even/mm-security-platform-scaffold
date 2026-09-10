@@ -93,7 +93,7 @@ onBeforeUnmount(() => {
 // getAccessToken：子应用自身不独立登录（subapps/fm-* 入口不调用 ensureLogin），
 // 经此只读桥实时读取主壳内存态令牌，避免子应用发起的鉴权请求因无 Authorization 头而 401。
 const sharedProps = computed(() => ({
-  user: auth.roleId,
+  user: auth.role,
   perms: auth.perms,
   theme: 'dark',
   routeParams: { ...route.params } as Record<string, string>,

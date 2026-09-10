@@ -85,7 +85,36 @@ async function ensureLogin(): Promise<void> {
 function handleUnauthorized(): void {
   const redirect = router.currentRoute.value.fullPath;
   logger.warn('[app] 收到 401 未授权，跳转登录页');
+  // 同步清空身份/权限快照，避免旧权限集在重新登录前继续放行路由
+  useAuthStore().clearMe();
   router.push({ path: '/login', query: { redirect } });
+}
+
+// 自包含演示（VITE_USE_DEV_MOCK=true，无后端）用的兜底权限码。
+// 真实后端模式下权限一律以 GET /auth/me 下发的 perms 为准，此常量不参与。
+// 覆盖：五个 fm-* 路由的 meta.perm + 系统管理二级页 + v-permission 演示码。
+const DEV_MOCK_PERMS = [
+  'dashboard:view',
+  'fire-alarm:view',
+  'fire-alarm:ack',
+  'security:view',
+  'video:view',
+  'ops:view',
+  'system:user:view',
+  'system:role:view',
+  'system:menu:view',
+  'system:dict:view',
+  'system:device-code:view',
+  'mobile:field-report:view',
+];
+
+/** 拉取后端下发的身份与权限快照（路由守卫判定 meta.perm 前必须完成）。 */
+async function hydrateUser(): Promise<void> {
+  try {
+    await useAuthStore().loadMe();
+  } catch {
+    logger.warn('[app] /auth/me 不可达，权限集为空——受权限保护的路由将被守卫拦截');
+  }
 }
 
 async function bootstrap(): Promise<void> {
@@ -129,9 +158,20 @@ async function bootstrap(): Promise<void> {
   if (import.meta.env.DEV && import.meta.env.VITE_USE_DEV_MOCK === 'true') {
     // Mock 登录：令牌仅写入内存态，请求由 devMock 适配器本地应答（§5.3）
     useAuthStore().login();
+    useAuthStore().setMe({
+      username: 'admin',
+      realName: '系统管理员',
+      role: 'ADMIN',
+      roles: ['ADMIN'],
+      perms: DEV_MOCK_PERMS,
+      mustChangePwd: false,
+    });
     installDevMock(http, pinia);
   } else {
     await ensureLogin();
+    // 关键时序：先取 /auth/me（填充 perms），再装配动态路由；
+    // 否则路由守卫在 meta.perm 判定时拿到空权限集，受保护页面会被误判为 404。
+    await hydrateUser();
     startRealtime();
   }
 

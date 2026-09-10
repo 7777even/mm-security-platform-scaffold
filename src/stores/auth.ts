@@ -1,57 +1,58 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { setAccessToken, clearAccessToken } from '@/services/token';
-import { logout as logoutApi } from '@/services/auth';
+import { logout as logoutApi, fetchCurrentUser } from '@/services/auth';
+import type { MeResult } from '@/services/auth';
 import { reportAudit } from '@/services/audit';
 
-// 脚手架阶段：角色权限体系先不展开，统一以单一「管理员」身份登录（待后端 IDP/RBAC 网关下发后再启用多角色）。
-export type RoleId = 'admin';
-
-// 角色中文名（界面展示用）
-export const ROLE_NAMES: Record<RoleId, string> = {
-  admin: '管理员',
-};
-
-// 管理员权限码（脚手架阶段授予全部权限；正式环境由 IDP/RBAC 网关按 角色-终端-防区 三维下发替换）
-export const ROLE_PERMS: Record<RoleId, string[]> = {
-  admin: [
-    'dashboard:view',
-    'weather:view',
-    'fire-alarm:view',
-    'fire-alarm:ack',
-    'security:view',
-    'video:view',
-    'ops:view',
-    'system:user:view',
-    'system:device-code:view',
-    'mobile:field-report:view',
-    // 附加 fm-* 子应用（由后端 /auth/menus 驱动渲染）
-    'rescue:view',
-    'typhoon:view',
-    'production-area:view',
-    'major-hazard:view',
-    'communication:view',
-    'video-control:view',
-    'video-wall:view',
-  ],
-};
+// 权限来源后端化（rbac-permission spec §权限来源后端化）：
+// 权限码不再硬编码在前端（旧 ROLE_PERMS 已退役），改由 GET /auth/me 的 perms 下发，
+// 数据源为后端 sys_role_menu → sys_menu.perm_code（角色授权变更即时生效）。
+// mustChangePwd=true 时前端须强制跳转改密页（后端亦在变更类请求上兜底拒绝）。
 
 export const useAuthStore = defineStore('auth', () => {
-  const roleId = ref<RoleId>('admin');
-  const perms = computed(() => ROLE_PERMS[roleId.value]);
   const accessToken = ref<string | null>(null);
+  const username = ref('');
+  const realName = ref('');
+  /** 当前角色标识（单角色，如 ADMIN / SCHEDULER） */
+  const role = ref('');
+  /** 角色标识列表（当前为长度 ≤1 的列表，预留多角色演进） */
+  const roles = ref<string[]>([]);
+  /** 权限码全集（后端下发，前端判定的唯一来源） */
+  const perms = ref<string[]>([]);
+  /** 是否需强制修改口令 */
+  const mustChangePwd = ref(false);
 
-  function setRole(id: RoleId): void {
-    roleId.value = id;
+  /** 写入后端下发的用户与权限快照 */
+  function setMe(me: MeResult): void {
+    username.value = me.username ?? '';
+    realName.value = me.realName ?? '';
+    role.value = me.role ?? '';
+    roles.value = Array.isArray(me.roles) ? [...me.roles] : [];
+    perms.value = Array.isArray(me.perms) ? [...me.perms] : [];
+    mustChangePwd.value = Boolean(me.mustChangePwd);
   }
 
-  // Mock 登录（S1 §5.3）：正式环境由 IDP SSO 下发 access token 并写入内存态；
-  // 刷新令牌由后端种入 HttpOnly Cookie，浏览器自动随请求发送，前端 JS 不可读。
+  /** 清空身份快照（未登录 / 401） */
+  function clearMe(): void {
+    username.value = '';
+    realName.value = '';
+    role.value = '';
+    roles.value = [];
+    perms.value = [];
+    mustChangePwd.value = false;
+  }
+
+  /**
+   * 记录登录令牌。
+   * - 真实后端模式：传入 /auth/login 返回的 accessToken；
+   * - dev 自包含 mock 模式：不传参，落一个占位令牌供 devMock 适配器识别。
+   */
   function login(token?: string): void {
-    const t = token ?? `mock-${roleId.value}-${Date.now()}`;
+    const t = token ?? `mock-${Date.now()}`;
     setAccessToken(t);
     accessToken.value = t;
-    reportAudit({ action: 'login', module: roleId.value });
+    reportAudit({ action: 'login', module: role.value || 'anonymous' });
   }
 
   // 主动登出：先同步清本地内存态（保持同步语义，单测友好），
@@ -59,7 +60,15 @@ export const useAuthStore = defineStore('auth', () => {
   function logout(): void {
     clearAccessToken();
     accessToken.value = null;
+    clearMe();
     void logoutApi().catch(() => {});
+  }
+
+  /** 拉取并写入后端下发的身份与权限快照（启动装配路由前必须完成） */
+  async function loadMe(): Promise<MeResult> {
+    const me = await fetchCurrentUser();
+    setMe(me);
+    return me;
   }
 
   function hasPerm(perm: string): boolean {
@@ -70,5 +79,20 @@ export const useAuthStore = defineStore('auth', () => {
     return permsList.some((p) => hasPerm(p));
   }
 
-  return { roleId, perms, accessToken, setRole, login, logout, hasPerm, hasAny };
+  return {
+    accessToken,
+    username,
+    realName,
+    role,
+    roles,
+    perms,
+    mustChangePwd,
+    setMe,
+    clearMe,
+    login,
+    logout,
+    loadMe,
+    hasPerm,
+    hasAny,
+  };
 });

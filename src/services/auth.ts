@@ -20,11 +20,29 @@ export interface TokenResponse {
   tokenType: string;
 }
 
-/** 当前登录用户（契约 CurrentUser） */
-export interface CurrentUser {
+/**
+ * 当前登录用户（契约 MeResult）。
+ * perms 由后端按 sys_role_menu 解析下发，是前端路由守卫与 v-permission 的**唯一权威来源**
+ * （V32 起取代硬编码的 ROLE_PERMS）。
+ */
+export interface MeResult {
   username: string;
   realName: string;
   role: string;
+  roles: string[];
+  perms: string[];
+  mustChangePwd: boolean;
+}
+
+/** 本人修改口令入参 */
+export interface PasswordChangePayload {
+  oldPassword: string;
+  newPassword: string;
+}
+
+/** 本人资料修改入参 */
+export interface ProfileUpdatePayload {
+  realName: string;
 }
 
 /** 凭证登录，返回 access 令牌（refresh 经 Set-Cookie 下发） */
@@ -45,7 +63,17 @@ export function logout(): Promise<void> {
   return request<void>({ url: '/auth/logout', method: 'POST' });
 }
 
-/** 取当前登录用户（username/realName/role） */
-export function fetchCurrentUser(): Promise<CurrentUser> {
-  return request<CurrentUser>({ url: '/auth/me', method: 'GET' });
+/** 取当前登录用户（含 roles / perms / mustChangePwd） */
+export function fetchCurrentUser(): Promise<MeResult> {
+  return request<MeResult>({ url: '/auth/me', method: 'GET' });
+}
+
+/** 本人修改口令（须校验旧口令并满足复杂度策略） */
+export function changePassword(payload: PasswordChangePayload): Promise<void> {
+  return request<void>({ url: '/auth/password', method: 'POST', data: payload });
+}
+
+/** 本人资料修改（仅姓名；返回最新 MeResult） */
+export function updateProfile(payload: ProfileUpdatePayload): Promise<MeResult> {
+  return request<MeResult>({ url: '/auth/profile', method: 'PUT', data: payload });
 }
