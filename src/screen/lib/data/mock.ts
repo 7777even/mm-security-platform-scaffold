@@ -85,13 +85,6 @@ export const fireEquipmentCategories = [
   '消防电源',
 ] as const;
 
-// 值班人员：仅作后端 /emergency/duty 不可用时的兜底展示（DutyInfoPanel 使用）。
-export const dutyPersons: DutyPerson[] = [
-  { id: 1, name: '杨恒明', phone: '13792536966', role: '值班领导' },
-  { id: 2, name: '高策', phone: '18300556145', role: '值班员' },
-  { id: 3, name: '高策', phone: '18300556145', role: '值班员' },
-];
-
 /** 消防页地图报警点（WGS84；位于厂区北侧装置区内部） */
 export const fireAlarmMarker = {
   location: 'A装置区北侧',

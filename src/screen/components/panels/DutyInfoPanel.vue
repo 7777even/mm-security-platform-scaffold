@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
 import StatCard from '../common/StatCard.vue';
 import { UserFilled } from '@element-plus/icons-vue';
-import { dutyPersons, type DutyPerson } from '../../lib/data/mock';
+import type { DutyPerson } from '../../lib/data/mock';
 import { fetchRescueForces, type RescueForceStat } from '@/services/fireMonitoring';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 import { fetchDutyRoster } from '@/services/duty';
@@ -27,12 +27,11 @@ import { closeSpecialOperationView } from '../../lib/composables/useSpecialOpera
 
 const shift = ref<'day' | 'night'>('day');
 const { filterByPlantArea, scaleAreaCount } = usePlantArea();
-// 值班人员：直连真后端 /emergency/duty（services 缺 VITE_API_BASE 时回落 dev mock）。
-// 厂区过滤沿用既有 filterByPlantArea；真实数据未加载时回退到内置 mock 不空屏。
+// 值班人员：直连真后端 /emergency/duty。service 在未配置 VITE_API_BASE 时回落 DEV fixture（纯演示），
+// 后端就绪但失败/为空时返回空集合——此处保持空态，绝不回填本地 mock 冒充真实数据。
+// 厂区过滤沿用既有 filterByPlantArea。
 const realDutyPersons = ref<DutyPerson[]>([]);
-const dutySource = computed(() =>
-  realDutyPersons.value.length ? realDutyPersons.value : dutyPersons,
-);
+const dutySource = computed(() => realDutyPersons.value);
 const scopedDutyPersons = computed(() => filterByPlantArea(dutySource.value));
 const visibleDutyPersons = computed(() => {
   const leader = dutySource.value.find((person) => person.role === '值班领导');
@@ -54,7 +53,7 @@ onMounted(async () => {
       role: m.role,
     }));
   } catch {
-    // 真实接口异常时保留内置 mock 兜底
+    // 真实接口异常时保持空态，不回落本地 mock（避免假数据冒充后端）
   }
   rescueStats.value = await fetchRescueForces();
 });
