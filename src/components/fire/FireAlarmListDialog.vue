@@ -1,47 +1,64 @@
 <!--
   FireAlarmListDialog — 消防告警列表（二级界面 alarmList）
-  对标参考 FireAlarmListDialog：过滤 + 表格 + 分页 + 行操作（详情 / 现场监控 / 处置调度 / 一键应急）。
-  数据消费 fireAlarmListMock；行操作复用调度层打开下一级二级界面。
+  数据消费后端 /fire-alarms（services/alarm.fetchFireAlarmPage），dev 无后端时由服务内回落 fixture；
+  行操作复用消防模块调度层（useFireAlarmInteraction）打开下一级二级界面，保持模块内导航不变。
   表格为自定义深蓝表格（不使用 el-table，避免浅色组件破坏大屏规范）。
   图标：压缩包 fire-situation 图标（PkgIcon）。
 -->
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import ScreenDialog from './ScreenDialog.vue';
 import PkgIcon from '@/components/common/PkgIcon.vue';
 import { useFireAlarmInteraction } from '@/composables/useFireAlarmInteraction';
 import { showToast } from '@/composables/useToast';
+import { fetchFireAlarmPage, type FireAlarmItem, type AlarmStatus } from '@/services/alarm';
 import {
-  fireAlarmListItems,
-  fireAlarmSourceOptions,
-  fireAlarmObjectTypeOptions,
-  fireAlarmListTypeOptions,
-  fireAlarmListStatusOptions,
-} from '@/services/map-data/fireAlarmListMock';
+  FIRE_ALARM_TYPE_OPTIONS,
+  FIRE_ALARM_SOURCE_OPTIONS,
+  FIRE_ALARM_OBJECT_TYPE_OPTIONS,
+  FIRE_ALARM_STATUS_OPTIONS,
+  ALARM_STATUS_META,
+} from '@/screen/lib/data/alarmMeta';
 import { sceneImageByTone } from '@/services/map-data/fireImages';
-import type { FireAlarmListItem } from '@/services/map-data/fireAlarmListMock';
 
-function thumbOf(row: FireAlarmListItem): string {
+function thumbOf(row: FireAlarmItem): string {
   return sceneImageByTone(row.typeTone);
 }
 
 const emit = defineEmits<{ close: [] }>();
 const ia = useFireAlarmInteraction();
 
-const source = ref<string>(fireAlarmSourceOptions[0]);
-const objectType = ref<string>(fireAlarmObjectTypeOptions[0]);
-const type = ref<string>(fireAlarmListTypeOptions[0]);
-const status = ref<string>(fireAlarmListStatusOptions[0]);
+const source = ref<string>(FIRE_ALARM_SOURCE_OPTIONS[0]);
+const objectType = ref<string>(FIRE_ALARM_OBJECT_TYPE_OPTIONS[0]);
+const type = ref<string>(FIRE_ALARM_TYPE_OPTIONS[0]);
+const status = ref<string>(FIRE_ALARM_STATUS_OPTIONS[0]);
 const page = ref(1);
 const size = 8;
 
+// 数据接入：经统一 services 层拉取（dev 无后端自动降级），不再直接 import lib/data/*Mock
+const allItems = ref<FireAlarmItem[]>([]);
+const loading = ref(false);
+
+async function loadAlarms(): Promise<void> {
+  loading.value = true;
+  try {
+    const res = await fetchFireAlarmPage(1, 1000);
+    allItems.value = res.list;
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(loadAlarms);
+
 const filtered = computed(() =>
-  fireAlarmListItems.filter(
+  allItems.value.filter(
     (it) =>
-      (source.value === '全部来源' || it.source === source.value) &&
-      (objectType.value === '全部类型' || it.objectType === objectType.value) &&
-      (type.value === '全部类型' || it.typeLabel === type.value) &&
-      (status.value === '全部状态' || it.listStatus === status.value),
+      (source.value === FIRE_ALARM_SOURCE_OPTIONS[0] || it.source === source.value) &&
+      (objectType.value === FIRE_ALARM_OBJECT_TYPE_OPTIONS[0] ||
+        it.objectType === objectType.value) &&
+      (type.value === FIRE_ALARM_TYPE_OPTIONS[0] || it.typeLabel === type.value) &&
+      (status.value === FIRE_ALARM_STATUS_OPTIONS[0] || it.status === status.value),
   ),
 );
 const total = computed(() => filtered.value.length);
@@ -54,20 +71,27 @@ const pageRows = computed(() => {
 function changePage(p: number): void {
   if (p >= 1 && p <= totalPages.value) page.value = p;
 }
-function rowStatusTone(s: string): 'success' | 'alarm' {
-  return s === '已关闭' ? 'success' : 'alarm';
+function rowStatusTone(s: AlarmStatus): 'success' | 'alarm' {
+  return s === 'CLOSED' ? 'success' : 'alarm';
+}
+function rowStatusLabel(s: AlarmStatus): string {
+  return ALARM_STATUS_META[s].label;
+}
+function statusOptionLabel(opt: string): string {
+  if (opt === FIRE_ALARM_STATUS_OPTIONS[0]) return '告警状态';
+  return ALARM_STATUS_META[opt as AlarmStatus].label;
 }
 
-function goDetail(row: FireAlarmListItem): void {
+function goDetail(row: FireAlarmItem): void {
   ia.openAlarmDetail(row);
 }
-function goVideo(row: FireAlarmListItem): void {
+function goVideo(row: FireAlarmItem): void {
   ia.openVideo(row);
 }
-function goDispatch(row: FireAlarmListItem): void {
+function goDispatch(row: FireAlarmItem): void {
   ia.openOneKeyBroadcast(row);
 }
-function goEmergency(row: FireAlarmListItem): void {
+function goEmergency(row: FireAlarmItem): void {
   ia.openOneKeyBroadcast(row);
   showToast(`一键应急已触发：${row.title}`);
 }
@@ -76,71 +100,80 @@ function goEmergency(row: FireAlarmListItem): void {
 <template>
   <ScreenDialog :open="true" title="消防告警列表" icon="bell-ringing" @close="emit('close')">
     <div class="list">
-      <div class="list__filters">
-        <select v-model="source" class="filter-select">
-          <option v-for="o in fireAlarmSourceOptions" :key="o" :value="o">{{ o }}</option>
-        </select>
-        <select v-model="objectType" class="filter-select">
-          <option v-for="o in fireAlarmObjectTypeOptions" :key="o" :value="o">{{ o }}</option>
-        </select>
-        <select v-model="type" class="filter-select">
-          <option v-for="o in fireAlarmListTypeOptions" :key="o" :value="o">{{ o }}</option>
-        </select>
-        <select v-model="status" class="filter-select">
-          <option v-for="o in fireAlarmListStatusOptions" :key="o" :value="o">{{ o }}</option>
-        </select>
-      </div>
+      <div v-if="loading" class="list__loading">数据加载中…</div>
+      <template v-else>
+        <div class="list__filters">
+          <select v-model="source" class="filter-select">
+            <option v-for="o in FIRE_ALARM_SOURCE_OPTIONS" :key="o" :value="o">{{ o }}</option>
+          </select>
+          <select v-model="objectType" class="filter-select">
+            <option v-for="o in FIRE_ALARM_OBJECT_TYPE_OPTIONS" :key="o" :value="o">{{ o }}</option>
+          </select>
+          <select v-model="type" class="filter-select">
+            <option v-for="o in FIRE_ALARM_TYPE_OPTIONS" :key="o" :value="o">{{ o }}</option>
+          </select>
+          <select v-model="status" class="filter-select">
+            <option v-for="o in FIRE_ALARM_STATUS_OPTIONS" :key="o" :value="o">
+              {{ statusOptionLabel(o) }}
+            </option>
+          </select>
+        </div>
 
-      <div class="table" role="table">
-        <div class="table__head" role="row">
-          <span>现场图</span>
-          <span>编号</span>
-          <span>类型</span>
-          <span>来源</span>
-          <span>对象</span>
-          <span>等级</span>
-          <span>位置</span>
-          <span>时间</span>
-          <span>状态</span>
-          <span class="table__op">操作</span>
+        <div class="table" role="table">
+          <div class="table__head" role="row">
+            <span>现场图</span>
+            <span>编号</span>
+            <span>类型</span>
+            <span>来源</span>
+            <span>对象</span>
+            <span>等级</span>
+            <span>位置</span>
+            <span>时间</span>
+            <span>状态</span>
+            <span class="table__op">操作</span>
+          </div>
+          <div v-for="row in pageRows" :key="row.alarmId" class="table__row" role="row">
+            <span class="thumb">
+              <img :src="thumbOf(row)" :alt="row.typeLabel" loading="lazy" />
+            </span>
+            <span class="num">{{ row.alarmId }}</span>
+            <span>{{ row.typeLabel }}</span>
+            <span>{{ row.source }}</span>
+            <span>{{ row.objectName }}</span>
+            <span>{{ row.level }}</span>
+            <span class="loc">{{ row.location }}</span>
+            <span class="num">{{ row.time }}</span>
+            <span :class="['table__status', `is-${rowStatusTone(row.status)}`]">{{
+              rowStatusLabel(row.status)
+            }}</span>
+            <span class="table__op">
+              <button type="button" class="link" @click="goDetail(row)">详情</button>
+              <button type="button" class="link" @click="goVideo(row)">现场</button>
+              <button type="button" class="link" @click="goDispatch(row)">调度</button>
+              <button type="button" class="link link--danger" @click="goEmergency(row)">
+                应急
+              </button>
+            </span>
+          </div>
+          <p v-if="pageRows.length === 0" class="table__empty">
+            <PkgIcon name="bell-ringing" size="36px" class="empty__icon" />
+            无匹配告警
+          </p>
         </div>
-        <div v-for="row in pageRows" :key="row.id" class="table__row" role="row">
-          <span class="thumb">
-            <img :src="thumbOf(row)" :alt="row.typeLabel" loading="lazy" />
-          </span>
-          <span class="num">{{ row.id }}</span>
-          <span>{{ row.typeLabel }}</span>
-          <span>{{ row.source }}</span>
-          <span>{{ row.objectName }}</span>
-          <span>{{ row.level }}</span>
-          <span class="loc">{{ row.location }}</span>
-          <span class="num">{{ row.time }}</span>
-          <span :class="['table__status', `is-${rowStatusTone(row.listStatus)}`]">{{
-            row.listStatus
-          }}</span>
-          <span class="table__op">
-            <button type="button" class="link" @click="goDetail(row)">详情</button>
-            <button type="button" class="link" @click="goVideo(row)">现场</button>
-            <button type="button" class="link" @click="goDispatch(row)">调度</button>
-            <button type="button" class="link link--danger" @click="goEmergency(row)">应急</button>
-          </span>
-        </div>
-        <p v-if="pageRows.length === 0" class="table__empty">
-          <PkgIcon name="bell-ringing" size="36px" class="empty__icon" />
-          无匹配告警
-        </p>
-      </div>
 
-      <div class="list__pager">
-        <span class="list__total">共 {{ total }} 条</span>
-        <div class="pager">
-          <button type="button" :disabled="page <= 1" @click="changePage(page - 1)">上一页</button>
-          <span class="pager__cur">{{ page }} / {{ totalPages }}</span>
-          <button type="button" :disabled="page >= totalPages" @click="changePage(page + 1)">
-            下一页
-          </button>
+        <div class="list__pager">
+          <span class="list__total">共 {{ total }} 条</span>
+          <div class="pager">
+            <button type="button" :disabled="page <= 1" @click="changePage(page - 1)">
+              上一页
+            </button>
+            <span class="pager__cur">{{ page }} / {{ totalPages }}</span>
+            <button type="button" :disabled="page >= totalPages" @click="changePage(page + 1)">
+              下一页
+            </button>
+          </div>
         </div>
-      </div>
+      </template>
     </div>
   </ScreenDialog>
 </template>
@@ -151,6 +184,12 @@ function goEmergency(row: FireAlarmListItem): void {
   flex-direction: column;
   gap: var(--space-md);
   height: 100%;
+}
+
+.list__loading {
+  padding: 12px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-helper);
 }
 
 .list__filters {
