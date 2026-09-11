@@ -17,6 +17,19 @@ export const screenAlarmLoading = ref(false);
 const MAX_SCREEN_ALARMS = 50;
 const seenAlarmIds = new Set<string>();
 
+/**
+ * 有界去重集合：将 alarmId 记入已见集合；超出队列定容 MAX_SCREEN_ALARMS 时淘汰
+ * 最旧条目（Set 保持插入顺序）。避免 kiosk 长期运行下 seenAlarmIds 只增不减导致的内存泄漏。
+ */
+function addSeen(id: string): void {
+  if (!id) return;
+  seenAlarmIds.add(id);
+  if (seenAlarmIds.size > MAX_SCREEN_ALARMS) {
+    const oldest = seenAlarmIds.values().next().value;
+    if (oldest !== undefined) seenAlarmIds.delete(oldest);
+  }
+}
+
 let loaded = false;
 let inflight: Promise<void> | null = null;
 
@@ -29,7 +42,7 @@ export function refreshScreenAlarms(size = 20): Promise<void> {
     .then((page) => {
       const list = page?.list ?? [];
       list.forEach((item) => {
-        if (item.alarmId) seenAlarmIds.add(item.alarmId);
+        if (item.alarmId) addSeen(item.alarmId);
       });
       screenAlarms.value = list.map((item, index) => toScreenAlarm(item, index));
       loaded = true;
@@ -55,7 +68,7 @@ export function refreshScreenAlarms(size = 20): Promise<void> {
 // 下一条增量起恢复正常——以历史为准的简单语义，避免为极小概率窗口引入合并复杂度。
 subscribeAlarmPush((alarm) => {
   if (!alarm.alarmId || seenAlarmIds.has(alarm.alarmId)) return;
-  seenAlarmIds.add(alarm.alarmId);
+  addSeen(alarm.alarmId);
   screenAlarms.value = [toScreenAlarm(alarm, 0), ...screenAlarms.value].slice(0, MAX_SCREEN_ALARMS);
 });
 
