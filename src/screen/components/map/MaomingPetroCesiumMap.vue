@@ -6440,6 +6440,10 @@ onMounted(async () => {
     hiddenCreditHost.style.display = 'none';
 
     viewer = new Cesium.Viewer(containerEl.value, {
+      // 性能优化：静止时不每帧渲染，仅在场景变化或显式 requestRender() 时重绘。
+      // 组件既有相机/resize/动画更新点均已各自 requestRender()，理论兼容；
+      // 但 6500 行组件对 preRender 监听依赖重，需真机验证，若有回归回退本行。
+      requestRenderMode: true,
       animation: false,
       timeline: false,
       fullscreenButton: false,

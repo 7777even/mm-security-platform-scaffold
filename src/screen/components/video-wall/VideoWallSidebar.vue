@@ -319,6 +319,7 @@ onMounted(() => {
     const Cesium = winCesium.Cesium ?? parentCesium.Cesium;
     if (Cesium && eagleEyeMapRef.value) {
       viewer = new Cesium.Viewer(eagleEyeMapRef.value, {
+        requestRenderMode: true,
         animation: false,
         baseLayerPicker: false,
         fullscreenButton: false,
