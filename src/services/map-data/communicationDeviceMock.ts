@@ -294,11 +294,11 @@ export async function loadCommunicationDevices(): Promise<CommunicationDeviceGro
     const data = await fetchCommunicationDevices();
     if (!data || !data.broadcast || !data.phone || !data.intercom) {
       backendUnavailableWarn('communication', '/communication/devices', REASON_CONTRACT_MISMATCH);
-      return communicationDeviceGroups;
+      return { broadcast: [], phone: [], intercom: [] };
     }
     return data;
   } catch {
     backendUnavailableWarn('communication', '/communication/devices');
-    return communicationDeviceGroups;
+    return { broadcast: [], phone: [], intercom: [] };
   }
 }

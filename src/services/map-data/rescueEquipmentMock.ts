@@ -185,11 +185,11 @@ export async function loadRescueEquipment(): Promise<RescueEquipmentItem[]> {
         '/rescue-resources/equipment',
         REASON_CONTRACT_MISMATCH,
       );
-      return rescueEquipmentItems;
+      return [];
     }
     return data.items.map(mapRescueEquipment);
   } catch {
     backendUnavailableWarn('rescue-resources', '/rescue-resources/equipment');
-    return rescueEquipmentItems;
+    return [];
   }
 }

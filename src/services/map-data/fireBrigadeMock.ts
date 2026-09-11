@@ -388,7 +388,10 @@ function mapFireBrigadeTeam(i: ServiceFireBrigadeTeam): FireBrigadeTeam {
   };
 }
 
-/** 消防队伍台账：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
+/**
+ * 消防队伍台账：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；
+ * 未连后端或连后端但请求失败/契约不符 → 显式告警 + 空态，绝不回灌本地假数据。
+ */
 export async function loadFireBrigades(): Promise<FireBrigadeTeam[]> {
   const fb = resolveOfflineFetch(
     'rescue-resources',
@@ -405,11 +408,11 @@ export async function loadFireBrigades(): Promise<FireBrigadeTeam[]> {
         '/rescue-resources/brigades',
         REASON_CONTRACT_MISMATCH,
       );
-      return fireBrigadeTeams;
+      return [];
     }
     return data.items.map(mapFireBrigadeTeam);
   } catch {
     backendUnavailableWarn('rescue-resources', '/rescue-resources/brigades');
-    return fireBrigadeTeams;
+    return [];
   }
 }

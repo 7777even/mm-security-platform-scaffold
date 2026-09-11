@@ -230,20 +230,19 @@ export const preliminaryMapControls = [
 ];
 
 /**
- * 先期处置应急事件分组：未配置后端时回落本地 fixture；
- * 配置后端后走 /emergency-events?scene=PRELIMINARY 真实端点（契约不符/异常回落 fixture）。
+ * 先期处置应急事件分组：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；
+ * 连后端时走 /emergency-events?scene=PRELIMINARY；未连后端 / 契约不符 / 请求异常一律告警 + 空态。
  */
 export async function loadPreliminaryEvents(
   scene: EmergencyEventScene = 'PRELIMINARY',
 ): Promise<EmergencyEventGroup[]> {
-  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
   const fb = resolveOfflineFetch('emergencyEvent', '/emergency-events', emergencyEventGroups, []);
   if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await fetchEmergencyEvents(scene);
     if (!Array.isArray(data) || data.some((g) => !g || !Array.isArray(g.events))) {
       backendUnavailableWarn('emergencyEvent', '/emergency-events', REASON_CONTRACT_MISMATCH);
-      return emergencyEventGroups;
+      return [];
     }
     return data.map((g) => ({
       id: g.id,
@@ -252,6 +251,6 @@ export async function loadPreliminaryEvents(
     }));
   } catch {
     backendUnavailableWarn('emergencyEvent', '/emergency-events');
-    return emergencyEventGroups;
+    return [];
   }
 }

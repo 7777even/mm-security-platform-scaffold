@@ -316,11 +316,11 @@ export async function loadRescueVehicles(): Promise<RescueVehicleItem[]> {
         '/rescue-resources/vehicles',
         REASON_CONTRACT_MISMATCH,
       );
-      return rescueVehicleItems;
+      return [];
     }
     return data.items.map(mapRescueVehicle);
   } catch {
     backendUnavailableWarn('rescue-resources', '/rescue-resources/vehicles');
-    return rescueVehicleItems;
+    return [];
   }
 }

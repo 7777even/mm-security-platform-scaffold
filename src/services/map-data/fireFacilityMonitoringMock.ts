@@ -972,14 +972,17 @@ export const fireFacilityWorkOrders: FacilityWorkOrderItem[] = fireFacilityFault
   .map(buildWorkOrder)
   .filter((item): item is FacilityWorkOrderItem => item !== null);
 
-/** 台账数据（可经后端刷新；缺省回落本地 fixture） */
-export const facilityLedgerItemsRef = ref<FacilityLedgerItem[]>(fireFacilityLedgerItems);
+/** 台账数据（由 loadFireFacilityLedger 按三态刷新；初始为空，不回灌本地 fixture） */
+export const facilityLedgerItemsRef = ref<FacilityLedgerItem[]>([]);
 
 export function resolveFacilityLedgerByType(facilityType: string): FacilityLedgerItem[] {
   return facilityLedgerItemsRef.value.filter((item) => item.facilityType === facilityType);
 }
 
-/** 消防设施监测概览：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
+/**
+ * 消防设施监测概览：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；
+ * 未连后端 / 契约不符 / 请求异常一律显式告警 + 空态，绝不回灌本地假数据。
+ */
 export async function loadFireFacilityMonitors(): Promise<FacilityMonitorSummary[]> {
   const fb = resolveOfflineFetch(
     'fireFacility',
@@ -992,7 +995,7 @@ export async function loadFireFacilityMonitors(): Promise<FacilityMonitorSummary
     const data = await fetchFireFacilityMonitors();
     if (!data || !Array.isArray(data.items)) {
       backendUnavailableWarn('fireFacility', '/fire-facility/monitors', REASON_CONTRACT_MISMATCH);
-      return fireFacilityMonitorSummaries;
+      return [];
     }
     return data.items.map((i) => ({
       key: i.key,
@@ -1011,11 +1014,11 @@ export async function loadFireFacilityMonitors(): Promise<FacilityMonitorSummary
     }));
   } catch {
     backendUnavailableWarn('fireFacility', '/fire-facility/monitors');
-    return fireFacilityMonitorSummaries;
+    return [];
   }
 }
 
-/** 消防设施故障列表：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
+/** 消防设施故障列表：demo 模式才走本地 fixture；失败一律显式告警 + 空态。 */
 export async function loadFireFacilityFaults(): Promise<FacilityFaultItem[]> {
   const fb = resolveOfflineFetch('fireFacility', '/fire-facility/faults', fireFacilityFaults, []);
   if (fb.mode !== 'live') return Promise.resolve(fb.value);
@@ -1023,7 +1026,7 @@ export async function loadFireFacilityFaults(): Promise<FacilityFaultItem[]> {
     const data = await fetchFireFacilityFaults();
     if (!data || !Array.isArray(data.items)) {
       backendUnavailableWarn('fireFacility', '/fire-facility/faults', REASON_CONTRACT_MISMATCH);
-      return fireFacilityFaults;
+      return [];
     }
     return data.items.map((i) => ({
       id: i.id,
@@ -1049,11 +1052,11 @@ export async function loadFireFacilityFaults(): Promise<FacilityFaultItem[]> {
     }));
   } catch {
     backendUnavailableWarn('fireFacility', '/fire-facility/faults');
-    return fireFacilityFaults;
+    return [];
   }
 }
 
-/** 消防设施报警列表：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
+/** 消防设施报警列表：demo 模式才走本地 fixture；失败一律显式告警 + 空态。 */
 export async function loadFireFacilityAlarms(): Promise<FacilityAlarmItem[]> {
   const fb = resolveOfflineFetch('fireFacility', '/fire-facility/alarms', fireFacilityAlarms, []);
   if (fb.mode !== 'live') return Promise.resolve(fb.value);
@@ -1061,7 +1064,7 @@ export async function loadFireFacilityAlarms(): Promise<FacilityAlarmItem[]> {
     const data = await fetchFireFacilityAlarms();
     if (!data || !Array.isArray(data.items)) {
       backendUnavailableWarn('fireFacility', '/fire-facility/alarms', REASON_CONTRACT_MISMATCH);
-      return fireFacilityAlarms;
+      return [];
     }
     return data.items.map((i) => ({
       id: String(i.id),
@@ -1076,11 +1079,11 @@ export async function loadFireFacilityAlarms(): Promise<FacilityAlarmItem[]> {
     }));
   } catch {
     backendUnavailableWarn('fireFacility', '/fire-facility/alarms');
-    return fireFacilityAlarms;
+    return [];
   }
 }
 
-/** 消防设施维保工单：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
+/** 消防设施维保工单：demo 模式才走本地 fixture；失败一律显式告警 + 空态。 */
 export async function loadFireFacilityWorkOrders(): Promise<FacilityWorkOrderItem[]> {
   const fb = resolveOfflineFetch(
     'fireFacility',
@@ -1097,7 +1100,7 @@ export async function loadFireFacilityWorkOrders(): Promise<FacilityWorkOrderIte
         '/fire-facility/work-orders',
         REASON_CONTRACT_MISMATCH,
       );
-      return fireFacilityWorkOrders;
+      return [];
     }
     return data.items.map((i) => ({
       id: i.id,
@@ -1117,24 +1120,30 @@ export async function loadFireFacilityWorkOrders(): Promise<FacilityWorkOrderIte
     }));
   } catch {
     backendUnavailableWarn('fireFacility', '/fire-facility/work-orders');
-    return fireFacilityWorkOrders;
+    return [];
   }
 }
 
-/** 消防设施台账：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
+/** 消防设施台账：demo 模式才走本地 fixture；失败一律显式告警 + 空态；并同步 facilityLedgerItemsRef。 */
 export async function loadFireFacilityLedger(): Promise<FacilityLedgerItem[]> {
+  const items = await resolveFireFacilityLedger();
+  facilityLedgerItemsRef.value = items;
+  return items;
+}
+
+async function resolveFireFacilityLedger(): Promise<FacilityLedgerItem[]> {
   const fb = resolveOfflineFetch(
     'fireFacility',
     '/fire-facility/ledger',
     fireFacilityLedgerItems,
     [],
   );
-  if (fb.mode !== 'live') return Promise.resolve(fb.value);
+  if (fb.mode !== 'live') return fb.value;
   try {
     const data = await fetchFireFacilityLedger();
     if (!data || !Array.isArray(data.items)) {
       backendUnavailableWarn('fireFacility', '/fire-facility/ledger', REASON_CONTRACT_MISMATCH);
-      return fireFacilityLedgerItems;
+      return [];
     }
     return data.items.map((i) => ({
       facilityCode: i.facilityCode,
@@ -1153,6 +1162,6 @@ export async function loadFireFacilityLedger(): Promise<FacilityLedgerItem[]> {
     }));
   } catch {
     backendUnavailableWarn('fireFacility', '/fire-facility/ledger');
-    return fireFacilityLedgerItems;
+    return [];
   }
 }

@@ -311,14 +311,14 @@ export const fireEmergencyMapControls = [
 ];
 
 /**
- * 消防应急事件分组：未配置后端时回落本地 fixture；
- * 配置后端后走 /emergency-events?scene=FIRE 真实端点，并按 kind 拆分为事件/演练两组（契约不符/异常回落 fixture）。
+ * 消防应急事件分组：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；
+ * 连后端时走 /emergency-events?scene=FIRE 并按 kind 拆分为事件/演练两组；
+ * 未连后端 / 契约不符 / 请求异常一律显式告警 + 空态，后端无数据即空，绝不回灌本地假数据。
  */
 export async function loadFireEmergencyEventGroups(): Promise<{
   events: EmergencyEventGroup[];
   drills: EmergencyEventGroup[];
 }> {
-  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
   const fb = resolveOfflineFetch(
     'emergencyEvent',
     '/emergency-events',
@@ -336,10 +336,7 @@ export async function loadFireEmergencyEventGroups(): Promise<{
     const data = await fetchEmergencyEvents('FIRE');
     if (!Array.isArray(data)) {
       backendUnavailableWarn('emergencyEvent', '/emergency-events', REASON_CONTRACT_MISMATCH);
-      return {
-        events: initialFireEmergencyEventGroups,
-        drills: initialFireEmergencyDrillEventGroups,
-      };
+      return { events: [], drills: [] };
     }
     const events: EmergencyEventGroup[] = [];
     const drills: EmergencyEventGroup[] = [];
@@ -353,15 +350,9 @@ export async function loadFireEmergencyEventGroups(): Promise<{
       if (evs.length) events.push({ ...group, events: evs });
       if (drs.length) drills.push({ ...group, events: drs });
     }
-    return {
-      events: events.length ? events : initialFireEmergencyEventGroups,
-      drills: drills.length ? drills : initialFireEmergencyDrillEventGroups,
-    };
+    return { events, drills };
   } catch {
     backendUnavailableWarn('emergencyEvent', '/emergency-events');
-    return {
-      events: initialFireEmergencyEventGroups,
-      drills: initialFireEmergencyDrillEventGroups,
-    };
+    return { events: [], drills: [] };
   }
 }

@@ -110,7 +110,7 @@ export async function loadRescuePersonnel(): Promise<RescuePersonnelItem[]> {
         '/rescue-resources/personnel',
         REASON_CONTRACT_MISMATCH,
       );
-      return rescuePersonnelItems;
+      return [];
     }
     return data.items.map((i) => ({
       id: i.id,
@@ -120,6 +120,6 @@ export async function loadRescuePersonnel(): Promise<RescuePersonnelItem[]> {
     }));
   } catch {
     backendUnavailableWarn('rescue-resources', '/rescue-resources/personnel');
-    return rescuePersonnelItems;
+    return [];
   }
 }

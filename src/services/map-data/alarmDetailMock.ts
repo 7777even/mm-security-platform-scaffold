@@ -1,7 +1,6 @@
 import { fireAlarmMarker, type AlarmItem } from './mock';
 import type { FireAlarmListItem } from './fireAlarmListMock';
-import type { FacilityAlarmItem } from './fireFacilityMonitoringMock';
-import { fireFacilityFaults } from './fireFacilityMonitoringMock';
+import type { FacilityAlarmItem, FacilityFaultItem } from './fireFacilityMonitoringMock';
 import type { ProductionAlarmItem } from '@/services/production';
 import type { PatrolAlarmItem } from './securityMock';
 import type { PerimeterAlarmDetail } from '@/services/security';
@@ -177,8 +176,14 @@ export function fireListItemToDetail(item: FireAlarmListItem): AlarmDetailItem {
   };
 }
 
-export function facilityAlarmToDetail(alarm: FacilityAlarmItem): AlarmDetailItem {
-  const fault = fireFacilityFaults.find((item) => item.faultCode === alarm.faultCode);
+/**
+ * 设施告警 → 统一告警详情视图。
+ * 关联工单/处置时间轴由调用方传入后端已加载的故障记录（fault）补齐，不再读本地 fixture。
+ */
+export function facilityAlarmToDetail(
+  alarm: FacilityAlarmItem,
+  fault?: FacilityFaultItem | null,
+): AlarmDetailItem {
   return {
     id: `facility-${alarm.faultCode}`,
     alarmCode: alarm.id,
