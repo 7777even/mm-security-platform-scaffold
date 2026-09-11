@@ -6,11 +6,13 @@ vi.mock('@/services/http', () => ({
 }));
 
 import { request } from '@/services/http';
+import { resetBackendOfflineNoticesForTest } from './backendFallback';
 
 const mockRequest = request as unknown as ReturnType<typeof vi.fn>;
 
 describe('accidentRescue 服务（暴露式降级：后端缺口不得被假数据掩盖）', () => {
   beforeEach(() => {
+    resetBackendOfflineNoticesForTest();
     vi.clearAllMocks();
   });
 

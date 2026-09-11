@@ -103,6 +103,19 @@ export function notifyBackendOffline(
 }
 
 /**
+ * 重置「后端不可用」告警状态，**仅供单测使用**。
+ *
+ * 背景：本模块的告警按 `domain:endpoint` 去重（进程内同键只打印一次），
+ * 而 `backendStatus` 是模块级单例、在多个用例间共享。若不重置，前一个用例
+ * 登记过的键会让后一个用例断言 `console.warn` 失败——这是测试隔离问题，
+ * 不是生产缺陷，因此修在测试侧（重置）而不是去掉生产的去重。
+ */
+export function resetBackendOfflineNoticesForTest(): void {
+  backendStatus.unavailable = false;
+  backendStatus.unavailableDomains.length = 0;
+}
+
+/**
  * 打印后端不可用告警（连后端但请求失败 / 响应不符契约时调用）。
  * 兼容既有调用点，并同步全局横幅状态。
  *

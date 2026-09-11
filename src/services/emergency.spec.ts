@@ -6,9 +6,11 @@ vi.mock('@/services/http', () => ({
 }));
 
 import { request } from '@/services/http';
+import { resetBackendOfflineNoticesForTest } from './backendFallback';
 
 describe('fetchEmergencyStrength', () => {
   beforeEach(() => {
+    resetBackendOfflineNoticesForTest();
     vi.clearAllMocks();
   });
 
@@ -83,6 +85,7 @@ describe('emergencyEventStore CRUD（dev mock 兜底，无后端时保持演示�
   let store: typeof import('./emergencyEventStore');
 
   beforeEach(async () => {
+    resetBackendOfflineNoticesForTest();
     vi.resetModules();
     store = await import('./emergencyEventStore');
   });
