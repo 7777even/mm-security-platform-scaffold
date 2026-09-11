@@ -92,12 +92,14 @@ export function notifyBackendOffline(
 ): void {
   if (!backendStatus.unavailable) backendStatus.unavailable = true;
   const key = `${domain}:${endpoint}`;
+  // 同一 domain:endpoint 仅首次登记时打印告警，避免离线/演示态或后端抖动时反复刷屏。
+  // unavailableDomains 已做去重登记，横幅清单不受影响。
   if (!backendStatus.unavailableDomains.includes(key)) {
     backendStatus.unavailableDomains.push(key);
+    console.warn(
+      `[${domain}] 后端未接入 ${endpoint}：${reason}，已降级为空数据（待后端实现，请勿当作真实数据）`,
+    );
   }
-  console.warn(
-    `[${domain}] 后端未接入 ${endpoint}：${reason}，已降级为空数据（待后端实现，请勿当作真实数据）`,
-  );
 }
 
 /**
