@@ -26,6 +26,7 @@ describe('hazard 域 fetch（dev 降级 / 真实联调）', () => {
 
   it('fetchMajorHazards：dev 回退 fixture 数组 / 真实走 /hazards', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     const res = await fetchMajorHazards();
     expect(Array.isArray(res)).toBe(true);
     expect(res.length).toBeGreaterThan(0);
@@ -38,6 +39,7 @@ describe('hazard 域 fetch（dev 降级 / 真实联调）', () => {
 
   it('fetchMajorHazardDetail：dev 返回合成详情 / 真实走 /hazards/:id', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     const res = await fetchMajorHazardDetail(1);
     expect(res).toBeTruthy();
     vi.stubEnv('VITE_API_BASE', 'http://api.example.com');
@@ -49,6 +51,7 @@ describe('hazard 域 fetch（dev 降级 / 真实联调）', () => {
 
   it('fetchMonitoringPoints：dev 回退 fixture / 真实走 /monitoring/points', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     expect(Array.isArray(await fetchMonitoringPoints())).toBe(true);
     vi.stubEnv('VITE_API_BASE', 'http://api.example.com');
     fn.mockResolvedValue([]);
@@ -58,6 +61,7 @@ describe('hazard 域 fetch（dev 降级 / 真实联调）', () => {
 
   it('fetchMonitoringAlarms：dev 回退 fixture / 真实走 /monitoring/alarms', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     expect(Array.isArray(await fetchMonitoringAlarms())).toBe(true);
     vi.stubEnv('VITE_API_BASE', 'http://api.example.com');
     fn.mockResolvedValue([]);
@@ -67,6 +71,7 @@ describe('hazard 域 fetch（dev 降级 / 真实联调）', () => {
 
   it('fetchFacilityDetail：dev 返回合成详情 / 真实走 /facilities/detail', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     const res = await fetchFacilityDetail('某装置');
     expect(res).toBeTruthy();
     vi.stubEnv('VITE_API_BASE', 'http://api.example.com');

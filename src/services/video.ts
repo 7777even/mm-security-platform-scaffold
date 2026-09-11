@@ -1,4 +1,5 @@
 import http, { request } from '@/services/http';
+import { resolveOfflineFetch } from '@/services/backendFallback';
 
 // 视频控制/视频墙大屏接口（fm-video-control / fm-video-wall），对齐 docs/api/video.openapi.json。
 // 取代前端硬编码的 videoControlMock / videoLinkageMock 业务数据；
@@ -168,7 +169,14 @@ const EMPTY_LINKAGE_OPTIONS: VideoLinkageOptionSet = {
  * 纯静态演示（无 VITE_API_BASE）回落空选项——不回灌假选项（零下行控制红线）。
  */
 export async function fetchVideoLinkageOptions(): Promise<VideoLinkageOptionSet> {
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(EMPTY_LINKAGE_OPTIONS);
+  // 无本地 fixture（零下行控制红线）；demo/未连后端均空选项，未连后端显式报错
+  const fb = resolveOfflineFetch(
+    'video',
+    '/video/linkage-options',
+    EMPTY_LINKAGE_OPTIONS,
+    EMPTY_LINKAGE_OPTIONS,
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<VideoLinkageOptionSet>({
       url: '/video/linkage-options',

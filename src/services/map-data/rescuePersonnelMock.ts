@@ -1,5 +1,9 @@
 import { fetchRescuePersonnel } from '@/services/rescueResource';
-import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 
 export interface RescuePersonnelItem {
   id: number;
@@ -89,9 +93,15 @@ export function getRescuePersonnelItem(id: number | null | undefined): RescuePer
   return rescuePersonnelItems.find((item) => item.id === id) ?? null;
 }
 
-/** 救援人员台账：未配置后端时回落本地 fixture；配置后走 /rescue-resources/personnel 真实端点。 */
+/** 救援人员台账：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
 export async function loadRescuePersonnel(): Promise<RescuePersonnelItem[]> {
-  if (!import.meta.env.VITE_API_BASE) return rescuePersonnelItems;
+  const fb = resolveOfflineFetch(
+    'rescue-resources',
+    '/rescue-resources/personnel',
+    rescuePersonnelItems,
+    [],
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await fetchRescuePersonnel();
     if (!data || !Array.isArray(data.items)) {

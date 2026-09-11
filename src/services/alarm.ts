@@ -1,4 +1,5 @@
 import { request } from '@/services/http';
+import { notifyBackendOffline } from '@/services/backendFallback';
 import type { PageResult } from '@/types';
 import {
   mockPage,
@@ -46,10 +47,14 @@ export interface AlarmTrendPoint {
   count: number;
 }
 
-/** dev mock 开关：缺后端 API base 或显式 dev mock 开关时，走 in-memory store */
+/** dev mock 开关：仅显式 VITE_USE_DEV_MOCK=true 才走 in-memory store（离线演示）。 */
 function useDevMock(): boolean {
-  if (!import.meta.env.VITE_API_BASE) return true;
-  return import.meta.env.DEV && import.meta.env.VITE_USE_DEV_MOCK === 'true';
+  return import.meta.env.VITE_USE_DEV_MOCK === 'true';
+}
+
+/** 未连后端且未开演示：显式报错。 */
+function isAlarmOffline(): boolean {
+  return !import.meta.env.VITE_API_BASE && !useDevMock();
 }
 
 export async function fetchDashboardOverview(): Promise<DashboardOverview> {
@@ -62,11 +67,38 @@ export async function fetchAlarmTrend(): Promise<AlarmTrendPoint[]> {
 
 export async function fetchAlarmPage(page = 1, size = 5): Promise<PageResult<AlarmItem>> {
   if (useDevMock()) return Promise.resolve(mockPage(page, size));
-  return request<PageResult<AlarmItem>>({ url: '/alarms', method: 'GET', params: { page, size } });
+  // 未连后端：显式报错 + 空态（不回灌内存 mock 假数据）
+  if (isAlarmOffline()) {
+    notifyBackendOffline(
+      'alarm',
+      '/alarms',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return { list: [], total: 0, page, size };
+  }
+  try {
+    return await request<PageResult<AlarmItem>>({
+      url: '/alarms',
+      method: 'GET',
+      params: { page, size },
+    });
+  } catch {
+    notifyBackendOffline('alarm', '/alarms');
+    return { list: [], total: 0, page, size };
+  }
 }
 
 export async function createEmergencyEvent(p: EmergencyEventPayload): Promise<AlarmItem> {
   if (useDevMock()) return Promise.resolve(mockCreate(p));
+  // 未连后端：写操作显式报错
+  if (isAlarmOffline()) {
+    notifyBackendOffline(
+      'alarm',
+      '/alarms',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法创建应急事件');
+  }
   return request<AlarmItem>({ url: '/alarms', method: 'POST', data: p });
 }
 
@@ -75,11 +107,27 @@ export async function updateEmergencyEvent(
   p: EmergencyEventPayload,
 ): Promise<AlarmItem | null> {
   if (useDevMock()) return Promise.resolve(mockUpdate(id, p));
+  if (isAlarmOffline()) {
+    notifyBackendOffline(
+      'alarm',
+      `/alarms/${id}`,
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法更新应急事件');
+  }
   return request<AlarmItem>({ url: `/alarms/${encodeURIComponent(id)}`, method: 'PUT', data: p });
 }
 
 export async function deleteEmergencyEvent(id: string): Promise<boolean> {
   if (useDevMock()) return Promise.resolve(mockDelete(id));
+  if (isAlarmOffline()) {
+    notifyBackendOffline(
+      'alarm',
+      `/alarms/${id}`,
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法删除应急事件');
+  }
   return request<{ ok: boolean }>({
     url: `/alarms/${encodeURIComponent(id)}`,
     method: 'DELETE',
@@ -308,7 +356,7 @@ const FIRE_ALARM_FIXTURE: FireAlarmItem[] = Array.from({ length: 50 }, (_, index
   return { ...base, alarmId: String(index + 1), time: formatFireAlarmTime(index) };
 });
 
-/** 消防报警列表：dev 无后端时返回内置 fixture（保留当前演示行为），有 base 走 /fire-alarms 真实接口 */
+/** 消防报警列表：仅离线演示（VITE_USE_DEV_MOCK=true）返回内置 fixture；有 base 走 /fire-alarms 真实接口；未连后端显式报错 + 空态 */
 export async function fetchFireAlarmPage(page = 1, size = 10): Promise<PageResult<FireAlarmItem>> {
   if (useDevMock()) {
     const start = (page - 1) * size;
@@ -319,9 +367,23 @@ export async function fetchFireAlarmPage(page = 1, size = 10): Promise<PageResul
       size,
     });
   }
-  return request<PageResult<FireAlarmItem>>({
-    url: '/fire-alarms',
-    method: 'GET',
-    params: { page, size },
-  });
+  // 未连后端：显式报错 + 空态（不回灌 fixture 假数据）
+  if (isAlarmOffline()) {
+    notifyBackendOffline(
+      'alarm',
+      '/fire-alarms',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return { list: [], total: 0, page, size };
+  }
+  try {
+    return await request<PageResult<FireAlarmItem>>({
+      url: '/fire-alarms',
+      method: 'GET',
+      params: { page, size },
+    });
+  } catch {
+    notifyBackendOffline('alarm', '/fire-alarms');
+    return { list: [], total: 0, page, size };
+  }
 }

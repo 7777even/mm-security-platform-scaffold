@@ -2,7 +2,11 @@ import {
   fetchRescueEquipment,
   type RescueEquipmentItem as ServiceRescueEquipmentItem,
 } from '@/services/rescueResource';
-import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 
 export interface RescueEquipmentItem {
   id: number;
@@ -164,9 +168,15 @@ function mapRescueEquipment(i: ServiceRescueEquipmentItem): RescueEquipmentItem 
   };
 }
 
-/** 救援装备台账：未配置后端时回落本地 fixture；配置后走 /rescue-resources/equipment 真实端点。 */
+/** 救援装备台账：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
 export async function loadRescueEquipment(): Promise<RescueEquipmentItem[]> {
-  if (!import.meta.env.VITE_API_BASE) return rescueEquipmentItems;
+  const fb = resolveOfflineFetch(
+    'rescue-resources',
+    '/rescue-resources/equipment',
+    rescueEquipmentItems,
+    [],
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await fetchRescueEquipment();
     if (!data || !Array.isArray(data.items)) {

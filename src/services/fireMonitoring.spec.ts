@@ -23,8 +23,9 @@ describe('fireMonitoring 服务（暴露式降级：后端缺口不得被假数�
     vi.unstubAllEnvs();
   });
 
-  it('无 VITE_API_BASE 时回落 dev fixture（纯静态演示，不误判后端就绪）', async () => {
+  it('离线演示（无 VITE_API_BASE + VITE_USE_DEV_MOCK=true）时回落 dev fixture', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     const forces = await fetchRescueForces();
     const ops = await fetchSpecialOperations();
     const status = await fetchFireEquipmentStatus();
@@ -38,6 +39,18 @@ describe('fireMonitoring 服务（暴露式降级：后端缺口不得被假数�
       integrityRate: 98,
       onlineRate: 98,
     });
+  });
+
+  it('未连后端且未开演示时显式报错并返回空态（不回落 fixture）', async () => {
+    vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', '');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const forces = await fetchRescueForces();
+    const status = await fetchFireEquipmentStatus();
+    expect(forces).toHaveLength(0);
+    expect(status).toBeNull();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('/fire/rescue-forces'));
+    warn.mockRestore();
   });
 
   it('有 VITE_API_BASE 时走真实端点', async () => {

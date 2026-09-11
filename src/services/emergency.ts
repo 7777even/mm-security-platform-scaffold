@@ -1,5 +1,9 @@
 import { request } from '@/services/http';
-import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 
 // 应急力量数据（B3 Mock 契约 §3.6）：按维度统计资源数量
 export type EmergencyResourceKind =
@@ -40,8 +44,9 @@ const DEV_FIXTURE: EmergencyStrength = {
 const EMPTY: EmergencyStrength = { resources: [] };
 
 export async function fetchEmergencyStrength(): Promise<EmergencyStrength> {
-  // 纯静态 / 演示模式（未配置后端地址）仍用 fixture，此时不存在误判后端就绪的风险
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_FIXTURE);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch('emergency', '/emergency/strength', DEV_FIXTURE, EMPTY);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<EmergencyStrength>({ url: '/emergency/strength', method: 'GET' });
     if (!data || !Array.isArray(data.resources)) {
@@ -126,7 +131,9 @@ const EMPTY_GROUPS: EmergencyCommandGroup[] = [];
 export async function fetchEmergencyCommandGroups(
   tab?: 'fixed' | 'temp',
 ): Promise<EmergencyCommandGroup[]> {
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(EMPTY_GROUPS);
+  // 无本地 fixture（零下行控制红线）；demo/未连后端均空态，未连后端显式报错
+  const fb = resolveOfflineFetch('emergency', '/emergency/commands', EMPTY_GROUPS, EMPTY_GROUPS);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<EmergencyCommandGroup[]>({
       url: '/emergency/commands',
@@ -150,7 +157,9 @@ export async function fetchEmergencyCommandGroups(
 export async function fetchEmergencyCommandDetail(
   commandId: string,
 ): Promise<CommandActionDetail | null> {
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(null);
+  // 无本地 fixture；demo/未连后端均 null，未连后端显式报错
+  const fb = resolveOfflineFetch('emergency', `/emergency/commands/${commandId}`, null, null);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<CommandActionDetail>({
       url: `/emergency/commands/${commandId}`,
@@ -177,7 +186,9 @@ export interface DispatchPersonnelOption {
  * 纯静态演示（无 VITE_API_BASE）回落空数组——不回灌假人名（零下行控制红线）。
  */
 export async function fetchDispatchPersonnel(): Promise<DispatchPersonnelOption[]> {
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve([]);
+  // 无本地 fixture（零下行控制红线）；demo/未连后端均空数组，未连后端显式报错
+  const fb = resolveOfflineFetch('emergency', '/emergency/dispatch-personnel', [], []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<DispatchPersonnelOption[]>({
       url: '/emergency/dispatch-personnel',

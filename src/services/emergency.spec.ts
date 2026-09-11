@@ -16,8 +16,9 @@ describe('fetchEmergencyStrength', () => {
     vi.unstubAllEnvs();
   });
 
-  it('dev 无 VITE_API_BASE 时回退内置 fixture（不白屏）', async () => {
+  it('离线演示（无 VITE_API_BASE + VITE_USE_DEV_MOCK=true）时回退内置 fixture（不白屏）', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     const res = await fetchEmergencyStrength();
     expect(res.resources).toHaveLength(8);
     expect(res.resources.map((r) => r.kind)).toEqual([
@@ -31,6 +32,16 @@ describe('fetchEmergencyStrength', () => {
       '消防设施',
     ]);
     expect(res.resources[0]!.count).toBe(47);
+  });
+
+  it('未连后端且未开演示时显式报错并返回空态（不回落 fixture）', async () => {
+    vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', '');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = await fetchEmergencyStrength();
+    expect(res.resources).toHaveLength(0);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('/emergency/strength'));
+    warn.mockRestore();
   });
 
   it('有 VITE_API_BASE 时走 request 真实调用（B3 包络）', async () => {

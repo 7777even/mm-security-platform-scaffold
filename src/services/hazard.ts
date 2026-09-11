@@ -1,4 +1,5 @@
 import { request } from '@/services/http';
+import { backendUnavailableWarn, resolveOfflineFetch } from '@/services/backendFallback';
 import * as majorHazardFixture from '@/services/map-data/majorHazardMock';
 import * as monitoringFixture from '@/services/map-data/monitoringPointsMock';
 import * as facilityFixture from '@/services/map-data/facilityDetailMock';
@@ -12,19 +13,16 @@ export * from '@/services/map-data/facilityDetailMock';
 
 /**
  * 后端未接入降级：不再返回本地假数据，避免「假数据冒充后端」。
- * 仅当未配置 VITE_API_BASE 的纯静态模式才使用本地 fixture（见各函数首行判断）。
+ * demo 模式（VITE_USE_DEV_MOCK=true）才使用本地 fixture；未连后端则显式报错 + 空态。
  * VITE_API_BASE 已配置但请求失败/返回非预期时，返回空集合并明确告警，
  * 让 UI 显示空态而非被本地 mock 撑满，待对应后端 controller 建成后（task #15/#16）移除告警改用真实数据。
  */
-function backendUnavailableWarn(domain: string, endpoint: string): void {
-  console.warn(
-    `[${domain}] 后端未接入 ${endpoint}：请求失败，已降级为空数据（待后端实现，请勿当作真实数据）`,
-  );
-}
 
 /** B3 GET 封装：dev（无 VITE_API_BASE）降级到内置 fixture，生产走 request */
 export async function fetchMajorHazards(): Promise<majorHazardFixture.MajorHazardItem[]> {
-  if (!import.meta.env.VITE_API_BASE) return majorHazardFixture.majorHazards;
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch('hazard', '/hazards', majorHazardFixture.majorHazards, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<majorHazardFixture.MajorHazardItem[]>({
       url: '/hazards',
@@ -40,7 +38,14 @@ export async function fetchMajorHazards(): Promise<majorHazardFixture.MajorHazar
 export async function fetchMajorHazardDetail(
   id?: number | string,
 ): Promise<majorHazardFixture.MajorHazardDetail> {
-  if (!import.meta.env.VITE_API_BASE) return majorHazardFixture.resolveMajorHazardDetail(id);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch(
+    'hazard',
+    `/hazards/${id}`,
+    majorHazardFixture.resolveMajorHazardDetail(id),
+    {} as majorHazardFixture.MajorHazardDetail,
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<majorHazardFixture.MajorHazardDetail>({
       url: `/hazards/${id}`,
@@ -54,7 +59,14 @@ export async function fetchMajorHazardDetail(
 }
 
 export async function fetchMonitoringPoints(): Promise<monitoringFixture.MonitoringPoint[]> {
-  if (!import.meta.env.VITE_API_BASE) return monitoringFixture.resolveMonitoringPoints();
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch(
+    'hazard',
+    '/monitoring/points',
+    monitoringFixture.resolveMonitoringPoints(),
+    [],
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<monitoringFixture.MonitoringPoint[]>({
       url: '/monitoring/points',
@@ -68,7 +80,14 @@ export async function fetchMonitoringPoints(): Promise<monitoringFixture.Monitor
 }
 
 export async function fetchMonitoringAlarms(): Promise<monitoringFixture.MonitoringAlarm[]> {
-  if (!import.meta.env.VITE_API_BASE) return monitoringFixture.resolveMonitoringAlarms();
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch(
+    'hazard',
+    '/monitoring/alarms',
+    monitoringFixture.resolveMonitoringAlarms(),
+    [],
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<monitoringFixture.MonitoringAlarm[]>({
       url: '/monitoring/alarms',
@@ -84,7 +103,14 @@ export async function fetchMonitoringAlarms(): Promise<monitoringFixture.Monitor
 export async function fetchFacilityDetail(
   name?: string,
 ): Promise<facilityFixture.FacilityDetailInfo> {
-  if (!import.meta.env.VITE_API_BASE) return facilityFixture.resolveFacilityDetail(name);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch(
+    'hazard',
+    '/facilities/detail',
+    facilityFixture.resolveFacilityDetail(name),
+    {} as facilityFixture.FacilityDetailInfo,
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<facilityFixture.FacilityDetailInfo>({
       url: '/facilities/detail',

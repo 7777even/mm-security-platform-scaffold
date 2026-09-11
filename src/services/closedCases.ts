@@ -1,5 +1,9 @@
 import { request } from '@/services/http';
-import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 
 // 结案滚动列表（B3 Mock 契约 §3.6）：近期已结案的应急事件
 export interface ClosedCase {
@@ -52,8 +56,9 @@ const DEV_FIXTURE: ClosedCaseList = {
 const EMPTY: ClosedCaseList = { cases: [] };
 
 export async function fetchClosedCases(): Promise<ClosedCaseList> {
-  // 纯静态 / 演示模式（未配置后端地址）仍用 fixture，此时不存在误判后端就绪的风险
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_FIXTURE);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch('closedCases', '/emergency/closed-cases', DEV_FIXTURE, EMPTY);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<ClosedCaseList>({ url: '/emergency/closed-cases', method: 'GET' });
     if (!data || !Array.isArray(data.cases)) {

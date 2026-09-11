@@ -27,6 +27,7 @@ describe('security 域 fetch（dev 降级 / 真实联调）', () => {
 
   it('fetchPatrolCameras：dev 无 VITE_API_BASE 回退 fixture 数组', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     const res = await fetchPatrolCameras();
     expect(Array.isArray(res)).toBe(true);
     expect(res.length).toBe(25);
@@ -43,6 +44,7 @@ describe('security 域 fetch（dev 降级 / 真实联调）', () => {
 
   it('fetchGateControls：dev 回退 fixture / 真实走 /security/gate-controls', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     expect((await fetchGateControls()).length).toBe(11);
     vi.stubEnv('VITE_API_BASE', 'http://api.example.com');
     const fake = [] as unknown[];
@@ -53,6 +55,7 @@ describe('security 域 fetch（dev 降级 / 真实联调）', () => {
 
   it('fetchBollards：dev 回退 fixture / 真实走 /security/bollards', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     expect((await fetchBollards()).length).toBe(11);
     vi.stubEnv('VITE_API_BASE', 'http://api.example.com');
     fn.mockResolvedValue([]);
@@ -62,6 +65,7 @@ describe('security 域 fetch（dev 降级 / 真实联调）', () => {
 
   it('fetchVehicleSearch：dev 回退 fixture / 真实走 /security/search/vehicle', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     expect(Array.isArray(await fetchVehicleSearch())).toBe(true);
     vi.stubEnv('VITE_API_BASE', 'http://api.example.com');
     const fake = [] as unknown[];
@@ -83,6 +87,7 @@ describe('security 域 fetch（dev 降级 / 真实联调）', () => {
 
   it('fetchPersonSearch：dev 回退 fixture / 真实走 /security/search/person', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     expect(Array.isArray(await fetchPersonSearch())).toBe(true);
     vi.stubEnv('VITE_API_BASE', 'http://api.example.com');
     fn.mockResolvedValue([]);
@@ -92,6 +97,7 @@ describe('security 域 fetch（dev 降级 / 真实联调）', () => {
 
   it('fetchSecurityEvents：dev 回退 fixture / 真实走 /security/events', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     const dev = await fetchSecurityEvents();
     expect(Array.isArray(dev)).toBe(true);
     expect(dev.length).toBeGreaterThan(0);

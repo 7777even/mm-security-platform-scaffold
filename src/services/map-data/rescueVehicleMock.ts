@@ -2,7 +2,11 @@ import {
   fetchRescueVehicles,
   type RescueVehicleItem as ServiceRescueVehicleItem,
 } from '@/services/rescueResource';
-import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 
 export type RescueVehicleStatus = '出动' | '空闲' | '维修中';
 
@@ -295,9 +299,15 @@ function mapRescueVehicle(i: ServiceRescueVehicleItem): RescueVehicleItem {
   };
 }
 
-/** 救援车辆台账：未配置后端时回落本地 fixture；配置后走 /rescue-resources/vehicles 真实端点。 */
+/** 救援车辆台账：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
 export async function loadRescueVehicles(): Promise<RescueVehicleItem[]> {
-  if (!import.meta.env.VITE_API_BASE) return rescueVehicleItems;
+  const fb = resolveOfflineFetch(
+    'rescue-resources',
+    '/rescue-resources/vehicles',
+    rescueVehicleItems,
+    [],
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await fetchRescueVehicles();
     if (!data || !Array.isArray(data.items)) {

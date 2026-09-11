@@ -1,5 +1,9 @@
 import { request } from '@/services/http';
-import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 
 // 生产应急大屏（fm-production / fm-production-area）数据服务（契约：docs/api/production.openapi.json）。
 // 后端数据源：V13 落地的 fac_production_* 九张表（设施 / 设备分类 / 统计 / 报警 / 风险预警 /
@@ -304,7 +308,14 @@ function asRiskSummary(data: unknown): RiskSummary {
 
 /** 生产应急首屏总览：GET /production/overview */
 export async function fetchProductionOverview(): Promise<ProductionOverview> {
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_OVERVIEW);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch(
+    'production',
+    '/production/overview',
+    DEV_OVERVIEW,
+    EMPTY_OVERVIEW,
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<unknown>({ url: '/production/overview', method: 'GET' });
     if (!data || typeof data !== 'object') {
@@ -326,7 +337,9 @@ export async function fetchProductionOverview(): Promise<ProductionOverview> {
 
 /** 生产报警列表：GET /production/alarms（facilityId 为空返回全部） */
 export async function fetchProductionAlarms(facilityId?: number): Promise<ProductionAlarmItem[]> {
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_ALARMS);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch('production', '/production/alarms', DEV_ALARMS, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<unknown>({
       url: '/production/alarms',
@@ -342,7 +355,9 @@ export async function fetchProductionAlarms(facilityId?: number): Promise<Produc
 
 /** 风险预警列表：GET /production/risk-warnings */
 export async function fetchProductionRiskWarnings(): Promise<RiskWarningItem[]> {
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_RISK_WARNINGS);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch('production', '/production/risk-warnings', DEV_RISK_WARNINGS, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<unknown>({ url: '/production/risk-warnings', method: 'GET' });
     return asArray(data, isRiskWarningItem, '/production/risk-warnings');
@@ -354,7 +369,9 @@ export async function fetchProductionRiskWarnings(): Promise<RiskWarningItem[]> 
 
 /** 人员定位标记：GET /production/personnel */
 export async function fetchProductionPersonnel(): Promise<PersonnelMarker[]> {
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_PERSONNEL);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch('production', '/production/personnel', DEV_PERSONNEL, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<unknown>({ url: '/production/personnel', method: 'GET' });
     return asArray(data, isPersonnelMarker, '/production/personnel');
@@ -366,7 +383,14 @@ export async function fetchProductionPersonnel(): Promise<PersonnelMarker[]> {
 
 /** 装置区详情：GET /production/areas/{facilityId} */
 export async function fetchProductionAreaDetail(facilityId: number): Promise<ProductionAreaDetail> {
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(EMPTY_AREA_DETAIL(facilityId));
+  // 本域离线态与演示态同为 EMPTY_AREA_DETAIL（无假数据）；未连后端显式报错
+  const fb = resolveOfflineFetch(
+    'production',
+    `/production/areas/${facilityId}`,
+    EMPTY_AREA_DETAIL(facilityId),
+    EMPTY_AREA_DETAIL(facilityId),
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<unknown>({
       url: `/production/areas/${facilityId}`,
@@ -404,7 +428,14 @@ export async function fetchProductionDevices(
 ): Promise<ProductionDevicePage> {
   const page = query.page ?? 1;
   const size = query.size ?? 10;
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_DEVICES);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch(
+    'production',
+    '/production/devices',
+    DEV_DEVICES,
+    EMPTY_DEVICE_PAGE,
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<unknown>({
       url: '/production/devices',

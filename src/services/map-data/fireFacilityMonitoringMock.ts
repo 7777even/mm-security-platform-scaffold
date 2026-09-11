@@ -7,7 +7,11 @@ import {
   fetchFireFacilityWorkOrders,
   fetchFireFacilityLedger,
 } from '@/services/fireFacility';
-import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 
 /** 13 类标准类型（含“维护保养记录”，作为子表不参与监控卡片） */
 export const fireFacilityTypeOptions = [
@@ -975,9 +979,15 @@ export function resolveFacilityLedgerByType(facilityType: string): FacilityLedge
   return facilityLedgerItemsRef.value.filter((item) => item.facilityType === facilityType);
 }
 
-/** 消防设施监测概览：未配置后端时回落本地 fixture；配置后走 /fire-facility/monitors。 */
+/** 消防设施监测概览：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
 export async function loadFireFacilityMonitors(): Promise<FacilityMonitorSummary[]> {
-  if (!import.meta.env.VITE_API_BASE) return fireFacilityMonitorSummaries;
+  const fb = resolveOfflineFetch(
+    'fireFacility',
+    '/fire-facility/monitors',
+    fireFacilityMonitorSummaries,
+    [],
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await fetchFireFacilityMonitors();
     if (!data || !Array.isArray(data.items)) {
@@ -1005,9 +1015,10 @@ export async function loadFireFacilityMonitors(): Promise<FacilityMonitorSummary
   }
 }
 
-/** 消防设施故障列表：未配置后端时回落本地 fixture；配置后走 /fire-facility/faults。 */
+/** 消防设施故障列表：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
 export async function loadFireFacilityFaults(): Promise<FacilityFaultItem[]> {
-  if (!import.meta.env.VITE_API_BASE) return fireFacilityFaults;
+  const fb = resolveOfflineFetch('fireFacility', '/fire-facility/faults', fireFacilityFaults, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await fetchFireFacilityFaults();
     if (!data || !Array.isArray(data.items)) {
@@ -1042,9 +1053,10 @@ export async function loadFireFacilityFaults(): Promise<FacilityFaultItem[]> {
   }
 }
 
-/** 消防设施报警列表：未配置后端时回落本地 fixture；配置后走 /fire-facility/alarms。 */
+/** 消防设施报警列表：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
 export async function loadFireFacilityAlarms(): Promise<FacilityAlarmItem[]> {
-  if (!import.meta.env.VITE_API_BASE) return fireFacilityAlarms;
+  const fb = resolveOfflineFetch('fireFacility', '/fire-facility/alarms', fireFacilityAlarms, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await fetchFireFacilityAlarms();
     if (!data || !Array.isArray(data.items)) {
@@ -1068,9 +1080,15 @@ export async function loadFireFacilityAlarms(): Promise<FacilityAlarmItem[]> {
   }
 }
 
-/** 消防设施维保工单：未配置后端时回落本地 fixture；配置后走 /fire-facility/work-orders。 */
+/** 消防设施维保工单：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
 export async function loadFireFacilityWorkOrders(): Promise<FacilityWorkOrderItem[]> {
-  if (!import.meta.env.VITE_API_BASE) return fireFacilityWorkOrders;
+  const fb = resolveOfflineFetch(
+    'fireFacility',
+    '/fire-facility/work-orders',
+    fireFacilityWorkOrders,
+    [],
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await fetchFireFacilityWorkOrders();
     if (!data || !Array.isArray(data.items)) {
@@ -1103,9 +1121,15 @@ export async function loadFireFacilityWorkOrders(): Promise<FacilityWorkOrderIte
   }
 }
 
-/** 消防设施台账：未配置后端时回落本地 fixture；配置后走 /fire-facility/ledger。 */
+/** 消防设施台账：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
 export async function loadFireFacilityLedger(): Promise<FacilityLedgerItem[]> {
-  if (!import.meta.env.VITE_API_BASE) return fireFacilityLedgerItems;
+  const fb = resolveOfflineFetch(
+    'fireFacility',
+    '/fire-facility/ledger',
+    fireFacilityLedgerItems,
+    [],
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await fetchFireFacilityLedger();
     if (!data || !Array.isArray(data.items)) {

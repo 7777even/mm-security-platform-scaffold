@@ -1,6 +1,10 @@
 import { stagePercentStringToWorldPosition } from '@/utils/mapDesignGeo';
 import { fetchEmergencyEvents, type EmergencyEventScene } from '@/services/emergencyEvent';
-import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 
 export interface EmergencyEventItem {
   id: number;
@@ -232,7 +236,9 @@ export const preliminaryMapControls = [
 export async function loadPreliminaryEvents(
   scene: EmergencyEventScene = 'PRELIMINARY',
 ): Promise<EmergencyEventGroup[]> {
-  if (!import.meta.env.VITE_API_BASE) return emergencyEventGroups;
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch('emergencyEvent', '/emergency-events', emergencyEventGroups, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await fetchEmergencyEvents(scene);
     if (!Array.isArray(data) || data.some((g) => !g || !Array.isArray(g.events))) {

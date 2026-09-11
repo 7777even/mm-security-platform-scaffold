@@ -1,5 +1,9 @@
 import { request } from '@/services/http';
-import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 
 // 应急值班值守（按部门 + 班次）
 export type DutyRole = '值班领导' | '值班员';
@@ -96,8 +100,9 @@ const DEV_FIXTURE: DutyRoster = {
 const EMPTY: DutyRoster = { departments: [], shift: '白班', members: [] };
 
 export async function fetchDutyRoster(): Promise<DutyRoster> {
-  // 纯静态 / 演示模式（未配置后端地址）仍用 fixture，此时不存在误判后端就绪的风险
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_FIXTURE);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch('duty', '/emergency/duty', DEV_FIXTURE, EMPTY);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<DutyRoster>({ url: '/emergency/duty', method: 'GET' });
     if (!data || !Array.isArray(data.members)) {

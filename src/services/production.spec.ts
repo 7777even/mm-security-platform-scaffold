@@ -25,13 +25,25 @@ describe('production 服务（暴露式降级：后端缺口不得被假数据�
     vi.unstubAllEnvs();
   });
 
-  it('无 VITE_API_BASE 时回落 dev fixture（纯静态演示，不误判后端就绪）', async () => {
+  it('离线演示（无 VITE_API_BASE + VITE_USE_DEV_MOCK=true）时回落 dev fixture', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     const overview = await fetchProductionOverview();
     expect(overview.facilities).toHaveLength(5);
     expect(overview.devices).toHaveLength(7);
     expect(overview.stats.length).toBeGreaterThan(0);
     expect(overview.riskSummary).toEqual({ red: 2, orange: 3, yellow: 2 });
+  });
+
+  it('未连后端且未开演示时显式报错并返回空态（不回落 fixture）', async () => {
+    vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', '');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const overview = await fetchProductionOverview();
+    expect(overview.facilities).toHaveLength(0);
+    expect(overview.devices).toHaveLength(0);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('/production/overview'));
+    warn.mockRestore();
   });
 
   it('有 VITE_API_BASE 时走真实端点', async () => {

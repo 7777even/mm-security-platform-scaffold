@@ -1,7 +1,11 @@
 import type { EmergencyEventGroup, EmergencyEventItem } from './preliminaryMock';
 import { stagePercentStringToWorldPosition } from '@/utils/mapDesignGeo';
 import { fetchEmergencyEvents } from '@/services/emergencyEvent';
-import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 
 export type { EmergencyEventItem, EmergencyEventGroup };
 
@@ -314,12 +318,20 @@ export async function loadFireEmergencyEventGroups(): Promise<{
   events: EmergencyEventGroup[];
   drills: EmergencyEventGroup[];
 }> {
-  if (!import.meta.env.VITE_API_BASE) {
-    return {
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch(
+    'emergencyEvent',
+    '/emergency-events',
+    {
       events: initialFireEmergencyEventGroups,
       drills: initialFireEmergencyDrillEventGroups,
-    };
-  }
+    },
+    {
+      events: [],
+      drills: [],
+    },
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await fetchEmergencyEvents('FIRE');
     if (!Array.isArray(data)) {

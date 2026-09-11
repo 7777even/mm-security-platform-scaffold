@@ -1,8 +1,9 @@
 import { ref } from 'vue';
 import { request } from '@/services/http';
+import { backendUnavailableWarn, notifyBackendOffline } from '@/services/backendFallback';
 
 // 安全防恐门禁事件 store（B3 脚手架阶段 in-memory mock 打底；后端 /security/events 就绪后由真实接口驱动）。
-// dev 缺 VITE_API_BASE 时以内置 fixture 兜底；有 VITE_API_BASE 时走 /security/events 真实联调，失败回落 fixture。
+// demo（VITE_USE_DEV_MOCK=true）才用内置 fixture；未连后端则显式报错 + 空态；有后端时走真实联调，失败置空并告警。
 // 消费方：src/screen/components/panels/security/EntryCaptureListPanel.vue（经 useEntryCaptureListView 映射为抓拍记录形状）。
 export type AccessDirection = '进' | '出';
 export type AccessLevel = 1 | 2 | 3;
@@ -186,12 +187,23 @@ const events = ref<SecurityEvent[]>(fixture.map((e) => ({ ...e })));
 export const securityEventStore = {
   events,
   async fetchSecurityEvents(): Promise<SecurityEvent[]> {
-    if (!import.meta.env.VITE_API_BASE) return events.value;
+    if (!import.meta.env.VITE_API_BASE) {
+      // 仅离线演示（显式 VITE_USE_DEV_MOCK=true）才用内置 fixture；否则显式报错 + 空态
+      if (import.meta.env.VITE_USE_DEV_MOCK === 'true') return events.value;
+      notifyBackendOffline(
+        'security',
+        '/security/events',
+        '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+      );
+      events.value = [];
+      return events.value;
+    }
     try {
       const data = await request<SecurityEvent[]>({ url: '/security/events', method: 'GET' });
       if (Array.isArray(data)) events.value = data;
     } catch {
-      /* dev 降级保留 fixture */
+      backendUnavailableWarn('security', '/security/events');
+      events.value = [];
     }
     return events.value;
   },

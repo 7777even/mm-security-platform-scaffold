@@ -1,5 +1,9 @@
 import { request } from '@/services/http';
-import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  notifyBackendOffline,
+} from '@/services/backendFallback';
 import type { EmergencyDispatchResource } from '@/screen/lib/data/accidentRescueMock';
 
 export interface IncidentDetailField {
@@ -89,8 +93,18 @@ const EMPTY: AccidentRescuePayload = {
  */
 export async function fetchAccidentIncident(eventId?: number): Promise<AccidentRescuePayload> {
   if (!import.meta.env.VITE_API_BASE) {
-    const { resolveAccidentRescueIncident } = await import('@/screen/lib/data/accidentRescueMock');
-    return resolveAccidentRescueIncident(eventId) as unknown as AccidentRescuePayload;
+    // 仅离线演示（显式 VITE_USE_DEV_MOCK=true）才走本地 fixture；否则显式报错 + 空态
+    if (import.meta.env.VITE_USE_DEV_MOCK === 'true') {
+      const { resolveAccidentRescueIncident } =
+        await import('@/screen/lib/data/accidentRescueMock');
+      return resolveAccidentRescueIncident(eventId) as unknown as AccidentRescuePayload;
+    }
+    notifyBackendOffline(
+      'accident-rescue',
+      '/accident/rescue-incident',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return EMPTY;
   }
 
   try {

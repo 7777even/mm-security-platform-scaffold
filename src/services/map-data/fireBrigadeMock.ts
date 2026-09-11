@@ -2,7 +2,11 @@ import {
   fetchFireBrigades,
   type FireBrigadeTeam as ServiceFireBrigadeTeam,
 } from '@/services/rescueResource';
-import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 
 // ===== 消防队伍 mock 数据（大屏消防监测 · 消防救援力量）=====
 
@@ -384,9 +388,15 @@ function mapFireBrigadeTeam(i: ServiceFireBrigadeTeam): FireBrigadeTeam {
   };
 }
 
-/** 消防队伍台账：未配置后端时回落本地 fixture；配置后走 /rescue-resources/brigades 真实端点。 */
+/** 消防队伍台账：demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态。 */
 export async function loadFireBrigades(): Promise<FireBrigadeTeam[]> {
-  if (!import.meta.env.VITE_API_BASE) return fireBrigadeTeams;
+  const fb = resolveOfflineFetch(
+    'rescue-resources',
+    '/rescue-resources/brigades',
+    fireBrigadeTeams,
+    [],
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await fetchFireBrigades();
     if (!data || !Array.isArray(data.items)) {

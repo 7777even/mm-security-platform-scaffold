@@ -1,5 +1,9 @@
 import { request } from '@/services/http';
-import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  notifyBackendOffline,
+} from '@/services/backendFallback';
 
 // 台风应急大屏（fm-typhoon）数据（契约：docs/api/typhoon-emergency.openapi.json）。
 // 后端数据源：V11 落地的 fac_typhoon_* 表；值班人员沿用 sys_duty_member。
@@ -131,11 +135,19 @@ function isDispatchResource(v: unknown): v is TyphoonDispatchResource {
 export async function fetchTyphoonIncident(
   eventId?: number,
 ): Promise<TyphoonEmergencyIncident | null> {
-  // 纯静态 / 演示模式（未配置后端地址）仍用本地 fixture，此时不存在误判后端就绪的风险
   if (!import.meta.env.VITE_API_BASE) {
-    const { resolveTyphoonEmergencyIncidentV2 } =
-      await import('@/screen/lib/data/typhoonEmergencyMock');
-    return resolveTyphoonEmergencyIncidentV2(eventId);
+    // 仅离线演示（显式 VITE_USE_DEV_MOCK=true）才走本地 fixture；否则显式报错 + 空态
+    if (import.meta.env.VITE_USE_DEV_MOCK === 'true') {
+      const { resolveTyphoonEmergencyIncidentV2 } =
+        await import('@/screen/lib/data/typhoonEmergencyMock');
+      return resolveTyphoonEmergencyIncidentV2(eventId);
+    }
+    notifyBackendOffline(
+      'typhoon',
+      '/typhoon/incident',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return null;
   }
   try {
     const url =
@@ -157,8 +169,17 @@ export async function fetchTyphoonIncident(
 /** 防汛排涝可调度力量清单：GET /typhoon/dispatch-resources */
 export async function fetchTyphoonDispatchResources(): Promise<TyphoonDispatchResource[]> {
   if (!import.meta.env.VITE_API_BASE) {
-    const { typhoonDispatchResources } = await import('@/screen/lib/data/typhoonEmergencyMock');
-    return typhoonDispatchResources;
+    // 仅离线演示（显式 VITE_USE_DEV_MOCK=true）才走本地 fixture；否则显式报错 + 空态
+    if (import.meta.env.VITE_USE_DEV_MOCK === 'true') {
+      const { typhoonDispatchResources } = await import('@/screen/lib/data/typhoonEmergencyMock');
+      return typhoonDispatchResources;
+    }
+    notifyBackendOffline(
+      'typhoon',
+      '/typhoon/dispatch-resources',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return [];
   }
   try {
     const data = await request<unknown>({ url: '/typhoon/dispatch-resources', method: 'GET' });

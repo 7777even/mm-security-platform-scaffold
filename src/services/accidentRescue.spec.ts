@@ -18,8 +18,9 @@ describe('accidentRescue 服务（暴露式降级：后端缺口不得被假数�
     vi.unstubAllEnvs();
   });
 
-  it('无 VITE_API_BASE 时回落本地 fixture（纯静态演示，不误判后端就绪）', async () => {
+  it('离线演示（无 VITE_API_BASE + VITE_USE_DEV_MOCK=true）时回落本地 fixture', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     const inc = await fetchAccidentIncident();
     // 注意：本地 fixture 仅含事件基础字段（title/detailFields/eventId 等），
     // dispatchResources/dynamics 等子数组由真实后端提供；fixture 静态演示下缺省，
@@ -29,6 +30,17 @@ describe('accidentRescue 服务（暴露式降级：后端缺口不得被假数�
     expect(inc.eventId).toBeGreaterThan(0);
     expect(inc.title).toBeTruthy();
     expect(Array.isArray(inc.detailFields)).toBe(true);
+  });
+
+  it('未连后端且未开演示时显式报错并返回空态（不回落 fixture）', async () => {
+    vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', '');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const inc = await fetchAccidentIncident();
+    expect(inc.eventId).toBe(0);
+    expect(inc.title).toBe('');
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('/accident/rescue-incident'));
+    warn.mockRestore();
   });
 
   it('有 VITE_API_BASE 时走真实端点，eventId 编码进查询参数', async () => {

@@ -1,4 +1,5 @@
 import http, { request } from '@/services/http';
+import { backendUnavailableWarn, resolveOfflineFetch } from '@/services/backendFallback';
 import * as searchFixture from '@/services/map-data/securitySearchMock';
 import type { SecurityTrackMode } from '@/services/map-data/securityTrackMock';
 
@@ -639,18 +640,15 @@ export const bollards: BollardItem[] = [
 /** B3 GET 封装：dev（无 VITE_API_BASE）降级到内置 fixture，生产走 request */
 /**
  * 后端未接入降级：不再返回本地假数据，避免「假数据冒充后端」。
- * 仅当未配置 VITE_API_BASE 的纯静态模式才使用本地 fixture/硬写死 const（见各函数首行判断）。
+ * demo 模式（VITE_USE_DEV_MOCK=true）才使用本地 fixture；未连后端则显式报错 + 空态。
  * VITE_API_BASE 已配置但请求失败/返回非预期时，返回空集合并明确告警，让 UI 显示空态，
  * 待对应后端 controller 建成后（task #15/#16）移除告警、改用真实数据。
  */
-function backendUnavailableWarn(domain: string, endpoint: string): void {
-  console.warn(
-    `[${domain}] 后端未接入 ${endpoint}：请求失败，已降级为空数据（待后端实现，请勿当作真实数据）`,
-  );
-}
 
 export async function fetchPatrolCameras(): Promise<PatrolCameraItem[]> {
-  if (!import.meta.env.VITE_API_BASE) return patrolCameras;
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch('security', '/security/patrol-cameras', patrolCameras, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<PatrolCameraItem[]>({
       url: '/security/patrol-cameras',
@@ -664,7 +662,9 @@ export async function fetchPatrolCameras(): Promise<PatrolCameraItem[]> {
 }
 
 export async function fetchGateControls(): Promise<GateControlItem[]> {
-  if (!import.meta.env.VITE_API_BASE) return gateControls;
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch('security', '/security/gate-controls', gateControls, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<GateControlItem[]>({
       url: '/security/gate-controls',
@@ -678,7 +678,9 @@ export async function fetchGateControls(): Promise<GateControlItem[]> {
 }
 
 export async function fetchBollards(): Promise<BollardItem[]> {
-  if (!import.meta.env.VITE_API_BASE) return bollards;
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch('security', '/security/bollards', bollards, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<BollardItem[]>({ url: '/security/bollards', method: 'GET' });
     return Array.isArray(data) ? data : [];
@@ -691,7 +693,14 @@ export async function fetchBollards(): Promise<BollardItem[]> {
 export async function fetchVehicleSearch(
   keyword?: string,
 ): Promise<searchFixture.VehicleSearchResult[]> {
-  if (!import.meta.env.VITE_API_BASE) return searchFixture.vehicleSearchResults;
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch(
+    'security',
+    '/security/search/vehicle',
+    searchFixture.vehicleSearchResults,
+    [],
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<searchFixture.VehicleSearchResult[]>({
       url: '/security/search/vehicle',
@@ -708,7 +717,14 @@ export async function fetchVehicleSearch(
 export async function fetchPersonSearch(
   keyword?: string,
 ): Promise<searchFixture.PersonSearchResult[]> {
-  if (!import.meta.env.VITE_API_BASE) return searchFixture.personSearchResults;
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch(
+    'security',
+    '/security/search/person',
+    searchFixture.personSearchResults,
+    [],
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<searchFixture.PersonSearchResult[]>({
       url: '/security/search/person',

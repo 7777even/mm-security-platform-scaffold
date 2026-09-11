@@ -1,5 +1,9 @@
 import { request } from '@/services/http';
-import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 
 // 消防监控大屏（fm-fire）统计与巡查数据（契约：docs/api/fire-monitoring.openapi.json）。
 // 后端数据源：fac_rescue_force_stat / fac_special_operation_stat / fac_fire_equipment_status /
@@ -135,7 +139,9 @@ function asArray<T>(data: unknown, guard: (v: unknown) => v is T, endpoint: stri
 
 /** 消防救援力量统计：GET /fire/rescue-forces */
 export async function fetchRescueForces(): Promise<RescueForceStat[]> {
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_RESCUE_FORCES);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch('fire-monitoring', '/fire/rescue-forces', DEV_RESCUE_FORCES, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<unknown>({ url: '/fire/rescue-forces', method: 'GET' });
     return asArray(data, isRescueForceStat, '/fire/rescue-forces');
@@ -147,7 +153,14 @@ export async function fetchRescueForces(): Promise<RescueForceStat[]> {
 
 /** 特殊作业统计：GET /fire/special-operations */
 export async function fetchSpecialOperations(): Promise<SpecialOperationStat[]> {
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_SPECIAL_OPERATIONS);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch(
+    'fire-monitoring',
+    '/fire/special-operations',
+    DEV_SPECIAL_OPERATIONS,
+    [],
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<unknown>({ url: '/fire/special-operations', method: 'GET' });
     return asArray(data, isSpecialOperationStat, '/fire/special-operations');
@@ -159,7 +172,14 @@ export async function fetchSpecialOperations(): Promise<SpecialOperationStat[]> 
 
 /** 消防设施设备状态：GET /fire/equipment-status */
 export async function fetchFireEquipmentStatus(): Promise<FireEquipmentStatus | null> {
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_EQUIPMENT_STATUS);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch(
+    'fire-monitoring',
+    '/fire/equipment-status',
+    DEV_EQUIPMENT_STATUS,
+    null,
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<unknown>({ url: '/fire/equipment-status', method: 'GET' });
     if (!isEquipmentStatus(data)) {
@@ -175,7 +195,9 @@ export async function fetchFireEquipmentStatus(): Promise<FireEquipmentStatus | 
 
 /** 防火巡查记录：GET /fire/patrols */
 export async function fetchFirePatrols(): Promise<FirePatrolRecord[]> {
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_PATROLS);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch('fire-monitoring', '/fire/patrols', DEV_PATROLS, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<unknown>({ url: '/fire/patrols', method: 'GET' });
     return asArray(data, isPatrolRecord, '/fire/patrols');
@@ -208,7 +230,9 @@ function isFireEquipmentItem(v: unknown): v is FireEquipmentItem {
 
 /** 消防设备分类清单：GET /fire/equipment（取代前端硬编码 fireEquipment） */
 export async function fetchFireEquipment(): Promise<FireEquipmentItem[]> {
-  if (!import.meta.env.VITE_API_BASE) return Promise.resolve(DEV_FIRE_EQUIPMENT);
+  // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态
+  const fb = resolveOfflineFetch('fire-monitoring', '/fire/equipment', DEV_FIRE_EQUIPMENT, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const data = await request<unknown>({ url: '/fire/equipment', method: 'GET' });
     return asArray(data, isFireEquipmentItem, '/fire/equipment');

@@ -18,8 +18,9 @@ describe('typhoonEmergency 服务（暴露式降级：后端缺口不得被假�
     vi.unstubAllEnvs();
   });
 
-  it('无 VITE_API_BASE 时回落本地 fixture（纯静态演示）', async () => {
+  it('离线演示（无 VITE_API_BASE + VITE_USE_DEV_MOCK=true）时回落本地 fixture', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     const inc = await fetchTyphoonIncident();
     expect(inc).not.toBeNull();
     expect(inc!.eventId).toBe(100);
@@ -27,6 +28,16 @@ describe('typhoonEmergency 服务（暴露式降级：后端缺口不得被假�
     expect(inc!.mapRiskPoints).toHaveLength(8);
     expect(inc!.liveVideos.length).toBeGreaterThan(0);
     expect(await fetchTyphoonDispatchResources()).toHaveLength(6);
+  });
+
+  it('未连后端且未开演示时显式报错并返回空态（不回落 fixture）', async () => {
+    vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', '');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(await fetchTyphoonIncident()).toBeNull();
+    expect(await fetchTyphoonDispatchResources()).toHaveLength(0);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('/typhoon/incident'));
+    warn.mockRestore();
   });
 
   it('有 VITE_API_BASE 时走真实端点，eventId 编码进查询串', async () => {

@@ -18,8 +18,9 @@ describe('fetchFireAlarmPage', () => {
     vi.unstubAllEnvs();
   });
 
-  it('dev 无 VITE_API_BASE 时回退内置 fixture（不白屏）', async () => {
+  it('离线演示（无 VITE_API_BASE + VITE_USE_DEV_MOCK=true）时回退内置 fixture（不白屏）', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     const res = await fetchFireAlarmPage(1, 10);
     expect(res.list).toHaveLength(10);
     expect(res.total).toBe(50);
@@ -31,10 +32,20 @@ describe('fetchFireAlarmPage', () => {
 
   it('分页跨页返回正确切片（alarmId 连续）', async () => {
     vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     const res = await fetchFireAlarmPage(2, 10);
     expect(res.list).toHaveLength(10);
     expect(res.list[0]!.alarmId).toBe('11');
     expect(res.list[9]!.alarmId).toBe('20');
+  });
+
+  it('未连后端且未开演示时显式报错并返回空态（不回灌 fixture）', async () => {
+    vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', '');
+    const res = await fetchFireAlarmPage(1, 10);
+    expect(res.list).toHaveLength(0);
+    expect(res.total).toBe(0);
+    expect(request).not.toHaveBeenCalled();
   });
 
   it('有 VITE_API_BASE 时走 request 真实调用（B3 包络）', async () => {
