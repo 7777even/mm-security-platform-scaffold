@@ -12,13 +12,8 @@ import PkgIcon from '@/components/common/PkgIcon.vue';
 import { useFireAlarmInteraction } from '@/composables/useFireAlarmInteraction';
 import { showToast } from '@/composables/useToast';
 import { fetchFireAlarmPage, type FireAlarmItem, type AlarmStatus } from '@/services/alarm';
-import {
-  FIRE_ALARM_TYPE_OPTIONS,
-  FIRE_ALARM_SOURCE_OPTIONS,
-  FIRE_ALARM_OBJECT_TYPE_OPTIONS,
-  FIRE_ALARM_STATUS_OPTIONS,
-  ALARM_STATUS_META,
-} from '@/screen/lib/data/alarmMeta';
+import { ALARM_STATUS_META } from '@/screen/lib/data/alarmMeta';
+import { fetchDictOptions } from '@/services/system';
 import { sceneImageByTone } from '@/services/map-data/fireImages';
 
 function thumbOf(row: FireAlarmItem): string {
@@ -28,10 +23,44 @@ function thumbOf(row: FireAlarmItem): string {
 const emit = defineEmits<{ close: [] }>();
 const ia = useFireAlarmInteraction();
 
-const source = ref<string>(FIRE_ALARM_SOURCE_OPTIONS[0]);
-const objectType = ref<string>(FIRE_ALARM_OBJECT_TYPE_OPTIONS[0]);
-const type = ref<string>(FIRE_ALARM_TYPE_OPTIONS[0]);
-const status = ref<string>(FIRE_ALARM_STATUS_OPTIONS[0]);
+// 筛选项改后端字典驱动（GET /system/dicts/{dictCode}）；「全部X」哨兵由前端补。
+const SENTINEL_SOURCE = '全部来源';
+const SENTINEL_OBJECT_TYPE = '全部类型';
+const SENTINEL_TYPE = '全部类型';
+const SENTINEL_STATUS = '全部状态';
+const sourceOptions = ref<string[]>([SENTINEL_SOURCE]);
+const objectTypeOptions = ref<string[]>([SENTINEL_OBJECT_TYPE]);
+const typeOptions = ref<string[]>([SENTINEL_TYPE]);
+const statusOptions = ref<string[]>([SENTINEL_STATUS]);
+
+async function loadDictOptionValues(dictCode: string): Promise<string[]> {
+  try {
+    const items = await fetchDictOptions(dictCode);
+    return (items ?? [])
+      .filter((it) => it.itemValue != null && it.itemValue !== '')
+      .map((it) => String(it.itemValue));
+  } catch {
+    return [];
+  }
+}
+
+async function loadFilterOptions(): Promise<void> {
+  const [s, ot, t, st] = await Promise.all([
+    loadDictOptionValues('fire_alarm_source'),
+    loadDictOptionValues('fire_alarm_object_type'),
+    loadDictOptionValues('fire_alarm_type'),
+    loadDictOptionValues('fire_alarm_status'),
+  ]);
+  sourceOptions.value = [SENTINEL_SOURCE, ...s];
+  objectTypeOptions.value = [SENTINEL_OBJECT_TYPE, ...ot];
+  typeOptions.value = [SENTINEL_TYPE, ...t];
+  statusOptions.value = [SENTINEL_STATUS, ...st];
+}
+
+const source = ref<string>(SENTINEL_SOURCE);
+const objectType = ref<string>(SENTINEL_OBJECT_TYPE);
+const type = ref<string>(SENTINEL_TYPE);
+const status = ref<string>(SENTINEL_STATUS);
 const page = ref(1);
 const size = 8;
 
@@ -49,16 +78,18 @@ async function loadAlarms(): Promise<void> {
   }
 }
 
-onMounted(loadAlarms);
+onMounted(() => {
+  void loadAlarms();
+  void loadFilterOptions();
+});
 
 const filtered = computed(() =>
   allItems.value.filter(
     (it) =>
-      (source.value === FIRE_ALARM_SOURCE_OPTIONS[0] || it.source === source.value) &&
-      (objectType.value === FIRE_ALARM_OBJECT_TYPE_OPTIONS[0] ||
-        it.objectType === objectType.value) &&
-      (type.value === FIRE_ALARM_TYPE_OPTIONS[0] || it.typeLabel === type.value) &&
-      (status.value === FIRE_ALARM_STATUS_OPTIONS[0] || it.status === status.value),
+      (source.value === SENTINEL_SOURCE || it.source === source.value) &&
+      (objectType.value === SENTINEL_OBJECT_TYPE || it.objectType === objectType.value) &&
+      (type.value === SENTINEL_TYPE || it.typeLabel === type.value) &&
+      (status.value === SENTINEL_STATUS || it.status === status.value),
   ),
 );
 const total = computed(() => filtered.value.length);
@@ -78,8 +109,8 @@ function rowStatusLabel(s: AlarmStatus): string {
   return ALARM_STATUS_META[s].label;
 }
 function statusOptionLabel(opt: string): string {
-  if (opt === FIRE_ALARM_STATUS_OPTIONS[0]) return '告警状态';
-  return ALARM_STATUS_META[opt as AlarmStatus].label;
+  if (opt === SENTINEL_STATUS) return '告警状态';
+  return ALARM_STATUS_META[opt as AlarmStatus]?.label ?? opt;
 }
 
 function goDetail(row: FireAlarmItem): void {
@@ -104,16 +135,16 @@ function goEmergency(row: FireAlarmItem): void {
       <template v-else>
         <div class="list__filters">
           <select v-model="source" class="filter-select">
-            <option v-for="o in FIRE_ALARM_SOURCE_OPTIONS" :key="o" :value="o">{{ o }}</option>
+            <option v-for="o in sourceOptions" :key="o" :value="o">{{ o }}</option>
           </select>
           <select v-model="objectType" class="filter-select">
-            <option v-for="o in FIRE_ALARM_OBJECT_TYPE_OPTIONS" :key="o" :value="o">{{ o }}</option>
+            <option v-for="o in objectTypeOptions" :key="o" :value="o">{{ o }}</option>
           </select>
           <select v-model="type" class="filter-select">
-            <option v-for="o in FIRE_ALARM_TYPE_OPTIONS" :key="o" :value="o">{{ o }}</option>
+            <option v-for="o in typeOptions" :key="o" :value="o">{{ o }}</option>
           </select>
           <select v-model="status" class="filter-select">
-            <option v-for="o in FIRE_ALARM_STATUS_OPTIONS" :key="o" :value="o">
+            <option v-for="o in statusOptions" :key="o" :value="o">
               {{ statusOptionLabel(o) }}
             </option>
           </select>

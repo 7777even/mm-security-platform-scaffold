@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import {
-  patrolCheckItemDefs,
-  patrolShiftOptions,
-  patrolStatusOptions,
-} from '../../lib/data/firePatrolMock';
+import { computed, ref, watch, onMounted } from 'vue';
 import { fetchFirePatrols, type FirePatrolRecord } from '@/services/fireMonitoring';
+import { fetchDictOptions } from '@/services/system';
 import { useFirePatrolDialog } from '../../lib/composables/useFirePatrolDialog';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
 
@@ -15,16 +11,48 @@ const emit = defineEmits<{ close: [] }>();
 const { firePatrolPresetId, closeFirePatrol } = useFirePatrolDialog();
 const { openFireFacilityMonitoring } = useFireFacilityMonitoringDialog();
 
+// 班次/状态下拉改后端字典驱动（GET /system/dicts/{dictCode}）；「全部X」哨兵由前端补，
+// 未连后端/失败时仅剩哨兵（不回落本地假选项）。
+const SENTINEL_SHIFT = '全部班次';
+const SENTINEL_STATUS = '全部状态';
+const shiftOptions = ref<string[]>([SENTINEL_SHIFT]);
+const statusOptions = ref<string[]>([SENTINEL_STATUS]);
+
+async function loadDictOptionValues(dictCode: string): Promise<string[]> {
+  try {
+    const items = await fetchDictOptions(dictCode);
+    return (items ?? [])
+      .filter((it) => it.itemValue != null && it.itemValue !== '')
+      .map((it) => String(it.itemValue));
+  } catch {
+    return [];
+  }
+}
+
+async function loadFilterOptions() {
+  const [shifts, statuses] = await Promise.all([
+    loadDictOptionValues('patrol_shift'),
+    loadDictOptionValues('patrol_status'),
+  ]);
+  shiftOptions.value = [SENTINEL_SHIFT, ...shifts];
+  statusOptions.value = [SENTINEL_STATUS, ...statuses];
+}
+
 const keyword = ref('');
-const shiftFilter = ref<string>('全部班次');
-const statusFilter = ref<string>('全部状态');
+const shiftFilter = ref<string>(SENTINEL_SHIFT);
+const statusFilter = ref<string>(SENTINEL_STATUS);
 const currentPage = ref(1);
 const PAGE_SIZE = 8;
 const selectedRecord = ref<FirePatrolRecord | null>(null);
 
-// 巡检记录走真实后端 /fire/patrols（service 内部失败降级空集合 + 告警）；检查项定义/下拉选项为前端 UI 配置。
+// 巡检记录走真实后端 /fire/patrols（service 内部失败降级空集合 + 告警）；
+// 检查项明细直接取自记录的 checkItems（后端已按定义表排序并带 category），不再依赖本地定义表。
 const patrolRecords = ref<FirePatrolRecord[]>([]);
 const patrolLoading = ref(false);
+
+onMounted(() => {
+  void loadFilterOptions();
+});
 
 async function loadPatrols(): Promise<void> {
   patrolLoading.value = true;
@@ -46,7 +74,7 @@ const filteredRecords = computed(() =>
         return false;
       }
     }
-    if (shiftFilter.value !== '全部班次' && record.shift !== shiftFilter.value) return false;
+    if (shiftFilter.value !== SENTINEL_SHIFT && record.shift !== shiftFilter.value) return false;
     if (statusFilter.value === '已完成' && !record.completed) return false;
     if (statusFilter.value === '未完成' && record.completed) return false;
     return true;
@@ -69,15 +97,16 @@ const visiblePages = computed(() => {
 const abnormalCount = (record: FirePatrolRecord) =>
   record.checkItems.filter((item) => item.result === '异常').length;
 
+// 检查项明细来自记录的 checkItems（后端已按检查项定义表 sort_no 排序并带 category），
+// 按出现顺序分组，无需前端本地定义表。
 const groupedCheckItems = computed(() => {
   if (!selectedRecord.value) return [];
   const groups: { category: string; items: FirePatrolRecord['checkItems'] }[] = [];
-  for (const def of patrolCheckItemDefs) {
-    const item = selectedRecord.value.checkItems.find((check) => check.itemCode === def.itemCode);
-    if (!item) continue;
-    let group = groups.find((g) => g.category === def.category);
+  for (const item of selectedRecord.value.checkItems) {
+    const category = item.category || '其他';
+    let group = groups.find((g) => g.category === category);
     if (!group) {
-      group = { category: def.category, items: [] };
+      group = { category, items: [] };
       groups.push(group);
     }
     group.items.push(item);
@@ -90,8 +119,8 @@ watch(
   async (visible) => {
     if (!visible) return;
     keyword.value = '';
-    shiftFilter.value = '全部班次';
-    statusFilter.value = '全部状态';
+    shiftFilter.value = SENTINEL_SHIFT;
+    statusFilter.value = SENTINEL_STATUS;
     currentPage.value = 1;
     await loadPatrols();
     // 记录就绪后再按预设 id 定位详情（首次打开时数据尚未加载）
@@ -116,8 +145,8 @@ function search() {
 
 function resetFilters() {
   keyword.value = '';
-  shiftFilter.value = '全部班次';
-  statusFilter.value = '全部状态';
+  shiftFilter.value = SENTINEL_SHIFT;
+  statusFilter.value = SENTINEL_STATUS;
   currentPage.value = 1;
 }
 
@@ -287,12 +316,12 @@ function openSelectedWorkOrder() {
                   placeholder="搜索值班人员 / 巡查部位"
                 />
                 <select v-model="shiftFilter" class="patrol__select">
-                  <option v-for="opt in patrolShiftOptions" :key="opt" :value="opt">
+                  <option v-for="opt in shiftOptions" :key="opt" :value="opt">
                     {{ opt }}
                   </option>
                 </select>
                 <select v-model="statusFilter" class="patrol__select">
-                  <option v-for="opt in patrolStatusOptions" :key="opt" :value="opt">
+                  <option v-for="opt in statusOptions" :key="opt" :value="opt">
                     {{ opt }}
                   </option>
                 </select>

@@ -2,14 +2,8 @@
 import { computed, ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { fetchFireAlarmPage, type FireAlarmItem, type AlarmStatus } from '@/services/alarm';
-import {
-  ALARM_STATUS_META,
-  FIRE_ALARM_TYPE_OPTIONS,
-  FIRE_ALARM_STATUS_OPTIONS,
-  FIRE_ALARM_SOURCE_OPTIONS,
-  FIRE_ALARM_OBJECT_TYPE_OPTIONS,
-  FIRE_ALARM_OBJECT_OPTIONS,
-} from '../../lib/data/alarmMeta';
+import { ALARM_STATUS_META } from '../../lib/data/alarmMeta';
+import { fetchDictOptions } from '@/services/system';
 import { fireListItemToDetail } from '../../lib/data/alarmDetailMock';
 import { useAlarmDetailPanel } from '../../lib/composables/useAlarmDetailPanel';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
@@ -27,11 +21,52 @@ const router = useRouter();
 const { openAlarmDetail } = useAlarmDetailPanel();
 const PAGE_SIZE = 10;
 
-const typeFilter = ref<string>(FIRE_ALARM_TYPE_OPTIONS[0]);
-const sourceFilter = ref<string>(FIRE_ALARM_SOURCE_OPTIONS[0]);
-const objectTypeFilter = ref<string>(FIRE_ALARM_OBJECT_TYPE_OPTIONS[0]);
-const objectFilter = ref<string>(FIRE_ALARM_OBJECT_OPTIONS[0]);
-const statusFilter = ref<string>(FIRE_ALARM_STATUS_OPTIONS[0]);
+// 筛选项改为后端字典驱动（GET /system/dicts/{dictCode}；登录可读）。
+// 「全部X」哨兵由前端补，字典未加载/失败时仅剩哨兵（不回落本地假选项）。
+const SENTINEL_TYPE = '全部类型';
+const SENTINEL_SOURCE = '全部来源';
+const SENTINEL_OBJECT_TYPE = '全部类型';
+const SENTINEL_OBJECT = '全部对象';
+const SENTINEL_STATUS = '全部状态';
+
+const typeOptions = ref<string[]>([SENTINEL_TYPE]);
+const sourceOptions = ref<string[]>([SENTINEL_SOURCE]);
+const objectTypeOptions = ref<string[]>([SENTINEL_OBJECT_TYPE]);
+const objectOptions = ref<string[]>([SENTINEL_OBJECT]);
+const statusOptions = ref<string[]>([SENTINEL_STATUS]);
+
+async function loadDictOptionValues(dictCode: string): Promise<string[]> {
+  try {
+    const items = await fetchDictOptions(dictCode);
+    return (items ?? [])
+      .filter((it) => it.itemValue != null && it.itemValue !== '')
+      .map((it) => String(it.itemValue));
+  } catch {
+    // 未连后端/失败：空选项（由全局横幅提示），不回落本地常量
+    return [];
+  }
+}
+
+async function loadFilterOptions() {
+  const [t, s, ot, o, st] = await Promise.all([
+    loadDictOptionValues('fire_alarm_type'),
+    loadDictOptionValues('fire_alarm_source'),
+    loadDictOptionValues('fire_alarm_object_type'),
+    loadDictOptionValues('fire_alarm_object'),
+    loadDictOptionValues('fire_alarm_status'),
+  ]);
+  typeOptions.value = [SENTINEL_TYPE, ...t];
+  sourceOptions.value = [SENTINEL_SOURCE, ...s];
+  objectTypeOptions.value = [SENTINEL_OBJECT_TYPE, ...ot];
+  objectOptions.value = [SENTINEL_OBJECT, ...o];
+  statusOptions.value = [SENTINEL_STATUS, ...st];
+}
+
+const typeFilter = ref<string>(SENTINEL_TYPE);
+const sourceFilter = ref<string>(SENTINEL_SOURCE);
+const objectTypeFilter = ref<string>(SENTINEL_OBJECT_TYPE);
+const objectFilter = ref<string>(SENTINEL_OBJECT);
+const statusFilter = ref<string>(SENTINEL_STATUS);
 const timeRange = ref('');
 const currentPage = ref(1);
 const { filterByPlantArea } = usePlantArea();
@@ -52,22 +87,16 @@ async function loadAlarms() {
 
 const filteredItems = computed(() =>
   filterByPlantArea(allItems.value).filter((item) => {
-    if (typeFilter.value !== FIRE_ALARM_TYPE_OPTIONS[0] && item.typeLabel !== typeFilter.value)
-      return false;
-    if (sourceFilter.value !== FIRE_ALARM_SOURCE_OPTIONS[0] && item.source !== sourceFilter.value)
-      return false;
+    if (typeFilter.value !== SENTINEL_TYPE && item.typeLabel !== typeFilter.value) return false;
+    if (sourceFilter.value !== SENTINEL_SOURCE && item.source !== sourceFilter.value) return false;
     if (
-      objectTypeFilter.value !== FIRE_ALARM_OBJECT_TYPE_OPTIONS[0] &&
+      objectTypeFilter.value !== SENTINEL_OBJECT_TYPE &&
       item.objectType !== objectTypeFilter.value
     )
       return false;
-    if (
-      objectFilter.value !== FIRE_ALARM_OBJECT_OPTIONS[0] &&
-      item.objectName !== objectFilter.value
-    )
+    if (objectFilter.value !== SENTINEL_OBJECT && item.objectName !== objectFilter.value)
       return false;
-    if (statusFilter.value !== FIRE_ALARM_STATUS_OPTIONS[0] && item.status !== statusFilter.value)
-      return false;
+    if (statusFilter.value !== SENTINEL_STATUS && item.status !== statusFilter.value) return false;
     if (timeRange.value.trim() && !item.time.includes(timeRange.value.trim())) return false;
     return true;
   }),
@@ -87,9 +116,13 @@ const visiblePages = computed(() => {
 });
 
 function statusOptionLabel(opt: string): string {
-  if (opt === '全部状态') return '告警状态';
-  return ALARM_STATUS_META[opt as AlarmStatus].label;
+  if (opt === SENTINEL_STATUS) return '告警状态';
+  return ALARM_STATUS_META[opt as AlarmStatus]?.label ?? opt;
 }
+
+onMounted(() => {
+  void loadFilterOptions();
+});
 
 watch(
   () => props.open,
@@ -105,15 +138,13 @@ watch(filteredItems, () => {
 });
 
 function resetFilters() {
-  typeFilter.value = FIRE_ALARM_TYPE_OPTIONS[0];
-  sourceFilter.value = FIRE_ALARM_SOURCE_OPTIONS.includes(
-    props.initialSource as (typeof FIRE_ALARM_SOURCE_OPTIONS)[number],
-  )
-    ? (props.initialSource as (typeof FIRE_ALARM_SOURCE_OPTIONS)[number])
-    : FIRE_ALARM_SOURCE_OPTIONS[0];
-  objectTypeFilter.value = FIRE_ALARM_OBJECT_TYPE_OPTIONS[0];
-  objectFilter.value = FIRE_ALARM_OBJECT_OPTIONS[0];
-  statusFilter.value = FIRE_ALARM_STATUS_OPTIONS[0];
+  typeFilter.value = SENTINEL_TYPE;
+  sourceFilter.value = sourceOptions.value.includes(props.initialSource ?? '')
+    ? (props.initialSource as string)
+    : SENTINEL_SOURCE;
+  objectTypeFilter.value = SENTINEL_OBJECT_TYPE;
+  objectFilter.value = SENTINEL_OBJECT;
+  statusFilter.value = SENTINEL_STATUS;
   timeRange.value = '';
   currentPage.value = 1;
 }
@@ -197,27 +228,27 @@ onMounted(loadAlarms);
           <div class="fire-alarm-list__body">
             <div class="fire-alarm-list__toolbar">
               <select v-model="typeFilter" class="fire-alarm-list__select">
-                <option v-for="opt in FIRE_ALARM_TYPE_OPTIONS" :key="opt" :value="opt">
-                  {{ opt === '全部类型' ? '告警类型' : opt }}
+                <option v-for="opt in typeOptions" :key="opt" :value="opt">
+                  {{ opt === SENTINEL_TYPE ? '告警类型' : opt }}
                 </option>
               </select>
               <select v-model="sourceFilter" class="fire-alarm-list__select">
-                <option v-for="opt in FIRE_ALARM_SOURCE_OPTIONS" :key="opt" :value="opt">
-                  {{ opt === '全部来源' ? '告警来源' : opt }}
+                <option v-for="opt in sourceOptions" :key="opt" :value="opt">
+                  {{ opt === SENTINEL_SOURCE ? '告警来源' : opt }}
                 </option>
               </select>
               <select v-model="objectTypeFilter" class="fire-alarm-list__select">
-                <option v-for="opt in FIRE_ALARM_OBJECT_TYPE_OPTIONS" :key="opt" :value="opt">
-                  {{ opt === '全部类型' ? '告警对象类型' : opt }}
+                <option v-for="opt in objectTypeOptions" :key="opt" :value="opt">
+                  {{ opt === SENTINEL_OBJECT_TYPE ? '告警对象类型' : opt }}
                 </option>
               </select>
               <select v-model="objectFilter" class="fire-alarm-list__select">
-                <option v-for="opt in FIRE_ALARM_OBJECT_OPTIONS" :key="opt" :value="opt">
-                  {{ opt === '全部对象' ? '告警对象' : opt }}
+                <option v-for="opt in objectOptions" :key="opt" :value="opt">
+                  {{ opt === SENTINEL_OBJECT ? '告警对象' : opt }}
                 </option>
               </select>
               <select v-model="statusFilter" class="fire-alarm-list__select">
-                <option v-for="opt in FIRE_ALARM_STATUS_OPTIONS" :key="opt" :value="opt">
+                <option v-for="opt in statusOptions" :key="opt" :value="opt">
                   {{ statusOptionLabel(opt) }}
                 </option>
               </select>

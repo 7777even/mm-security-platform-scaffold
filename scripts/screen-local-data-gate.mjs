@@ -51,15 +51,8 @@ const BY_DESIGN_VALUE_IMPORTS = {
     'perimeterAlarmToDetail',
     'productionAlarmToDetail',
   ],
-  // 告警元数据与下拉选项（by-design UI）
-  alarmMeta: [
-    'ALARM_STATUS_META',
-    'FIRE_ALARM_OBJECT_OPTIONS',
-    'FIRE_ALARM_OBJECT_TYPE_OPTIONS',
-    'FIRE_ALARM_SOURCE_OPTIONS',
-    'FIRE_ALARM_STATUS_OPTIONS',
-    'FIRE_ALARM_TYPE_OPTIONS',
-  ],
+  // 告警状态展示元数据（by-design UI，含主题色 token；业务下拉选项已迁后端字典）
+  alarmMeta: ['ALARM_STATUS_META'],
   // 演练仿真内容（by-design，非真实业务数据）
   drillRescueMock: [
     'drillAwarenessDynamics',
@@ -75,7 +68,6 @@ const BY_DESIGN_VALUE_IMPORTS = {
   // 疏散人员：沿路线按进度取点的几何工具（by-design）
   evacuationPeopleMock: ['pickPointAlongRoute'],
   fireEmergencyMock: ['fireEmergencyMapControls'],
-  firePatrolMock: ['patrolCheckItemDefs', 'patrolShiftOptions', 'patrolStatusOptions'],
   // 消防页地图固定标记与地图控件（几何/UI）
   mock: ['fireAlarmMarker', 'mapControls'],
   nav: ['navItems'],
