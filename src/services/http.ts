@@ -154,9 +154,57 @@ export function unwrapBody<T>(body: ApiResponse<T>): T {
   return body.data;
 }
 
-export async function request<T>(config: AxiosRequestConfig): Promise<T> {
-  const resp = await http.request<ApiResponse<T>>(config);
-  return unwrapBody(resp.data);
+/** 扩展请求配置：在 axios 配置之上追加去重开关 */
+export interface RequestConfig extends AxiosRequestConfig {
+  /**
+   * 是否参与 GET 并发去重，默认 true。
+   * 需要「强制重新拉取」的场景（如手动刷新按钮）显式传 false。
+   */
+  dedupe?: boolean;
+}
+
+/**
+ * 飞行中的 GET 请求（去重键 → Promise）。
+ * 大屏 7×24 常驻，组件重挂载 / 多个面板同时初始化会对同一端点并发发起相同 GET，
+ * 既浪费带宽，也可能因响应先后不一造成「数据闪回旧值」。这里让相同请求共享同一 Promise。
+ */
+const inflightGet = new Map<string, Promise<unknown>>();
+
+/**
+ * 计算去重键；返回 null 表示不参与去重。
+ * 不参与的三类（刻意设计，勿随意放宽）：
+ * 1. 非 GET：写操作去重会直接丢请求；
+ * 2. 带 signal：一个调用方取消会连带影响共享同一 Promise 的其他调用方；
+ * 3. 显式 dedupe:false：调用方明确要求强制刷新。
+ */
+function dedupeKey(config: RequestConfig): string | null {
+  const method = (config.method ?? 'get').toLowerCase();
+  if (method !== 'get') return null;
+  if (config.signal) return null;
+  if (config.dedupe === false) return null;
+  const params = config.params === undefined ? '' : JSON.stringify(config.params);
+  return `${method} ${config.url ?? ''} ${params}`;
+}
+
+export async function request<T>(config: RequestConfig): Promise<T> {
+  const key = dedupeKey(config);
+  if (key) {
+    const pending = inflightGet.get(key);
+    if (pending) return pending as Promise<T>;
+  }
+
+  const promise = (async () => {
+    const resp = await http.request<ApiResponse<T>>(config);
+    return unwrapBody(resp.data);
+  })();
+
+  if (key) {
+    inflightGet.set(key, promise);
+    // 无论成功失败都要清理，否则失败的请求会永久占位（键存在但 Promise 已 reject）
+    const clear = () => inflightGet.delete(key as string);
+    promise.then(clear, clear);
+  }
+  return promise;
 }
 
 export default http;
