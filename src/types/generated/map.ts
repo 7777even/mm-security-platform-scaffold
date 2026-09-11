@@ -39,6 +39,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/map/zone-signs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 3D 地图装置区信息牌
+     * @description 返回 3D 厂区地图装置区信息牌文案：红色区块信息牌（popups）与青色信息牌（tealTags）。取代前端 MaomingPetroCesiumMap MAP_THEME 内硬编码文案；渲染主题（颜色/高度/景深）与地图标注几何为前端 by-design。
+     */
+    get: operations['getMapZoneSigns'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -84,6 +104,54 @@ export interface components {
       data?: unknown;
       /** @example a1b2c3d4 */
       traceId?: string;
+    };
+    /** @description 装置区信息牌聚合（红色区块信息牌 + 青色信息牌） */
+    MapZoneSigns: {
+      /** @description 红色区块信息牌（按 sort_no 升序） */
+      popups?: components['schemas']['MapZoneSignPopup'][];
+      /** @description 青色信息牌（按 sort_no 升序） */
+      tealTags?: components['schemas']['MapZoneSignTealTag'][];
+    };
+    /** @description 红色区块信息牌 */
+    MapZoneSignPopup: {
+      /**
+       * @description 装置名称
+       * @example 反应器
+       */
+      title?: string;
+      /**
+       * @description 位置说明
+       * @example 储罐区B-3
+       */
+      location?: string;
+      /**
+       * @description 状态文案
+       * @example 异常
+       */
+      status?: string;
+      /**
+       * @description 状态强调级别：alert / normal
+       * @example alert
+       */
+      statusLevel?: string;
+    };
+    /** @description 青色信息牌 */
+    MapZoneSignTealTag: {
+      /**
+       * @description 分区名称
+       * @example 储罐区
+       */
+      title?: string;
+      /**
+       * @description 状态文案
+       * @example 液位正常
+       */
+      status?: string;
+      /**
+       * @description 数值文案
+       * @example 85%
+       */
+      value?: string;
     };
     /** @description GeoJSON FeatureCollection（WGS84 经纬度，单位度）。alarm 要素 properties 含 alarmId/level/name/status/type；device 要素含 deviceCode/name/status。 */
     GeoJsonFeatureCollection: {
@@ -261,6 +329,55 @@ export interface operations {
            */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['GeoJsonFeatureCollection'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  getMapZoneSigns: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=信息牌聚合） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "popups": [
+           *           {
+           *             "title": "反应器",
+           *             "location": "储罐区B-3",
+           *             "status": "异常",
+           *             "statusLevel": "alert"
+           *           }
+           *         ],
+           *         "tealTags": [
+           *           {
+           *             "title": "储罐区",
+           *             "status": "液位正常",
+           *             "value": "85%"
+           *           }
+           *         ]
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['MapZoneSigns'];
           };
         };
       };

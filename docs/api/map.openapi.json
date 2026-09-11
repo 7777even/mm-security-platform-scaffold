@@ -109,10 +109,94 @@
           "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
         }
       }
+    },
+    "/map/zone-signs": {
+      "get": {
+        "tags": ["map"],
+        "operationId": "getMapZoneSigns",
+        "summary": "3D 地图装置区信息牌",
+        "description": "返回 3D 厂区地图装置区信息牌文案：红色区块信息牌（popups）与青色信息牌（tealTags）。取代前端 MaomingPetroCesiumMap MAP_THEME 内硬编码文案；渲染主题（颜色/高度/景深）与地图标注几何为前端 by-design。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=信息牌聚合）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/MapZoneSigns" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "popups": [
+                      {
+                        "title": "反应器",
+                        "location": "储罐区B-3",
+                        "status": "异常",
+                        "statusLevel": "alert"
+                      }
+                    ],
+                    "tealTags": [{ "title": "储罐区", "status": "液位正常", "value": "85%" }]
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "MapZoneSigns": {
+        "type": "object",
+        "description": "装置区信息牌聚合（红色区块信息牌 + 青色信息牌）",
+        "properties": {
+          "popups": {
+            "type": "array",
+            "description": "红色区块信息牌（按 sort_no 升序）",
+            "items": { "$ref": "#/components/schemas/MapZoneSignPopup" }
+          },
+          "tealTags": {
+            "type": "array",
+            "description": "青色信息牌（按 sort_no 升序）",
+            "items": { "$ref": "#/components/schemas/MapZoneSignTealTag" }
+          }
+        }
+      },
+      "MapZoneSignPopup": {
+        "type": "object",
+        "description": "红色区块信息牌",
+        "properties": {
+          "title": { "type": "string", "description": "装置名称", "example": "反应器" },
+          "location": { "type": "string", "description": "位置说明", "example": "储罐区B-3" },
+          "status": { "type": "string", "description": "状态文案", "example": "异常" },
+          "statusLevel": {
+            "type": "string",
+            "description": "状态强调级别：alert / normal",
+            "example": "alert"
+          }
+        }
+      },
+      "MapZoneSignTealTag": {
+        "type": "object",
+        "description": "青色信息牌",
+        "properties": {
+          "title": { "type": "string", "description": "分区名称", "example": "储罐区" },
+          "status": { "type": "string", "description": "状态文案", "example": "液位正常" },
+          "value": { "type": "string", "description": "数值文案", "example": "85%" }
+        }
+      },
       "GeoJsonFeatureCollection": {
         "type": "object",
         "description": "GeoJSON FeatureCollection（WGS84 经纬度，单位度）。alarm 要素 properties 含 alarmId/level/name/status/type；device 要素含 deviceCode/name/status。",

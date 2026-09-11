@@ -1,5 +1,9 @@
 import { request } from '@/services/http';
-import { backendUnavailableWarn, resolveOfflineFetch } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 import { logger } from '@/utils/logger';
 
 // 地图点位/区域（B3 MAP-02/03 + DASH-03 对接；mock 为 GeoJSON Feature，坐标 WGS84 经纬度）
@@ -136,6 +140,52 @@ export async function fetchRiskZones(): Promise<RiskZone[]> {
     logger.warn('[map] fetchRiskZones 失败', (err as Error)?.message);
     backendUnavailableWarn('map', '/dashboard/risk-heatmap');
     return [];
+  }
+}
+
+// ---------------------------------------------------------------- 装置区信息牌（V42）
+
+/** 红色区块信息牌（MaomingPetroCesiumMap 的 plantZonePopups 项）。 */
+export interface MapZoneSignPopup {
+  title: string;
+  location?: string | null;
+  status: string;
+  statusLevel?: string | null;
+}
+
+/** 青色信息牌（MaomingPetroCesiumMap 的 plantZoneTealTags 项）。 */
+export interface MapZoneSignTealTag {
+  title: string;
+  status: string;
+  value?: string | null;
+}
+
+/** 装置区信息牌聚合（取代前端 MAP_THEME 内硬编码文案）。 */
+export interface MapZoneSigns {
+  popups: MapZoneSignPopup[];
+  tealTags: MapZoneSignTealTag[];
+}
+
+const EMPTY_ZONE_SIGNS: MapZoneSigns = { popups: [], tealTags: [] };
+
+/**
+ * 3D 地图装置区信息牌：GET /map/zone-signs。三态取数——
+ * 失败 / 契约不符 → 显式告警 + 空信息牌（不回灌本地文案）。
+ */
+export async function fetchMapZoneSigns(): Promise<MapZoneSigns> {
+  const fb = resolveOfflineFetch('map', '/map/zone-signs', EMPTY_ZONE_SIGNS, EMPTY_ZONE_SIGNS);
+  if (fb.mode !== 'live') return fb.value;
+  try {
+    const data = await request<MapZoneSigns>({ url: '/map/zone-signs', method: 'GET' });
+    if (!data || !Array.isArray(data.popups) || !Array.isArray(data.tealTags)) {
+      backendUnavailableWarn('map', '/map/zone-signs', REASON_CONTRACT_MISMATCH);
+      return EMPTY_ZONE_SIGNS;
+    }
+    return data;
+  } catch (err) {
+    logger.warn('[map] fetchMapZoneSigns 失败', (err as Error)?.message);
+    backendUnavailableWarn('map', '/map/zone-signs');
+    return EMPTY_ZONE_SIGNS;
   }
 }
 

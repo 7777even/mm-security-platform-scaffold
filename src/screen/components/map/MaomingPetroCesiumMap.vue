@@ -36,6 +36,7 @@ import {
   resetTvInspectionScanState,
 } from '../../lib/composables/sharedCesiumBridge.ts';
 import { setAccidentRescueFlatViewActive } from '../../utils/accidentRescueFlatViewState.ts';
+import { fetchMapZoneSigns } from '../../../services/map';
 
 const props = defineProps({
   /** 是否显示顶面加载等状态条（测试页开启，大屏嵌入默认关闭） */
@@ -234,20 +235,9 @@ const MAP_THEME = {
     selectedSilhouetteSize: 0,
     showBottomRing: true,
   },
-  /** 红色区块信息（展示为青色信息牌，数值用红色强调） */
-  plantZonePopups: [
-    { title: '反应器', location: '储罐区B-3', status: '异常', statusLevel: 'alert' },
-    { title: '反应器', location: '储罐区B-5', status: '异常', statusLevel: 'alert' },
-    { title: '反应器', location: '储罐区B-7', status: '异常', statusLevel: 'alert' },
-    { title: '反应器', location: '储罐区B-9', status: '异常', statusLevel: 'alert' },
-  ],
-  /** 非红色区块信息牌文案 */
-  plantZoneTealTags: [
-    { title: '储罐区', status: '液位正常', value: '85%' },
-    { title: '装置区', status: '液位正常', value: '82%' },
-    { title: '精制区', status: '液位正常', value: '78%' },
-    { title: '公用区', status: '液位正常', value: '91%' },
-  ],
+  // 红色区块信息牌 / 青色信息牌文案已改由 GET /map/zone-signs 下发（V42 fac_map_zone_sign），
+  // 挂载时经 fetchMapZoneSigns 加载到 plantZonePopupPresets / plantZoneTealTagPresets；
+  // 空态时不绘制信息牌（不回灌本地文案）。
   colors: {
     plantPalette: [
       { fill: '#dc3737', line: 'rgba(255, 100, 100, 0.92)' },
@@ -500,14 +490,24 @@ function getPlantHoverState(entityId) {
   return plantHoverStates.get(toPlantZoneKey(entityId));
 }
 
+/** 装置区信息牌文案：GET /map/zone-signs 下发（V42），挂载时加载；空数组时不绘制（不回灌假文案）。 */
+let plantZonePopupPresets = [];
+let plantZoneTealTagPresets = [];
+
+async function loadPlantZoneSignPresets() {
+  const signs = await fetchMapZoneSigns();
+  plantZonePopupPresets = signs.popups;
+  plantZoneTealTagPresets = signs.tealTags;
+}
+
 function getPlantZonePopupPreset(index) {
-  const presets = MAP_THEME.plantZonePopups;
-  return presets[index % presets.length];
+  const presets = plantZonePopupPresets;
+  return presets.length ? presets[index % presets.length] : null;
 }
 
 function getPlantZoneTealTagPreset(index) {
-  const presets = MAP_THEME.plantZoneTealTags;
-  return presets[index % presets.length];
+  const presets = plantZoneTealTagPresets;
+  return presets.length ? presets[index % presets.length] : null;
 }
 
 function isPlantRedZone(state) {
@@ -522,6 +522,7 @@ function getPlantZoneTagThemeFromState(state) {
 function buildPlantZoneTagMeta(state) {
   if (isPlantRedZone(state)) {
     const preset = state.popupMeta ?? getPlantZonePopupPreset(state.colorIndex);
+    if (!preset) return null;
     return {
       title: preset.title,
       status: `位置：${preset.location}`,
@@ -530,6 +531,7 @@ function buildPlantZoneTagMeta(state) {
     };
   }
   const preset = state.tealMarkerMeta ?? getPlantZoneTealTagPreset(state.colorIndex);
+  if (!preset) return null;
   return {
     title: preset.title,
     status: preset.status,
@@ -707,6 +709,8 @@ function createPlantBillboardForZone(activeViewer, zoneKey) {
   }
 
   const meta = buildPlantZoneTagMeta(state);
+  // 信息牌文案未就绪（后端未返回）时跳过绘制，不回灌本地假文案
+  if (!meta) return;
   state.tagMeta = meta;
   const theme = getPlantZoneTagThemeFromState(state);
   const tagCanvas = createPlantZoneTagCombinedCanvas(meta, theme, 0);
@@ -744,6 +748,8 @@ function _createAiDiagnosisAlarmBillboardForZone(activeViewer, zoneKey) {
   }
 
   const preset = getPlantZonePopupPreset(state.colorIndex);
+  // 信息牌文案未就绪（后端未返回）时跳过绘制，不回灌本地假文案
+  if (!preset) return;
   const meta = {
     title: '反应器',
     location: preset.location,
@@ -2224,7 +2230,7 @@ function buildPlantZoneSelectPayload(zoneKey) {
   return {
     zoneKey,
     colorIndex: state.colorIndex,
-    title: tagMeta.title,
+    title: tagMeta ? tagMeta.title : null,
     code,
     tagMeta,
     isAlert: isPlantRedZone(state),
@@ -6419,6 +6425,9 @@ onMounted(async () => {
   }
 
   Cesium.Ion.defaultAccessToken = token;
+
+  // 装置区信息牌文案异步预取（不阻塞 3D 初始化；未就绪时由各绘制入口的空态守卫跳过）
+  loadPlantZoneSignPresets();
 
   try {
     const sized = await waitForContainerSize(containerEl.value);
