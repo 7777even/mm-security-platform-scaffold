@@ -23,12 +23,20 @@ withDefaults(
 
 const shift = ref<'day' | 'night'>('day');
 
+/** 兼容后端可能返回的 shift 写法（白班/夜班/day/night 等） */
+function normalizeShift(raw?: string): 'day' | 'night' {
+  const s = (raw ?? '白班').trim().toLowerCase();
+  if (s === 'day' || s === '白班' || s === '日班' || s === '白') return 'day';
+  if (s === 'night' || s === '夜班' || s === '晚班' || s === '黑') return 'night';
+  return 'day';
+}
+
 // 单一数据源：无论 preliminary / fireEmergency 模块，统一走 /emergency/duty
 // （services/duty.ts 内置无后端时的演示 fixture 与非法响应空态，见 backendFallback.ts）
 const allPersons = ref<DutyWatchPerson[]>([]);
 const persons = computed<DutyWatchPerson[]>(() => {
-  const dayNight = shift.value === 'day' ? '白班' : '夜班';
-  return allPersons.value.filter((p) => (p.shift ?? '白班') === dayNight);
+  const target = shift.value;
+  return allPersons.value.filter((p) => normalizeShift(p.shift) === target);
 });
 
 onMounted(async () => {
@@ -137,9 +145,10 @@ onMounted(async () => {
 .duty-watch__list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  grid-auto-rows: minmax(58px, 1fr);
   gap: 6px 8px;
   min-height: 0;
+  overflow-y: auto;
 }
 
 .duty-card {

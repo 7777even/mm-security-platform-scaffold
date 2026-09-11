@@ -26,12 +26,20 @@ onMounted(async () => {
 });
 
 const shift = ref<'day' | 'night'>('day');
-const dutyShiftLabel = computed(() => (shift.value === 'day' ? '白班' : '夜班'));
+
+/** 兼容后端可能返回的 shift 写法（白班/夜班/day/night 等） */
+function normalizeShift(raw?: string): 'day' | 'night' {
+  const s = (raw ?? '白班').trim().toLowerCase();
+  if (s === 'day' || s === '白班' || s === '日班' || s === '白') return 'day';
+  if (s === 'night' || s === '夜班' || s === '晚班' || s === '黑') return 'night';
+  return 'day';
+}
+
 // 真实值班值守优先；后端不可用（含纯静态演示未配置 VITE_API_BASE）时回落空数组，绝不冒充真实数据
 const persons = computed<DutyMember[]>(() => realDutyMembers.value ?? []);
 const activePersons = computed(() =>
   persons.value
-    .filter((person) => (person.shift ?? '白班') === dutyShiftLabel.value)
+    .filter((person) => normalizeShift(person.shift) === shift.value)
     .slice(0, shift.value === 'day' ? 4 : 2),
 );
 const leader = computed(
@@ -189,9 +197,10 @@ const leader = computed(
 .duty-watch__list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  grid-auto-rows: minmax(58px, 1fr);
   gap: 6px 8px;
   min-height: 0;
+  overflow-y: auto;
 }
 
 .duty-card {
