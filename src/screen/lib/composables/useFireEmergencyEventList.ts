@@ -4,6 +4,12 @@ import {
   type EmergencyEventGroup,
   type EmergencyEventItem,
 } from '@/services/emergencyEvent';
+import {
+  REASON_CONTRACT_MISMATCH,
+  backendUnavailableWarn,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
+// 仅「离线演示」（VITE_USE_DEV_MOCK=true）回落用；live/offline 均不使用。
 import { fireEmergencyDrillEventGroups, fireEmergencyEventGroups } from '../data/fireEmergencyMock';
 import { selectFireEmergencyEvent } from './useFireEmergencyEventSelection';
 import {
@@ -75,20 +81,12 @@ function splitGroupsByKind(groups: EmergencyEventGroup[]): {
   return { events: Array.from(eventMap.values()), drills: Array.from(drillMap.values()) };
 }
 
-// 初始态预填本地 fixture（演示/无后端态下可用），真实后端就绪后由 loadFireEmergencyEvents 覆盖。
-const fireEmergencyEventGroupsSnapshot = ref<EmergencyEventGroup[]>(
-  cloneEventGroups(fireEmergencyEventGroups),
-);
-const fireEmergencyDrillEventGroupsSnapshot = ref<EmergencyEventGroup[]>(
-  cloneEventGroups(fireEmergencyDrillEventGroups),
-);
+// 初始态为空：由 loadFireEmergencyEvents 按三态填充（live 拉后端 / demo 回落本地 fixture / offline 空态 + 报错）。
+const fireEmergencyEventGroupsSnapshot = ref<EmergencyEventGroup[]>([]);
+const fireEmergencyDrillEventGroupsSnapshot = ref<EmergencyEventGroup[]>([]);
 
-export const fireEmergencyEventGroupsState = ref<EmergencyEventGroup[]>(
-  cloneEventGroups(fireEmergencyEventGroups),
-);
-export const fireEmergencyDrillEventGroupsState = ref<EmergencyEventGroup[]>(
-  cloneEventGroups(fireEmergencyDrillEventGroups),
-);
+export const fireEmergencyEventGroupsState = ref<EmergencyEventGroup[]>([]);
+export const fireEmergencyDrillEventGroupsState = ref<EmergencyEventGroup[]>([]);
 
 export const fireEmergencyAllEventGroups = computed<EmergencyEventGroup[]>(() => [
   ...fireEmergencyEventGroupsState.value,
@@ -98,26 +96,48 @@ export const fireEmergencyAllEventGroups = computed<EmergencyEventGroup[]>(() =>
 export const fireEmergencyEventsLoading = ref(false);
 export const fireEmergencyEventsError = ref<unknown>(null);
 
+/** 统一写入快照 + 可编辑状态（两者内容一致，快照用于 reset 还原）。 */
+function applyFireEmergencyGroups(
+  events: EmergencyEventGroup[],
+  drills: EmergencyEventGroup[],
+): void {
+  fireEmergencyEventGroupsSnapshot.value = cloneEventGroups(events);
+  fireEmergencyDrillEventGroupsSnapshot.value = cloneEventGroups(drills);
+  fireEmergencyEventGroupsState.value = cloneEventGroups(events);
+  fireEmergencyDrillEventGroupsState.value = cloneEventGroups(drills);
+}
+
 void loadFireEmergencyEvents();
 
 async function loadFireEmergencyEvents(): Promise<void> {
   fireEmergencyEventsLoading.value = true;
   fireEmergencyEventsError.value = null;
+  // 三态：live 拉后端；demo 回落本地 fixture；offline 显式报错（全局横幅）+ 空态，不回灌假数据。
+  const fb = resolveOfflineFetch<{ events: EmergencyEventGroup[]; drills: EmergencyEventGroup[] }>(
+    'emergencyEvent',
+    '/emergency-events',
+    { events: fireEmergencyEventGroups, drills: fireEmergencyDrillEventGroups },
+    { events: [], drills: [] },
+  );
+  if (fb.mode !== 'live') {
+    applyFireEmergencyGroups(fb.value.events, fb.value.drills);
+    fireEmergencyEventsLoading.value = false;
+    return;
+  }
   try {
     const groups = await fetchEmergencyEvents('FIRE');
     if (!Array.isArray(groups)) {
       fireEmergencyEventsError.value = new Error('[fire-emergency] 后端未返回事件分组数组');
-      console.warn('[fire-emergency] 后端未返回事件分组数组，保持本地 fixture');
+      backendUnavailableWarn('emergencyEvent', '/emergency-events', REASON_CONTRACT_MISMATCH);
+      applyFireEmergencyGroups([], []);
       return;
     }
     const { events, drills } = splitGroupsByKind(groups);
-    fireEmergencyEventGroupsSnapshot.value = events;
-    fireEmergencyDrillEventGroupsSnapshot.value = drills;
-    fireEmergencyEventGroupsState.value = cloneEventGroups(events);
-    fireEmergencyDrillEventGroupsState.value = cloneEventGroups(drills);
+    applyFireEmergencyGroups(events, drills);
   } catch (err) {
     fireEmergencyEventsError.value = err;
-    console.error('[fire-emergency] 加载应急事件分组失败', err);
+    backendUnavailableWarn('emergencyEvent', '/emergency-events');
+    applyFireEmergencyGroups([], []);
   } finally {
     fireEmergencyEventsLoading.value = false;
   }

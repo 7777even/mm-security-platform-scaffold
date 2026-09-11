@@ -4,10 +4,16 @@ import {
   type FireBrigadeList,
   type FireBrigadeTeam,
 } from '@/services/rescueResource';
+import {
+  REASON_CONTRACT_MISMATCH,
+  backendUnavailableWarn,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
 import { coordsForFireBrigadeTeam } from '../data/rescueMapCoords';
+// 仅「离线演示」（VITE_USE_DEV_MOCK=true）回落用；live/offline 均不使用。
 import { fireBrigadeTeams } from '../data/fireBrigadeMock';
 import { restoreRescueMapView, runRescueMapFocus } from './useRescueMapFocus';
 
@@ -19,8 +25,12 @@ export const fireBrigadeCurrentPage = ref(1);
 export const fireBrigadeKeyword = ref('');
 export const fireBrigadeAreaFilter = ref('全部区域');
 
-// 初始态预填本地 fixture（fireBrigadeMock），避免空态；openFireBrigadeView 触发后端 load 后整体替换。
-const fireBrigadeData = ref<FireBrigadeList>({ areas: [], items: fireBrigadeTeams });
+/** 空态：未连后端（offline）或后端结构异常时使用，绝不回灌假数据。 */
+const EMPTY_FIRE_BRIGADE_LIST: FireBrigadeList = { areas: [], items: [] };
+
+// 初始态为空：连后端时 openFireBrigadeView 触发 load 拉取；离线演示（VITE_USE_DEV_MOCK=true）才回落
+// 本地 fixture；未连后端则显式报错（全局横幅）+ 空态，不回灌假数据。
+const fireBrigadeData = ref<FireBrigadeList>({ areas: [], items: [] });
 export const fireBrigadeItems = computed<FireBrigadeTeam[]>(() => fireBrigadeData.value.items);
 
 /** 筛选下拉选项（含“全部”哨兵值），由后端返回的区域列表派生。 */
@@ -63,19 +73,34 @@ export const fireBrigadePagedTeams = computed(() => {
 async function loadFireBrigades() {
   fireBrigadeLoading.value = true;
   fireBrigadeError.value = null;
+  const fb = resolveOfflineFetch<FireBrigadeList>(
+    'rescueResource',
+    '/rescue-resources/brigades',
+    { areas: [], items: fireBrigadeTeams },
+    EMPTY_FIRE_BRIGADE_LIST,
+  );
+  if (fb.mode !== 'live') {
+    fireBrigadeData.value = { areas: [...fb.value.areas], items: [...fb.value.items] };
+    fireBrigadeLoading.value = false;
+    return;
+  }
   try {
     const raw = await fetchFireBrigades();
-    const items = (raw as { items?: unknown }).items;
-    if (!raw || !Array.isArray(items)) {
-      // 后端返回结构异常：保留本地 fixture，绝不覆盖为清空状态。
-      console.warn(
-        '[useFireBrigadeView] /rescue-resources/brigades 返回结构异常，保留本地 fixture',
+    if (!raw || !Array.isArray(raw.items)) {
+      // 后端结构异常：显式报错 + 空态，不再回灌本地数据。
+      backendUnavailableWarn(
+        'rescueResource',
+        '/rescue-resources/brigades',
+        REASON_CONTRACT_MISMATCH,
       );
+      fireBrigadeData.value = EMPTY_FIRE_BRIGADE_LIST;
       return;
     }
     fireBrigadeData.value = raw;
   } catch (e) {
     fireBrigadeError.value = e instanceof Error ? e.message : String(e);
+    backendUnavailableWarn('rescueResource', '/rescue-resources/brigades');
+    fireBrigadeData.value = EMPTY_FIRE_BRIGADE_LIST;
   } finally {
     fireBrigadeLoading.value = false;
   }

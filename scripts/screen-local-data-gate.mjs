@@ -67,11 +67,32 @@ const BY_DESIGN_VALUE_IMPORTS = {
   ],
   // 疏散人员：沿路线按进度取点的几何工具（by-design）
   evacuationPeopleMock: ['pickPointAlongRoute'],
-  fireEmergencyMock: ['fireEmergencyMapControls'],
+  // 应急事件分组：本地 fixture 仅在 demo（VITE_USE_DEV_MOCK=true）回落；地图控件为几何
+  fireEmergencyMock: [
+    'fireEmergencyDrillEventGroups',
+    'fireEmergencyEventGroups',
+    'fireEmergencyMapControls',
+  ],
+  // 消防力量 fixture：仅 demo 回落（live/offline 均不使用）
+  fireBrigadeMock: ['fireBrigadeTeams'],
+  // 抓拍列表：页容量为 UI 配置常量、条目 fixture 仅 demo 回落
+  entryCaptureMock: ['ENTRY_CAPTURE_PAGE_SIZE', 'entryCaptureItems'],
+  // 应急流程默认值（离线兜底/演示）：仅 demo 使用
+  emergencyProcessData: ['EMERGENCY_PHASES', 'RESPONSE_MODE_OPTIONS', 'mockEmergencyProcessStages'],
+  // 节点处置指导默认值：仅 demo 使用
+  nodeGuidanceData: ['mockDutyRoster', 'mockNodeGuidances'],
   // 消防页地图固定标记与地图控件（几何/UI）
   mock: ['fireAlarmMarker', 'mapControls'],
   nav: ['navItems'],
-  nodeConfigData: ['ALL_NODE_IDS', 'CAMERA_ANCHOR_METADATA'],
+  // 节点配置默认值 + 锚点元数据 + 离线缓存读写（无后端演示模式兜底）
+  nodeConfigData: [
+    'ALL_NODE_IDS',
+    'CAMERA_ANCHOR_METADATA',
+    'cloneDefaultNodeConfigs',
+    'loadNodeConfigs',
+    'mergeNodeConfigs',
+    'saveNodeConfigs',
+  ],
   // 厂区几何（边界环/定位/区域码解析）
   plantAreas: [
     'getPlantAreaDefinition',
@@ -83,8 +104,14 @@ const BY_DESIGN_VALUE_IMPORTS = {
   preliminaryMock: ['preliminaryMapControls'],
   // 救援地图坐标派生（几何）
   rescueMapCoords: ['coordsForFireBrigadeTeam', 'coordsForPagedSpread', 'coordsForSquadronPaged'],
-  // 工业电视：静态几何/演示撒点（业务数据已迁 @/services/tv）
-  tvMock: ['tvAlarmMarker', 'tvInspectionScanPointsByCircle', 'tvMapControls', 'tvVideoMapPoints'],
+  // 工业电视：静态几何/演示撒点（业务数据已迁 @/services/tv）+ 详情 DEV 回落解析器（仅 demo 用）
+  tvMock: [
+    'resolveTvVideoMonitorDetail',
+    'tvAlarmMarker',
+    'tvInspectionScanPointsByCircle',
+    'tvMapControls',
+    'tvVideoMapPoints',
+  ],
   typhoonEmergencyMock: ['resolveTyphoonEmergencyIncidentV2'], // DEV 回落解析器
 };
 
@@ -118,6 +145,31 @@ const REGRESSION_GUARDS = [
     // 原为「后端不可用时的本地兜底展示」，现严格空态（走 /emergency/duty ⇄ fetchDutyRoster）。
     forbidden: [/\bdutyPersons\b/],
   },
+  {
+    file: 'lib/composables/useFireBrigadeView.ts',
+    // 原「初始态预填本地 fixture / 结构异常保留本地 fixture」，现三态（offline 空态 + 报错）。
+    forbidden: [/保留本地 fixture，绝不覆盖/, /初始态预填本地 fixture/],
+  },
+  {
+    file: 'lib/composables/useFireEmergencyEventList.ts',
+    // 原「初始态预填本地 fixture / 非数组保持本地 fixture」，现三态。
+    forbidden: [/保持本地 fixture/, /初始态预填本地 fixture/],
+  },
+  {
+    file: 'lib/composables/useTvVideoDetail.ts',
+    // 原 catch 静默回退本地预设档案，现三态（offline / live 失败均置空）。
+    forbidden: [/回退到本地预设档案/],
+  },
+  {
+    file: 'lib/data/alarmDetailMock.ts',
+    // 原从本地 fixture 取 fireFacilityFaults 补关联工单，现由调用方传入后端已加载故障。
+    forbidden: [/\bfireFacilityFaults\b/],
+  },
+  {
+    file: 'components/common/FireFacilityMonitoringDialog.vue',
+    // 原直接从 lib/data/fireFacilityMonitoringMock 取业务数据，现走 @/services/map-data loaders。
+    forbidden: [/from\s+['"][^'"]*lib\/data\/fireFacilityMonitoringMock['"]/],
+  },
 ];
 
 // ── 扫描 ─────────────────────────────────────────────────────────────────────
@@ -134,8 +186,11 @@ function walk(dir, acc) {
   }
 }
 
-const VALUE_IMPORT_RE =
-  /import\s+(type\s+)?([^;]+?)\s+from\s+['"]([^'"]*lib\/data\/[A-Za-z0-9_.]+)['"]/gs;
+// 匹配任意 import，再按「模块目录是否为 data/」过滤：既覆盖 `lib/data/x`，也覆盖相对 `../data/x`
+// （后者历史上是门禁盲区，composables 大量如此引用）。用 `(^|/)data/` 精确匹配目录段，
+// 避免误伤 service 层的 `@/services/map-data/x`（其段名为 map-data，data 前是 `-`）。
+const VALUE_IMPORT_RE = /import\s+(type\s+)?([^;]+?)\s+from\s+['"]([^'"]+)['"]/gs;
+const DATA_MODULE_RE = /(?:^|\/)data\/[A-Za-z0-9_.]+$/;
 
 function parseValueImports(src) {
   const out = [];
@@ -144,6 +199,7 @@ function parseValueImports(src) {
   while ((m = VALUE_IMPORT_RE.exec(src))) {
     if (m[1]) continue; // `import type` 整体放行
     const clause = m[2];
+    if (!DATA_MODULE_RE.test(m[3])) continue; // 仅审 data/ 目录下的模块
     const mod = m[3]
       .split('/')
       .pop()

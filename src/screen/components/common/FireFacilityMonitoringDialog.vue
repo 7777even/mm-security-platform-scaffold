@@ -1,23 +1,19 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import {
-  type AlarmLevel,
+  loadFireFacilityFaults,
+  loadFireFacilityLedger,
+  loadFireFacilityMonitors,
   type FacilityAlarmItem,
   type FacilityFaultItem,
+  type FacilityLedgerItem,
+  type FacilityMonitorSummary,
   type FacilityWorkOrderItem,
   type FaultStatus,
   type FaultTimelineItem,
   type WorkOrderStatus,
-} from '../../lib/data/fireFacilityMonitoringMock';
+} from '@/services/map-data/fireFacilityMonitoringMock';
 import { facilityAlarmToDetail } from '../../lib/data/alarmDetailMock';
-import {
-  fetchFireFacilityMonitors,
-  fetchFireFacilityLedger,
-  fetchFireFacilityFaults,
-  type FireFacilityMonitorSummary,
-  type FireFacilityLedgerItem,
-  type FireFacilityFaultItem,
-} from '@/services/fireFacility';
 import {
   useFireFacilityMonitoringDialog,
   type FireFacilityDialogTab,
@@ -37,55 +33,26 @@ const {
 const { openAlarmDetail } = useAlarmDetailPanel();
 
 const faults = ref<FacilityFaultItem[]>([]);
-const monitorSummaries = ref<FireFacilityMonitorSummary[]>([]);
-const ledgerItems = ref<FireFacilityLedgerItem[]>([]);
+const monitorSummaries = ref<FacilityMonitorSummary[]>([]);
+const ledgerItems = ref<FacilityLedgerItem[]>([]);
 const typeOptions = ref<string[]>(['全部类型']);
 
-/** 后端故障项（字段多为可空字符串）桥接为弹窗内部展示用的 mock 结构（faultLevel/status 为字面量枚举）。 */
-function toFacilityFaultItem(f: FireFacilityFaultItem): FacilityFaultItem {
-  return {
-    id: f.id,
-    faultCode: f.faultCode,
-    facilityCode: f.facilityCode,
-    facilityName: f.facilityName,
-    facilityType: f.facilityType,
-    faultType: f.faultType,
-    faultLevel: f.faultLevel as AlarmLevel,
-    discoverTime: f.discoverTime,
-    discoverMethod: f.discoverMethod,
-    phenomenon: f.phenomenon,
-    cause: f.cause ?? '',
-    status: f.status as FaultStatus,
-    workOrderNo: f.workOrderNo ?? undefined,
-    repairPerson: f.repairPerson ?? undefined,
-    estimatedFinish: f.estimatedFinish ?? undefined,
-    actualFinish: f.actualFinish ?? undefined,
-    repairMeasures: f.repairMeasures ?? undefined,
-    acceptancePerson: f.acceptancePerson ?? undefined,
-    acceptanceResult: f.acceptanceResult ?? undefined,
-    timeline: f.timeline.map((t) => ({
-      time: t.time,
-      operator: t.operator,
-      action: t.action,
-      detail: t.detail,
-    })),
-  };
+/** 深拷贝故障及其时间轴：弹窗内会就地改状态/追加时间轴，避免污染共享 fixture。 */
+function cloneFaults(items: FacilityFaultItem[]): FacilityFaultItem[] {
+  return items.map((f) => ({ ...f, timeline: f.timeline.map((t) => ({ ...t })) }));
 }
 
 async function loadFacilityData() {
-  try {
-    const [mon, led, flt] = await Promise.all([
-      fetchFireFacilityMonitors(),
-      fetchFireFacilityLedger(),
-      fetchFireFacilityFaults(),
-    ]);
-    typeOptions.value = mon.typeOptions;
-    monitorSummaries.value = mon.items;
-    ledgerItems.value = led.items;
-    faults.value = flt.items.map(toFacilityFaultItem);
-  } catch (e) {
-    console.error('[FireFacilityMonitoringDialog] 加载消防设施监测数据失败', e);
-  }
+  // 三态由 service 层统一处理：live 拉后端；demo 回落本地 fixture；offline 显式报错 + 空态。
+  const [mon, led, flt] = await Promise.all([
+    loadFireFacilityMonitors(),
+    loadFireFacilityLedger(),
+    loadFireFacilityFaults(),
+  ]);
+  monitorSummaries.value = mon;
+  ledgerItems.value = led;
+  faults.value = cloneFaults(flt);
+  typeOptions.value = ['全部类型', ...Array.from(new Set(mon.map((s) => s.facilityType)))];
 }
 
 type DetailView =
@@ -501,7 +468,7 @@ function rejectFaultByCode(faultCode: string) {
 
 function openUnifiedAlarmDetail(alarm: FacilityAlarmItem) {
   closeFireFacilityMonitoring();
-  openAlarmDetail(facilityAlarmToDetail(alarm));
+  openAlarmDetail(facilityAlarmToDetail(alarm, findFault(alarm.faultCode)));
 }
 
 function openWorkOrderDetail(order: FacilityWorkOrderItem) {
