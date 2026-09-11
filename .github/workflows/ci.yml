@@ -34,6 +34,11 @@ jobs:
       - name: 单元测试（vitest）
         run: npm run test
 
+      # 大屏门禁：逐条解析 src/screen 的 import，白名单之外的 lib/data 值导入直接 FAIL，
+      # 防本地业务数据回退（详见 scripts/screen-local-data-gate.mjs，白名单已固化）。
+      - name: 大屏门禁（screen 本地数据零回退）
+        run: npm run gate:screen
+
       # docs/api 四铁律：summary/description/example/字段 description 齐备 + $ref 可解析
       - name: 契约四铁律校验
         run: node scripts/validate-api-contracts.mjs
