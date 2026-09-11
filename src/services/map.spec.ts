@@ -1,6 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
   normalizeFeature,
+  fetchAlarmPoints,
+  fetchDevicePoints,
+  fetchRiskZones,
   FALLBACK_ALARM_POINTS,
   FALLBACK_DEVICE_POINTS,
   FALLBACK_RISK_ZONES,
@@ -50,5 +53,31 @@ describe('map service：GeoJSON Feature 归一化', () => {
     for (const z of FALLBACK_RISK_ZONES) {
       expect(z.polygon!.length).toBeGreaterThanOrEqual(3);
     }
+  });
+});
+
+describe('map 取数三态（未连后端不得静默回退兜底）', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  it('offline（无 base 且未开演示）：显式报错 + 空态，不回退静态兜底', async () => {
+    vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', '');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(await fetchAlarmPoints()).toHaveLength(0);
+    expect(await fetchDevicePoints()).toHaveLength(0);
+    expect(await fetchRiskZones()).toHaveLength(0);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('/map/alarms'));
+    warn.mockRestore();
+  });
+
+  it('demo（VITE_USE_DEV_MOCK=true）：返回静态兜底', async () => {
+    vi.stubEnv('VITE_API_BASE', '');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
+    expect((await fetchAlarmPoints()).length).toBeGreaterThan(0);
+    expect((await fetchDevicePoints()).length).toBeGreaterThan(0);
+    expect((await fetchRiskZones()).length).toBeGreaterThan(0);
   });
 });

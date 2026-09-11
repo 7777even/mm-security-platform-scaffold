@@ -1,4 +1,5 @@
 import { request } from '@/services/http';
+import { backendUnavailableWarn, resolveOfflineFetch } from '@/services/backendFallback';
 import { logger } from '@/utils/logger';
 
 // 地图点位/区域（B3 MAP-02/03 + DASH-03 对接；mock 为 GeoJSON Feature，坐标 WGS84 经纬度）
@@ -83,23 +84,30 @@ export function normalizeFeature(f: GeoJsonFeature, kind: 'alarm' | 'device'): M
 }
 
 export async function fetchAlarmPoints(): Promise<MapPoint[]> {
+  // demo 用静态兜底；offline 显式报错 + 空态（不再静默回退兜底假数据）
+  const fb = resolveOfflineFetch('map', '/map/alarms', FALLBACK_ALARM_POINTS, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const fc = await request<GeoJsonFeatureCollection>({ url: '/map/alarms', method: 'GET' });
     return (fc?.features ?? []).map((f) => normalizeFeature(f, 'alarm'));
   } catch (err) {
-    // 开发态无后端 / 网络异常时回退静态兜底，避免地图白屏（S1 §9.3「不白屏」）
-    logger.warn('[map] fetchAlarmPoints 失败，回退静态兜底', (err as Error)?.message);
-    return FALLBACK_ALARM_POINTS;
+    logger.warn('[map] fetchAlarmPoints 失败', (err as Error)?.message);
+    backendUnavailableWarn('map', '/map/alarms');
+    return [];
   }
 }
 
 export async function fetchDevicePoints(): Promise<MapPoint[]> {
+  // demo 用静态兜底；offline 显式报错 + 空态
+  const fb = resolveOfflineFetch('map', '/map/devices', FALLBACK_DEVICE_POINTS, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const fc = await request<GeoJsonFeatureCollection>({ url: '/map/devices', method: 'GET' });
     return (fc?.features ?? []).map((f) => normalizeFeature(f, 'device'));
   } catch (err) {
-    logger.warn('[map] fetchDevicePoints 失败，回退静态兜底', (err as Error)?.message);
-    return FALLBACK_DEVICE_POINTS;
+    logger.warn('[map] fetchDevicePoints 失败', (err as Error)?.message);
+    backendUnavailableWarn('map', '/map/devices');
+    return [];
   }
 }
 
@@ -111,6 +119,9 @@ function resolveZonePolygon(zone: string): [number, number][] | undefined {
 }
 
 export async function fetchRiskZones(): Promise<RiskZone[]> {
+  // demo 用静态兜底；offline 显式报错 + 空态
+  const fb = resolveOfflineFetch('map', '/dashboard/risk-heatmap', FALLBACK_RISK_ZONES, []);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
   try {
     const zones = await request<{ zone: string; score: number }[]>({
       url: '/dashboard/risk-heatmap',
@@ -122,8 +133,9 @@ export async function fetchRiskZones(): Promise<RiskZone[]> {
       polygon: resolveZonePolygon(z.zone),
     }));
   } catch (err) {
-    logger.warn('[map] fetchRiskZones 失败，回退静态兜底', (err as Error)?.message);
-    return FALLBACK_RISK_ZONES;
+    logger.warn('[map] fetchRiskZones 失败', (err as Error)?.message);
+    backendUnavailableWarn('map', '/dashboard/risk-heatmap');
+    return [];
   }
 }
 
