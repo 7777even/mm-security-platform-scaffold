@@ -13,7 +13,7 @@ import { build } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, writeFileSync } from 'node:fs';
 
 // build-subapps.mjs 位于 <root>/scripts/ 下，项目根是 scripts/ 的父目录
 const scriptDir = dirname(fileURLToPath(import.meta.url));

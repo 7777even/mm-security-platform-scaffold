@@ -51,6 +51,11 @@ export default tseslint.config(
   {
     files: ['scripts/**/*.mjs'],
     languageOptions: { globals: globals.node },
+    rules: {
+      // scripts/ 下的 .mjs 是纯 Node 脚本，不参与 vue-tsc / tsconfig.app（只覆盖 src）。
+      // 顶部 @ts-nocheck 用于避免编辑器对无类型声明的 Node 代码误报，属有意为之，不是偷懒。
+      '@typescript-eslint/ban-ts-comment': 'off',
+    },
   },
   {
     // 测试文件中常定义多个桩组件，组件-per-文件规则在此属误报，关闭
