@@ -308,21 +308,6 @@ export const fireEmergencyDrillEventGroups: EmergencyEventGroup[] = [
   },
 ];
 
-export const fireEmergencyAllEventGroups: EmergencyEventGroup[] = [
-  ...fireEmergencyEventGroups,
-  ...fireEmergencyDrillEventGroups,
-];
-
-export const fireEmergencyEvents: EmergencyEventItem[] = fireEmergencyEventGroups.flatMap(
-  (group) => group.events,
-);
-
-export const fireEmergencyZoneOverlays = [
-  { left: '27.9%', top: '31.6%', width: '17.5%', height: '19.1%' },
-  { left: '44.9%', top: '28.7%', width: '25.6%', height: '17.7%' },
-  { left: '36.0%', top: '45.6%', width: '24.2%', height: '20.6%' },
-];
-
 export const fireEmergencyMapControls = [
   { key: 'layers', label: '图层' },
   { key: 'areas', label: '区域' },
