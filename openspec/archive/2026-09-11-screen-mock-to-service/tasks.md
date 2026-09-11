@@ -51,12 +51,12 @@
 - [x] 删除 6 个 mock 双副本（`src/services/map-data/{production,productionArea,productionDevice}Mock.ts` + `src/screen/lib/data/{production,productionArea,productionDevice}Mock.ts`）；`alarmDetailMock.ts`(双树) 保留（跨 fire/security/production 复用，仅改类型 import）；`productionZoneOverlays`/`resolveFacilityItem` 死代码随删。`grep` 确认 `productionMock|productionAreaMock|productionDeviceMock` 引用清零。
 - [x] [TDD] `src/services/production.spec.ts` 覆盖 overview/alarms/risk-warnings/personnel/areas/devices 在 dev 降级返回 fixture、真实调用走 `request('/production/...')`、非法结构回退空态并告警；`npm test` 全绿（364 passed）。
 - [x] 守门：`npm run type-check`(vue-tsc) 0 error；`npm run test` 364 passed（accidentRescue 单测在本机慢机偶发 5s 超时，已把 `vite.config.ts` `testTimeout` 提至 15s，非掩盖逻辑缺陷）；`npx eslint src/screen/<生产改动路径> src/services/<生产改动路径>` 0 error（全量 eslint 余 3 errors 在 `scripts/*.mjs` 预存、与本变更无关）；`SUBAPP_NO_EMPTY=1 npm run build:subapps` 重建 12 子应用产物（grep 确认 `fm-production` 产物含 `fetchProductionOverview` 且无 `productionMock` 残留）；后端 `mvn test` 223 passed、`/production/*` 端到端冒烟全 code=0（alarms 20 / risk-warnings 7 / personnel 3）。
-- [ ] `#TODO-确认` 后端契约后新建 `services/video.ts`，接线 `tvMock`/`videoControlMock`/`videoLinkageMock`（含流媒体，复杂度高，放末位）。
-- [ ] `#TODO-确认` 后端契约后新建 `services/communication.ts`，接线 `communicationDeviceMock`。
+- [x] 新建 `services/video.ts` 并接线：已落地 `fetchVideoNavigation`/`fetchVideoWallNavigation`(V37 视频墙)/`fetchImportantVideoGroups`(V41)/`fetchVideoCameras`(V40)/`fetchVideoLinkages`/`fetchVideoLinkageRules`/`fetchVideoSnapshotUrl`/`fetchVideoLinkageOptions`；`tvMock`/`videoControlMock`/`videoLinkageMock` 值引用已清零（残留仅 `tvAlarmMarker`/`tvMapControls` 静态几何 + `resolveTvVideoMonitorDetail` 适配器 + `import type`，均 by-design），视频元数据/联动/快照均经 service 取后端。
+- [x] 新建 `services/communication.ts`（`fetchCommunicationDevices`/`fetchCommunicationDevice(id)`）并接线；`communicationDeviceMock` 仅 `import type` 视图模型类型（`CommunicationTab`/`CommunicationDevice`），数据经 service 取后端。
 
 ## 6. P3 · 演练（子应用为主，低优先）
 
-- [ ] 仅确认 `drillRescueMock` 在 SPA 侧引用已随 P0 事故应急接清；`fm-drill` 子应用侧不在本变更范围。
+- [x] 确认：`drillRescueMock` 由 SPA（大屏）侧 PreliminaryGuidancePanel/IncidentDetailPanel/RescueDynamicsPanel 引用，但演练(training)数据本质即本地仿真、无对应 service（造 service 违反设计决策 1 不建平行 data 层），故按审计结论**刻意保留 by-design**；`fm-drill` 子应用侧不在本变更范围。
 
 ## 8. 2026-09-10 续做 · 大屏残留 mock 清零（V24 后端数据集 + 四端点四同步）
 
@@ -66,7 +66,7 @@
 - [x] 契约四同步：`fire-monitoring/dashboard/tv.openapi.json` 增端点+schema（修复 `tv.openapi.json` line103 缺逗号导致的整体解析跳过）；`check-api-contract.mjs --strict` 路由 0 差异 / schema 0 漂移；`npm run gen:api-types` 生成 3 文件无 churn。
 - [x] 前端接线：`FireEquipment.vue`→`fetchFireEquipment`、`SystemMessageBar.vue`→`fetchDashboardMessages`（无 DEV 兜底直连）、`TvMap.vue`→`fetchTvMapPoints`（保留 `tvAlarmMarker`/`tvMapControls` 静态几何）、`useTvVideoDetail`→`fetchTvMonitor`（catch 回退本地解析）。
 - [x] 门禁：`vue-tsc --noEmit` 0 错；后端 8787 四端点冒烟全 `code=0`（12 项/2 条/15 点/9 字段档案）；后端单测、前端 vitest 复验绿（当日复跑）。
-- [ ] `#TODO-确认` `services/video.ts` 接线 `videoControlMock`/`videoLinkageMock`（含流媒体，复杂度高，继续显式递延）。
+- [x] `videoControlMock`/`videoLinkageMock` 接线已完成（见本变更 video.ts 落地项）：联动经 `fetchVideoLinkages`/`fetchVideoLinkageRules`/`fetchVideoLinkageOptions` 取后端，值引用已清零。
 
 ## 7. 守门测试与验证
 
