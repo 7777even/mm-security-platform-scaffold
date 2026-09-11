@@ -74,6 +74,103 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/video/wall-navigation': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 视频墙导航聚合
+     * @description 返回视频墙左侧导航所需数据：监测目标树（分类→目标）、厂区视频目录（分区→摄像头通道）、通道→目标映射、默认高空AR相机。取代前端 videoWallStore 内代码生成的本地数据；摄像头通道编码 v-{i}-{j}（i=目标序号，j=通道序号）由服务端按目标行 cam_count 确定性派生。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 视频墙导航聚合数据 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "targetTree": [
+             *           {
+             *             "id": "cat-1",
+             *             "label": "重大危险源",
+             *             "children": [
+             *               {
+             *                 "id": "t-1",
+             *                 "label": "危化储罐区装置#001"
+             *               },
+             *               {
+             *                 "id": "t-2",
+             *                 "label": "危化储罐区装置#002"
+             *               }
+             *             ]
+             *           }
+             *         ],
+             *         "videoTree": [
+             *           {
+             *             "id": "area-1",
+             *             "label": "一号生产厂区",
+             *             "children": [
+             *               {
+             *                 "id": "v-1-1",
+             *                 "label": "CAM-装置#001-通道1"
+             *               },
+             *               {
+             *                 "id": "v-1-2",
+             *                 "label": "CAM-装置#001-通道2"
+             *               }
+             *             ]
+             *           }
+             *         ],
+             *         "cameraTargetMap": {
+             *           "v-1-1": [
+             *             "t-1"
+             *           ],
+             *           "v-1-2": [
+             *             "t-1"
+             *           ]
+             *         },
+             *         "defaultHighAltitudeCameras": [
+             *           {
+             *             "id": "high-ar-1",
+             *             "label": "1#厂区高空AR·全景"
+             *           },
+             *           {
+             *             "id": "high-ar-2",
+             *             "label": "炼油区高空AR·北向"
+             *           }
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['VideoWallNavigation'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/video/cameras': {
     parameters: {
       query?: never;
@@ -592,6 +689,54 @@ export interface components {
       categories?: components['schemas']['VideoCategoryItem'][];
       /** @description 分组树根节点列表 */
       tree?: components['schemas']['VideoGroupNode'][];
+    };
+    /** @description 视频墙导航树节点（目标分类→目标 / 厂区分区→摄像头通道；叶子节点不输出 children） */
+    VideoWallGroupNode: {
+      /**
+       * @description 节点编码
+       * @example cat-1
+       */
+      id?: string;
+      /**
+       * @description 节点名称
+       * @example 重大危险源
+       */
+      label?: string;
+      /** @description 子节点列表 */
+      children?: components['schemas']['VideoWallGroupNode'][];
+    };
+    /** @description 视频墙默认高空AR相机项 */
+    VideoWallCamera: {
+      /**
+       * @description 相机编码
+       * @example high-ar-1
+       */
+      id?: string;
+      /**
+       * @description 相机名称
+       * @example 1#厂区高空AR·全景
+       */
+      label?: string;
+    };
+    /** @description 视频墙导航聚合（取代前端 videoWallStore 内代码生成的本地数据） */
+    VideoWallNavigation: {
+      /** @description 监测目标树（分类→目标） */
+      targetTree?: components['schemas']['VideoWallGroupNode'][];
+      /** @description 厂区视频目录（分区→摄像头通道） */
+      videoTree?: components['schemas']['VideoWallGroupNode'][];
+      /**
+       * @description 摄像头通道编码 → 绑定目标编码列表（键为 v-{i}-{j}）
+       * @example {
+       *       "v-1-1": [
+       *         "t-1"
+       *       ]
+       *     }
+       */
+      cameraTargetMap?: {
+        [key: string]: string[];
+      };
+      /** @description 默认高空AR相机（视频墙默认 2x2 模式用） */
+      defaultHighAltitudeCameras?: components['schemas']['VideoWallCamera'][];
     };
     /** @description 摄像头画面项 */
     VideoCameraItem: {

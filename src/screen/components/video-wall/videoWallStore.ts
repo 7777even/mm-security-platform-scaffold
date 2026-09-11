@@ -1,4 +1,6 @@
 import { ref } from 'vue';
+import { fetchVideoWallNavigation, type VideoWallNavItem } from '@/services/video';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 
 export const zones = ref([
   {
@@ -202,7 +204,11 @@ export interface VideoPlan {
   intervalSeconds: number;
 }
 
-// --- 动态生成 120 个监测目标和数百个视频目录 ---
+// --- 视频墙导航（2026-09-11 起由后端提供：GET /video/wall-navigation，V37 fac_video_wall_node）---
+// 目标树 / 厂区视频目录 / 通道→目标映射 / 默认高空AR相机均由后端下发（三态取数，
+// 后端不可用时为空树 + 显式告警，绝不回灌本地生成数据）；
+// savedModes / savedPlans / 网格布局为前端交互状态，保留本地。
+
 interface TargetChild {
   id: string;
   name: string;
@@ -225,180 +231,140 @@ interface VideoGroup {
   children: VideoChild[];
 }
 
-const generatedTargetTree: TargetGroup[] = [];
-const generatedVideoTree: VideoGroup[] = [];
-const generatedCameraTargetMap: Record<string, string[]> = {};
+/** 监测目标树：分类 → 目标（后端下发） */
+export const targetTree = ref<TargetGroup[]>([]);
+/** 厂区视频目录：厂区分区 → 摄像头通道（后端下发） */
+export const videoTree = ref<VideoGroup[]>([]);
+/** 摄像头通道编码 → 绑定目标编码列表（后端下发） */
+export const cameraTargetMap = ref<Record<string, string[]>>({});
+/** 默认高空AR相机（后端下发；视频墙默认 2x2 模式与 prepareDefaultHighAltitudeWall 用） */
+export const defaultHighAltitudeCameras = ref<Array<{ id: string; name: string }>>([]);
 
-const targetCategories = [
-  { prefix: '危化储罐区', name: '重大危险源' },
-  { prefix: '反应装置区', name: '生产装置' },
-  { prefix: '厂区出入口', name: '厂区出入口' },
-  { prefix: '仓储物流区', name: '仓储区域' },
-  { prefix: '道路管廊区', name: '道路与管廊' },
-  { prefix: '辅助设施区', name: '其他区域' },
-];
+/** 导航加载状态（VideoWallView 挂载时调用 loadVideoWallNavigation） */
+export const wallNavLoading = ref(false);
+export const wallNavLoaded = ref(false);
 
-const factoryAreas = [
-  '一号生产厂区',
-  '二号生产厂区',
-  '储罐与物流区',
-  '动力公用工程区',
-  '周界安全防范区',
-];
-
-// 初始化目标分类
-targetCategories.forEach((cat, index) => {
-  generatedTargetTree.push({
-    id: `cat-${index + 1}`,
-    name: cat.name,
-    children: [],
-  });
-});
-
-// 初始化厂区视频分类
-factoryAreas.forEach((area, index) => {
-  generatedVideoTree.push({
-    id: `area-${index + 1}`,
-    name: area,
-    children: [],
-  });
-});
-
-// 生成 120 个监测目标设备，每个绑定 4-12 个视频摄像头
-for (let i = 1; i <= 120; i++) {
-  const catIdx = Math.floor((i - 1) / 20);
-  const targetId = `t-${i}`;
-  const targetName = `${targetCategories[catIdx].prefix}装置#${String(i).padStart(3, '0')}`;
-
-  generatedTargetTree[catIdx].children.push({
-    id: targetId,
-    name: targetName,
-  });
-
-  // 摄像头数量为 4 ~ 12 个
-  const camCount = 4 + (i % 9);
-  const areaIdx = Math.floor((i - 1) / 24);
-
-  for (let j = 1; j <= camCount; j++) {
-    const cameraId = `v-${i}-${j}`;
-    const cameraName = `CAM-装置#${String(i).padStart(3, '0')}-通道${j}`;
-
-    // 添加到厂区视频目录树
-    generatedVideoTree[areaIdx].children.push({
-      id: cameraId,
-      name: cameraName,
-    });
-
-    // 建立映射
-    generatedCameraTargetMap[cameraId] = [targetId];
-  }
+/** 后端导航树（label 语义）→ 侧栏树（name 语义） */
+function toSidebarTree(
+  nodes: VideoWallNavItem[],
+): Array<{ id: string; name: string; children: VideoChild[] }> {
+  return (nodes ?? []).map((node) => ({
+    id: node.id,
+    name: node.label,
+    children: (node.children ?? []).map((child) => ({ id: child.id, name: child.label })),
+  }));
 }
 
-export const targetTree = ref<TargetGroup[]>(generatedTargetTree);
-export const videoTree = ref<VideoGroup[]>(generatedVideoTree);
-export const cameraTargetMap = ref<Record<string, string[]>>(generatedCameraTargetMap);
+/** 重点防区预设：取前 2 个绑定目标各前 2 路通道（与原前端预设 v-1-1/v-1-2/v-2-1/v-2-2 一致） */
+function focusPresetCells(): CellConfig[] {
+  const byTarget = new Map<string, Array<{ id: string; name: string }>>();
+  for (const group of videoTree.value) {
+    for (const child of group.children) {
+      const owner = (cameraTargetMap.value[child.id] ?? [])[0] ?? '';
+      if (!byTarget.has(owner)) byTarget.set(owner, []);
+      byTarget.get(owner)!.push({ id: child.id, name: child.name });
+    }
+  }
+  const cells: CellConfig[] = [];
+  for (const channels of byTarget.values()) {
+    for (const channel of channels.slice(0, 2)) {
+      if (cells.length >= 4) return cells;
+      const index = cells.length;
+      cells.push({
+        id: `r${Math.floor(index / 2) + 1}-c${(index % 2) + 1}`,
+        row: Math.floor(index / 2) + 1,
+        col: (index % 2) + 1,
+        rowSpan: 1,
+        colSpan: 1,
+        hidden: false,
+        videoId: channel.id,
+        videoName: channel.name,
+      });
+    }
+  }
+  return cells;
+}
 
-export const defaultHighAltitudeCameras = [
-  { id: 'high-ar-1', name: '1#厂区高空AR·全景' },
-  { id: 'high-ar-2', name: '炼油区高空AR·北向' },
-  { id: 'high-ar-3', name: '化工区高空AR·东向' },
-  { id: 'high-ar-4', name: '储运区高空AR·南向' },
-];
+/** 由后端数据构建常用模式（高空AR默认 2x2 / 全景巡检 3x3 / 重点防区 2x2） */
+function buildPresetModes(): void {
+  const defaultCells: CellConfig[] = defaultHighAltitudeCameras.value.map((camera, index) => ({
+    id: `r${Math.floor(index / 2) + 1}-c${(index % 2) + 1}`,
+    row: Math.floor(index / 2) + 1,
+    col: (index % 2) + 1,
+    rowSpan: 1,
+    colSpan: 1,
+    hidden: false,
+    videoId: camera.id,
+    videoName: camera.name,
+  }));
+  savedModes.value = [
+    {
+      id: 'm_default',
+      name: '高空AR默认模式 (2x2)',
+      pages: [{ id: 'p_default', name: '高空AR', rows: 2, cols: 2, cells: defaultCells }],
+    },
+    {
+      id: 'm1',
+      name: '全景巡检模式 (3x3)',
+      pages: [{ id: 'p1', name: '区域1', rows: 3, cols: 3, cells: [] }],
+    },
+    {
+      id: 'm2',
+      name: '重点防区模式 (2x2)',
+      pages: [{ id: 'p1', name: '防区1', rows: 2, cols: 2, cells: focusPresetCells() }],
+    },
+  ];
+}
 
-const defaultModeCells: CellConfig[] = defaultHighAltitudeCameras.map((camera, index) => ({
-  id: `r${Math.floor(index / 2) + 1}-c${(index % 2) + 1}`,
-  row: Math.floor(index / 2) + 1,
-  col: (index % 2) + 1,
-  rowSpan: 1,
-  colSpan: 1,
-  hidden: false,
-  videoId: camera.id,
-  videoName: camera.name,
-}));
+function wallHasVideo(): boolean {
+  return Boolean(
+    currentLayout.value?.mode.pages.some((page) => page.cells.some((cell) => cell.videoId)),
+  );
+}
 
-// 模拟的常用模式数据
-export const savedModes = ref<VideoMode[]>([
-  {
-    id: 'm_default',
-    name: '高空AR默认模式 (2x2)',
-    pages: [
-      {
-        id: 'p_default',
-        name: '高空AR',
-        rows: 2,
-        cols: 2,
-        cells: defaultModeCells,
-      },
-    ],
-  },
-  {
-    id: 'm1',
-    name: '全景巡检模式 (3x3)',
-    pages: [
-      {
-        id: 'p1',
-        name: '区域1',
-        rows: 3,
-        cols: 3,
-        cells: [],
-      },
-    ],
-  },
-  {
-    id: 'm2',
-    name: '重点防区模式 (2x2)',
-    pages: [
-      {
-        id: 'p1',
-        name: '防区1',
-        rows: 2,
-        cols: 2,
-        cells: [
-          {
-            id: 'r1-c1',
-            row: 1,
-            col: 1,
-            rowSpan: 1,
-            colSpan: 1,
-            hidden: false,
-            videoId: 'v-1-1',
-            videoName: 'CAM-装置#001-通道1',
-          },
-          {
-            id: 'r1-c2',
-            row: 1,
-            col: 2,
-            rowSpan: 1,
-            colSpan: 1,
-            hidden: false,
-            videoId: 'v-1-2',
-            videoName: 'CAM-装置#001-通道2',
-          },
-          {
-            id: 'r2-c1',
-            row: 2,
-            col: 1,
-            rowSpan: 1,
-            colSpan: 1,
-            hidden: false,
-            videoId: 'v-2-1',
-            videoName: 'CAM-装置#002-通道1',
-          },
-          {
-            id: 'r2-c2',
-            row: 2,
-            col: 2,
-            rowSpan: 1,
-            colSpan: 1,
-            hidden: false,
-            videoId: 'v-2-2',
-            videoName: 'CAM-装置#002-通道2',
-          },
-        ],
-      },
-    ],
-  },
-]);
+let wallNavPromise: Promise<void> | null = null;
+
+/**
+ * 加载视频墙导航（幂等，VideoWallView 挂载时调用）。
+ * 三态由 service 层保证：后端不可用/失败时空树 + 显式告警；
+ * 加载完成且墙面仍无画面、也无待自动填充/事件上下文时，应用默认高空AR墙。
+ */
+export function loadVideoWallNavigation(): Promise<void> {
+  if (wallNavLoaded.value) return Promise.resolve();
+  if (wallNavPromise) return wallNavPromise;
+  wallNavPromise = (async () => {
+    wallNavLoading.value = true;
+    try {
+      const nav = await fetchVideoWallNavigation();
+      targetTree.value = toSidebarTree(nav.targetTree);
+      videoTree.value = toSidebarTree(nav.videoTree);
+      cameraTargetMap.value = nav.cameraTargetMap;
+      defaultHighAltitudeCameras.value = nav.defaultHighAltitudeCameras.map((camera) => ({
+        id: camera.id,
+        name: camera.label,
+      }));
+      buildPresetModes();
+      wallNavLoaded.value = true;
+      if (
+        !wallHasVideo() &&
+        pendingAutoFillCameras.value.length === 0 &&
+        !activeEventVideoContext.value
+      ) {
+        prepareDefaultHighAltitudeWall();
+      }
+    } catch {
+      // service 层已三态（失败返回空态并告警）；此处兜底确保失败可见、不静默。
+      backendUnavailableWarn('video', '/video/wall-navigation');
+    } finally {
+      wallNavLoading.value = false;
+      wallNavPromise = null;
+    }
+  })();
+  return wallNavPromise;
+}
+
+/** 常用模式（本地 UI 偏好；m_default/m1/m2 内容在导航加载完成后由 buildPresetModes 构建） */
+export const savedModes = ref<VideoMode[]>([]);
 
 export interface ActiveLayout {
   mode: VideoMode;
@@ -421,11 +387,8 @@ export function setWallDisplayContext(context: WallDisplayContext) {
   wallDisplayContext.value = context;
 }
 
-// 当前正在编辑或预览的布局，传递给 VideoGrid，默认初始化即应用 4x4 模式
-export const currentLayout = ref<ActiveLayout | null>({
-  mode: JSON.parse(JSON.stringify(savedModes.value[0])),
-  activePageIndex: 0,
-});
+// 当前正在编辑或预览的布局；导航加载完成前为 null（空墙），加载后应用默认高空AR墙
+export const currentLayout = ref<ActiveLayout | null>(null);
 
 // 预案数据
 export const savedPlans = ref<VideoPlan[]>([
@@ -557,7 +520,7 @@ export function replaceWallWithCameras(
 
 export function prepareDefaultHighAltitudeWall() {
   replaceWallWithCameras(
-    defaultHighAltitudeCameras,
+    defaultHighAltitudeCameras.value,
     '高空AR',
     { key: 'default-high-ar', name: '高空AR', source: '默认场景' },
     { rows: 2, cols: 2 },

@@ -1,5 +1,9 @@
 import http, { request } from '@/services/http';
-import { resolveOfflineFetch } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 
 // 视频控制/视频墙大屏接口（fm-video-control / fm-video-wall），对齐 docs/api/video.openapi.json。
 // 取代前端硬编码的 videoControlMock / videoLinkageMock 业务数据；
@@ -83,6 +87,75 @@ export interface VideoLinkageDeleteResult {
 /** 左侧导航：顶部分类（扁平）+ 分组树。 */
 export async function fetchVideoNavigation(): Promise<VideoNavigation> {
   return request<VideoNavigation>({ url: '/video/navigation', method: 'GET' });
+}
+
+// ---------------------------------------------------------------- 视频墙导航（V37）
+
+/** 视频墙导航树节点（目标分类→目标 / 厂区分区→摄像头通道） */
+export interface VideoWallNavItem {
+  id: string;
+  label: string;
+  children?: VideoWallNavItem[];
+}
+
+/** 视频墙默认高空AR相机项 */
+export interface VideoWallCameraItem {
+  id: string;
+  label: string;
+}
+
+/** 视频墙导航聚合（取代 videoWallStore 内代码生成的本地数据，V37 fac_video_wall_node） */
+export interface VideoWallNavigationData {
+  /** 监测目标树（分类→目标） */
+  targetTree: VideoWallNavItem[];
+  /** 厂区视频目录（分区→摄像头通道） */
+  videoTree: VideoWallNavItem[];
+  /** 摄像头通道编码 → 绑定目标编码列表 */
+  cameraTargetMap: Record<string, string[]>;
+  /** 默认高空AR相机（视频墙默认 2x2 模式用） */
+  defaultHighAltitudeCameras: VideoWallCameraItem[];
+}
+
+const EMPTY_WALL_NAVIGATION: VideoWallNavigationData = {
+  targetTree: [],
+  videoTree: [],
+  cameraTargetMap: {},
+  defaultHighAltitudeCameras: [],
+};
+
+/**
+ * 视频墙导航聚合：GET /video/wall-navigation。三态取数——
+ * 连后端失败 / 响应不符契约 → 显式告警 + 空树（绝不回灌本地生成数据）。
+ */
+export async function fetchVideoWallNavigation(): Promise<VideoWallNavigationData> {
+  const fb = resolveOfflineFetch(
+    'video',
+    '/video/wall-navigation',
+    EMPTY_WALL_NAVIGATION,
+    EMPTY_WALL_NAVIGATION,
+  );
+  if (fb.mode !== 'live') return fb.value;
+  try {
+    const data = await request<VideoWallNavigationData>({
+      url: '/video/wall-navigation',
+      method: 'GET',
+    });
+    if (!data || !Array.isArray(data.targetTree) || !Array.isArray(data.videoTree)) {
+      backendUnavailableWarn('video', '/video/wall-navigation', REASON_CONTRACT_MISMATCH);
+      return EMPTY_WALL_NAVIGATION;
+    }
+    return {
+      targetTree: data.targetTree,
+      videoTree: data.videoTree,
+      cameraTargetMap: data.cameraTargetMap ?? {},
+      defaultHighAltitudeCameras: Array.isArray(data.defaultHighAltitudeCameras)
+        ? data.defaultHighAltitudeCameras
+        : [],
+    };
+  } catch {
+    backendUnavailableWarn('video', '/video/wall-navigation');
+    return EMPTY_WALL_NAVIGATION;
+  }
 }
 
 /** 摄像头分页网格（前端默认每页 9 宫格）。 */

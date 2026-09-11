@@ -180,6 +180,12 @@ const REGRESSION_GUARDS = [
     // 原 fetchWeatherOverview().catch(() => {}) 静默吞错；现服务层三态（空态判定），禁止静默空 catch。
     forbidden: [/\.catch\(\(\)\s*=>\s*\{\}\)/],
   },
+  {
+    file: 'components/video-wall/videoWallStore.ts',
+    // 原模块加载期代码生成 120 目标×954 通道（targetCategories/factoryAreas/generated*）；
+    // 现四份数据由 GET /video/wall-navigation 下发（V37 fac_video_wall_node），禁再出现本地生成逻辑。
+    forbidden: [/\bgenerated(?:TargetTree|VideoTree|CameraTargetMap)\b/, /\btargetCategories\b/, /\bfactoryAreas\b/],
+  },
 ];
 
 // ── 2b) 必备守卫：已验证「失败显式告警 / 三态取数」的文件，必须持续引用 backendFallback ──
@@ -199,6 +205,7 @@ const REQUIRED_GUARDS = [
   { file: 'components/panels/production/ProductionDeviceLedgerPanel.vue', must: /backendFallback/ },
   { file: 'components/common/FirePatrolDialog.vue', must: /backendFallback/ },
   { file: 'components/common/FireAlarmListDialog.vue', must: /backendFallback/ },
+  { file: 'components/video-wall/videoWallStore.ts', must: /backendFallback/ },
 ];
 
 // ── 扫描 ─────────────────────────────────────────────────────────────────────

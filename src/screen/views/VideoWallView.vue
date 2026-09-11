@@ -8,6 +8,7 @@ import {
   activeEventVideoContext,
   clearEventVideoContext,
   ensureEventVideoWall,
+  loadVideoWallNavigation,
   prepareDefaultHighAltitudeWall,
   showAllEventVideosOnWall,
   type EventVideoKind,
@@ -17,6 +18,9 @@ import { useShellRoute } from '../lib/composables/useShellRoute';
 const router = useRouter();
 const shellRoute = useShellRoute();
 const eventContext = computed(() => activeEventVideoContext.value);
+
+// 导航（目标树/视频目录/高空AR相机）由后端提供，进入视频墙即加载（幂等）
+void loadVideoWallNavigation();
 
 watch(
   () => shellRoute.query.value,
