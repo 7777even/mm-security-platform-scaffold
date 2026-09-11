@@ -7,7 +7,12 @@ import {
   type EmergencyResponseMode,
   type ProcessStage,
 } from '../data/emergencyProcessData';
-import { mockDutyRoster, mockNodeGuidances, type NodeGuidance } from '../data/nodeGuidanceData';
+import {
+  mockDutyRoster,
+  mockNodeGuidances,
+  type GuidanceDutyRoster,
+  type NodeGuidance,
+} from '../data/nodeGuidanceData';
 import {
   cloneDefaultNodeConfigs,
   loadNodeConfigs,
@@ -24,6 +29,7 @@ import {
 } from '@/services/emergencyProcess';
 import {
   backendUnavailableWarn,
+  isDemoMode,
   isOfflineNoBackend,
   notifyBackendOffline,
 } from '@/services/backendFallback';
@@ -60,8 +66,66 @@ const MODE_STAGE_NAME: Record<EmergencyResponseMode, string> = {
   government: '政府级应急',
 };
 
+/**
+ * 取数三态（见 services/backendFallback.ts）：
+ * - demo（VITE_USE_DEV_MOCK=true）：用本地默认值；
+ * - live（配置后端）：初值置空，由 `loadEmergencyProcessRemote()` 用后端数据覆盖；
+ * - offline（未连后端且未开演示）：置空 + 全局横幅显式报错，不回落本地默认值。
+ */
+const DEMO_MODE = isDemoMode();
+
+const EMPTY_DUTY_ROSTER: GuidanceDutyRoster = {
+  shiftGroup: '',
+  supervisor: '',
+  supervisorPhone: '',
+  boardOperator: '',
+  boardOperatorPhone: '',
+  fieldOperator: '',
+  fieldOperatorPhone: '',
+};
+
+const EMPTY_NODE_CONFIG: NodePhaseConfig = {
+  nodeId: '',
+  nodeName: '',
+  mapCamera: { anchorPriorityList: [], bufferRadiusMeters: 0 },
+  rightPanelHiddenTabs: [],
+  leftPanelHiddenPanels: [],
+  duty: { autoRoster: false },
+};
+
+const EMPTY_GUIDANCE: NodeGuidance = {
+  nodeId: '',
+  nodeName: '',
+  reportingChain: [],
+  roleTasks: [],
+  generalNotice: '',
+};
+
+/**
+ * 无流程数据（live 首帧未拉回 / offline）时的空节点骨架。
+ * 非空兜底：避免消费组件对 `currentStage` 的解引用崩溃，渲染为空卡。
+ */
+const EMPTY_STAGE: ProcessStage = {
+  id: 0,
+  name: '',
+  shortName: '',
+  leadRole: '',
+  leadTitle: '',
+  commandLevel: '',
+  description: '',
+  previousContext: [],
+  currentActions: [],
+  criteriaChecklist: [],
+  escalationRule: {
+    triggerCondition: '',
+    fromRole: '',
+    toRole: '',
+    details: { location: '', substance: '', casualty: '', currentStatus: '' },
+  },
+};
+
 const state = reactive({
-  stages: [...mockEmergencyProcessStages] as ProcessStage[],
+  stages: (DEMO_MODE ? [...mockEmergencyProcessStages] : []) as ProcessStage[],
   activePhaseId: 1,
   activeSubStageCode: null as string | null,
   responseMode: 'team' as EmergencyResponseMode,
@@ -85,16 +149,16 @@ const state = reactive({
   unlockedPhaseIds: ['phase-team', 'phase-close'] as string[],
 });
 
-const nodeConfigs = ref<Record<string, NodePhaseConfig>>(loadNodeConfigs());
+const nodeConfigs = ref<Record<string, NodePhaseConfig>>(DEMO_MODE ? loadNodeConfigs() : {});
 
-/** 应急阶段（默认值起步，`loadEmergencyProcessRemote()` 成功后被后端数据覆盖）。 */
-const phases = ref<EmergencyPhase[]>([...EMERGENCY_PHASES]);
+/** 应急阶段：demo 用本地默认值；live 置空后由后端覆盖；offline 置空。 */
+const phases = ref<EmergencyPhase[]>(DEMO_MODE ? [...EMERGENCY_PHASES] : []);
 /** 响应模式选项（同上）。 */
-const responseModes = ref<ResponseModeOption[]>([...RESPONSE_MODE_OPTIONS]);
+const responseModes = ref<ResponseModeOption[]>(DEMO_MODE ? [...RESPONSE_MODE_OPTIONS] : []);
 /** 节点处置指引（按节点 id 索引；同上）。 */
-const guidances = ref<Record<string, NodeGuidance>>({ ...mockNodeGuidances });
+const guidances = ref<Record<string, NodeGuidance>>(DEMO_MODE ? { ...mockNodeGuidances } : {});
 /** 实时值班表（同上）。 */
-const dutyRoster = ref({ ...mockDutyRoster });
+const dutyRoster = ref<GuidanceDutyRoster>(DEMO_MODE ? { ...mockDutyRoster } : EMPTY_DUTY_ROSTER);
 
 /** 是否落库：配置了 VITE_API_BASE 时才读写后端，否则维持本地缓存（纯静态演示模式）。 */
 function nodeConfigsToBackend(): boolean {
@@ -103,7 +167,16 @@ function nodeConfigsToBackend(): boolean {
 
 /** 拉取后端节点联动配置并覆盖到本地（失败保持现有本地态并告警，不白屏）。 */
 export async function loadNodeConfigsRemote(): Promise<void> {
-  if (!nodeConfigsToBackend()) return;
+  // 未连后端且未开演示：显式报错，不回落本地默认值
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'emergency-process',
+      '/emergency/process/node-configs',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return;
+  }
+  if (!nodeConfigsToBackend()) return; // demo：用本地默认值
   try {
     const list = await fetchNodePhaseConfigs();
     if (!Array.isArray(list) || list.length === 0) return;
@@ -120,7 +193,16 @@ export async function loadNodeConfigsRemote(): Promise<void> {
  * 逐项覆盖本地默认值；失败保持本地默认值并告警（纯静态演示模式回落到 data/*.ts 常量）。
  */
 export async function loadEmergencyProcessRemote(): Promise<void> {
-  if (!nodeConfigsToBackend()) return;
+  // 未连后端且未开演示：显式报错，不回落本地默认值
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'emergency-process',
+      '/emergency/process/panorama',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return;
+  }
+  if (!nodeConfigsToBackend()) return; // demo：用本地默认值
   try {
     const [panorama, guidance] = await Promise.all([
       fetchEmergencyProcessPanorama(),
@@ -169,29 +251,39 @@ function modeFromStage(stageId: number): EmergencyResponseMode {
   return 'team';
 }
 
-function phaseOf(stageId: number): EmergencyPhase {
+function phaseOf(stageId: number): EmergencyPhase | null {
   return (
-    phases.value.find((phase) => stageId >= phase.start && stageId <= phase.end) ?? phases.value[0]
+    phases.value.find((phase) => stageId >= phase.start && stageId <= phase.end) ??
+    phases.value[0] ??
+    null
   );
 }
 
-function phaseStages(phase: EmergencyPhase) {
+function phaseStages(phase: EmergencyPhase | null): ProcessStage[] {
+  if (!phase) return [];
   return state.stages.filter((s) => s.id >= phase.start && s.id <= phase.end);
 }
 
 export function useEmergencyProcess() {
-  const currentStage = computed(
-    () => state.stages.find((item) => item.id === state.activePhaseId) ?? state.stages[0],
+  const currentStage = computed<ProcessStage>(
+    () =>
+      state.stages.find((item) => item.id === state.activePhaseId) ??
+      state.stages[0] ??
+      EMPTY_STAGE,
   );
 
   const currentNodeId = computed(() => stageToNodeId(state.activePhaseId));
 
   const currentNodeConfig = computed(
-    () => nodeConfigs.value[currentNodeId.value] ?? nodeConfigs.value.alarmJudgement,
+    () =>
+      nodeConfigs.value[currentNodeId.value] ??
+      nodeConfigs.value.alarmJudgement ??
+      EMPTY_NODE_CONFIG,
   );
 
   const currentNodeGuidance = computed<NodeGuidance>(() => {
     const stage = currentStage.value;
+    if (!stage) return EMPTY_GUIDANCE;
     const existing = guidances.value[String(stage.id)];
     if (existing) return existing;
     return {
@@ -260,7 +352,8 @@ export function useEmergencyProcess() {
     return state.completedPhases.includes(stageId);
   }
 
-  function isPhaseCompleted(phase: EmergencyPhase): boolean {
+  function isPhaseCompleted(phase: EmergencyPhase | null): boolean {
+    if (!phase) return false;
     const stages = phaseStages(phase);
     return stages.length > 0 && stages.every((s) => isCompleted(s.id));
   }
@@ -421,7 +514,7 @@ export function useEmergencyProcess() {
     completeStage(state.activePhaseId);
     const phase = phaseOf(state.activePhaseId);
     const next = state.activePhaseId + 1;
-    if (state.activePhaseId >= state.stages.length) return;
+    if (!phase || state.activePhaseId >= state.stages.length) return;
     if (phase.end === state.activePhaseId) {
       if (phase.id === 'phase-close') return;
       const phaseIndex = phases.value.findIndex((item) => item.id === phase.id);

@@ -150,12 +150,17 @@ function onThumbUp() {
   scrollState.dragging = false;
 }
 
+/** 无流程数据（live 首帧 / offline）时的空阶段骨架，避免模板解引用崩溃。 */
+const EMPTY_PHASE: EmergencyPhase = { id: '', name: '', start: 0, end: 0, tone: 'blue' };
+
 const activePhase = computed<EmergencyPhase>(
   () =>
     phaseList.value.find(
       (phase) =>
         process.state.activePhaseId >= phase.start && process.state.activePhaseId <= phase.end,
-    ) ?? phaseList.value[0],
+    ) ??
+    phaseList.value[0] ??
+    EMPTY_PHASE,
 );
 
 const nodeToPhaseMap = computed<Record<number, string>>(() => {
@@ -364,7 +369,12 @@ watch(
   () => process.state.activePhaseId,
   () => {
     const next: Record<string, boolean> = {};
-    for (const action of process.currentStage.value.currentActions) {
+    const stage = process.currentStage.value;
+    if (!stage) {
+      actionToggles.value = next;
+      return;
+    }
+    for (const action of stage.currentActions) {
       next[`${process.state.activePhaseId}-${action.id}`] = action.done;
     }
     actionToggles.value = next;
