@@ -8,6 +8,7 @@ import SurveillanceVideoDialog from '../common/SurveillanceVideoDialog.vue';
 import type { AlarmItem } from '../../lib/data/mock';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 import { fetchAlarmPage } from '@/services/alarm';
+import { fetchFireMonitorAreas, type FireMonitorArea } from '@/services/fireSituation';
 import { toScreenAlarm } from '../../lib/adapters/alarmAdapter';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
 import { showToast } from '../../lib/composables/useToast';
@@ -25,148 +26,31 @@ interface FireAreaSummary {
   personnel: number;
 }
 
-const fireAreas: FireAreaSummary[] = [
-  {
-    id: 'refinery-1',
-    scope: 'refinery',
-    name: '炼油一部装置区',
-    status: 'normal',
-    statusLabel: '运行正常',
-    equipment: 128,
-    cameras: 24,
-    personnel: 16,
-  },
-  {
-    id: 'refinery-2',
-    scope: 'refinery',
-    name: '储运罐区',
-    status: 'attention',
-    statusLabel: '2台设备离线',
-    equipment: 96,
-    cameras: 18,
-    personnel: 9,
-  },
-  {
-    id: 'refinery-3',
-    scope: 'refinery',
-    name: '芳烃联合装置',
-    status: 'normal',
-    statusLabel: '运行正常',
-    equipment: 112,
-    cameras: 21,
-    personnel: 14,
-  },
-  {
-    id: 'refinery-4',
-    scope: 'refinery',
-    name: '催化裂化装置区',
-    status: 'normal',
-    statusLabel: '运行正常',
-    equipment: 118,
-    cameras: 22,
-    personnel: 15,
-  },
-  {
-    id: 'refinery-5',
-    scope: 'refinery',
-    name: '加氢裂化装置区',
-    status: 'normal',
-    statusLabel: '运行正常',
-    equipment: 104,
-    cameras: 20,
-    personnel: 12,
-  },
-  {
-    id: 'refinery-6',
-    scope: 'refinery',
-    name: '西化学水泵房',
-    status: 'attention',
-    statusLabel: '1项巡检待办',
-    equipment: 68,
-    cameras: 12,
-    personnel: 7,
-  },
-  {
-    id: 'chemical-1',
-    scope: 'chemical',
-    name: '化工装置区',
-    status: 'normal',
-    statusLabel: '运行正常',
-    equipment: 143,
-    cameras: 31,
-    personnel: 22,
-  },
-  {
-    id: 'chemical-2',
-    scope: 'chemical',
-    name: '聚烯烃装置区',
-    status: 'normal',
-    statusLabel: '运行正常',
-    equipment: 105,
-    cameras: 19,
-    personnel: 13,
-  },
-  {
-    id: 'chemical-3',
-    scope: 'chemical',
-    name: '乙烯联合装置区',
-    status: 'normal',
-    statusLabel: '运行正常',
-    equipment: 126,
-    cameras: 25,
-    personnel: 18,
-  },
-  {
-    id: 'chemical-4',
-    scope: 'chemical',
-    name: '公用工程装置区',
-    status: 'attention',
-    statusLabel: '1台设备离线',
-    equipment: 91,
-    cameras: 17,
-    personnel: 10,
-  },
-  {
-    id: 'port-1',
-    scope: 'port',
-    name: '水东港储运区',
-    status: 'normal',
-    statusLabel: '运行正常',
-    equipment: 87,
-    cameras: 16,
-    personnel: 11,
-  },
-  {
-    id: 'port-2',
-    scope: 'port',
-    name: '博贺新港作业区',
-    status: 'attention',
-    statusLabel: '1项巡检待办',
-    equipment: 74,
-    cameras: 14,
-    personnel: 8,
-  },
-  {
-    id: 'port-3',
-    scope: 'port',
-    name: '输油管廊区',
-    status: 'normal',
-    statusLabel: '运行正常',
-    equipment: 82,
-    cameras: 19,
-    personnel: 9,
-  },
-  {
-    id: 'port-4',
-    scope: 'port',
-    name: '成品油码头区',
-    status: 'normal',
-    statusLabel: '运行正常',
-    equipment: 65,
-    cameras: 13,
-    personnel: 8,
-  },
-];
+// 各装置区消防保障汇总：直连真后端 /fire-situation/areas（services 层在缺 VITE_API_BASE 时回落 dev mock，
+// 已配置但后端失败则空集合 + 显式告警，不造假数据）。取代前端硬编码 fireAreas 业务数据。
+const fireAreas = ref<FireAreaSummary[]>([]);
+
+function mapArea(a: FireMonitorArea): FireAreaSummary {
+  return {
+    id: a.id,
+    scope: a.scope as ConcretePlantAreaCode,
+    name: a.name,
+    status: a.status,
+    statusLabel: a.statusLabel,
+    equipment: a.equipment,
+    cameras: a.cameras,
+    personnel: a.personnel,
+  };
+}
+
+onMounted(async () => {
+  try {
+    const res = await fetchFireMonitorAreas();
+    fireAreas.value = res.items.map(mapArea);
+  } catch {
+    // 服务层已告警并返回空集合；此处保持空，面板降级为无区域列表
+  }
+});
 
 const listDialogOpen = ref(false);
 const videoDialogOpen = ref(false);
@@ -191,8 +75,8 @@ onMounted(async () => {
 });
 const hasActiveAlarm = computed(() => demoAlarmEnabled.value && visibleAlarms.value.length > 0);
 const visibleFireAreas = computed(() => {
-  if (selectedPlantArea.value === 'all') return fireAreas;
-  return fireAreas.filter((area) => area.scope === selectedPlantArea.value);
+  if (selectedPlantArea.value === 'all') return fireAreas.value;
+  return fireAreas.value.filter((area) => area.scope === selectedPlantArea.value);
 });
 const filteredFireAreas = computed(() => {
   const keyword = areaSearch.value.trim().toLocaleLowerCase();

@@ -43,3 +43,79 @@ export async function fetchFireSituationMarkers(): Promise<FireSituationMarkerSu
     return EMPTY_MARKERS;
   }
 }
+
+// 以下两类数据取代 SafetyAlarmPanel / FireMonitoredObjectsPanel 的硬编码业务数据，
+// 由后端 /api/v1/fire-situation/areas 与 /monitored-objects 真实端点提供。
+
+export type FireAreaStatus = 'normal' | 'attention';
+
+export interface FireMonitorArea {
+  id: string;
+  scope: string;
+  name: string;
+  status: FireAreaStatus;
+  statusLabel: string;
+  equipment: number;
+  cameras: number;
+  personnel: number;
+}
+
+export interface FireMonitorAreaSummary {
+  items: FireMonitorArea[];
+}
+
+export type FireObjectTone = 'danger' | 'warning' | 'normal';
+
+export interface FireMonitoredObject {
+  name: string;
+  status: string;
+  detail: string;
+  tone: FireObjectTone;
+}
+
+export interface FireMonitoredObjectSummary {
+  items: FireMonitoredObject[];
+}
+
+const EMPTY_AREAS: FireMonitorAreaSummary = { items: [] };
+const EMPTY_OBJECTS: FireMonitoredObjectSummary = { items: [] };
+
+/** 各装置区消防保障汇总（设备/视频/人员/状态）。 */
+export async function fetchFireMonitorAreas(): Promise<FireMonitorAreaSummary> {
+  try {
+    const data = await request<FireMonitorAreaSummary>({
+      url: '/fire-situation/areas',
+      method: 'GET',
+    });
+    if (!data || !Array.isArray(data.items)) {
+      backendUnavailableWarn('fire-situation', '/fire-situation/areas', REASON_CONTRACT_MISMATCH);
+      return EMPTY_AREAS;
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('fire-situation', '/fire-situation/areas');
+    return EMPTY_AREAS;
+  }
+}
+
+/** 重点监控对象列表（状态/详情/配色）。 */
+export async function fetchFireMonitoredObjects(): Promise<FireMonitoredObjectSummary> {
+  try {
+    const data = await request<FireMonitoredObjectSummary>({
+      url: '/fire-situation/monitored-objects',
+      method: 'GET',
+    });
+    if (!data || !Array.isArray(data.items)) {
+      backendUnavailableWarn(
+        'fire-situation',
+        '/fire-situation/monitored-objects',
+        REASON_CONTRACT_MISMATCH,
+      );
+      return EMPTY_OBJECTS;
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('fire-situation', '/fire-situation/monitored-objects');
+    return EMPTY_OBJECTS;
+  }
+}

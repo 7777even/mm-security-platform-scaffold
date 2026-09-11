@@ -1,12 +1,19 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
+import { fetchFireMonitoredObjects, type FireMonitoredObject } from '@/services/fireSituation';
 
-const objects = [
-  { name: 'A装置区', status: '告警', detail: '1起火灾告警处置中', tone: 'danger' },
-  { name: '储运罐区', status: '预警', detail: '1项特级动火作业', tone: 'warning' },
-  { name: '芳烃联合装置', status: '正常', detail: '128个感知点在线', tone: 'normal' },
-  { name: '西化学水泵房', status: '正常', detail: '36个感知点在线', tone: 'normal' },
-];
+// 重点监控对象：直连真后端 /fire-situation/monitored-objects。后端失败则空集合 + 显式告警，不造假数据。
+const objects = ref<FireMonitoredObject[]>([]);
+
+onMounted(async () => {
+  try {
+    const res = await fetchFireMonitoredObjects();
+    objects.value = res.items;
+  } catch {
+    // 服务层已告警；保持空集合
+  }
+});
 </script>
 
 <template>

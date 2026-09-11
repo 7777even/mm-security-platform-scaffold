@@ -66,6 +66,88 @@
           }
         }
       }
+    },
+    "/fire-situation/areas": {
+      "get": {
+        "summary": "各装置区消防保障汇总",
+        "description": "返回各装置区的设备/视频/人员数量与运行状态，由后端 /api/v1/fire-situation/areas 真实端点提供，取代前端 SafetyAlarmPanel 硬编码数据。",
+        "tags": ["fire-situation"],
+        "responses": {
+          "200": {
+            "description": "装置区消防保障汇总",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FireMonitorAreaSummary" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "items": [
+                      {
+                        "id": "refinery-1",
+                        "scope": "refinery",
+                        "name": "炼油一部装置区",
+                        "status": "normal",
+                        "statusLabel": "运行正常",
+                        "equipment": 128,
+                        "cameras": 24,
+                        "personnel": 16
+                      },
+                      {
+                        "id": "refinery-2",
+                        "scope": "refinery",
+                        "name": "储运罐区",
+                        "status": "attention",
+                        "statusLabel": "2台设备离线",
+                        "equipment": 96,
+                        "cameras": 18,
+                        "personnel": 9
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fire-situation/monitored-objects": {
+      "get": {
+        "summary": "重点监控对象列表",
+        "description": "返回重点监控对象的实时状态与详情，由后端 /api/v1/fire-situation/monitored-objects 真实端点提供，取代前端 FireMonitoredObjectsPanel 硬编码数据。",
+        "tags": ["fire-situation"],
+        "responses": {
+          "200": {
+            "description": "重点监控对象列表",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FireMonitoredObjectSummary" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "items": [
+                      {
+                        "name": "A装置区",
+                        "status": "告警",
+                        "detail": "1起火灾告警处置中",
+                        "tone": "danger"
+                      },
+                      {
+                        "name": "储运罐区",
+                        "status": "预警",
+                        "detail": "1项特级动火作业",
+                        "tone": "warning"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -126,6 +208,68 @@
             "type": "array",
             "description": "聚合点位列表",
             "items": { "$ref": "#/components/schemas/FireSituationMarkerItem" }
+          }
+        }
+      },
+      "FireMonitorArea": {
+        "type": "object",
+        "description": "装置区消防保障汇总项",
+        "properties": {
+          "id": { "type": "string", "description": "区域编码", "example": "refinery-1" },
+          "scope": {
+            "type": "string",
+            "description": "厂区分类：refinery 炼油 / chemical 化工 / port 港口",
+            "example": "refinery"
+          },
+          "name": { "type": "string", "description": "装置区名称", "example": "炼油一部装置区" },
+          "status": {
+            "type": "string",
+            "description": "运行状态：normal 正常 / attention 关注",
+            "example": "normal"
+          },
+          "statusLabel": { "type": "string", "description": "状态文案", "example": "运行正常" },
+          "equipment": { "type": "integer", "description": "消防设备数", "example": 128 },
+          "cameras": { "type": "integer", "description": "视频监控路数", "example": 24 },
+          "personnel": { "type": "integer", "description": "现场人员数", "example": 16 }
+        }
+      },
+      "FireMonitorAreaSummary": {
+        "type": "object",
+        "description": "装置区消防保障汇总集合",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "装置区列表",
+            "items": { "$ref": "#/components/schemas/FireMonitorArea" }
+          }
+        }
+      },
+      "FireMonitoredObject": {
+        "type": "object",
+        "description": "重点监控对象项",
+        "properties": {
+          "name": { "type": "string", "description": "对象名称", "example": "A装置区" },
+          "status": {
+            "type": "string",
+            "description": "状态：告警 / 预警 / 正常",
+            "example": "告警"
+          },
+          "detail": { "type": "string", "description": "状态详情", "example": "1起火灾告警处置中" },
+          "tone": {
+            "type": "string",
+            "description": "配色：danger 危险 / warning 预警 / normal 正常",
+            "example": "danger"
+          }
+        }
+      },
+      "FireMonitoredObjectSummary": {
+        "type": "object",
+        "description": "重点监控对象集合",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "对象列表",
+            "items": { "$ref": "#/components/schemas/FireMonitoredObject" }
           }
         }
       }

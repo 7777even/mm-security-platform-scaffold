@@ -83,6 +83,136 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/fire-situation/areas': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 各装置区消防保障汇总
+     * @description 返回各装置区的设备/视频/人员数量与运行状态，由后端 /api/v1/fire-situation/areas 真实端点提供，取代前端 SafetyAlarmPanel 硬编码数据。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 装置区消防保障汇总 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "items": [
+             *           {
+             *             "id": "refinery-1",
+             *             "scope": "refinery",
+             *             "name": "炼油一部装置区",
+             *             "status": "normal",
+             *             "statusLabel": "运行正常",
+             *             "equipment": 128,
+             *             "cameras": 24,
+             *             "personnel": 16
+             *           },
+             *           {
+             *             "id": "refinery-2",
+             *             "scope": "refinery",
+             *             "name": "储运罐区",
+             *             "status": "attention",
+             *             "statusLabel": "2台设备离线",
+             *             "equipment": 96,
+             *             "cameras": 18,
+             *             "personnel": 9
+             *           }
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['FireMonitorAreaSummary'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/fire-situation/monitored-objects': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 重点监控对象列表
+     * @description 返回重点监控对象的实时状态与详情，由后端 /api/v1/fire-situation/monitored-objects 真实端点提供，取代前端 FireMonitoredObjectsPanel 硬编码数据。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 重点监控对象列表 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "items": [
+             *           {
+             *             "name": "A装置区",
+             *             "status": "告警",
+             *             "detail": "1起火灾告警处置中",
+             *             "tone": "danger"
+             *           },
+             *           {
+             *             "name": "储运罐区",
+             *             "status": "预警",
+             *             "detail": "1项特级动火作业",
+             *             "tone": "warning"
+             *           }
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['FireMonitoredObjectSummary'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -190,6 +320,82 @@ export interface components {
     FireSituationMarkerSummary: {
       /** @description 聚合点位列表 */
       items?: components['schemas']['FireSituationMarkerItem'][];
+    };
+    /** @description 装置区消防保障汇总项 */
+    FireMonitorArea: {
+      /**
+       * @description 区域编码
+       * @example refinery-1
+       */
+      id?: string;
+      /**
+       * @description 厂区分类：refinery 炼油 / chemical 化工 / port 港口
+       * @example refinery
+       */
+      scope?: string;
+      /**
+       * @description 装置区名称
+       * @example 炼油一部装置区
+       */
+      name?: string;
+      /**
+       * @description 运行状态：normal 正常 / attention 关注
+       * @example normal
+       */
+      status?: string;
+      /**
+       * @description 状态文案
+       * @example 运行正常
+       */
+      statusLabel?: string;
+      /**
+       * @description 消防设备数
+       * @example 128
+       */
+      equipment?: number;
+      /**
+       * @description 视频监控路数
+       * @example 24
+       */
+      cameras?: number;
+      /**
+       * @description 现场人员数
+       * @example 16
+       */
+      personnel?: number;
+    };
+    /** @description 装置区消防保障汇总集合 */
+    FireMonitorAreaSummary: {
+      /** @description 装置区列表 */
+      items?: components['schemas']['FireMonitorArea'][];
+    };
+    /** @description 重点监控对象项 */
+    FireMonitoredObject: {
+      /**
+       * @description 对象名称
+       * @example A装置区
+       */
+      name?: string;
+      /**
+       * @description 状态：告警 / 预警 / 正常
+       * @example 告警
+       */
+      status?: string;
+      /**
+       * @description 状态详情
+       * @example 1起火灾告警处置中
+       */
+      detail?: string;
+      /**
+       * @description 配色：danger 危险 / warning 预警 / normal 正常
+       * @example danger
+       */
+      tone?: string;
+    };
+    /** @description 重点监控对象集合 */
+    FireMonitoredObjectSummary: {
+      /** @description 对象列表 */
+      items?: components['schemas']['FireMonitoredObject'][];
     };
   };
   responses: {
