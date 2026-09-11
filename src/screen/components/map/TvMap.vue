@@ -6,9 +6,10 @@ import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
 import { tvAssets } from '../../utils/designAssets';
 import { tvSprites } from '../../utils/tvSpriteConfig';
-import { tvAlarmMarker, tvMapControls, tvVideoMapPoints } from '../../lib/data/tvMock';
+import { tvAlarmMarker, tvMapControls } from '../../lib/data/tvMock';
 import { fetchTvMapPoints, type TvMapPoint } from '@/services/tv';
 import { fetchAlarmPoints } from '@/services/map';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 import { useMapControls } from '../../lib/composables/useMapControls';
 import {
   useCesiumScreenAnchor,
@@ -33,8 +34,8 @@ const videoPointGroupOptions: Array<{ value: VideoPointGroup; label: string }> =
   { value: 'hazard', label: '重大危险源' },
   { value: 'boundary', label: '厂界及出入口' },
 ];
-// 初始态以 tvMock 点位兜底（演示/导入期立即可见），挂载后由后端 GET /tv/map-points 接管。
-const tvMapPoints = ref<TvMapPoint[]>(tvVideoMapPoints as unknown as TvMapPoint[]);
+// 初始态为空（不再以本地撒点兜底）；挂载后由后端 GET /tv/map-points 接管，失败为空态 + 显式告警。
+const tvMapPoints = ref<TvMapPoint[]>([]);
 // 告警钉：初始态以 tvMock 兜底（演示/无后端立即可见），挂载后由后端 GET /map/alarms 首条接管。
 interface TvAlarmMarkerView {
   location: string;
@@ -49,16 +50,25 @@ const alarmMarker = ref<TvAlarmMarkerView>({
   latitude: tvAlarmMarker.latitude,
 });
 onMounted(async () => {
-  tvMapPoints.value = await fetchTvMapPoints();
-  const alarmPoints = await fetchAlarmPoints();
-  const first = alarmPoints.find((p) => Number.isFinite(p.lng) && Number.isFinite(p.lat));
-  if (first) {
-    alarmMarker.value = {
-      location: first.name,
-      status: first.status ?? '未处置',
-      longitude: first.lng,
-      latitude: first.lat,
-    };
+  try {
+    tvMapPoints.value = await fetchTvMapPoints();
+  } catch {
+    // 服务层已三态（失败返回空态并告警）；此处兜底确保失败可见、不静默。
+    backendUnavailableWarn('tv', '/tv/map-points');
+  }
+  try {
+    const alarmPoints = await fetchAlarmPoints();
+    const first = alarmPoints.find((p) => Number.isFinite(p.lng) && Number.isFinite(p.lat));
+    if (first) {
+      alarmMarker.value = {
+        location: first.name,
+        status: first.status ?? '未处置',
+        longitude: first.lng,
+        latitude: first.lat,
+      };
+    }
+  } catch {
+    backendUnavailableWarn('map', '/map/alarms');
   }
 });
 

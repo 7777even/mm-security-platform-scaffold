@@ -104,13 +104,13 @@ const BY_DESIGN_VALUE_IMPORTS = {
   preliminaryMock: ['preliminaryMapControls'],
   // 救援地图坐标派生（几何）
   rescueMapCoords: ['coordsForFireBrigadeTeam', 'coordsForPagedSpread', 'coordsForSquadronPaged'],
-  // 工业电视：静态几何/演示撒点（业务数据已迁 @/services/tv）+ 详情 DEV 回落解析器（仅 demo 用）
+  // 工业电视：静态地图控件/告警钉 + 巡检扫描几何 + 详情 DEV 回落解析器（仅 demo 用）。
+  // tvVideoMapPoints（本地撒点）已删除：TvMap 改为三态取数（/tv/map-points），不再本地兜底。
   tvMock: [
     'resolveTvVideoMonitorDetail',
     'tvAlarmMarker',
     'tvInspectionScanPointsByCircle',
     'tvMapControls',
-    'tvVideoMapPoints',
   ],
   typhoonEmergencyMock: ['resolveTyphoonEmergencyIncidentV2'], // DEV 回落解析器
 };
@@ -170,6 +170,16 @@ const REGRESSION_GUARDS = [
     // 原直接从 lib/data/fireFacilityMonitoringMock 取业务数据，现走 @/services/map-data loaders。
     forbidden: [/from\s+['"][^'"]*lib\/data\/fireFacilityMonitoringMock['"]/],
   },
+  {
+    file: 'components/map/TvMap.vue',
+    // 原以本地撒点 tvVideoMapPoints 兜底（掩盖「无后端」）；现三态取数 /tv/map-points，失败空态 + 显式告警。
+    forbidden: [/\btvVideoMapPoints\b/],
+  },
+  {
+    file: 'components/layout/WeatherEntry.vue',
+    // 原 fetchWeatherOverview().catch(() => {}) 静默吞错；现服务层三态（空态判定），禁止静默空 catch。
+    forbidden: [/\.catch\(\(\)\s*=>\s*\{\}\)/],
+  },
 ];
 
 // ── 2b) 必备守卫：已验证「失败显式告警 / 三态取数」的文件，必须持续引用 backendFallback ──
@@ -180,6 +190,15 @@ const REQUIRED_GUARDS = [
   { file: 'lib/composables/useRescueVehicleView.ts', must: /backendFallback/ },
   { file: 'lib/composables/useCommunicationDevices.ts', must: /backendFallback/ },
   { file: 'lib/composables/usePreliminaryEventList.ts', must: /backendFallback/ },
+  // 2026-09-11 静默组件收敛：以下组件失败须显式告警（引用 backendFallback），
+  // 不得再改回「静默 catch（失败只置空/置 error 不报错）」。
+  { file: 'components/layout/SystemMessageBar.vue', must: /backendFallback/ },
+  { file: 'components/map/CenterMap.vue', must: /backendFallback/ },
+  { file: 'components/map/TvMap.vue', must: /backendFallback/ },
+  { file: 'components/panels/production/ProductionWorkstationPanel.vue', must: /backendFallback/ },
+  { file: 'components/panels/production/ProductionDeviceLedgerPanel.vue', must: /backendFallback/ },
+  { file: 'components/common/FirePatrolDialog.vue', must: /backendFallback/ },
+  { file: 'components/common/FireAlarmListDialog.vue', must: /backendFallback/ },
 ];
 
 // ── 扫描 ─────────────────────────────────────────────────────────────────────

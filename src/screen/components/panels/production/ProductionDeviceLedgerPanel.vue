@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import { fetchDevicePage, type DeviceItem } from '@/services/device';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 import { toDeviceLedgerItem, type DeviceLedgerItem } from '../../../lib/adapters/deviceAdapter';
 
 const loading = ref(true);
@@ -67,8 +68,9 @@ onMounted(async () => {
     allDevices.value = page.list.map((d: DeviceItem, i) => toDeviceLedgerItem(d, i));
     failed.value = false;
   } catch {
-    // 直连真后端失败时回落空列表 + 提示，UI 不崩
+    // 直连真后端失败时回落空列表 + 显式告警，UI 不崩
     failed.value = true;
+    backendUnavailableWarn('device', '/devices');
   } finally {
     loading.value = false;
   }

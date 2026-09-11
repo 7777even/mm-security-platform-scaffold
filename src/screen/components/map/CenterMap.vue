@@ -16,6 +16,7 @@ import { getPlantAreaDefinition } from '../../lib/data/plantAreas';
 import { fetchFireSituationMarkers } from '@/services/fireSituation';
 import type { FireSituationMarkerItem } from '@/services/fireSituation';
 import { fetchAlarmPoints } from '@/services/map';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 import { useRouter } from 'vue-router';
 import { fireAlarmToDetail } from '../../lib/data/alarmDetailMock';
 import {
@@ -75,7 +76,10 @@ onMounted(() => {
     .then((data) => {
       fireSituationMarkers.value = data.items;
     })
-    .catch(() => {});
+    .catch(() => {
+      // 服务层已三态（失败返回空态并告警）；此处兜底确保失败可见、不静默吞掉。
+      backendUnavailableWarn('fire-situation', '/fire-situation/markers');
+    });
   void fetchAlarmPoints().then((points) => {
     const first = points.find((p) => Number.isFinite(p.lng) && Number.isFinite(p.lat));
     if (first) alarmTarget.value = { longitude: first.lng, latitude: first.lat };

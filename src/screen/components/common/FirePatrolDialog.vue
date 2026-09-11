@@ -2,6 +2,7 @@
 import { computed, ref, watch, onMounted } from 'vue';
 import { fetchFirePatrols, type FirePatrolRecord } from '@/services/fireMonitoring';
 import { fetchDictOptions } from '@/services/system';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 import { useFirePatrolDialog } from '../../lib/composables/useFirePatrolDialog';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
 
@@ -25,6 +26,8 @@ async function loadDictOptionValues(dictCode: string): Promise<string[]> {
       .filter((it) => it.itemValue != null && it.itemValue !== '')
       .map((it) => String(it.itemValue));
   } catch {
+    // 服务层已三态（失败返回空数组并显式告警）；此处兜底确保失败可见、不静默吞掉。
+    backendUnavailableWarn('system', `/system/dicts/${dictCode}`);
     return [];
   }
 }

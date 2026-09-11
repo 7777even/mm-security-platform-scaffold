@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import ClipImage from '../common/ClipImage.vue';
 import { footerLabelClip } from '../../utils/footerClipConfig';
 import { fetchDashboardMessages, type SystemMessageItem } from '@/services/dashboard';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 import type { DesignModule } from '../../utils/designAssets';
 
 const props = defineProps<{
@@ -11,10 +12,14 @@ const props = defineProps<{
 
 const labelClip = computed(() => footerLabelClip(props.module));
 
-// 初始态以空数组占位，挂载后由后端 GET /dashboard/messages 接管。
+// 初始态以空数组占位，挂载后由后端 GET /dashboard/messages 接管；失败显式告警 + 空态（不回灌假消息）。
 const messages = ref<SystemMessageItem[]>([]);
 onMounted(async () => {
-  messages.value = await fetchDashboardMessages();
+  try {
+    messages.value = await fetchDashboardMessages();
+  } catch {
+    backendUnavailableWarn('dashboard', '/dashboard/messages');
+  }
 });
 </script>
 

@@ -6,12 +6,11 @@ import { fetchWeatherOverview, type CurrentWeather } from '@/services/weather';
 const open = ref(false);
 const currentWeather = ref<CurrentWeather | null>(null);
 
-onMounted(() => {
-  fetchWeatherOverview()
-    .then((res) => {
-      currentWeather.value = res.current;
-    })
-    .catch(() => {});
+// 服务层已三态：连后端失败 / 未连后端时返回空态并显式告警（不会抛错）。
+// 空态（condition 为空）不进入展示，避免误显「0℃」；无数据时保持加载占位。
+onMounted(async () => {
+  const res = await fetchWeatherOverview();
+  currentWeather.value = res.current && res.current.condition ? res.current : null;
 });
 </script>
 

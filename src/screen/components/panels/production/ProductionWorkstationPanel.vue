@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import { fetchWorkstations, type Workstation } from '@/services/dashboard';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 
 const loading = ref(true);
 const failed = ref(false);
@@ -26,6 +27,7 @@ onMounted(async () => {
     failed.value = false;
   } catch {
     failed.value = true;
+    backendUnavailableWarn('dashboard', '/dashboard/workstations');
   } finally {
     loading.value = false;
   }

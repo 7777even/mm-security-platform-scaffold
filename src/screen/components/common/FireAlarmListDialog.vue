@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { fetchFireAlarmPage, type FireAlarmItem, type AlarmStatus } from '@/services/alarm';
 import { ALARM_STATUS_META } from '../../lib/data/alarmMeta';
 import { fetchDictOptions } from '@/services/system';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 import { fireListItemToDetail } from '../../lib/data/alarmDetailMock';
 import { useAlarmDetailPanel } from '../../lib/composables/useAlarmDetailPanel';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
@@ -42,7 +43,8 @@ async function loadDictOptionValues(dictCode: string): Promise<string[]> {
       .filter((it) => it.itemValue != null && it.itemValue !== '')
       .map((it) => String(it.itemValue));
   } catch {
-    // 未连后端/失败：空选项（由全局横幅提示），不回落本地常量
+    // 未连后端/失败：空选项 + 显式告警（由全局横幅提示），不回落本地常量
+    backendUnavailableWarn('system', `/system/dicts/${dictCode}`);
     return [];
   }
 }
