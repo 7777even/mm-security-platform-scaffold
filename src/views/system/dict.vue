@@ -77,6 +77,24 @@ async function loadItems(): Promise<void> {
   }
 }
 
+/**
+ * el-table 插槽/事件给出的行是 element-plus 的 DefaultRow（索引签名对象），
+ * 直接传给要求 DictTypeItem / DictItemItem 的方法会类型不匹配。
+ * 这里统一收敛为领域类型，保持各处理函数签名严格，也避免在模板里写 TS 断言。
+ */
+function asDictType(row: unknown): DictTypeItem {
+  return row as DictTypeItem;
+}
+
+function asDictItem(row: unknown): DictItemItem {
+  return row as DictItemItem;
+}
+
+/** current-change 的回调签名与 selectType 不一致，包一层做类型收敛。 */
+function onTypeCurrentChange(row: unknown): void {
+  void selectType(asDictType(row));
+}
+
 async function selectType(row: DictTypeItem): Promise<void> {
   activeType.value = row;
   await loadItems();
@@ -253,7 +271,7 @@ onMounted(async () => {
           highlight-current-row
           :current-row-key="activeType?.id"
           row-key="id"
-          @current-change="selectType"
+          @current-change="onTypeCurrentChange"
         >
           <el-table-column prop="dictName" label="名称" min-width="110" />
           <el-table-column prop="dictCode" label="标识" min-width="120" />
@@ -263,7 +281,7 @@ onMounted(async () => {
                 v-permission="'system:dict:edit'"
                 link
                 type="primary"
-                @click.stop="openTypeEdit(row)"
+                @click.stop="openTypeEdit(asDictType(row))"
               >
                 编辑
               </el-button>
@@ -271,7 +289,7 @@ onMounted(async () => {
                 v-permission="'system:dict:delete'"
                 link
                 type="danger"
-                @click.stop="removeType(row)"
+                @click.stop="removeType(asDictType(row))"
               >
                 删除
               </el-button>
@@ -311,14 +329,14 @@ onMounted(async () => {
                 v-permission="'system:dict:edit'"
                 link
                 type="primary"
-                @click="openItemEdit(row)"
+                @click="openItemEdit(asDictItem(row))"
                 >编辑</el-button
               >
               <el-button
                 v-permission="'system:dict:delete'"
                 link
                 type="danger"
-                @click="removeItem(row)"
+                @click="removeItem(asDictItem(row))"
                 >删除</el-button
               >
             </template>

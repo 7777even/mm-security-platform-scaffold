@@ -77,6 +77,15 @@ function openCreate(parent?: SystemMenuNode): void {
   dialogVisible.value = true;
 }
 
+/**
+ * el-table 插槽解构出的 row 被推断为 element-plus 的 DefaultRow（索引签名对象），
+ * 直接传给要求 SystemMenuNode 的方法会类型不匹配。这里统一收敛为领域类型，
+ * 既保持各处理函数签名严格，也避免在模板里写 TS 断言。
+ */
+function asMenu(row: unknown): SystemMenuNode {
+  return row as SystemMenuNode;
+}
+
 function openEdit(row: SystemMenuNode): void {
   dialogMode.value = 'edit';
   editingId.value = row.id;
@@ -193,13 +202,21 @@ onMounted(async () => {
             v-permission="'system:menu:create'"
             link
             type="primary"
-            @click="openCreate(row)"
+            @click="openCreate(asMenu(row))"
             >加子节点</el-button
           >
-          <el-button v-permission="'system:menu:edit'" link type="primary" @click="openEdit(row)"
+          <el-button
+            v-permission="'system:menu:edit'"
+            link
+            type="primary"
+            @click="openEdit(asMenu(row))"
             >编辑</el-button
           >
-          <el-button v-permission="'system:menu:delete'" link type="danger" @click="remove(row)"
+          <el-button
+            v-permission="'system:menu:delete'"
+            link
+            type="danger"
+            @click="remove(asMenu(row))"
             >删除</el-button
           >
         </template>

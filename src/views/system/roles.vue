@@ -121,6 +121,15 @@ async function submit(): Promise<void> {
   }
 }
 
+/**
+ * el-table 插槽解构出的 row 被推断为 element-plus 的 DefaultRow（索引签名对象），
+ * 直接传给要求 SystemRoleItem 的方法会类型不匹配。这里统一收敛为领域类型，
+ * 既保持各处理函数签名严格，也避免在模板里写 TS 断言。
+ */
+function asRole(row: unknown): SystemRoleItem {
+  return row as SystemRoleItem;
+}
+
 async function toggleStatus(row: SystemRoleItem): Promise<void> {
   try {
     await updateSystemRoleStatus(row.id, row.status === 1 ? 0 : 1);
@@ -210,21 +219,33 @@ onMounted(async () => {
       </el-table-column>
       <el-table-column label="操作" width="250" fixed="right">
         <template #default="{ row }">
-          <el-button v-permission="'system:role:edit'" link type="primary" @click="openEdit(row)"
+          <el-button
+            v-permission="'system:role:edit'"
+            link
+            type="primary"
+            @click="openEdit(asRole(row))"
             >编辑</el-button
           >
-          <el-button v-permission="'system:role:grant'" link type="warning" @click="openGrant(row)"
+          <el-button
+            v-permission="'system:role:grant'"
+            link
+            type="warning"
+            @click="openGrant(asRole(row))"
             >授权</el-button
           >
           <el-button
             v-permission="'system:role:edit'"
             link
             type="warning"
-            @click="toggleStatus(row)"
+            @click="toggleStatus(asRole(row))"
           >
             {{ row.status === 1 ? '停用' : '启用' }}
           </el-button>
-          <el-button v-permission="'system:role:delete'" link type="danger" @click="remove(row)"
+          <el-button
+            v-permission="'system:role:delete'"
+            link
+            type="danger"
+            @click="remove(asRole(row))"
             >删除</el-button
           >
         </template>

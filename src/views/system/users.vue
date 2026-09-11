@@ -107,6 +107,15 @@ function openCreate(): void {
   dialogVisible.value = true;
 }
 
+/**
+ * el-table 插槽解构出的 row 被推断为 element-plus 的 DefaultRow（索引签名对象），
+ * 直接传给要求 SystemUserItem 的方法会类型不匹配。这里统一收敛为领域类型，
+ * 既保持各处理函数签名严格，也避免在模板里写 TS 断言。
+ */
+function asUser(row: unknown): SystemUserItem {
+  return row as SystemUserItem;
+}
+
 function openEdit(row: SystemUserItem): void {
   dialogMode.value = 'edit';
   editingId.value = row.id;
@@ -268,21 +277,33 @@ onMounted(async () => {
       <el-table-column prop="createdAt" label="创建时间" min-width="160" />
       <el-table-column label="操作" width="260" fixed="right">
         <template #default="{ row }">
-          <el-button v-permission="'system:user:edit'" link type="primary" @click="openEdit(row)"
+          <el-button
+            v-permission="'system:user:edit'"
+            link
+            type="primary"
+            @click="openEdit(asUser(row))"
             >编辑</el-button
           >
           <el-button
             v-permission="'system:user:edit'"
             link
             type="warning"
-            @click="toggleStatus(row)"
+            @click="toggleStatus(asUser(row))"
           >
             {{ row.status === 1 ? '停用' : '启用' }}
           </el-button>
-          <el-button v-permission="'system:user:reset-pwd'" link type="warning" @click="reset(row)"
+          <el-button
+            v-permission="'system:user:reset-pwd'"
+            link
+            type="warning"
+            @click="reset(asUser(row))"
             >重置密码</el-button
           >
-          <el-button v-permission="'system:user:delete'" link type="danger" @click="remove(row)"
+          <el-button
+            v-permission="'system:user:delete'"
+            link
+            type="danger"
+            @click="remove(asUser(row))"
             >删除</el-button
           >
         </template>
