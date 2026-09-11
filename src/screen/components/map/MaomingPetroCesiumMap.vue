@@ -37,6 +37,25 @@ import {
 } from '../../lib/composables/sharedCesiumBridge.ts';
 import { setAccidentRescueFlatViewActive } from '../../utils/accidentRescueFlatViewState.ts';
 import { fetchMapZoneSigns } from '../../../services/map';
+import {
+  CINEMATIC_DOF_SHADER,
+  TV_INSPECTION_CENTER_GRID_STEPS,
+  TV_INSPECTION_CENTER_POINT_SIZE,
+  TV_INSPECTION_CIRCLE_COLOR,
+  TV_INSPECTION_CIRCLE_FILL_ALPHA,
+  TV_INSPECTION_CIRCLE_LINE_WIDTH,
+  TV_INSPECTION_CIRCLE_SEGMENTS,
+  TV_INSPECTION_CIRCLE_SEPARATION_GAP,
+  TV_INSPECTION_FALLBACK_CIRCLES,
+  TV_INSPECTION_HEIGHT_OFFSET,
+  TV_INSPECTION_LINE_COMMON,
+  TV_INSPECTION_RADIAL_ANGLES,
+  TV_INSPECTION_RADIAL_LINE_WIDTH,
+  TV_INSPECTION_RING_SAMPLES,
+  TV_INSPECTION_SCAN_CAMERA_FLY_SEC,
+  TV_INSPECTION_SCAN_DURATION_MS,
+  TV_INSPECTION_SCAN_TOP_DOWN_PADDING,
+} from './maomingPetroMapConstants';
 
 const props = defineProps({
   /** 是否显示顶面加载等状态条（测试页开启，大屏嵌入默认关闭） */
@@ -410,62 +429,6 @@ const EVACUATION_ROUTE_ENTITY_IDS = {
 
 let evacuationOutlineDataSource = null;
 let monitoringFocusDataSource = null;
-
-const CINEMATIC_DOF_SHADER = `
-  uniform sampler2D colorTexture;
-  uniform sampler2D blurTexture;
-  uniform sampler2D depthTexture;
-  uniform float focalDistance;
-  uniform float focusRadius;
-  uniform float radialStrength;
-  uniform float depthStrength;
-  uniform float farBlurStart;
-
-  in vec2 v_textureCoordinates;
-
-  vec4 toEye(vec2 uv, float depth)
-  {
-    vec2 xy = vec2((uv.x * 2.0 - 1.0), ((1.0 - uv.y) * 2.0 - 1.0));
-    vec4 posInCamera = czm_inverseProjection * vec4(xy, depth, 1.0);
-    posInCamera = posInCamera / posInCamera.w;
-    return posInCamera;
-  }
-
-  float computeFarBlur(float eyeDepth)
-  {
-    if (eyeDepth <= focalDistance + farBlurStart) {
-      return 0.0;
-    }
-    float t = (eyeDepth - focalDistance - farBlurStart);
-    t /= max(czm_currentFrustum.y - focalDistance - farBlurStart, 1.0);
-    t = clamp(t, 0.0, 1.0);
-    return pow(t, 0.42) * depthStrength;
-  }
-
-  float computeRadialBlur(vec2 uv)
-  {
-    float dist = length(uv - vec2(0.5)) * 2.0;
-    return smoothstep(focusRadius, 1.0, dist) * radialStrength;
-  }
-
-  void main(void)
-  {
-    vec4 sharp = texture(colorTexture, v_textureCoordinates);
-    vec4 blurred = texture(blurTexture, v_textureCoordinates);
-    float radialBlur = computeRadialBlur(v_textureCoordinates);
-
-    float depth = czm_readDepth(depthTexture, v_textureCoordinates);
-    if (depth >= 1.0) {
-      out_FragColor = mix(sharp, blurred, clamp(radialBlur, 0.0, 1.0));
-      return;
-    }
-
-    vec4 posInCamera = toEye(v_textureCoordinates, depth);
-    float farBlur = computeFarBlur(-posInCamera.z);
-    float blurAmount = clamp(max(radialBlur, farBlur), 0.0, 1.0);
-    out_FragColor = mix(sharp, blurred, blurAmount);
-  }
-`;
 
 /** GeoJSON 中 id 为 null 时会导致 flyTo / zoomTo 崩溃 */
 function ensureEntityIds(dataSource, prefix) {
@@ -5062,43 +5025,6 @@ function getBoundaryEdgePositions() {
   return result;
 }
 
-const TV_INSPECTION_CIRCLE_SEGMENTS = 128;
-const TV_INSPECTION_CIRCLE_COLOR = '#FFFF00';
-const TV_INSPECTION_CIRCLE_FILL_ALPHA = 0.22;
-const _TV_INSPECTION_CIRCLE_MIN_RADIUS = 25;
-const TV_INSPECTION_CIRCLE_SEPARATION_GAP = 24;
-const TV_INSPECTION_CIRCLE_LINE_WIDTH = 5;
-const TV_INSPECTION_RADIAL_LINE_WIDTH = 4;
-const TV_INSPECTION_CENTER_POINT_SIZE = 10;
-/** 相对边界顶面再抬高，避免被模型遮挡 */
-const TV_INSPECTION_HEIGHT_OFFSET = 12;
-const TV_INSPECTION_RING_SAMPLES = 72;
-/** 径向线方向（弧度）：圆心 → 圆边 */
-const TV_INSPECTION_RADIAL_ANGLES = {
-  0: (225 * Math.PI) / 180,
-  1: (315 * Math.PI) / 180,
-};
-/** 边界环未就绪时的回退圆（茂名石化边界实测坐标） */
-const TV_INSPECTION_FALLBACK_CIRCLES = [
-  {
-    id: 'inspection-north',
-    variant: 0,
-    longitude: 110.874766,
-    latitude: 21.681671,
-    radiusMeters: 332,
-  },
-  {
-    id: 'inspection-south',
-    variant: 1,
-    longitude: 110.885214,
-    latitude: 21.678325,
-    radiusMeters: 332,
-  },
-];
-const TV_INSPECTION_CENTER_GRID_STEPS = 40;
-const TV_INSPECTION_SCAN_DURATION_MS = 3200;
-const TV_INSPECTION_SCAN_CAMERA_FLY_SEC = 1.25;
-const TV_INSPECTION_SCAN_TOP_DOWN_PADDING = 1.14;
 let tvInspectionCircleEntities = [];
 /** @type {Map<string, { id: string, longitude: number, latitude: number, radiusMeters: number, height: number, variant: number, radialEntity: object, circleEntity: object }>} */
 let tvInspectionCircleById = new Map();
@@ -5801,11 +5727,6 @@ function createTvInspectionGlowMaterial() {
 function createTvInspectionSolidMaterial() {
   return new Cesium.ColorMaterialProperty(createTvInspectionLineColor());
 }
-
-const TV_INSPECTION_LINE_COMMON = {
-  clampToGround: false,
-  disableDepthTestDistance: Number.POSITIVE_INFINITY,
-};
 
 function clearEvacuationRoute() {
   if (!viewer) return;
