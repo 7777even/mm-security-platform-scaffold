@@ -39,6 +39,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/typhoon/response-board': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 台风应急响应板聚合
+     * @description 返回台风应急页响应板所需数据：气象预警横幅（轮播）、预案指令（plan）与临时指令（temporary）。取代前端 TyphoonLeftPanel 硬编码的 weatherAlertBanners / weatherCommands / temporaryCommands。
+     */
+    get: operations['getTyphoonResponseBoard'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -84,6 +104,76 @@ export interface components {
       data?: unknown;
       /** @example a1b2c3d4 */
       traceId?: string;
+    };
+    /** @description 台风应急响应板聚合（预警横幅 + 预案指令 + 临时指令） */
+    TyphoonResponseBoard: {
+      /** @description 气象预警横幅（轮播） */
+      banners?: components['schemas']['TyphoonAlertBanner'][];
+      /** @description 预案指令（command_kind=plan，按 sort_no 升序） */
+      planCommands?: components['schemas']['TyphoonCommand'][];
+      /** @description 临时指令（command_kind=temporary，按 sort_no 升序） */
+      temporaryCommands?: components['schemas']['TyphoonCommand'][];
+    };
+    /** @description 气象预警横幅 */
+    TyphoonAlertBanner: {
+      /**
+       * @description 预警级别
+       * @example 橙色预警
+       */
+      level?: string;
+      /**
+       * @description 响应标题
+       * @example 防台防汛Ⅱ级响应
+       */
+      title?: string;
+      /**
+       * @description 补充说明
+       * @example 暴雨预警触发 · 持续监测中
+       */
+      detail?: string;
+      /**
+       * @description 展示色调
+       * @example orange
+       */
+      tone?: string;
+    };
+    /** @description 响应板指令行 */
+    TyphoonCommand: {
+      /**
+       * @description 指令编码
+       * @example w1
+       */
+      id?: string;
+      /**
+       * @description 指令分组
+       * @example 预警与启动
+       */
+      group?: string;
+      /**
+       * @description 指令名称
+       * @example 发布防台防汛预警
+       */
+      name?: string;
+      /**
+       * @description 责任对象
+       * @example 各生产单位、承包商
+       */
+      target?: string;
+      /**
+       * @description 执行状态：已完成/执行中/待执行
+       * @example 已完成
+       */
+      status?: string;
+      /**
+       * @description 指令时间（HH:mm）
+       * @example 08:13
+       */
+      time?: string;
+      /**
+       * @description 执行要求说明
+       * @example 发布橙色预警，要求停止露天高处及吊装作业。
+       */
+      detail?: string;
     };
     /** @description 台风监测对象实时值（水位 / 泵站运行状态） */
     TyphoonMonitorObject: {
@@ -512,6 +602,71 @@ export interface operations {
            */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['TyphoonDispatchResource'][];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  getTyphoonResponseBoard: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=响应板聚合） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "banners": [
+           *           {
+           *             "level": "橙色预警",
+           *             "title": "防台防汛Ⅱ级响应",
+           *             "detail": "暴雨预警触发 · 持续监测中",
+           *             "tone": "orange"
+           *           }
+           *         ],
+           *         "planCommands": [
+           *           {
+           *             "id": "w1",
+           *             "group": "预警与启动",
+           *             "name": "发布防台防汛预警",
+           *             "target": "各生产单位、承包商",
+           *             "status": "已完成",
+           *             "time": "08:13",
+           *             "detail": "发布橙色预警，要求停止露天高处及吊装作业。"
+           *           }
+           *         ],
+           *         "temporaryCommands": [
+           *           {
+           *             "id": "t1",
+           *             "group": "现场加派",
+           *             "name": "增派2台移动排水泵",
+           *             "target": "炼油防汛物资库",
+           *             "status": "待执行",
+           *             "time": "08:31",
+           *             "detail": "支援6#路地磅北地沟，完成后反馈泵组运行电流。"
+           *           }
+           *         ]
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['TyphoonResponseBoard'];
           };
         };
       };

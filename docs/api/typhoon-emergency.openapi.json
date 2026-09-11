@@ -195,10 +195,137 @@
           "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
         }
       }
+    },
+    "/typhoon/response-board": {
+      "get": {
+        "tags": ["typhoon"],
+        "operationId": "getTyphoonResponseBoard",
+        "summary": "台风应急响应板聚合",
+        "description": "返回台风应急页响应板所需数据：气象预警横幅（轮播）、预案指令（plan）与临时指令（temporary）。取代前端 TyphoonLeftPanel 硬编码的 weatherAlertBanners / weatherCommands / temporaryCommands。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=响应板聚合）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/TyphoonResponseBoard" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "banners": [
+                      {
+                        "level": "橙色预警",
+                        "title": "防台防汛Ⅱ级响应",
+                        "detail": "暴雨预警触发 · 持续监测中",
+                        "tone": "orange"
+                      }
+                    ],
+                    "planCommands": [
+                      {
+                        "id": "w1",
+                        "group": "预警与启动",
+                        "name": "发布防台防汛预警",
+                        "target": "各生产单位、承包商",
+                        "status": "已完成",
+                        "time": "08:13",
+                        "detail": "发布橙色预警，要求停止露天高处及吊装作业。"
+                      }
+                    ],
+                    "temporaryCommands": [
+                      {
+                        "id": "t1",
+                        "group": "现场加派",
+                        "name": "增派2台移动排水泵",
+                        "target": "炼油防汛物资库",
+                        "status": "待执行",
+                        "time": "08:31",
+                        "detail": "支援6#路地磅北地沟，完成后反馈泵组运行电流。"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "TyphoonResponseBoard": {
+        "type": "object",
+        "description": "台风应急响应板聚合（预警横幅 + 预案指令 + 临时指令）",
+        "properties": {
+          "banners": {
+            "type": "array",
+            "description": "气象预警横幅（轮播）",
+            "items": { "$ref": "#/components/schemas/TyphoonAlertBanner" }
+          },
+          "planCommands": {
+            "type": "array",
+            "description": "预案指令（command_kind=plan，按 sort_no 升序）",
+            "items": { "$ref": "#/components/schemas/TyphoonCommand" }
+          },
+          "temporaryCommands": {
+            "type": "array",
+            "description": "临时指令（command_kind=temporary，按 sort_no 升序）",
+            "items": { "$ref": "#/components/schemas/TyphoonCommand" }
+          }
+        }
+      },
+      "TyphoonAlertBanner": {
+        "type": "object",
+        "description": "气象预警横幅",
+        "properties": {
+          "level": { "type": "string", "description": "预警级别", "example": "橙色预警" },
+          "title": { "type": "string", "description": "响应标题", "example": "防台防汛Ⅱ级响应" },
+          "detail": {
+            "type": "string",
+            "description": "补充说明",
+            "example": "暴雨预警触发 · 持续监测中"
+          },
+          "tone": { "type": "string", "description": "展示色调", "example": "orange" }
+        }
+      },
+      "TyphoonCommand": {
+        "type": "object",
+        "description": "响应板指令行",
+        "properties": {
+          "id": { "type": "string", "description": "指令编码", "example": "w1" },
+          "group": { "type": "string", "description": "指令分组", "example": "预警与启动" },
+          "name": { "type": "string", "description": "指令名称", "example": "发布防台防汛预警" },
+          "target": {
+            "type": "string",
+            "description": "责任对象",
+            "example": "各生产单位、承包商"
+          },
+          "status": {
+            "type": "string",
+            "description": "执行状态：已完成/执行中/待执行",
+            "example": "已完成"
+          },
+          "time": { "type": "string", "description": "指令时间（HH:mm）", "example": "08:13" },
+          "detail": {
+            "type": "string",
+            "description": "执行要求说明",
+            "example": "发布橙色预警，要求停止露天高处及吊装作业。"
+          }
+        }
+      },
       "TyphoonMonitorObject": {
         "type": "object",
         "description": "台风监测对象实时值（水位 / 泵站运行状态）",

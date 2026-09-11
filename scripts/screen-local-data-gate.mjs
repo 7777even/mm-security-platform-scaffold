@@ -193,6 +193,24 @@ const REGRESSION_GUARDS = [
     // 静态图资按 image_key 映射为 by-design。禁再出现本地硬编码分组。
     forbidden: [/const\s+highArGroups\s*:\s*VideoGroup\[\]/, /function\s+arFeeds\b/],
   },
+  {
+    file: 'components/panels/typhoon/TyphoonLeftPanel.vue',
+    // 原内联硬编码气象预警横幅(3)/预案指令(5)/临时指令(2)字面量；
+    // 现由 GET /typhoon/response-board 下发（V41 fac_typhoon_alert_banner/_command）。
+    // commandLogs 按状态派生模板文案、tabs 为 UI 结构，均 by-design。
+    forbidden: [
+      /const\s+weatherAlertBanners\s*=\s*\[/,
+      /const\s+weatherCommands\s*=\s*\[/,
+      /const\s+temporaryCommands\s*=\s*\[/,
+    ],
+  },
+  {
+    file: 'components/map/MaomingPetroCesiumMap.vue',
+    // 原渲染主题 MAP_THEME 内硬编码装置区信息牌文案（plantZonePopups/plantZoneTealTags）；
+    // 现由 GET /map/zone-signs 下发（V42 fac_map_zone_sign）。渲染主题参数（颜色/高度/景深）
+    // 与厂区标注几何（周边地名 label）为 by-design。
+    forbidden: [/plantZonePopups\s*:/, /plantZoneTealTags\s*:/],
+  },
 ];
 
 // ── 2b) 必备守卫：已验证「失败显式告警 / 三态取数」的文件，必须持续引用 backendFallback ──
@@ -214,6 +232,8 @@ const REQUIRED_GUARDS = [
   { file: 'components/common/FireAlarmListDialog.vue', must: /backendFallback/ },
   { file: 'components/video-wall/videoWallStore.ts', must: /backendFallback/ },
   { file: 'components/panels/tv/ImportantVideoPanel.vue', must: /fetchImportantVideoGroups/ },
+  { file: 'components/panels/typhoon/TyphoonLeftPanel.vue', must: /fetchTyphoonResponseBoard/ },
+  { file: 'components/map/MaomingPetroCesiumMap.vue', must: /fetchMapZoneSigns/ },
 ];
 
 // ── 扫描 ─────────────────────────────────────────────────────────────────────

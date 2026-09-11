@@ -8,7 +8,11 @@ import { CanvasRenderer } from 'echarts/renderers';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
 import EmergencyResourceDispatchPanel from '../accident-rescue/EmergencyResourceDispatchPanel.vue';
 import WeatherDetailsDialog from '../../layout/WeatherDetailsDialog.vue';
-import { fetchTyphoonDispatchResources } from '@/services/typhoonEmergency';
+import {
+  fetchTyphoonDispatchResources,
+  fetchTyphoonResponseBoard,
+  type TyphoonResponseBoardData,
+} from '@/services/typhoonEmergency';
 import type { EmergencyDispatchResource } from '../../../lib/data/accidentRescueMock';
 import type { TyphoonEmergencyIncident } from '@/services/typhoonEmergency';
 
@@ -44,34 +48,23 @@ const dispatchResources = ref<EmergencyDispatchResource[]>([]);
 
 onMounted(async () => {
   dispatchResources.value = (await fetchTyphoonDispatchResources()) as EmergencyDispatchResource[];
+  const board = await fetchTyphoonResponseBoard();
+  weatherAlertBanners.value = board.banners;
+  weatherCommands.value = board.planCommands;
+  temporaryCommands.value = board.temporaryCommands;
 });
 const responseKind = ref<'plan' | 'temporary'>('plan');
 const responseStatus = ref('全部状态');
 const weatherBannerIndex = ref(0);
 let weatherBannerTimer: ReturnType<typeof setInterval> | null = null;
 
-const weatherAlertBanners = [
-  {
-    level: '橙色预警',
-    title: '防台防汛Ⅱ级响应',
-    detail: '暴雨预警触发 · 持续监测中',
-    tone: 'orange',
-  },
-  {
-    level: '黄色预警',
-    title: '雷电天气防御',
-    detail: '雷电预警生效 · 强对流持续关注',
-    tone: 'yellow',
-  },
-  {
-    level: '蓝色预警',
-    title: '大风天气防御',
-    detail: '阵风风险上升 · 高处作业已管控',
-    tone: 'blue',
-  },
-] as const;
+// 响应板（横幅 + 指令）由 GET /typhoon/response-board 下发（V41 fac_typhoon_alert_banner/
+// fac_typhoon_command）；三态取数失败 → 空板 + 显式告警，绝不回灌本地硬编码。
+const weatherAlertBanners = ref<TyphoonResponseBoardData['banners']>([]);
+const weatherCommands = ref<TyphoonResponseBoardData['planCommands']>([]);
+const temporaryCommands = ref<TyphoonResponseBoardData['temporaryCommands']>([]);
 
-const activeWeatherBanner = computed(() => weatherAlertBanners[weatherBannerIndex.value]!);
+const activeWeatherBanner = computed(() => weatherAlertBanners.value[weatherBannerIndex.value]);
 
 function selectWeatherBanner(index: number) {
   weatherBannerIndex.value = index;
@@ -85,14 +78,23 @@ function stopWeatherBanner() {
 
 function startWeatherBanner() {
   stopWeatherBanner();
-  if (weatherAlertBanners.length < 2) return;
+  if (weatherAlertBanners.value.length < 2) return;
   weatherBannerTimer = setInterval(() => {
-    weatherBannerIndex.value = (weatherBannerIndex.value + 1) % weatherAlertBanners.length;
+    weatherBannerIndex.value = (weatherBannerIndex.value + 1) % weatherAlertBanners.value.length;
   }, 5000);
 }
 
 onMounted(startWeatherBanner);
 onUnmounted(stopWeatherBanner);
+
+// 横幅数量变化后重启轮播（空板不轮播）
+watch(
+  () => weatherAlertBanners.value.length,
+  () => {
+    weatherBannerIndex.value = 0;
+    startWeatherBanner();
+  },
+);
 
 watch(
   () => props.incident.eventId,
@@ -101,77 +103,8 @@ watch(
   },
 );
 
-const weatherCommands = [
-  {
-    id: 'w1',
-    group: '预警与启动',
-    name: '发布防台防汛预警',
-    target: '各生产单位、承包商',
-    status: '已完成',
-    time: '08:13',
-    detail: '发布橙色预警，要求停止露天高处及吊装作业。',
-  },
-  {
-    id: 'w2',
-    group: '重点点位管控',
-    name: '易涝点巡查与水位上报',
-    target: '炼油防汛抢险一组',
-    status: '执行中',
-    time: '08:18',
-    detail: '每15分钟通过APP反馈8个易涝点水位及现场影像。',
-  },
-  {
-    id: 'w3',
-    group: '排涝力量部署',
-    name: '预置排涝车辆和移动泵',
-    target: '消防救援中心、特勤中队',
-    status: '待执行',
-    time: '08:20',
-    detail: '龙吸水排涝车前置至西化学水泵房，大功率泵浦车进驻301事故池。',
-  },
-  {
-    id: 'w4',
-    group: '生产运行保障',
-    name: '核查雨排系统与关键电源',
-    target: '机动部、电仪中心',
-    status: '执行中',
-    time: '08:24',
-    detail: '确认雨水泵双机热备，检查低洼区域配电设施防水措施。',
-  },
-  {
-    id: 'w5',
-    group: '人员安全',
-    name: '限制涉水区域通行',
-    target: '安全环保部、保卫部',
-    status: '待执行',
-    time: '08:27',
-    detail: '设置警戒线并引导车辆绕行，防止人员进入深水区域。',
-  },
-];
-
-const temporaryCommands = [
-  {
-    id: 't1',
-    group: '现场加派',
-    name: '增派2台移动排水泵',
-    target: '炼油防汛物资库',
-    status: '待执行',
-    time: '08:31',
-    detail: '支援6#路地磅北地沟，完成后反馈泵组运行电流。',
-  },
-  {
-    id: 't2',
-    group: '气象会商',
-    name: '组织短临天气会商',
-    target: '应急管理部、气象服务单位',
-    status: '执行中',
-    time: '08:35',
-    detail: '研判未来3小时强降雨落区及厂区影响。',
-  },
-];
-
 const filteredCommands = computed(() => {
-  const source = responseKind.value === 'plan' ? weatherCommands : temporaryCommands;
+  const source = responseKind.value === 'plan' ? weatherCommands.value : temporaryCommands.value;
   return responseStatus.value === '全部状态'
     ? source
     : source.filter((item) => item.status === responseStatus.value);
@@ -325,6 +258,7 @@ const waterChartOption = computed(() => ({
 
       <div v-if="activeTab === 'situation'" class="tw-left__body tw-left__body--situation">
         <section
+          v-if="activeWeatherBanner"
           class="tw-weather-banner"
           :class="`tw-weather-banner--${activeWeatherBanner.tone}`"
           role="button"

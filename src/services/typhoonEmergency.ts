@@ -166,6 +166,73 @@ export async function fetchTyphoonIncident(
   }
 }
 
+/** 台风应急响应板聚合（V41 fac_typhoon_alert_banner / fac_typhoon_command 下发）。 */
+export interface TyphoonResponseBoardData {
+  /** 气象预警横幅（轮播） */
+  banners: { level: string; title: string; detail: string; tone: string }[];
+  /** 预案指令 */
+  planCommands: {
+    id: string;
+    group: string;
+    name: string;
+    target: string;
+    status: string;
+    time: string;
+    detail: string;
+  }[];
+  /** 临时指令 */
+  temporaryCommands: {
+    id: string;
+    group: string;
+    name: string;
+    target: string;
+    status: string;
+    time: string;
+    detail: string;
+  }[];
+}
+
+const EMPTY_RESPONSE_BOARD: TyphoonResponseBoardData = {
+  banners: [],
+  planCommands: [],
+  temporaryCommands: [],
+};
+
+function isResponseBoard(v: unknown): v is TyphoonResponseBoardData {
+  if (!v || typeof v !== 'object') return false;
+  const o = v as Record<string, unknown>;
+  return (
+    Array.isArray(o.banners) && Array.isArray(o.planCommands) && Array.isArray(o.temporaryCommands)
+  );
+}
+
+/**
+ * 台风应急响应板聚合：GET /typhoon/response-board。三态取数——
+ * 无后端 / 失败 / 契约不符 → 显式告警 + 空板（绝不回灌本地硬编码横幅与指令）。
+ */
+export async function fetchTyphoonResponseBoard(): Promise<TyphoonResponseBoardData> {
+  if (!import.meta.env.VITE_API_BASE) {
+    // 零本地 fixture：离线演示与未连后端均为空板 + 显式告警
+    notifyBackendOffline(
+      'typhoon',
+      '/typhoon/response-board',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return EMPTY_RESPONSE_BOARD;
+  }
+  try {
+    const data = await request<unknown>({ url: '/typhoon/response-board', method: 'GET' });
+    if (!isResponseBoard(data)) {
+      backendUnavailableWarn('typhoon', '/typhoon/response-board', REASON_CONTRACT_MISMATCH);
+      return EMPTY_RESPONSE_BOARD;
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('typhoon', '/typhoon/response-board');
+    return EMPTY_RESPONSE_BOARD;
+  }
+}
+
 /** 防汛排涝可调度力量清单：GET /typhoon/dispatch-resources */
 export async function fetchTyphoonDispatchResources(): Promise<TyphoonDispatchResource[]> {
   if (!import.meta.env.VITE_API_BASE) {
