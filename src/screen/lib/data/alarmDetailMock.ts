@@ -73,8 +73,6 @@ export const alarmDetailTypeOptions = [
   '周界入侵',
 ] as const;
 
-export const alarmDetailPersonnelOptions = ['张三', '王成', '李四', '赵五', '高策'] as const;
-
 const FIRE_IMAGES = [fireAlarmPipeRack, chemicalFactoryPipes, outdoorStorageTanks];
 const PROD_IMAGES = [chemicalFactoryPipes, chemicalPlantReactor, outdoorStorageTanks];
 const SECURITY_IMAGES = [securityPerimeterIntrusion];
