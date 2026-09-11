@@ -1,5 +1,5 @@
 ﻿<script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
+import { ref, shallowRef, onMounted, onUnmounted, watch, computed } from 'vue';
 import { videoMode, playbackTimeRange } from './videoWallStore';
 import { videoWallBus, type VideoWallPlaybackCommand } from './videoWallBus';
 
@@ -108,7 +108,8 @@ const isLoading = ref(true);
 const isPaused = ref(false);
 const timeStr = ref('');
 const playbackOffsetSec = ref(0);
-let timer: ReturnType<typeof setInterval> | null = null;
+let clockTimer: ReturnType<typeof setInterval> | null = null;
+let aiTimer: ReturnType<typeof setInterval> | null = null;
 
 // AI detection box simulation
 interface AiBox {
@@ -120,7 +121,7 @@ interface AiBox {
   label: string;
   color: string;
 }
-const aiBoxes = ref<AiBox[]>([]);
+const aiBoxes = shallowRef<AiBox[]>([]);
 
 const generateAiBoxes = () => {
   // Only sometimes render AI detection targets
@@ -169,26 +170,17 @@ const startLoading = () => {
   ); // random 1~1.8s
 };
 
-const updateTime = () => {
-  if (videoMode.value === 'realtime') {
-    const now = new Date();
-    timeStr.value =
-      now.getFullYear() +
-      '-' +
-      String(now.getMonth() + 1).padStart(2, '0') +
-      '-' +
-      String(now.getDate()).padStart(2, '0') +
-      ' ' +
-      String(now.getHours()).padStart(2, '0') +
-      ':' +
-      String(now.getMinutes()).padStart(2, '0') +
-      ':' +
-      String(now.getSeconds()).padStart(2, '0');
+const formatStamp = (date: Date): string => {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())} ${p(
+    date.getHours(),
+  )}:${p(date.getMinutes())}:${p(date.getSeconds())}`;
+};
 
-    // Update AI boxes dynamic movements/regeneration
-    if (Math.random() > 0.7) {
-      generateAiBoxes();
-    }
+// 仅负责 OSD 时钟（便宜的字符串更新）。与 AI 检测框刷新解耦，避免逐秒重渲染抖动。
+const updateClock = () => {
+  if (videoMode.value === 'realtime') {
+    timeStr.value = formatStamp(new Date());
   } else {
     // Playback mode: based on start time + offset
     const startStr = playbackTimeRange.value.start;
@@ -202,27 +194,18 @@ const updateTime = () => {
       return;
     }
     startDate.setSeconds(startDate.getSeconds() + playbackOffsetSec.value);
-
-    timeStr.value =
-      startDate.getFullYear() +
-      '-' +
-      String(startDate.getMonth() + 1).padStart(2, '0') +
-      '-' +
-      String(startDate.getDate()).padStart(2, '0') +
-      ' ' +
-      String(startDate.getHours()).padStart(2, '0') +
-      ':' +
-      String(startDate.getMinutes()).padStart(2, '0') +
-      ':' +
-      String(startDate.getSeconds()).padStart(2, '0');
+    timeStr.value = formatStamp(startDate);
 
     if (!isPaused.value) {
       playbackOffsetSec.value++;
-      if (Math.random() > 0.8) {
-        generateAiBoxes();
-      }
     }
   }
+};
+
+// 模拟 AI 检测框刷新：独立于 1s 时钟，慢节奏运行，降低整组件重渲染频率。
+const updateAiBoxes = () => {
+  if (isPaused.value) return; // 回放暂停时不刷新模拟框
+  generateAiBoxes();
 };
 
 const handlePlaybackCommand = (cmd: VideoWallPlaybackCommand) => {
@@ -243,7 +226,7 @@ const handlePlaybackCommand = (cmd: VideoWallPlaybackCommand) => {
     if (!isNaN(start) && !isNaN(end) && end > start) {
       const totalSec = (end - start) / 1000;
       playbackOffsetSec.value = Math.floor(totalSec * (cmd.percent / 100));
-      updateTime();
+      updateClock();
     }
   }
 };
@@ -272,13 +255,15 @@ watch(
 onMounted(() => {
   startLoading();
   generateAiBoxes();
-  timer = setInterval(updateTime, 1000);
-  updateTime();
+  clockTimer = setInterval(updateClock, 1000);
+  aiTimer = setInterval(updateAiBoxes, 3000);
+  updateClock();
   videoWallBus.$on('playback-command', handlePlaybackCommand);
 });
 
 onUnmounted(() => {
-  if (timer) clearInterval(timer);
+  if (clockTimer) clearInterval(clockTimer);
+  if (aiTimer) clearInterval(aiTimer);
   videoWallBus.$off('playback-command', handlePlaybackCommand);
 });
 </script>

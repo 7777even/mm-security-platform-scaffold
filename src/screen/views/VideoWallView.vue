@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, watch, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import VideoWallSidebar from '../components/video-wall/VideoWallSidebar.vue';
 import VideoWallGrid from '../components/video-wall/VideoWallGrid.vue';
@@ -11,6 +11,7 @@ import {
   loadVideoWallNavigation,
   prepareDefaultHighAltitudeWall,
   showAllEventVideosOnWall,
+  stopPlan,
   type EventVideoKind,
 } from '../components/video-wall/videoWallStore';
 import { useShellRoute } from '../lib/composables/useShellRoute';
@@ -21,6 +22,9 @@ const eventContext = computed(() => activeEventVideoContext.value);
 
 // 导航（目标树/视频目录/高空AR相机）由后端提供，进入视频墙即加载（幂等）
 void loadVideoWallNavigation();
+
+// 离开视频墙视图时停掉预案轮播定时器（模块级 planInterval），避免子应用保活时持续改写布局触发整墙重渲染。
+onUnmounted(() => stopPlan());
 
 watch(
   () => shellRoute.query.value,
