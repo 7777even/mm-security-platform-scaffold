@@ -29,9 +29,9 @@
 
 - [x] `tasks.md` 全部勾选，验收标准逐条满足。
 - [x] 受影响目标 eslint / type-check 0 error（按 §2 矩阵对应行，未连跑四套）。
-- [ ] 代码若改变契约 / 行为，同步 `docs/` 与对应 `docs/UI规范-大屏端.md`（短期记录不写进 docs/）。
-- [ ] 提交按 scope 拆分：`type(scope): 描述`，单行成句、禁止 `- ` 分点列表；临时输出文件不入库。
-- [ ] L3 完成后即刻写 `engineering/qa/` + `engineering/retro/`，不攒到最后补。
+- [x] 代码若改变契约 / 行为，同步 `docs/` 与对应 `docs/UI规范-大屏端.md`（短期记录不写进 docs/）。（2026-09-12 补：本变更改变了主壳布局行为，已在 `docs/UI规范-大屏端.md` §3 布局骨架新增「二级子应用全屏页」条目，写明 `subapp && hidden` 双条件、顶栏与底部栏收起、以及「不可下放到子应用实现」的约束）
+- [x] 提交按 scope 拆分：`type(scope): 描述`，单行成句、禁止 `- ` 分点列表；临时输出文件不入库。（2026-09-12 核：`c70092d docs(screen):` 提案 / `2d2b766 fix(screen):` 修复 / `8adc165 docs:` QA+Retro 证据，均单行成句、无分点列表；qa 内截图为刻意入仓的证据附件，非临时输出）
+- [x] L3 完成后即刻写 `engineering/qa/` + `engineering/retro/`，不攒到最后补。（2026-09-12 核：`engineering/qa/2026-09-04-wujie-subapp-fullscreen.md` 与 `engineering/retro/2026-09-04-wujie-subapp-fullscreen.md` 均已在 `8adc165` 入仓）
 
 ## 遗留（不在本变更范围）
 

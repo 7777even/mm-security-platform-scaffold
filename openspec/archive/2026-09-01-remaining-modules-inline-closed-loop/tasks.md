@@ -13,4 +13,4 @@
 
 - [x] 全局 eslint / stylelint / vue-tsc --noEmit 验证并修复（结果：eslint 0 / stylelint 0 / vue-tsc 0 / extreme-weather spec 2 passed）
 - [x] 修复系统性运行时缺陷：src/components/common/{OneKeyDispatchDialog,VideoWallDialog}.vue 误用相对 './ScreenDialog.vue'（应为 @/components/fire/ScreenDialog.vue），导致所有复用这两个通用弹窗的模块运行时无法解析
-- [ ] 归档 openspec/changes → archive（待用户确认或下一步统一归档）
+- [x] 归档 openspec/changes → archive。（2026-09-12 经用户确认后执行，已 `git mv` 至 `openspec/archive/2026-09-01-remaining-modules-inline-closed-loop/`）

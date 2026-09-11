@@ -24,7 +24,7 @@
 - [x] `npx eslint src/components/layout/AppLayout.vue src/shell/WujieHost.vue` 0 error。
 - [x] `npm run type-check`（vue-tsc）0 error。
 - [x] CDP 复现（启动 dev server + 无头浏览器）：从 `/fire/rescue?eventId=6` 切到 `/fire` 再切回，统计 wujie iframe 数应 ≥1（不再 0）。**已完成**：playwright + chromium 实测 `n1=1`，`n2=1`，`pass=true`，console 0 error；截图 `evidence/switch-race-initial-mount.png` 与 `evidence/switch-race-after-return.png`。
-- [ ] 快切复现：子应用加载未完成时快速切走再切回，实例数 ≥1。本次未单独执行，列为可接受风险；常规切换路径已证明切回后 iframe ≥1。
+- [ ] 快切复现：子应用加载未完成时快速切走再切回，实例数 ≥1。本次未单独执行，列为可接受风险；常规切换路径已证明切回后 iframe ≥1。（2026-09-12 归档说明：**本项保持未勾是有意为之** —— 它是「未执行」的诚实记录，不做粉饰；本变更的 DoD（§验收标准）已全勾并显式接受该风险为「修复范围限定、风险可控」，故不阻塞归档。后续若要覆盖该场景，应另开 Change，而非回填本项冒充已完成。）
 - [x] 回归截图：主应用页面切换正常；`/fire` 一级页导航完好。**部分完成**：本次验证了 `/fire` ↔ `/fire/rescue` 切换与主壳导航正常，未单独复测 `/fire-alarm/records` 等其它主应用页。
 
 ## 验收标准（Definition of Done）
