@@ -24,7 +24,9 @@
 | DEV 兜底（`!VITE_API_BASE` 回灌 fixture） | 联调环境已配 `VITE_API_BASE=8787`，兜底分支不生效，**不构成假象**                                                                      |
 | 数据密度（抽样）                          | 多数端点 5–25 条：alarm-trend 24、production/alarms 20、monitoring/points 18、security/events 16、tv/map-points 15、hazards 12         |
 
-## 1. A 类 · 前端仍直读本地常量（4 处，真缺口）
+## 1. A 类 · 前端仍直读本地常量（**本节已于 2026-09-11 实测全部后端化，下表作废，仅留历史存档**）
+
+> ⚠️ 历史存档：下表 4 处原列「前端直读本地常量真缺口」，但 2026-09-11 全量收尾审计后代码实测均已接后端——A1 `usePatrolLinkage.ts`→`fetchPatrolCameras`、A2 `VideoLinkageConfigDialog.vue`→`fetchVideoLinkageOptions`、A3 后端 V35 名册+前端 `fetchDispatchPersonnel`（本次补删 `alarmDetailPersonnelOptions` 死导出）、A4 `EmergencyAddressBookDialog.vue`→`fetchEmergencyPhones` 动态建树。**勿再据下表重复劳动。**
 
 | #   | 位置                                                                             | 现状                                                                                                                                                      | 期望接口                                                                                  |
 | --- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
