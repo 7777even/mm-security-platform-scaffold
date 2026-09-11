@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import SurveillanceVideoDialog from '../../common/SurveillanceVideoDialog.vue';
+import { fetchImportantVideoGroups, type ImportantVideoGroup } from '@/services/video';
 
+// 静态图资映射（by-design）：图资本身非业务数据，后端只下发 image_key，由前端映射到本地资源。
 const images = {
   highAr: new URL(
     '../../../assets/mock-cameras/high-altitude-ar-petrochemical.png',
@@ -22,91 +24,64 @@ const images = {
   ).href,
 };
 
-type VideoFeed = { id: string; label: string; image: string; position?: string; online?: boolean };
-type VideoGroup = { id: string; label: string; feeds: VideoFeed[] };
+type ResolvedFeed = {
+  id: string;
+  label: string;
+  image: string;
+  position?: string;
+  online?: boolean;
+};
+type ResolvedGroup = { id: string; label: string; feeds: ResolvedFeed[] };
 
-function arFeeds(prefix: string, labels: string[]): VideoFeed[] {
-  const positions = ['50% 30%', '32% 50%', '68% 48%', '50% 72%'];
-  return labels.map((label, index) => ({
-    id: `${prefix}-${index + 1}`,
-    label,
-    image: images.highAr,
-    position: positions[index],
-    online: true,
-  }));
+const EMPTY_GROUP: ResolvedGroup = { id: '', label: '', feeds: [] };
+
+function resolveImage(imageKey?: string | null): string {
+  if (imageKey === 'tanks' || imageKey === 'reactor' || imageKey === 'pipes') {
+    return images[imageKey];
+  }
+  return images.highAr;
 }
 
-const highArGroups: VideoGroup[] = [
-  {
-    id: 'park',
-    label: '园区全景组',
-    feeds: arFeeds('ar-park', ['园区北向全景', '炼油区全景', '化工区全景', '港区全景']),
-  },
-  {
-    id: 'refinery',
-    label: '炼油区高点组',
-    feeds: arFeeds('ar-refinery', ['一号高点西向', '一号高点东向', '二号高点南向', '二号高点北向']),
-  },
-  {
-    id: 'chemical',
-    label: '化工区高点组',
-    feeds: arFeeds('ar-chemical', ['乙烯装置全景', '芳烃装置全景', '管廊全景', '装卸区全景']),
-  },
-];
+function toResolvedGroup(group: ImportantVideoGroup): ResolvedGroup {
+  return {
+    id: group.id,
+    label: group.label,
+    feeds: (group.feeds ?? []).map((feed) => ({
+      id: feed.id,
+      label: feed.label,
+      image: resolveImage(feed.imageKey),
+      position: feed.position ?? undefined,
+      online: feed.online ?? true,
+    })),
+  };
+}
 
-const focusGroups: VideoGroup[] = [
-  {
-    id: 'tank',
-    label: '储罐区组',
-    feeds: [
-      { id: 'tank-1', label: '储罐区B-3东侧', image: images.tanks },
-      { id: 'tank-2', label: '液化烃罐区南侧', image: images.tanks, position: '60% 54%' },
-      { id: 'tank-3', label: '罐区管廊入口', image: images.pipes },
-      { id: 'tank-4', label: '罐区装卸平台', image: images.reactor },
-    ],
-  },
-  {
-    id: 'device',
-    label: '装置区组',
-    feeds: [
-      { id: 'device-1', label: '催化裂化装置', image: images.reactor },
-      { id: 'device-2', label: '乙烯反应装置', image: images.pipes },
-      { id: 'device-3', label: '加氢装置入口', image: images.reactor, position: '60% 55%' },
-      { id: 'device-4', label: '公共管廊区', image: images.pipes, position: '35% 50%' },
-    ],
-  },
-  {
-    id: 'boundary',
-    label: '厂界出入口组',
-    feeds: [
-      { id: 'boundary-1', label: '厂区西门', image: images.highAr, position: '22% 66%' },
-      { id: 'boundary-2', label: '厂区北门', image: images.highAr, position: '50% 38%' },
-      { id: 'boundary-3', label: '东侧厂界', image: images.highAr, position: '78% 56%' },
-      {
-        id: 'boundary-4',
-        label: '南侧物流门',
-        image: images.highAr,
-        position: '55% 82%',
-        online: false,
-      },
-    ],
-  },
-];
-
-const selectedHighAr = ref(highArGroups[0]!.id);
-const selectedFocus = ref(focusGroups[0]!.id);
-const selectedFeed = ref<VideoFeed | null>(null);
+// 分组/通道由 GET /video/important-groups 下发（V40 fac_video_important_group/_feed）；
+// 三态取数失败 → 空分组 + 显式告警，绝不回灌本地硬编码。
+const highArGroups = ref<ResolvedGroup[]>([]);
+const focusGroups = ref<ResolvedGroup[]>([]);
+const selectedHighAr = ref('');
+const selectedFocus = ref('');
+const selectedFeed = ref<ResolvedFeed | null>(null);
 const activeHighAr = computed(
-  () => highArGroups.find((group) => group.id === selectedHighAr.value) ?? highArGroups[0]!,
+  () => highArGroups.value.find((group) => group.id === selectedHighAr.value) ?? EMPTY_GROUP,
 );
 const activeFocus = computed(
-  () => focusGroups.find((group) => group.id === selectedFocus.value) ?? focusGroups[0]!,
+  () => focusGroups.value.find((group) => group.id === selectedFocus.value) ?? EMPTY_GROUP,
 );
 
-function openFeed(feed: VideoFeed) {
+function openFeed(feed: ResolvedFeed) {
   if (feed.online === false) return;
   selectedFeed.value = feed;
 }
+
+onMounted(async () => {
+  const data = await fetchImportantVideoGroups();
+  highArGroups.value = (data.highArGroups ?? []).map(toResolvedGroup);
+  focusGroups.value = (data.focusGroups ?? []).map(toResolvedGroup);
+  if (highArGroups.value.length) selectedHighAr.value = highArGroups.value[0]!.id;
+  if (focusGroups.value.length) selectedFocus.value = focusGroups.value[0]!.id;
+});
 </script>
 
 <template>

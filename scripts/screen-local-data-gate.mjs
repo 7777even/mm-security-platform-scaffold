@@ -186,6 +186,13 @@ const REGRESSION_GUARDS = [
     // 现四份数据由 GET /video/wall-navigation 下发（V37 fac_video_wall_node），禁再出现本地生成逻辑。
     forbidden: [/\bgenerated(?:TargetTree|VideoTree|CameraTargetMap)\b/, /\btargetCategories\b/, /\bfactoryAreas\b/],
   },
+  {
+    file: 'components/panels/tv/ImportantVideoPanel.vue',
+    // 原内联硬编码 6 组×4 通道（highArGroups/focusGroups 字面量 + arFeeds 生成器）；
+    // 现由 GET /video/important-groups 下发（V40 fac_video_important_group/_feed），
+    // 静态图资按 image_key 映射为 by-design。禁再出现本地硬编码分组。
+    forbidden: [/const\s+highArGroups\s*:\s*VideoGroup\[\]/, /function\s+arFeeds\b/],
+  },
 ];
 
 // ── 2b) 必备守卫：已验证「失败显式告警 / 三态取数」的文件，必须持续引用 backendFallback ──
@@ -206,6 +213,7 @@ const REQUIRED_GUARDS = [
   { file: 'components/common/FirePatrolDialog.vue', must: /backendFallback/ },
   { file: 'components/common/FireAlarmListDialog.vue', must: /backendFallback/ },
   { file: 'components/video-wall/videoWallStore.ts', must: /backendFallback/ },
+  { file: 'components/panels/tv/ImportantVideoPanel.vue', must: /fetchImportantVideoGroups/ },
 ];
 
 // ── 扫描 ─────────────────────────────────────────────────────────────────────

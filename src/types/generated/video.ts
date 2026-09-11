@@ -171,6 +171,163 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/video/important-groups': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 常驻视频监控分组
+     * @description 返回高空AR与重点关注区域两组视频监控分组（含通道）。取代前端 ImportantVideoPanel 硬编码的分组与通道；图像静态资源由前端按 image_key 映射，图资非业务数据。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 常驻视频监控分组聚合 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "highArGroups": [
+             *           {
+             *             "id": "park",
+             *             "label": "园区全景组",
+             *             "feeds": [
+             *               {
+             *                 "id": "ar-park-1",
+             *                 "label": "园区北向全景",
+             *                 "imageKey": "highAr",
+             *                 "position": "50% 30%",
+             *                 "online": true
+             *               },
+             *               {
+             *                 "id": "ar-park-2",
+             *                 "label": "炼油区全景",
+             *                 "imageKey": "highAr",
+             *                 "position": "32% 50%",
+             *                 "online": true
+             *               },
+             *               {
+             *                 "id": "ar-park-3",
+             *                 "label": "化工区全景",
+             *                 "imageKey": "highAr",
+             *                 "position": "68% 48%",
+             *                 "online": true
+             *               },
+             *               {
+             *                 "id": "ar-park-4",
+             *                 "label": "港区全景",
+             *                 "imageKey": "highAr",
+             *                 "position": "50% 72%",
+             *                 "online": true
+             *               }
+             *             ]
+             *           },
+             *           {
+             *             "id": "refinery",
+             *             "label": "炼油区高点组",
+             *             "feeds": [
+             *               {
+             *                 "id": "ar-refinery-1",
+             *                 "label": "一号高点西向",
+             *                 "imageKey": "highAr",
+             *                 "position": "50% 30%",
+             *                 "online": true
+             *               }
+             *             ]
+             *           },
+             *           {
+             *             "id": "chemical",
+             *             "label": "化工区高点组",
+             *             "feeds": [
+             *               {
+             *                 "id": "ar-chemical-1",
+             *                 "label": "乙烯装置全景",
+             *                 "imageKey": "highAr",
+             *                 "position": "50% 30%",
+             *                 "online": true
+             *               }
+             *             ]
+             *           }
+             *         ],
+             *         "focusGroups": [
+             *           {
+             *             "id": "tank",
+             *             "label": "储罐区组",
+             *             "feeds": [
+             *               {
+             *                 "id": "tank-1",
+             *                 "label": "储罐区B-3东侧",
+             *                 "imageKey": "tanks",
+             *                 "position": null,
+             *                 "online": true
+             *               },
+             *               {
+             *                 "id": "tank-3",
+             *                 "label": "罐区管廊入口",
+             *                 "imageKey": "pipes",
+             *                 "position": null,
+             *                 "online": true
+             *               }
+             *             ]
+             *           },
+             *           {
+             *             "id": "device",
+             *             "label": "装置区组",
+             *             "feeds": [
+             *               {
+             *                 "id": "device-1",
+             *                 "label": "催化裂化装置",
+             *                 "imageKey": "reactor",
+             *                 "position": null,
+             *                 "online": true
+             *               }
+             *             ]
+             *           },
+             *           {
+             *             "id": "boundary",
+             *             "label": "厂界出入口组",
+             *             "feeds": [
+             *               {
+             *                 "id": "boundary-4",
+             *                 "label": "南侧物流门",
+             *                 "imageKey": "highAr",
+             *                 "position": "55% 82%",
+             *                 "online": false
+             *               }
+             *             ]
+             *           }
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['ImportantVideoGroups'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/video/cameras': {
     parameters: {
       query?: never;
@@ -737,6 +894,56 @@ export interface components {
       };
       /** @description 默认高空AR相机（视频墙默认 2x2 模式用） */
       defaultHighAltitudeCameras?: components['schemas']['VideoWallCamera'][];
+    };
+    /** @description 常驻视频监控分组聚合（高空AR + 重点关注区域）。取代前端 ImportantVideoPanel 硬编码分组。 */
+    ImportantVideoGroups: {
+      /** @description 高空AR 分组（园区全景/炼油区高点/化工区高点） */
+      highArGroups?: components['schemas']['ImportantVideoGroup'][];
+      /** @description 重点关注区域分组（储罐区/装置区/厂界出入口） */
+      focusGroups?: components['schemas']['ImportantVideoGroup'][];
+    };
+    /** @description 常驻视频监控分组（高空AR / 重点关注区域） */
+    ImportantVideoGroup: {
+      /**
+       * @description 分组编码
+       * @example park
+       */
+      id?: string;
+      /**
+       * @description 分组标签
+       * @example 园区全景组
+       */
+      label?: string;
+      /** @description 分组下通道列表 */
+      feeds?: components['schemas']['ImportantVideoFeed'][];
+    };
+    /** @description 常驻视频监控通道。imageKey 指向前端静态图资（图资本身非业务数据）。 */
+    ImportantVideoFeed: {
+      /**
+       * @description 通道编码
+       * @example ar-park-1
+       */
+      id?: string;
+      /**
+       * @description 通道标签
+       * @example 园区北向全景
+       */
+      label?: string;
+      /**
+       * @description 静态图资 key：highAr / tanks / reactor / pipes
+       * @example highAr
+       */
+      imageKey?: string;
+      /**
+       * @description 画面定位（CSS object-position），可空
+       * @example 50% 30%
+       */
+      position?: string | null;
+      /**
+       * @description 是否在线
+       * @example true
+       */
+      online?: boolean;
     };
     /** @description 摄像头画面项 */
     VideoCameraItem: {

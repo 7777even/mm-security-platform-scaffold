@@ -158,6 +158,76 @@ export async function fetchVideoWallNavigation(): Promise<VideoWallNavigationDat
   }
 }
 
+// --------------------------------------------------- 常驻视频监控分组（V40）
+
+/** 常驻视频监控通道。imageKey 指向前端静态图资（图资本身非业务数据）。 */
+export interface ImportantVideoFeed {
+  /** 通道编码 */
+  id: string;
+  /** 通道标签 */
+  label: string;
+  /** 静态图资 key：highAr / tanks / reactor / pipes */
+  imageKey: string;
+  /** 画面定位（CSS object-position），可空 */
+  position?: string | null;
+  /** 是否在线 */
+  online?: boolean;
+}
+
+/** 常驻视频监控分组（高空AR / 重点关注区域）。 */
+export interface ImportantVideoGroup {
+  /** 分组编码 */
+  id: string;
+  /** 分组标签 */
+  label: string;
+  /** 分组下通道 */
+  feeds: ImportantVideoFeed[];
+}
+
+/** 常驻视频监控分组聚合（取代 ImportantVideoPanel 硬编码，V40 fac_video_important_group/_feed）。 */
+export interface ImportantVideoGroups {
+  /** 高空AR 分组 */
+  highArGroups: ImportantVideoGroup[];
+  /** 重点关注区域分组 */
+  focusGroups: ImportantVideoGroup[];
+}
+
+const EMPTY_IMPORTANT_GROUPS: ImportantVideoGroups = {
+  highArGroups: [],
+  focusGroups: [],
+};
+
+/**
+ * 常驻视频监控分组：GET /video/important-groups。三态取数——
+ * 连后端失败 / 响应不符契约 → 显式告警 + 空分组（绝不回灌本地硬编码分组）。
+ */
+export async function fetchImportantVideoGroups(): Promise<ImportantVideoGroups> {
+  const fb = resolveOfflineFetch(
+    'video',
+    '/video/important-groups',
+    EMPTY_IMPORTANT_GROUPS,
+    EMPTY_IMPORTANT_GROUPS,
+  );
+  if (fb.mode !== 'live') return fb.value;
+  try {
+    const data = await request<ImportantVideoGroups>({
+      url: '/video/important-groups',
+      method: 'GET',
+    });
+    if (!data || !Array.isArray(data.highArGroups) || !Array.isArray(data.focusGroups)) {
+      backendUnavailableWarn('video', '/video/important-groups', REASON_CONTRACT_MISMATCH);
+      return EMPTY_IMPORTANT_GROUPS;
+    }
+    return {
+      highArGroups: data.highArGroups,
+      focusGroups: data.focusGroups,
+    };
+  } catch {
+    backendUnavailableWarn('video', '/video/important-groups');
+    return EMPTY_IMPORTANT_GROUPS;
+  }
+}
+
 /** 摄像头分页网格（前端默认每页 9 宫格）。 */
 export async function fetchVideoCameras(page = 1, size = 9): Promise<VideoCameraPage> {
   return request<VideoCameraPage>({
