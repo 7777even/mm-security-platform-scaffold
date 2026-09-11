@@ -8,6 +8,128 @@
  * 让组件本体逐步收敛为「流程编排」。本文件**只放常量，不放任何响应式状态**。
  */
 
+/** 茂名石化厂区基准坐标与默认相机位姿 */
+export const MAOMING_PETRO = {
+  longitude: 110.88633263354666,
+  latitude: 21.675024846180317,
+  /** 相机与目标点的水平距离（米） */
+  cameraRange: 2800,
+  /** 0 = 正北朝上，地图不旋转 */
+  heading: 0,
+  pitch: -38,
+  /** 事故救援顶视模式俯仰角 */
+  topDownPitch: -89.9,
+};
+
+/** 事故救援顶视：贴地分层高度（米，相对各点地形） */
+export const ACCIDENT_RESCUE_FLAT = {
+  /** 装置区块填色 */
+  zoneSurfaceOffset: 1.2,
+  /** 区块间错层，避免相邻面 z-fighting */
+  zoneSurfaceStagger: 0.18,
+  /** 企业边界内填色（贴地，微抬高避免 z-fighting） */
+  enterpriseFillOffset: 0.15,
+  /** 企业边界虚线（略高于装置区块，非立体模型） */
+  boundaryEdgeOffset: 1.45,
+  /** HTML 标记相对地形的抬高 */
+  markerOffset: 6.5,
+  boundaryStroke: '#00EEFF',
+  boundaryFill: '#299FFF',
+  boundaryFillAlpha: 0.2,
+};
+
+/** 3D 边界区块主题 */
+export const MAP_THEME = {
+  slabBase: -4,
+  /** 侧壁顶缘（略低于顶面，由顶面压住接缝） */
+  wallTop: 66.42,
+  capHeight: 66.55,
+  /** 顶面纹理水平翻转（修正 CCW 绕序后东西向镜像） */
+  capTextureFlipX: true,
+  /** 顶面纹理垂直翻转 */
+  capTextureFlipY: false,
+  /** 高亮边线贴在顶面边缘 */
+  edgeHeight: 66.58,
+  plantHeight: 66.05,
+  /** 立体框架 resting 高度（米，底面贴 plantHeight） */
+  plantFrameHeight: 6,
+  /** 悬停时高度变为 resting 的倍数 */
+  plantHoverHeightMultiplier: 6,
+  /** 装置区默认填色（分区.palette 色，避免半透明发灰） */
+  plantBaseAlpha: 0.42,
+  /** 悬停变高后填色透明度 */
+  plantElevatedAlpha: 0.5,
+  /** 变高后填色 Shader（仅压暗内部，不含描边） */
+  plantElevatedFill: {
+    interiorDim: 0.52,
+    interiorAlphaDim: 0.88,
+  },
+  /** 悬停扩高后向上位移时长（秒） */
+  plantHoverLiftDuration: 0.35,
+  plantAlphaEase: 0.14,
+  plantOutline: {
+    lineWidth: 1.2,
+    lineAlpha: 0.72,
+  },
+  /** glTF 体块材质混合（无贴图时需 >0 才显分区色） */
+  plantModelSilhouette: {
+    colorBlendAmount: 0.88,
+  },
+  /** 常显线框：棱线 Entity（顶/底环 + 竖棱）；选中时同线框加粗 */
+  plantWireframe: {
+    enabled: true,
+    lineWidth: 1.5,
+    selectedLineWidth: 3.5,
+    edgeColorAlpha: 0.92,
+    selectedEdgeColorAlpha: 1,
+    /** 外轮廓 Model silhouette；0 表示只用棱线 */
+    silhouetteSize: 0,
+    selectedSilhouetteSize: 0,
+    showBottomRing: true,
+  },
+  // 红色区块信息牌 / 青色信息牌文案已改由 GET /map/zone-signs 下发（V42 fac_map_zone_sign），
+  // 挂载时经 fetchMapZoneSigns 加载到 plantZonePopupPresets / plantZoneTealTagPresets；
+  // 空态时不绘制信息牌（不回灌本地文案）。
+  colors: {
+    plantPalette: [
+      { fill: '#dc3737', line: 'rgba(255, 100, 100, 0.92)' },
+      { fill: '#ff8c23', line: 'rgba(255, 185, 90, 0.92)' },
+      { fill: '#ffd237', line: 'rgba(255, 235, 130, 0.92)' },
+      { fill: '#377dff', line: 'rgba(110, 165, 255, 0.92)' },
+    ],
+    edgeLine: '#00e4ff',
+    edgeHighlight: '#00e4ff',
+    edgeGlow: 'rgba(0, 228, 255, 0.72)',
+    sideWallTop: 'rgba(110, 238, 255, 0.99)',
+    sideWallHighlight: 'rgba(55, 198, 255, 0.96)',
+    sideWallMid: 'rgba(22, 98, 178, 0.9)',
+    sideWallBottom: 'rgba(3, 14, 42, 0.94)',
+  },
+};
+
+/** 电影感景深：屏幕中心清晰，四周 + 远景渐进虚化 */
+export const MAP_DOF = {
+  enabled: true,
+  sigma: 4.2,
+  delta: 1.15,
+  stepSize: 2.2,
+  focusHeight: 66.55,
+  /** 中心清晰区（0~1，越大中心越实） */
+  focusRadius: 0.4,
+  /** 四周径向虚化强度 */
+  radialStrength: 0.96,
+  /** 远景深度虚化强度 */
+  depthStrength: 0.45,
+  /** 超出对焦距离多少米开始远景虚化 */
+  farBlurStart: 180,
+};
+
+/** 标签随相机距离缩放：距离 ≤ 参考距离时不缩放（1.0）；仅拉远时按 ref/distance 变小 */
+export const PLANT_MARKER_SCALE_REF_DISTANCE = MAOMING_PETRO.cameraRange * 0.5;
+export const PLANT_MARKER_SCALE_MIN_DISTANCE = 120;
+export const PLANT_MARKER_SCALE_MIN = 0.1;
+export const PLANT_MARKER_SCALE_MAX = 1;
+
 /** 电影级景深（Depth of Field）后处理着色器：径向模糊 + 远景模糊叠加。 */
 export const CINEMATIC_DOF_SHADER = `
   uniform sampler2D colorTexture;
