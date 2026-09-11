@@ -36,7 +36,7 @@
 
 ## 5. 服务层与 type-check 约定
 
-- `src/services/*.ts` 用手写 TS 接口 + `request()` + DEV 兜底常量（`!VITE_API_BASE` 时返回静态数据）+ 类型守卫，与 `src/types/generated/` 生成类型**分离**。
+- `src/services/*.ts` 用手写 TS 接口 + `request()` + **三态取数**（`live`/`demo`/`offline`，见 §9）+ 类型守卫，与 `src/types/generated/` 生成类型**分离**。
 - `npm run gen:api-types` 已内置 `prettifyGenerated()`：生成链路末尾按仓库 prettier 配置自动回写（resolveConfig → format），**无需再手动 `npx prettier --write`**。验证重新生成后 `src/types/generated/` 工作区 diff 为 0。
 - `vue-tsc` 报 `TS2503 Cannot find namespace 'vi'` → 改 `import { vi, type Mock } from 'vitest'`。
 - Vue 模板 `img.src` 拒 `string|null` → 契约可空字段需 `?? ''` 兜底。
@@ -59,7 +59,7 @@
 
 ## 7. 门禁基线
 
-- `vitest run` 约 **379 passed**；`vue-tsc -p tsconfig.app.json --noEmit` **0 错**。
+- `vitest run` 约 **389 passed**；`vue-tsc -p tsconfig.app.json --noEmit` **0 错**。
 - `node scripts/validate-api-contracts.mjs` **通过（28 域）**；铁律 ④（2xx 响应需 `example`）对**二进制响应窄豁免**——仅当响应**无 `application/json`** 且**全部媒体类型**为 `image|audio|video/*`、`application/octet-stream` 或 `schema.format=binary` 时跳过，JSON 分支缺 example 仍报错（2026-09-10 起，修订掉 V26/V29 快照端点的 2 处误报）。
 - 单测 fake timers **禁用 `setTimeout(r,0)`** 冲刷 fetch，改 `await Promise.resolve()` 循环。
 
@@ -67,6 +67,23 @@
 
 - 2026-09-08：两仓 CI/CD + 跨库契约守门；openspec 回填。
 - 2026-09-09：生产应急域、video/tv/special-operation 三域全栈接线；大屏去 mock 收尾（V24 + 4 域端点）；服务层 DEV 兜底 + 全局错误兜底 + WS 实时化。
+
+## 9. 后端取数三态与离线显式报错（2026-09-11）
+
+**三态取数语义（`services/backendFallback.ts` 为唯一真源）**：
+
+- **live**：配置了 `VITE_API_BASE` → 走真实请求。
+- **demo**：未配 base **但显式 `VITE_USE_DEV_MOCK === 'true'`** → 才允许返回本地 fixture（离线演示）。
+- **offline**：既无 base 又未开 demo → **显式报错 + 空态，绝不回灌假数据**。
+
+各 service 首行统一用 `resolveOfflineFetch(domain, endpoint, demoValue, offlineValue)` 决策，**禁止再手写 `if (!VITE_API_BASE) return fixture`**。新增 `notifyBackendOffline()` / `isDemoMode()` / `isOfflineNoBackend()`；响应式 `backendStatus` 驱动全局横幅 `screen/components/layout/BackendOfflineBanner.vue`（挂在所有子应用共用的 `screen/layouts/MapDashboardLayout.vue`：offline 红 / degraded 橙）。
+
+**已收口范围**：约 20 个 `services/*` + 8 个 `services/map-data/*` + `securityEventStore`/`alarm`(内存 mock 仅 demo) + 大屏 `useEntryCaptureListView`、`AccidentEmergencyRescue.vue`（事件模式；演练 by-design 本地）、`TyphoonEmergencyDetailV3.vue`、`useEmergencyProcess.ts`（`DEMO_MODE` 三态初始化，`EMPTY_STAGE/EMPTY_GUIDANCE/EMPTY_NODE_CONFIG/EMPTY_DUTY_ROSTER` 非空兜底）、4 处写路径（`useEmergencyProcess.saveNodeConfig`/`usePlanMatrix`/`useVideoLinkageConfig`/`BlacklistDialog` → offline 直接 `notifyBackendOffline` + 不本地改）、`services/map.ts`（`fetchAlarmPoints/DevicePoints/RiskZones` 去掉 catch 静默回退 `FALLBACK_*`）。
+
+**告警/巡检筛选改字典驱动**：`FireAlarmListDialog`（screen `components/common` + 主壳 `components/fire` 两份）与 `FirePatrolDialog` 的筛选项改 `fetchDictOptions(dictCode)`（`GET /system/dicts/{dictCode}`，登录可读）；「全部X」哨兵由前端补、字典未加载/失败仅剩哨兵。后端字典见 `backend-scaffold/docs/system-facts.md` V36。巡检检查项明细改由记录 `checkItems`（含 `category`）派生 → **`screen/lib/data/firePatrolMock.ts` 已删除**；`screen/lib/data/alarmMeta.ts` **仅保留 `ALARM_STATUS_META`**（UI 标签+主题色，非字典）。门禁白名单 `screen-local-data-gate.mjs` 已同步删 `firePatrolMock` 条目、`alarmMeta` 收敛为 `['ALARM_STATUS_META']`。
+
+**校验基线（2026-09-11）**：`vitest run` **389 passed**（62 文件）/ `vue-tsc` 0 错 / `gate:screen` PASS / 后端 `mvn test` 全绿（含 Flyway 校验 V36）。改 `src/` 后仍须 `SUBAPP_NO_EMPTY=1 npm run build:subapps`。
+
 - 2026-09-10：续验 `vue-tsc` 全绿、4 端点冒烟 `code=0`；本系统事实基线分库落地。
 - 2026-09-10（收尾）：主壳 SystemMessageBar / FireRescueForce / 大屏 FireBrigadeMapOverlay 三处 mock 直读全部接线后端；TvMap 告警钉与 CenterMap 飞掠目标接 `/map/alarms`；两个 `mock.ts` 副本清死常量；门禁 `vitest 378 passed` + `vue-tsc 0 错`。至此大屏/主壳展示数据无硬编码 mock 钉。
 - 2026-09-10（B6 收官）：`SecurityStatusPanel` 周界入侵告警后端化（V29 + `/security/perimeter-alarms/{latest,id,snapshot}` + `perimeterAlarmToDetail` 适配器），两份 `alarmDetailMock.ts` 的 `demoAlarmDetails` / `resolveDemoAlarmDetailById` 死 mock 删除；门禁 `mvn 328 绿`、`vitest 378 passed`、`vue-tsc 0 错`、契约守门 0 漂移（可比 156 schema / 94 路由）。
