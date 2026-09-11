@@ -1,7 +1,5 @@
 import { computed, ref, watch } from 'vue';
 import {
-  initialFireEmergencyDrillEventGroups,
-  initialFireEmergencyEventGroups,
   loadFireEmergencyEventGroups,
   type EmergencyEventGroup,
   type EmergencyEventItem,
@@ -54,12 +52,13 @@ function cloneEventGroups(groups: EmergencyEventGroup[]): EmergencyEventGroup[] 
   }));
 }
 
-export const fireEmergencyEventGroupsState = ref<EmergencyEventGroup[]>(
-  cloneEventGroups(initialFireEmergencyEventGroups),
-);
-export const fireEmergencyDrillEventGroupsState = ref<EmergencyEventGroup[]>(
-  cloneEventGroups(initialFireEmergencyDrillEventGroups),
-);
+// 初始态为空：由 refreshFireEmergencyEventGroups 按三态填充（live 后端 / demo 本地 fixture / offline 空态）。
+// 快照记录最近一次生效的数据，供 reset 还原（而非回退到本地 fixture）。
+let fireEmergencyEventGroupsSnapshot: EmergencyEventGroup[] = [];
+let fireEmergencyDrillEventGroupsSnapshot: EmergencyEventGroup[] = [];
+
+export const fireEmergencyEventGroupsState = ref<EmergencyEventGroup[]>([]);
+export const fireEmergencyDrillEventGroupsState = ref<EmergencyEventGroup[]>([]);
 
 export const fireEmergencyAllEventGroups = computed<EmergencyEventGroup[]>(() => [
   ...fireEmergencyEventGroupsState.value,
@@ -109,16 +108,28 @@ export function resetFireEmergencyEventList() {
   fireEmergencyKeyword.value = '';
   fireEmergencyCurrentPage.value = 1;
   fireEmergencyListTab.value = 'event';
-  fireEmergencyEventGroupsState.value = cloneEventGroups(initialFireEmergencyEventGroups);
-  fireEmergencyDrillEventGroupsState.value = cloneEventGroups(initialFireEmergencyDrillEventGroups);
+  fireEmergencyEventGroupsState.value = cloneEventGroups(fireEmergencyEventGroupsSnapshot);
+  fireEmergencyDrillEventGroupsState.value = cloneEventGroups(
+    fireEmergencyDrillEventGroupsSnapshot,
+  );
   selectFireEmergencyEvent(null);
 }
 
-/** 配置后端时拉取真实消防应急事件/演练分组（无后端为 no-op，保持本地 fixture）。 */
+/** 统一写入快照 + 可编辑状态（两者内容一致，快照用于 reset 还原）。 */
+function applyFireEmergencyGroups(
+  events: EmergencyEventGroup[],
+  drills: EmergencyEventGroup[],
+): void {
+  fireEmergencyEventGroupsSnapshot = cloneEventGroups(events);
+  fireEmergencyDrillEventGroupsSnapshot = cloneEventGroups(drills);
+  fireEmergencyEventGroupsState.value = cloneEventGroups(events);
+  fireEmergencyDrillEventGroupsState.value = cloneEventGroups(drills);
+}
+
+/** 按三态拉取消防应急事件/演练分组（live 后端 / demo 本地 fixture / offline 空态 + 告警）。 */
 export function refreshFireEmergencyEventGroups() {
   void loadFireEmergencyEventGroups().then(({ events, drills }) => {
-    fireEmergencyEventGroupsState.value = cloneEventGroups(events);
-    fireEmergencyDrillEventGroupsState.value = cloneEventGroups(drills);
+    applyFireEmergencyGroups(events, drills);
   });
 }
 

@@ -1,6 +1,5 @@
 import { computed, ref, watch } from 'vue';
 import {
-  emergencyEventGroups,
   loadPreliminaryEvents,
   type EmergencyEventGroup,
   type EmergencyEventItem,
@@ -10,8 +9,8 @@ import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
 
-// 先期处置事件：预填本地 fixture，配置后端后拉取真实端点（失败/契约不符回落 fixture）。
-const preliminaryGroups = ref<EmergencyEventGroup[]>(emergencyEventGroups);
+// 先期处置事件：初始为空，模块加载/刷新时按三态拉取（live 后端 / demo 本地 fixture / offline 空态 + 告警）。
+const preliminaryGroups = ref<EmergencyEventGroup[]>([]);
 
 export function refreshPreliminaryEvents() {
   void loadPreliminaryEvents('PRELIMINARY').then((groups) => {

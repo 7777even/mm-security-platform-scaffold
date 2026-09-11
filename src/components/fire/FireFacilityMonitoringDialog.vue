@@ -1,7 +1,7 @@
 <!--
   FireFacilityMonitoringDialog — 消防设施运行监测（二级界面 facility）
   对标参考 FireFacilityMonitoringDialog：设施监控总览 + 故障 / 告警 / 工单 / 台账 多视图。
-  数据消费 fireFacilityMonitoringMock（fireFacilityMonitorSummaries / faults / alarms / workOrders / ledger）。
+  数据经 @/services/map-data/fireFacilityMonitoringMock 的三态 loaders 获取（后端 / demo fixture / 空态）。
   图标：压缩包 fire-situation 图标（PkgIcon）。
 -->
 <script setup lang="ts">
@@ -9,29 +9,30 @@ import { computed, onMounted, ref } from 'vue';
 import ScreenDialog from './ScreenDialog.vue';
 import PkgIcon from '@/components/common/PkgIcon.vue';
 import {
-  fireFacilityMonitorSummaries,
-  fireFacilityFaults,
-  fireFacilityAlarms,
-  fireFacilityWorkOrders,
   resolveFacilityLedgerByType,
   loadFireFacilityMonitors,
   loadFireFacilityFaults,
   loadFireFacilityAlarms,
   loadFireFacilityWorkOrders,
   loadFireFacilityLedger,
+  type FacilityMonitorSummary,
+  type FacilityFaultItem,
+  type FacilityAlarmItem,
+  type FacilityWorkOrderItem,
 } from '@/services/map-data/fireFacilityMonitoringMock';
 
 const emit = defineEmits<{ close: [] }>();
 
 type Tab = 'overview' | 'fault' | 'alarm' | 'order' | 'ledger';
 const tab = ref<Tab>('overview');
-const ledgerType = ref<string>(fireFacilityMonitorSummaries[0]?.facilityType ?? '');
+const ledgerType = ref<string>('');
 
-// 业务数据：预填本地 fixture，配置后端后首次挂载拉取真实端点（失败/契约不符回落 fixture）。
-const monitorSummaries = ref<typeof fireFacilityMonitorSummaries>(fireFacilityMonitorSummaries);
-const faultList = ref<typeof fireFacilityFaults>(fireFacilityFaults);
-const alarmList = ref<typeof fireFacilityAlarms>(fireFacilityAlarms);
-const workOrderList = ref<typeof fireFacilityWorkOrders>(fireFacilityWorkOrders);
+// 业务数据：初始为空，挂载后按三态拉取（live 后端 / demo 本地 fixture / offline 空态 + 告警）；
+// 绝不预填本地 fixture。
+const monitorSummaries = ref<FacilityMonitorSummary[]>([]);
+const faultList = ref<FacilityFaultItem[]>([]);
+const alarmList = ref<FacilityAlarmItem[]>([]);
+const workOrderList = ref<FacilityWorkOrderItem[]>([]);
 
 const ledgerRows = computed(() => resolveFacilityLedgerByType(ledgerType.value));
 

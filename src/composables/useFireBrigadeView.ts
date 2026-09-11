@@ -1,14 +1,11 @@
 import { computed, ref } from 'vue';
-import {
-  loadFireBrigades,
-  fireBrigadeTeams,
-  type FireBrigadeTeam,
-} from '@/services/map-data/fireBrigadeMock';
+import { loadFireBrigades, type FireBrigadeTeam } from '@/services/map-data/fireBrigadeMock';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
 
-export const allFireBrigadeTeams = ref<FireBrigadeTeam[]>(fireBrigadeTeams);
+// 初始态为空：连后端时 openFireBrigadeView 触发 load 拉取；离线演示（VITE_USE_DEV_MOCK=true）才回落本地 fixture。
+export const allFireBrigadeTeams = ref<FireBrigadeTeam[]>([]);
 import { coordsForFireBrigadeTeam } from '@/services/map-data/rescueMapCoords';
 import { restoreRescueMapView, runRescueMapFocus } from './useRescueMapFocus';
 
