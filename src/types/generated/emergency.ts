@@ -19,6 +19,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/emergency/assist-stats': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 应急辅助信息统计
+     * @description 返回 4 项应急辅助 KPI：应急预案 / 现场处置卡 / 应急联络人 / 可用消防水源。数据源 V39 fac_emergency_assist_stat 参考表。
+     */
+    get: operations['getEmergencyAssistStats'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/emergency/closed-cases': {
     parameters: {
       query?: never;
@@ -1279,6 +1299,35 @@ export interface components {
       /** @description 节点处置指引（按节点号升序） */
       guidances?: components['schemas']['NodeGuidance'][];
     };
+    /** @description 应急辅助信息统计项 */
+    EmergencyAssistStat: {
+      /**
+       * @description 统计项标签
+       * @example 应急预案
+       */
+      label?: string;
+      /**
+       * @description 数值
+       * @example 15
+       */
+      value?: number;
+      /**
+       * @description 单位：套 / 张 / 人 / 处
+       * @example 套
+       */
+      unit?: string;
+      /**
+       * @description 配色：blue / cyan / green / orange
+       * @example blue
+       * @enum {string}
+       */
+      tone?: 'blue' | 'cyan' | 'green' | 'orange';
+    };
+    /** @description 应急辅助信息统计集合 */
+    EmergencyAssistStatSummary: {
+      /** @description 4 项应急辅助 KPI */
+      items?: components['schemas']['EmergencyAssistStat'][];
+    };
   };
   responses: {
     /** @description 未认证 / 令牌失效 */
@@ -1370,6 +1419,66 @@ export interface operations {
            */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['EmergencyStrength'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  getEmergencyAssistStats: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=EmergencyAssistStatSummary） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "items": [
+           *           {
+           *             "label": "应急预案",
+           *             "value": 15,
+           *             "unit": "套",
+           *             "tone": "blue"
+           *           },
+           *           {
+           *             "label": "现场处置卡",
+           *             "value": 32,
+           *             "unit": "张",
+           *             "tone": "cyan"
+           *           },
+           *           {
+           *             "label": "应急联络人",
+           *             "value": 18,
+           *             "unit": "人",
+           *             "tone": "green"
+           *           },
+           *           {
+           *             "label": "可用消防水源",
+           *             "value": 306,
+           *             "unit": "处",
+           *             "tone": "orange"
+           *           }
+           *         ]
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['EmergencyAssistStatSummary'];
           };
         };
       };

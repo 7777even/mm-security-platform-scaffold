@@ -1,15 +1,20 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
 import EmergencyPlanSwitchDialog from './EmergencyPlanSwitchDialog.vue';
 import PlanPanoramaDialog from './PlanPanoramaDialog.vue';
-import { emergencyPlanLevels, type EmergencyPlanLevel } from '../../../lib/data/accidentRescueMock';
 import {
   usePlanMatrix,
   planSwitchTabToRowId,
   type SelectableEmergencyPlan,
 } from '../../../lib/composables/usePlanMatrix';
 import type { IncidentDetailField } from '@/services/accidentRescue';
+import {
+  fetchEmergencyPlanCatalog,
+  fetchEmergencyPlanDetailSections,
+  type EmergencyPlanCatalogItem,
+  type EmergencyPlanDetailSection,
+} from '@/services/emergencyPlan';
 
 const props = withDefaults(
   defineProps<{
@@ -26,28 +31,18 @@ const props = withDefaults(
 
 const { openPlanMatrix } = usePlanMatrix();
 
-const activePlanId = ref(
-  emergencyPlanLevels.find((level) => level.isCurrent)?.id ?? emergencyPlanLevels[0]?.id,
-);
-
-const planRows = ref([
-  { id: 'superior', label: '上级单位预案', planName: '未启动', canSwitch: false },
-  { id: 'company', label: '公司级预案', planName: '茂名石化应急预案', canSwitch: true },
-  { id: 'branch', label: '消防救援预案', planName: '乙烯装置消防救援处置方案', canSwitch: true },
-  { id: 'site', label: '现场处置方案', planName: '重油加氢装置高危处置方案', canSwitch: true },
-]);
+// 4 行预案层级来自后端 GET /emergency-plans/catalog（V39 fac_emergency_plan_catalog）
+const planRows = ref<EmergencyPlanCatalogItem[]>([]);
+// 当前激活预案 id（来自后端 isCurrent 标记，纯前端高亮态）
+const activePlanId = ref<string>('');
 
 const switchDialogOpen = ref(false);
 const selectedCatalogPlanId = ref<string | null>('disposal-1');
-
-function switchPlan(level: EmergencyPlanLevel) {
-  activePlanId.value = level.id;
-}
+// 预案详情 5 段字段来自后端 GET /emergency-plans/catalog-detail（V39 fac_emergency_plan_detail）
+const detailSections = ref<EmergencyPlanDetailSection[]>([]);
 
 function switchPlanById(planId: string) {
-  const level = emergencyPlanLevels.find((item) => item.id === planId);
-  if (!level) return;
-  switchPlan(level);
+  activePlanId.value = planId;
 }
 
 const detailTabs = ['基本信息', '应急组织', '预案指令', '预案行动', '预案文本'] as const;
@@ -55,51 +50,22 @@ const detailOpen = ref(false);
 const activeDetailTab = ref(0);
 const detailPlanName = ref('');
 
-const basicSections = [
-  {
-    title: '基础信息',
-    fields: [
-      { label: '所属组织', value: '茂名石化应急指挥中心' },
-      { label: '预案编号', value: 'MM-EPP-2026-001' },
-      { label: '预案名称', value: '茂名石化综合应急预案' },
-      { label: '预案类别', value: '综合应急预案' },
-      { label: '预案级别', value: '公司级' },
-      { label: '风控是否告知周边单位', value: '是' },
-    ],
-  },
-  {
-    title: '评审信息',
-    fields: [
-      { label: '预案评审日期', value: '2026-03-15' },
-      { label: '预案评审意见', value: '通过，建议强化夜间联动机制。' },
-    ],
-  },
-  {
-    title: '备案信息',
-    fields: [
-      { label: '初次备案日期', value: '2025-05-06' },
-      { label: '最近备案日期', value: '2026-03-20' },
-      { label: '备案部门', value: '市应急管理局' },
-      { label: '备案部门性质', value: '政府监管部门' },
-    ],
-  },
-  {
-    title: '公布信息',
-    fields: [
-      { label: '初次公布日期', value: '2025-05-20' },
-      { label: '最近公布日期', value: '2026-03-22' },
-    ],
-  },
-  {
-    title: '评估信息',
-    fields: [
-      { label: '是否修订', value: '未修订' },
-      { label: '最近评估日期', value: '2026-03-10' },
-      { label: '评估周期', value: '每6个月' },
-      { label: '评估意见', value: '整体有效，建议完善跨装置协同演练。' },
-    ],
-  },
-] as const;
+// 载入预案目录（4 层级行）+ 详情字段（5 段）：失败由 service 层降级为空态并告警
+onMounted(async () => {
+  try {
+    const [catalog, detail] = await Promise.all([
+      fetchEmergencyPlanCatalog(),
+      fetchEmergencyPlanDetailSections(),
+    ]);
+    planRows.value = catalog.items;
+    const current = catalog.items.find((item) => item.isCurrent) ?? catalog.items[0];
+    activePlanId.value = current?.id ?? '';
+    selectedCatalogPlanId.value = current?.id ?? null;
+    detailSections.value = detail.sections;
+  } catch {
+    /* 后端不可用已由 service 层告警并降级为空态 */
+  }
+});
 
 function openSwitchDialog() {
   switchDialogOpen.value = true;
@@ -227,7 +193,7 @@ function closeDetail() {
           <div class="plan-detail__content ar-scroll">
             <template v-if="activeDetailTab === 0">
               <section
-                v-for="section in basicSections"
+                v-for="section in detailSections"
                 :key="section.title"
                 class="plan-detail__section"
               >

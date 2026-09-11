@@ -178,6 +178,182 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/emergency-plans/catalog': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 应急预案目录
+     * @description 返回应急预案目录（4 行层级：上级单位 / 公司级 / 消防救援 / 现场处置）。数据源 V39 fac_emergency_plan_catalog 参考表，取代前端 EmergencyPlanPanel 硬编码的 planRows。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 应急预案目录数据 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "items": [
+             *           {
+             *             "id": "superior",
+             *             "label": "上级单位预案",
+             *             "planName": "未启动",
+             *             "canSwitch": false,
+             *             "isCurrent": false
+             *           },
+             *           {
+             *             "id": "company",
+             *             "label": "公司级预案",
+             *             "planName": "茂名石化应急预案",
+             *             "canSwitch": true,
+             *             "isCurrent": true
+             *           },
+             *           {
+             *             "id": "branch",
+             *             "label": "消防救援预案",
+             *             "planName": "乙烯装置消防救援处置方案",
+             *             "canSwitch": true,
+             *             "isCurrent": false
+             *           },
+             *           {
+             *             "id": "site",
+             *             "label": "现场处置方案",
+             *             "planName": "重油加氢装置高危处置方案",
+             *             "canSwitch": true,
+             *             "isCurrent": false
+             *           }
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['EmergencyPlanCatalogSummary'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/emergency-plans/catalog-detail': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 应急预案详情字段
+     * @description 返回预案详情弹窗的 5 段字段（基础 / 评审 / 备案 / 公布 / 评估信息）。数据源 V39 fac_emergency_plan_detail 参考表，取代前端 EmergencyPlanPanel 硬编码的 basicSections。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 应急预案详情字段数据 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "sections": [
+             *           {
+             *             "title": "基础信息",
+             *             "fields": [
+             *               {
+             *                 "label": "所属组织",
+             *                 "value": "茂名石化应急指挥中心"
+             *               },
+             *               {
+             *                 "label": "预案编号",
+             *                 "value": "MM-EPP-2026-001"
+             *               },
+             *               {
+             *                 "label": "预案名称",
+             *                 "value": "茂名石化综合应急预案"
+             *               },
+             *               {
+             *                 "label": "预案类别",
+             *                 "value": "综合应急预案"
+             *               },
+             *               {
+             *                 "label": "预案级别",
+             *                 "value": "公司级"
+             *               },
+             *               {
+             *                 "label": "风控是否告知周边单位",
+             *                 "value": "是"
+             *               }
+             *             ]
+             *           },
+             *           {
+             *             "title": "评估信息",
+             *             "fields": [
+             *               {
+             *                 "label": "是否修订",
+             *                 "value": "未修订"
+             *               },
+             *               {
+             *                 "label": "最近评估日期",
+             *                 "value": "2026-03-10"
+             *               },
+             *               {
+             *                 "label": "评估周期",
+             *                 "value": "每6个月"
+             *               },
+             *               {
+             *                 "label": "评估意见",
+             *                 "value": "整体有效，建议完善跨装置协同演练。"
+             *               }
+             *             ]
+             *           }
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['EmergencyPlanDetailSummary'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/emergency-plans/{planId}/action-cards': {
     parameters: {
       query?: never;
@@ -735,6 +911,67 @@ export interface components {
        * @example false
        */
       isGlobal?: boolean;
+    };
+    /** @description 应急预案目录行 */
+    EmergencyPlanCatalogItem: {
+      /**
+       * @description 预案层级编码：superior / company / branch / site
+       * @example company
+       */
+      id?: string;
+      /**
+       * @description 层级标签
+       * @example 公司级预案
+       */
+      label?: string;
+      /**
+       * @description 当前生效预案名称（未启动时为「未启动」）
+       * @example 茂名石化应急预案
+       */
+      planName?: string;
+      /**
+       * @description 是否可切换
+       * @example true
+       */
+      canSwitch?: boolean;
+      /**
+       * @description 是否为当前激活预案
+       * @example true
+       */
+      isCurrent?: boolean;
+    };
+    /** @description 应急预案目录集合 */
+    EmergencyPlanCatalogSummary: {
+      /** @description 4 行预案层级 */
+      items?: components['schemas']['EmergencyPlanCatalogItem'][];
+    };
+    /** @description 预案详情字段（标签 + 值） */
+    EmergencyPlanDetailField: {
+      /**
+       * @description 字段标签
+       * @example 所属组织
+       */
+      label?: string;
+      /**
+       * @description 字段值
+       * @example 茂名石化应急指挥中心
+       */
+      value?: string;
+    };
+    /** @description 预案详情字段分组段 */
+    EmergencyPlanDetailSection: {
+      /**
+       * @description 段标题：基础信息 / 评审信息 / 备案信息 / 公布信息 / 评估信息
+       * @example 基础信息
+       */
+      title?: string;
+      /** @description 段内字段列表 */
+      fields?: components['schemas']['EmergencyPlanDetailField'][];
+    };
+    /** @description 预案详情字段集合 */
+    EmergencyPlanDetailSummary: {
+      /** @description 5 段详情（基础 / 评审 / 备案 / 公布 / 评估信息） */
+      sections?: components['schemas']['EmergencyPlanDetailSection'][];
     };
   };
   responses: {

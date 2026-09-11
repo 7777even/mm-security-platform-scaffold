@@ -49,6 +49,48 @@
         }
       }
     },
+    "/emergency/assist-stats": {
+      "get": {
+        "tags": ["emergency"],
+        "operationId": "getEmergencyAssistStats",
+        "summary": "应急辅助信息统计",
+        "description": "返回 4 项应急辅助 KPI：应急预案 / 现场处置卡 / 应急联络人 / 可用消防水源。数据源 V39 fac_emergency_assist_stat 参考表。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=EmergencyAssistStatSummary）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/EmergencyAssistStatSummary" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "items": [
+                      { "label": "应急预案", "value": 15, "unit": "套", "tone": "blue" },
+                      { "label": "现场处置卡", "value": 32, "unit": "张", "tone": "cyan" },
+                      { "label": "应急联络人", "value": 18, "unit": "人", "tone": "green" },
+                      { "label": "可用消防水源", "value": 306, "unit": "处", "tone": "orange" }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
     "/emergency/closed-cases": {
       "get": {
         "tags": ["emergency"],
@@ -1331,6 +1373,36 @@
             "type": "array",
             "description": "节点处置指引（按节点号升序）",
             "items": { "$ref": "#/components/schemas/NodeGuidance" }
+          }
+        }
+      },
+      "EmergencyAssistStat": {
+        "type": "object",
+        "description": "应急辅助信息统计项",
+        "properties": {
+          "label": { "type": "string", "description": "统计项标签", "example": "应急预案" },
+          "value": { "type": "integer", "description": "数值", "example": 15 },
+          "unit": {
+            "type": "string",
+            "description": "单位：套 / 张 / 人 / 处",
+            "example": "套"
+          },
+          "tone": {
+            "type": "string",
+            "description": "配色：blue / cyan / green / orange",
+            "enum": ["blue", "cyan", "green", "orange"],
+            "example": "blue"
+          }
+        }
+      },
+      "EmergencyAssistStatSummary": {
+        "type": "object",
+        "description": "应急辅助信息统计集合",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmergencyAssistStat" },
+            "description": "4 项应急辅助 KPI"
           }
         }
       }

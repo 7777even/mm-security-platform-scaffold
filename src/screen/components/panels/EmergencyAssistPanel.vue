@@ -1,12 +1,19 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
+import { fetchEmergencyAssistStats, type EmergencyAssistStat } from '@/services/emergency';
 
-const assistItems = [
-  { label: '应急预案', value: '15', unit: '套', tone: 'blue' },
-  { label: '现场处置卡', value: '32', unit: '张', tone: 'cyan' },
-  { label: '应急联络人', value: '18', unit: '人', tone: 'green' },
-  { label: '可用消防水源', value: '306', unit: '处', tone: 'orange' },
-];
+// 取代硬编码 4 项 KPI：数据来自后端 GET /emergency/assist-stats（V39 fac_emergency_assist_stat）
+const assistItems = ref<EmergencyAssistStat[]>([]);
+
+onMounted(async () => {
+  try {
+    const res = await fetchEmergencyAssistStats();
+    assistItems.value = res.items;
+  } catch {
+    /* 后端不可用已由 service 层告警并降级为空态 */
+  }
+});
 </script>
 
 <template>

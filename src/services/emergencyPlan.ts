@@ -1,4 +1,9 @@
 import { request } from '@/services/http';
+import {
+  backendUnavailableWarn,
+  REASON_CONTRACT_MISMATCH,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 
 // 应急预案矩阵 / 预案切换接口（fm-accident-rescue 应急指挥），对齐 docs/api/emergency-plan.openapi.json。
 // 取代 planMatrixMock / emergencyPlanSwitchMock 中的硬编码数据。
@@ -151,4 +156,98 @@ export async function updatePlanActionCard(
 /** 删除行动卡片，返回是否删除成功。 */
 export async function deletePlanActionCard(planId: string, cardId: string): Promise<boolean> {
   return request<boolean>({ url: planActionCardUrl(planId, cardId), method: 'DELETE' });
+}
+
+// 预案目录 / 详情（V39：取代 EmergencyPlanPanel 硬编码的 planRows / basicSections）
+export interface EmergencyPlanCatalogItem {
+  id: string;
+  label: string;
+  planName: string;
+  canSwitch: boolean;
+  isCurrent: boolean;
+}
+
+export interface EmergencyPlanCatalogSummary {
+  items: EmergencyPlanCatalogItem[];
+}
+
+export interface EmergencyPlanDetailField {
+  label: string;
+  value: string;
+}
+
+export interface EmergencyPlanDetailSection {
+  title: string;
+  fields: EmergencyPlanDetailField[];
+}
+
+export interface EmergencyPlanDetailSummary {
+  sections: EmergencyPlanDetailSection[];
+}
+
+const EMPTY_CATALOG: EmergencyPlanCatalogSummary = { items: [] };
+const EMPTY_DETAIL: EmergencyPlanDetailSummary = { sections: [] };
+
+/**
+ * 应急预案目录（4 行层级：上级单位/公司级/消防救援/现场处置）。
+ * 后端就绪时走 /emergency-plans/catalog；未连后端回落空态——不回灌假预案（零下行控制红线）。
+ */
+export async function fetchEmergencyPlanCatalog(): Promise<EmergencyPlanCatalogSummary> {
+  const fb = resolveOfflineFetch(
+    'emergency-plan',
+    '/emergency-plans/catalog',
+    EMPTY_CATALOG,
+    EMPTY_CATALOG,
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
+  try {
+    const data = await request<EmergencyPlanCatalogSummary>({
+      url: '/emergency-plans/catalog',
+      method: 'GET',
+    });
+    if (!data || !Array.isArray(data.items)) {
+      backendUnavailableWarn(
+        'emergency-plan',
+        '/emergency-plans/catalog',
+        REASON_CONTRACT_MISMATCH,
+      );
+      return EMPTY_CATALOG;
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('emergency-plan', '/emergency-plans/catalog');
+    return EMPTY_CATALOG;
+  }
+}
+
+/**
+ * 应急预案详情字段（5 段：基础/评审/备案/公布/评估信息）。
+ * 后端就绪时走 /emergency-plans/catalog-detail；未连后端回落空态——不回灌假字段（零下行控制红线）。
+ */
+export async function fetchEmergencyPlanDetailSections(): Promise<EmergencyPlanDetailSummary> {
+  const fb = resolveOfflineFetch(
+    'emergency-plan',
+    '/emergency-plans/catalog-detail',
+    EMPTY_DETAIL,
+    EMPTY_DETAIL,
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
+  try {
+    const data = await request<EmergencyPlanDetailSummary>({
+      url: '/emergency-plans/catalog-detail',
+      method: 'GET',
+    });
+    if (!data || !Array.isArray(data.sections)) {
+      backendUnavailableWarn(
+        'emergency-plan',
+        '/emergency-plans/catalog-detail',
+        REASON_CONTRACT_MISMATCH,
+      );
+      return EMPTY_DETAIL;
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('emergency-plan', '/emergency-plans/catalog-detail');
+    return EMPTY_DETAIL;
+  }
 }

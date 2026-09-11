@@ -208,3 +208,45 @@ export async function fetchDispatchPersonnel(): Promise<DispatchPersonnelOption[
     return [];
   }
 }
+
+// 应急辅助信息统计（V39：取代 EmergencyAssistPanel 硬编码的 4 项 KPI）
+export interface EmergencyAssistStat {
+  label: string;
+  value: number;
+  unit: string;
+  tone: string;
+}
+
+export interface EmergencyAssistStatSummary {
+  items: EmergencyAssistStat[];
+}
+
+const EMPTY_ASSIST: EmergencyAssistStatSummary = { items: [] };
+
+/**
+ * 应急辅助信息统计（应急预案/现场处置卡/应急联络人/可用消防水源）。
+ * 后端就绪时走 /emergency/assist-stats；未连后端回落空态——不回灌假 KPI（零下行控制红线）。
+ */
+export async function fetchEmergencyAssistStats(): Promise<EmergencyAssistStatSummary> {
+  const fb = resolveOfflineFetch(
+    'emergency',
+    '/emergency/assist-stats',
+    EMPTY_ASSIST,
+    EMPTY_ASSIST,
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
+  try {
+    const data = await request<EmergencyAssistStatSummary>({
+      url: '/emergency/assist-stats',
+      method: 'GET',
+    });
+    if (!data || !Array.isArray(data.items)) {
+      backendUnavailableWarn('emergency', '/emergency/assist-stats', REASON_CONTRACT_MISMATCH);
+      return EMPTY_ASSIST;
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('emergency', '/emergency/assist-stats');
+    return EMPTY_ASSIST;
+  }
+}
