@@ -5,6 +5,7 @@ import {
   type RescueVehicleItem,
   type RescueVehicleList,
 } from '@/services/rescueResource';
+import { backendUnavailableWarn, resolveOfflineFetch } from '@/services/backendFallback';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
@@ -74,13 +75,30 @@ export const rescueVehiclePagedItems = computed(() => {
   return rescueVehicleFilteredItems.value.slice(start, start + RESCUE_VEHICLE_PAGE_SIZE);
 });
 
+/** 空态：未连后端 / 契约不符 / 请求异常时使用，绝不回灌假数据。 */
+const EMPTY_RESCUE_VEHICLE_LIST: RescueVehicleList = { squadrons: [], types: [], items: [] };
+
 async function loadRescueVehicles() {
   rescueVehicleLoading.value = true;
   rescueVehicleError.value = null;
+  // 三态：demo（无本地 fixture）→ 空态；未连后端 → 显式报错（全局横幅）+ 空态；live → 真实端点。
+  const fb = resolveOfflineFetch<RescueVehicleList>(
+    'rescueResource',
+    '/rescue-resources/vehicles',
+    EMPTY_RESCUE_VEHICLE_LIST,
+    EMPTY_RESCUE_VEHICLE_LIST,
+  );
+  if (fb.mode !== 'live') {
+    rescueVehicleData.value = { squadrons: [], types: [], items: [] };
+    rescueVehicleLoading.value = false;
+    return;
+  }
   try {
     rescueVehicleData.value = await fetchRescueVehicles();
   } catch (e) {
     rescueVehicleError.value = e instanceof Error ? e.message : String(e);
+    backendUnavailableWarn('rescueResource', '/rescue-resources/vehicles');
+    rescueVehicleData.value = { squadrons: [], types: [], items: [] };
   } finally {
     rescueVehicleLoading.value = false;
   }

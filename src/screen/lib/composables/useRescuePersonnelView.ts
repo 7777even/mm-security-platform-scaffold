@@ -5,6 +5,7 @@ import {
   type RescuePersonnelItem,
   type RescuePersonnelList,
 } from '@/services/rescueResource';
+import { backendUnavailableWarn, resolveOfflineFetch } from '@/services/backendFallback';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
@@ -76,13 +77,35 @@ export const rescuePersonnelPagedItems = computed(() => {
   return rescuePersonnelFilteredItems.value.slice(start, start + RESCUE_PERSONNEL_PAGE_SIZE);
 });
 
+/** 空态：未连后端 / 契约不符 / 请求异常时使用，绝不回灌假数据。 */
+const EMPTY_RESCUE_PERSONNEL_LIST: RescuePersonnelList = {
+  squadrons: [],
+  roles: [],
+  totalCount: 0,
+  items: [],
+};
+
 async function loadRescuePersonnel() {
   rescuePersonnelLoading.value = true;
   rescuePersonnelError.value = null;
+  // 三态：demo（无本地 fixture）→ 空态；未连后端 → 显式报错（全局横幅）+ 空态；live → 真实端点。
+  const fb = resolveOfflineFetch<RescuePersonnelList>(
+    'rescueResource',
+    '/rescue-resources/personnel',
+    EMPTY_RESCUE_PERSONNEL_LIST,
+    EMPTY_RESCUE_PERSONNEL_LIST,
+  );
+  if (fb.mode !== 'live') {
+    rescuePersonnelData.value = { squadrons: [], roles: [], totalCount: 0, items: [] };
+    rescuePersonnelLoading.value = false;
+    return;
+  }
   try {
     rescuePersonnelData.value = await fetchRescuePersonnel();
   } catch (e) {
     rescuePersonnelError.value = e instanceof Error ? e.message : String(e);
+    backendUnavailableWarn('rescueResource', '/rescue-resources/personnel');
+    rescuePersonnelData.value = { squadrons: [], roles: [], totalCount: 0, items: [] };
   } finally {
     rescuePersonnelLoading.value = false;
   }

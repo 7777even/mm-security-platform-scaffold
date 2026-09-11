@@ -172,6 +172,16 @@ const REGRESSION_GUARDS = [
   },
 ];
 
+// ── 2b) 必备守卫：已验证「失败显式告警 / 三态取数」的文件，必须持续引用 backendFallback ──
+// 防止日后被改回「静默 catch（失败只置 error 不报错）」。
+const REQUIRED_GUARDS = [
+  { file: 'lib/composables/useRescueEquipmentView.ts', must: /backendFallback/ },
+  { file: 'lib/composables/useRescuePersonnelView.ts', must: /backendFallback/ },
+  { file: 'lib/composables/useRescueVehicleView.ts', must: /backendFallback/ },
+  { file: 'lib/composables/useCommunicationDevices.ts', must: /backendFallback/ },
+  { file: 'lib/composables/usePreliminaryEventList.ts', must: /backendFallback/ },
+];
+
 // ── 扫描 ─────────────────────────────────────────────────────────────────────
 function walk(dir, acc) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -228,6 +238,17 @@ for (const guard of REGRESSION_GUARDS) {
       failed = true;
       console.error(`✗ 回归命中 [${guard.file}] 仍含禁用本地业务常量：/${re.source}/`);
     }
+  }
+}
+
+// 必备守卫
+for (const guard of REQUIRED_GUARDS) {
+  const fp = path.join(SCREEN, guard.file);
+  if (!fs.existsSync(fp)) continue;
+  const src = fs.readFileSync(fp, 'utf8');
+  if (!guard.must.test(src)) {
+    failed = true;
+    console.error(`✗ 必备引用缺失 [${guard.file}]：未匹配 /${guard.must.source}/（失败须显式告警）`);
   }
 }
 

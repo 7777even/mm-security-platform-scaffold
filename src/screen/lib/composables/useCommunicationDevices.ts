@@ -4,6 +4,7 @@ import {
   type CommunicationTab,
   type CommunicationGroup,
 } from '@/services/communication';
+import { backendUnavailableWarn, resolveOfflineFetch } from '@/services/backendFallback';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea, matchesPlantArea } = usePlantArea();
@@ -19,12 +20,35 @@ const communicationDeviceGroups = ref<Record<CommunicationTab, CommunicationGrou
   intercom: [],
 });
 
-// 模块级 immediate fetch：回填设备分组，依赖组件零改动。
-fetchCommunicationDevices()
-  .then((data) => {
-    communicationDeviceGroups.value = data;
-  })
-  .catch(() => {});
+/** 空态：未连后端 / 请求异常时使用，绝不回灌假数据。 */
+const EMPTY_COMMUNICATION_DEVICE_GROUPS: Record<CommunicationTab, CommunicationGroup[]> = {
+  broadcast: [],
+  phone: [],
+  intercom: [],
+};
+
+// 模块级三态取数：live 回填后端分组；demo（无本地 fixture）与未连后端均空态，
+// 未连后端额外显式报错（全局横幅）。依赖组件零改动。
+void loadCommunicationDevices();
+
+async function loadCommunicationDevices() {
+  const fb = resolveOfflineFetch<Record<CommunicationTab, CommunicationGroup[]>>(
+    'communication',
+    '/communication/devices',
+    EMPTY_COMMUNICATION_DEVICE_GROUPS,
+    EMPTY_COMMUNICATION_DEVICE_GROUPS,
+  );
+  if (fb.mode !== 'live') {
+    communicationDeviceGroups.value = { broadcast: [], phone: [], intercom: [] };
+    return;
+  }
+  try {
+    communicationDeviceGroups.value = await fetchCommunicationDevices();
+  } catch {
+    backendUnavailableWarn('communication', '/communication/devices');
+    communicationDeviceGroups.value = { broadcast: [], phone: [], intercom: [] };
+  }
+}
 
 function getCommunicationDevice(id: string | null) {
   if (!id) return null;

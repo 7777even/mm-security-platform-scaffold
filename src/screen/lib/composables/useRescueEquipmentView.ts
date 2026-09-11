@@ -5,6 +5,7 @@ import {
   type RescueEquipmentItem,
   type RescueEquipmentList,
 } from '@/services/rescueResource';
+import { backendUnavailableWarn, resolveOfflineFetch } from '@/services/backendFallback';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
@@ -63,13 +64,34 @@ export const rescueEquipmentPagedItems = computed(() => {
   return rescueEquipmentFilteredItems.value.slice(start, start + RESCUE_EQUIPMENT_PAGE_SIZE);
 });
 
+/** 空态：未连后端 / 契约不符 / 请求异常时使用，绝不回灌假数据。 */
+const EMPTY_RESCUE_EQUIPMENT_LIST: RescueEquipmentList = {
+  squadrons: [],
+  totalSets: 0,
+  items: [],
+};
+
 async function loadRescueEquipment() {
   rescueEquipmentLoading.value = true;
   rescueEquipmentError.value = null;
+  // 三态：demo（无本地 fixture）→ 空态；未连后端 → 显式报错（全局横幅）+ 空态；live → 真实端点。
+  const fb = resolveOfflineFetch<RescueEquipmentList>(
+    'rescueResource',
+    '/rescue-resources/equipment',
+    EMPTY_RESCUE_EQUIPMENT_LIST,
+    EMPTY_RESCUE_EQUIPMENT_LIST,
+  );
+  if (fb.mode !== 'live') {
+    rescueEquipmentData.value = { squadrons: [], totalSets: 0, items: [] };
+    rescueEquipmentLoading.value = false;
+    return;
+  }
   try {
     rescueEquipmentData.value = await fetchRescueEquipment();
   } catch (e) {
     rescueEquipmentError.value = e instanceof Error ? e.message : String(e);
+    backendUnavailableWarn('rescueResource', '/rescue-resources/equipment');
+    rescueEquipmentData.value = { squadrons: [], totalSets: 0, items: [] };
   } finally {
     rescueEquipmentLoading.value = false;
   }

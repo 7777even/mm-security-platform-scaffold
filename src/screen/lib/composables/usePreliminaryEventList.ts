@@ -4,6 +4,11 @@ import {
   type EmergencyEventGroup,
   type EmergencyEventItem,
 } from '@/services/emergencyEvent';
+import {
+  REASON_CONTRACT_MISMATCH,
+  backendUnavailableWarn,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 import { selectPreliminaryEvent } from './usePreliminaryEventSelection';
 import { usePlantArea } from './usePlantArea';
 
@@ -21,17 +26,31 @@ void loadPreliminaryEvents();
 async function loadPreliminaryEvents(): Promise<void> {
   preliminaryEventsLoading.value = true;
   preliminaryEventsError.value = null;
+  // 三态：demo（无本地 fixture）→ 空态；未连后端 → 显式报错（全局横幅）+ 空态；live → 真实端点。
+  const fb = resolveOfflineFetch<EmergencyEventGroup[]>(
+    'emergencyEvent',
+    '/emergency-events',
+    [],
+    [],
+  );
+  if (fb.mode !== 'live') {
+    preliminaryEventGroups.value = [];
+    preliminaryEventsLoading.value = false;
+    return;
+  }
   try {
     const data = await fetchEmergencyEvents('PRELIMINARY');
     if (Array.isArray(data)) {
       preliminaryEventGroups.value = data;
     } else {
       preliminaryEventsError.value = new Error('[preliminary] 后端未返回事件分组数组');
-      console.warn('[preliminary] 后端未返回事件分组数组，保持空列表');
+      backendUnavailableWarn('emergencyEvent', '/emergency-events', REASON_CONTRACT_MISMATCH);
+      preliminaryEventGroups.value = [];
     }
   } catch (err) {
     preliminaryEventsError.value = err;
-    console.error('[preliminary] 加载先期处置事件分组失败', err);
+    backendUnavailableWarn('emergencyEvent', '/emergency-events');
+    preliminaryEventGroups.value = [];
   } finally {
     preliminaryEventsLoading.value = false;
   }
