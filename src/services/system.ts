@@ -1,4 +1,5 @@
 import { request } from '@/services/http';
+import { backendUnavailableWarn, REASON_CONTRACT_MISMATCH } from '@/services/backendFallback';
 
 // 系统管理域（契约 docs/api/system.openapi.json）：用户 / 角色 / 菜单权限 / 字典。
 // 全部端点要求 ADMIN 角色（后端 @RequireAuth(role="ADMIN")），唯一例外是 fetchDictOptions（登录即可读）。
@@ -405,12 +406,23 @@ export function deleteDictItem(id: number): Promise<boolean> {
   }).then((r) => Boolean(r?.ok));
 }
 
-/** 业务读取：按字典标识取启用项（登录即可，供业务下拉） */
-export function fetchDictOptions(dictCode: string): Promise<DictItemItem[]> {
-  return request<DictItemItem[]>({
-    url: `/system/dicts/${encodeURIComponent(dictCode)}`,
-    method: 'GET',
-  });
+/** 业务读取：按字典标识取启用项（登录即可，供业务下拉）。
+ * 后端不可用时降级为空数组（绝不回灌假数据），页面走空下拉态，缺口可见。 */
+export async function fetchDictOptions(dictCode: string): Promise<DictItemItem[]> {
+  try {
+    const data = await request<DictItemItem[]>({
+      url: `/system/dicts/${encodeURIComponent(dictCode)}`,
+      method: 'GET',
+    });
+    if (!Array.isArray(data)) {
+      backendUnavailableWarn('system', `/system/dicts/${dictCode}`, REASON_CONTRACT_MISMATCH);
+      return [];
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('system', `/system/dicts/${dictCode}`);
+    return [];
+  }
 }
 
 /** 防区下拉（登录即可读，供用户表单「可访问防区」多选） */
