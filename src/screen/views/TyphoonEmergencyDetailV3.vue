@@ -27,17 +27,20 @@ const selectedVideoPoint = ref<RiskPoint | null>(null);
 const dynamicFilter = ref<'all' | 'alarm' | 'command' | 'feedback'>('all');
 
 const eventId = computed(() => Number(shellRoute.query.value.eventId) || undefined);
-// 本地 fixture 仅在纯静态演示（未配置 VITE_API_BASE）时使用；一旦配置了后端地址就以真实数据为准，
-// 后端失败时 service 会告警并返回 null，此处保持空态而不是回落到假数据冒充后端。
-const localIncident = computed(() => resolveTyphoonEmergencyIncidentV2(eventId.value));
-const remoteIncident = ref<TyphoonEmergencyIncident | null>(null);
-// 真实后端优先；未配置 VITE_API_BASE 时用本地 fixture（纯静态演示，不存在误判后端就绪的风险）。
-const incident = computed<TyphoonEmergencyIncident>(
-  () => remoteIncident.value ?? localIncident.value,
+// 本地 fixture 仅在离线演示（显式 VITE_USE_DEV_MOCK=true）时使用；一旦配置后端地址就以真实数据为准，
+// 后端失败时 service 会告警并返回 null；未连后端（且未开演示）则 service 显式报错并返回 null，此处保持空态。
+const isDemo = import.meta.env.VITE_USE_DEV_MOCK === 'true';
+const localIncident = computed<TyphoonEmergencyIncident | null>(() =>
+  isDemo ? resolveTyphoonEmergencyIncidentV2(eventId.value) : null,
 );
-// 已配置后端但真实数据未到位时不渲染页面，避免本地假数据被当成后端数据展示（service 侧已告警）。
-const incidentReady = computed(
-  () => !import.meta.env.VITE_API_BASE || remoteIncident.value !== null,
+const remoteIncident = ref<TyphoonEmergencyIncident | null>(null);
+// 真实后端优先；仅离线演示才用本地 fixture。
+const incident = computed<TyphoonEmergencyIncident>(
+  () => remoteIncident.value ?? localIncident.value ?? ({} as TyphoonEmergencyIncident),
+);
+// 有后端需真实数据到位才渲染；无后端时仅演示模式渲染，否则保持空态（不展示假数据冒充后端）。
+const incidentReady = computed(() =>
+  import.meta.env.VITE_API_BASE ? remoteIncident.value !== null : isDemo,
 );
 
 onMounted(async () => {

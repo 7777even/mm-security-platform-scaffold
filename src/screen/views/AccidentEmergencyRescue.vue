@@ -77,22 +77,45 @@ const pageTheme = computed(() => (isDrillMode.value ? 'drill' : 'event'));
 const panelTheme = computed(() => (isDrillMode.value ? 'drill' : 'accident'));
 const actionKind = computed(() => (isDrillMode.value ? 'drill' : 'event'));
 
-// 事件聚合：演练模式走本地 drill 解析；生产模式（配置了 VITE_API_BASE）走真实后端
-// /accident/rescue-incident，后端失败/缺数据时 service 暴露式降级为空数据并告警，绝不冒充真实数据；
-// 纯静态演示（无 VITE_API_BASE）回落本地 fixture 保证大屏可看。
+// 事件聚合：演练模式（仿真，by-design 本地）走本地 drill 解析；事件模式走真实后端
+// /accident/rescue-incident（后端失败/缺数据时 service 暴露式降级为空数据并告警，绝不冒充真实数据）。
+// 仅离线演示（显式 VITE_USE_DEV_MOCK=true）才回落本地 fixture；未连后端则显式报错 + 空态。
+const isDemo = import.meta.env.VITE_USE_DEV_MOCK === 'true';
+
+const EMPTY_INCIDENT = (): AccidentRescuePayload => ({
+  eventId: 0,
+  title: '',
+  location: '',
+  longitude: 0,
+  latitude: 0,
+  mapStatus: '',
+  status: 'pending',
+  reported: false,
+  facilityName: '',
+  detailFields: [],
+  dispatchResources: [],
+  dutyPersons: [],
+  auxiliaryStats: [],
+  dynamics: [],
+});
+
 const incident = ref<AccidentRescuePayload>(
-  resolveAccidentRescueIncident() as unknown as AccidentRescuePayload,
+  isDemo ? (resolveAccidentRescueIncident() as unknown as AccidentRescuePayload) : EMPTY_INCIDENT(),
 );
 
 async function loadIncident(): Promise<void> {
   const eid = Number(shellRoute.query.value.eventId) || undefined;
   if (isDrillMode.value) {
+    // 演练为仿真内容，by-design 本地解析
     incident.value = resolveDrillRescueIncident(eid) as unknown as AccidentRescuePayload;
     return;
   }
   if (!import.meta.env.VITE_API_BASE) {
-    incident.value = resolveAccidentRescueIncident(eid) as unknown as AccidentRescuePayload;
-    return;
+    if (isDemo) {
+      incident.value = resolveAccidentRescueIncident(eid) as unknown as AccidentRescuePayload;
+      return;
+    }
+    // 未连后端且未开演示：走 service，由其显式报错并返回空态
   }
   incident.value = await fetchAccidentIncident(eid);
 }

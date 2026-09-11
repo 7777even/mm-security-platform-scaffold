@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SharedCesiumMap from '../components/map/SharedCesiumMap.vue';
+import BackendOfflineBanner from '../components/layout/BackendOfflineBanner.vue';
 </script>
 
 <template>
@@ -12,6 +13,7 @@ import SharedCesiumMap from '../components/map/SharedCesiumMap.vue';
     <div class="map-dashboard-layout__pages">
       <slot />
     </div>
+    <BackendOfflineBanner />
   </div>
 </template>
 

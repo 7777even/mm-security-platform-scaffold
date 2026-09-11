@@ -22,7 +22,11 @@ import {
   saveNodePhaseConfigs,
   type ResponseModeOption,
 } from '@/services/emergencyProcess';
-import { backendUnavailableWarn } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  isOfflineNoBackend,
+  notifyBackendOffline,
+} from '@/services/backendFallback';
 
 const STAGE_ID_TO_NODE_ID: Record<number, string> = {
   1: 'alarmJudgement',
@@ -348,6 +352,16 @@ export function useEmergencyProcess() {
    * 无 VITE_API_BASE 的纯静态演示模式仅写本地缓存。
    */
   async function saveNodeConfig(configs: Record<string, NodePhaseConfig>): Promise<boolean> {
+    // 未连后端且未开演示：写操作显式报错，不做本地改
+    if (isOfflineNoBackend()) {
+      notifyBackendOffline(
+        'emergency-process',
+        'PUT /emergency/process/node-configs',
+        '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+      );
+      return false;
+    }
+    // 离线演示：仅写本地缓存
     if (!nodeConfigsToBackend()) {
       nodeConfigs.value = JSON.parse(JSON.stringify(configs));
       saveNodeConfigs(nodeConfigs.value);

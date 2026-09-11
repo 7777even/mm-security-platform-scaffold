@@ -6,6 +6,7 @@ import {
   type EntryCaptureMode,
 } from '../data/entryCaptureMock';
 import { fetchSecurityEvents, type SecurityEvent } from '@/services/securityEventStore';
+import { notifyBackendOffline } from '@/services/backendFallback';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
@@ -17,8 +18,9 @@ export const entryCaptureKeyword = ref('');
 export const entryCaptureTimeRange = ref('');
 
 // 真实数据优先：有 VITE_API_BASE 时从 /security/events 拉取门禁事件并映射为抓拍记录形状；
-// 否则回落 entryCaptureMock fixture。暴露式降级：拉取失败同样回落 fixture，绝不静默空数据。
-const entryCaptureItems = ref<EntryCaptureItem[]>(entryCaptureMockItems.map((e) => ({ ...e })));
+// 离线演示（VITE_USE_DEV_MOCK=true）才回落 entryCaptureMock fixture；
+// 未连后端则显式报错 + 空态（不回灌假数据）。
+const entryCaptureItems = ref<EntryCaptureItem[]>([]);
 
 function toEntryCaptureItem(e: SecurityEvent, index: number): EntryCaptureItem {
   const hasVehicle = !!e.vehicle && e.vehicle.trim().length > 0;
@@ -35,14 +37,25 @@ function toEntryCaptureItem(e: SecurityEvent, index: number): EntryCaptureItem {
 
 async function loadEntryCapture() {
   if (!import.meta.env.VITE_API_BASE) {
-    entryCaptureItems.value = entryCaptureMockItems.map((e) => ({ ...e }));
+    // 仅离线演示（显式 VITE_USE_DEV_MOCK=true）才回落本地 fixture；否则显式报错 + 空态
+    if (import.meta.env.VITE_USE_DEV_MOCK === 'true') {
+      entryCaptureItems.value = entryCaptureMockItems.map((e) => ({ ...e }));
+      return;
+    }
+    notifyBackendOffline(
+      'security',
+      '/security/events',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    entryCaptureItems.value = [];
     return;
   }
   try {
     const events = await fetchSecurityEvents();
     entryCaptureItems.value = Array.isArray(events) ? events.map(toEntryCaptureItem) : [];
   } catch {
-    entryCaptureItems.value = entryCaptureMockItems.map((e) => ({ ...e }));
+    notifyBackendOffline('security', '/security/events');
+    entryCaptureItems.value = [];
   }
 }
 

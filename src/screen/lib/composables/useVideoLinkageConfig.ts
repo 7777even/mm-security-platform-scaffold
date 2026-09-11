@@ -10,7 +10,11 @@ import {
   type VideoLinkageRuleRow,
   type VideoLinkageSaveRequest,
 } from '@/services/video';
-import { backendUnavailableWarn } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  isOfflineNoBackend,
+  notifyBackendOffline,
+} from '@/services/backendFallback';
 
 export const linkageDialogOpen = ref(false);
 export const linkageEditMode = ref(false);
@@ -124,6 +128,15 @@ function applyLocalLinkageSave(id: string | null, payload: VideoLinkageSaveReque
  */
 export async function saveLinkageEdit(payload: VideoLinkageSaveRequest): Promise<boolean> {
   const id = editingConfigId.value;
+  // 未连后端且未开演示：写操作显式报错，不做本地改
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'video',
+      id ? `/video/linkages/${id}` : '/video/linkages',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return false;
+  }
   if (!videoLinkageWritesToBackend()) {
     applyLocalLinkageSave(id, payload);
     resetLinkageEditState();
@@ -151,6 +164,15 @@ export async function saveLinkageEdit(payload: VideoLinkageSaveRequest): Promise
 export async function removeLinkageConfig(config: VideoLinkageItem): Promise<void> {
   const index = configs.value.findIndex((item) => item.id === config.id);
   if (index < 0) return;
+  // 未连后端且未开演示：写操作显式报错，不做本地改
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'video',
+      `/video/linkages/${config.id}`,
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return;
+  }
   if (videoLinkageWritesToBackend()) {
     try {
       await deleteVideoLinkage(config.id);

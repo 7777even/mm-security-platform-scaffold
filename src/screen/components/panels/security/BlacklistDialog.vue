@@ -7,7 +7,11 @@ import {
   type BlacklistPersonItem,
   type BlacklistVehicleItem,
 } from '@/services/securityBlacklist';
-import { backendUnavailableWarn } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  isOfflineNoBackend,
+  notifyBackendOffline,
+} from '@/services/backendFallback';
 
 const props = defineProps<{
   open: boolean;
@@ -44,6 +48,15 @@ function blacklistWritesToBackend(): boolean {
 async function removeVehicle(item: BlacklistVehicleItem) {
   const index = vehicleBlacklist.value.findIndex((v) => v.id === item.id);
   if (index < 0) return;
+  // 未连后端且未开演示：写操作显式报错，不做本地改
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'security-blacklist',
+      'DELETE /security/blacklist/vehicles/{id}',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return;
+  }
   if (blacklistWritesToBackend()) {
     try {
       const ok = await removeBlacklistVehicle(item.id);
@@ -59,6 +72,15 @@ async function removeVehicle(item: BlacklistVehicleItem) {
 async function removePerson(item: BlacklistPersonItem) {
   const index = personBlacklist.value.findIndex((p) => p.id === item.id);
   if (index < 0) return;
+  // 未连后端且未开演示：写操作显式报错，不做本地改
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'security-blacklist',
+      'DELETE /security/blacklist/persons/{id}',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return;
+  }
   if (blacklistWritesToBackend()) {
     try {
       const ok = await removeBlacklistPerson(item.id);

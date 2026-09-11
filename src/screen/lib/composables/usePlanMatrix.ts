@@ -13,7 +13,11 @@ import {
   type PlanSubPhase,
   type SelectableEmergencyPlan,
 } from '@/services/emergencyPlan';
-import { backendUnavailableWarn } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  isOfflineNoBackend,
+  notifyBackendOffline,
+} from '@/services/backendFallback';
 import type { PlanCardStatus } from '../data/planMatrixMock';
 
 /** 预案 Tab 键 → 面板行 id（联动高亮），与 emergencyPlanSwitchMock 对齐。 */
@@ -201,6 +205,15 @@ function planWritesToBackend(): boolean {
 async function setCardStatus(cardId: string, status: PlanCardStatus) {
   const card = currentPlan.value.actionCards.find((item) => item.id === cardId);
   if (!card) return;
+  // 未连后端且未开演示：写操作显式报错，不做本地改
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'plan-action-card',
+      'PUT /emergency-plans/{planId}/action-cards/{cardId}',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return;
+  }
   if (!planWritesToBackend()) {
     card.status = status;
     return;
@@ -219,6 +232,15 @@ async function setCardStatus(cardId: string, status: PlanCardStatus) {
 async function removeActionCard(cardId: string) {
   const index = currentPlan.value.actionCards.findIndex((item) => item.id === cardId);
   if (index < 0) return;
+  // 未连后端且未开演示：写操作显式报错，不做本地改
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'plan-action-card',
+      'DELETE /emergency-plans/{planId}/action-cards/{cardId}',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return;
+  }
   if (planWritesToBackend()) {
     try {
       await deletePlanActionCard(currentPlan.value.id, cardId);
@@ -237,6 +259,15 @@ async function removeActionCard(cardId: string) {
 }
 
 async function addActionCard(card: PlanActionCard) {
+  // 未连后端且未开演示：写操作显式报错，不做本地改
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'plan-action-card',
+      'POST /emergency-plans/{planId}/action-cards',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    return;
+  }
   if (!planWritesToBackend()) {
     currentPlan.value.actionCards.push({ ...card, id: card.id || `c-new-${Date.now()}` });
     return;
