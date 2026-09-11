@@ -294,7 +294,19 @@ export default defineConfig({
           new URL('./subapps/fm-video-wall/index.html', import.meta.url),
         ),
       },
-      output: { manualChunks: { echarts: ['echarts'] } },
+      output: {
+        // 按第三方库拆包：Cesium / ECharts / Leaflet 体积大且几乎不变，独立成 chunk 后可长缓存，
+        // 避免每次业务发版都让用户重下 4MB+ 的地图引擎。
+        // 用函数而非对象形式：需一并覆盖 cesium 的内部 @cesium/* 子包；
+        // 正则里的 [\\/] 是为了兼容 Windows（\）与 Linux（/）两种路径分隔符。
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (/node_modules[\\/](cesium|@cesium)/.test(id)) return 'cesium';
+          if (/node_modules[\\/](echarts|zrender)/.test(id)) return 'echarts';
+          if (/node_modules[\\/]leaflet/.test(id)) return 'leaflet';
+          return undefined;
+        },
+      },
     },
   },
   test: {
