@@ -5,7 +5,11 @@
     "description": "取代前端硬编码的 fireSituationMapMock 业务数据，由后端 /api/v1/fire-situation 真实端点提供消防态势地图聚合点位。",
     "version": "1.0.0"
   },
-  "servers": [{ "url": "/api/v1" }],
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
   "paths": {
     "/fire-situation/markers": {
       "get": {
@@ -17,7 +21,9 @@
             "description": "消防态势地图聚合点位数据",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/FireSituationMarkerSummary" },
+                "schema": {
+                  "$ref": "#/components/schemas/FireSituationMarkerSummary"
+                },
                 "example": {
                   "code": 0,
                   "message": "ok",
@@ -77,7 +83,9 @@
             "description": "装置区消防保障汇总",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/FireMonitorAreaSummary" },
+                "schema": {
+                  "$ref": "#/components/schemas/FireMonitorAreaSummary"
+                },
                 "example": {
                   "code": 0,
                   "message": "ok",
@@ -122,7 +130,9 @@
             "description": "重点监控对象列表",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/FireMonitoredObjectSummary" },
+                "schema": {
+                  "$ref": "#/components/schemas/FireMonitoredObjectSummary"
+                },
                 "example": {
                   "code": 0,
                   "message": "ok",
@@ -156,14 +166,22 @@
         "type": "object",
         "description": "消防态势地图聚合点位",
         "properties": {
-          "id": { "type": "string", "description": "点位唯一 id", "example": "evt-1" },
+          "id": {
+            "type": "string",
+            "description": "点位唯一 id",
+            "example": "evt-1"
+          },
           "kind": {
             "type": "string",
             "description": "点位类型：event 事件 / operation 处置 / alarm 告警",
             "enum": ["event", "operation", "alarm"],
             "example": "event"
           },
-          "title": { "type": "string", "description": "点位主标题", "example": "罐区泄漏处置" },
+          "title": {
+            "type": "string",
+            "description": "点位主标题",
+            "example": "罐区泄漏处置"
+          },
           "subtitle": {
             "type": "string",
             "description": "点位副标题（区域/单位）",
@@ -181,7 +199,11 @@
             "description": "纬度",
             "example": 21.615
           },
-          "important": { "type": "boolean", "description": "是否重点点位", "example": true },
+          "important": {
+            "type": "boolean",
+            "description": "是否重点点位",
+            "example": true
+          },
           "iconUrl": {
             "type": "string",
             "description": "点位图标 URL",
@@ -207,7 +229,9 @@
           "items": {
             "type": "array",
             "description": "聚合点位列表",
-            "items": { "$ref": "#/components/schemas/FireSituationMarkerItem" }
+            "items": {
+              "$ref": "#/components/schemas/FireSituationMarkerItem"
+            }
           }
         }
       },
@@ -215,22 +239,46 @@
         "type": "object",
         "description": "装置区消防保障汇总项",
         "properties": {
-          "id": { "type": "string", "description": "区域编码", "example": "refinery-1" },
+          "id": {
+            "type": "string",
+            "description": "区域编码",
+            "example": "refinery-1"
+          },
           "scope": {
             "type": "string",
             "description": "厂区分类：refinery 炼油 / chemical 化工 / port 港口",
             "example": "refinery"
           },
-          "name": { "type": "string", "description": "装置区名称", "example": "炼油一部装置区" },
+          "name": {
+            "type": "string",
+            "description": "装置区名称",
+            "example": "炼油一部装置区"
+          },
           "status": {
             "type": "string",
             "description": "运行状态：normal 正常 / attention 关注",
             "example": "normal"
           },
-          "statusLabel": { "type": "string", "description": "状态文案", "example": "运行正常" },
-          "equipment": { "type": "integer", "description": "消防设备数", "example": 128 },
-          "cameras": { "type": "integer", "description": "视频监控路数", "example": 24 },
-          "personnel": { "type": "integer", "description": "现场人员数", "example": 16 }
+          "statusLabel": {
+            "type": "string",
+            "description": "状态文案",
+            "example": "运行正常"
+          },
+          "equipment": {
+            "type": "integer",
+            "description": "消防设备数",
+            "example": 128
+          },
+          "cameras": {
+            "type": "integer",
+            "description": "视频监控路数",
+            "example": 24
+          },
+          "personnel": {
+            "type": "integer",
+            "description": "现场人员数",
+            "example": 16
+          }
         }
       },
       "FireMonitorAreaSummary": {
@@ -240,7 +288,9 @@
           "items": {
             "type": "array",
             "description": "装置区列表",
-            "items": { "$ref": "#/components/schemas/FireMonitorArea" }
+            "items": {
+              "$ref": "#/components/schemas/FireMonitorArea"
+            }
           }
         }
       },
@@ -248,13 +298,21 @@
         "type": "object",
         "description": "重点监控对象项",
         "properties": {
-          "name": { "type": "string", "description": "对象名称", "example": "A装置区" },
+          "name": {
+            "type": "string",
+            "description": "对象名称",
+            "example": "A装置区"
+          },
           "status": {
             "type": "string",
             "description": "状态：告警 / 预警 / 正常",
             "example": "告警"
           },
-          "detail": { "type": "string", "description": "状态详情", "example": "1起火灾告警处置中" },
+          "detail": {
+            "type": "string",
+            "description": "状态详情",
+            "example": "1起火灾告警处置中"
+          },
           "tone": {
             "type": "string",
             "description": "配色：danger 危险 / warning 预警 / normal 正常",
@@ -269,7 +327,9 @@
           "items": {
             "type": "array",
             "description": "对象列表",
-            "items": { "$ref": "#/components/schemas/FireMonitoredObject" }
+            "items": {
+              "$ref": "#/components/schemas/FireMonitoredObject"
+            }
           }
         }
       }
