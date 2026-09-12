@@ -658,6 +658,235 @@
           "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
         }
       }
+    },
+    "/emergency/command-records": {
+      "get": {
+        "tags": ["emergency"],
+        "operationId": "listEmergencyCommandRecords",
+        "summary": "应急指令下发与状态推进记录列表",
+        "description": "返回应急指令下发与状态推进的业务留痕列表（按 id 倒序，最多 200 条）。仅记录系统内部指令流转，不代表任何物理设备动作。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=指令记录列表）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/EmergencyCommandRecordView" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "commandCode": "w1",
+                      "commandName": "发布防台防汛预警",
+                      "commandKind": "固定指令",
+                      "prevStatus": "待执行",
+                      "currStatus": "执行中",
+                      "dispatchMode": "系统下发",
+                      "target": "各生产单位、承包商",
+                      "remark": "要求停止露天高处及吊装作业",
+                      "operator": "admin",
+                      "createdAt": "2026-09-13T09:20:11"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["emergency"],
+        "operationId": "createEmergencyCommandRecord",
+        "summary": "应急指令下发 / 状态推进（业务留痕）",
+        "description": "登记一条应急指令下发或状态推进记录。语义边界（D4 拍板）：仅系统内部指令记录与状态推进，服务端绝不触发任何物理设备——消防泵、广播强切、门禁断电、疏散喷淋等下行控制属零下行红线，由 HardControlPaths 在前后端双重拦截。prevStatus 由服务端取该 commandCode 上一条记录的 currStatus 自动填充，首次下发为空。需权限码 emergency:command:write，并落 fac_audit_log 审计。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/EmergencyCommandRecordWriteRequest" },
+              "example": {
+                "commandCode": "w1",
+                "commandName": "发布防台防汛预警",
+                "commandKind": "固定指令",
+                "currStatus": "执行中",
+                "dispatchMode": "系统下发",
+                "target": "各生产单位、承包商",
+                "remark": "要求停止露天高处及吊装作业"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=落库后的指令记录）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/EmergencyCommandRecordView" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "commandCode": "w1",
+                    "commandName": "发布防台防汛预警",
+                    "commandKind": "固定指令",
+                    "prevStatus": "待执行",
+                    "currStatus": "执行中",
+                    "dispatchMode": "系统下发",
+                    "target": "各生产单位、承包商",
+                    "remark": "要求停止露天高处及吊装作业",
+                    "operator": "admin",
+                    "createdAt": "2026-09-13T09:20:11"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "./_shared.json#/components/responses/BadRequest" },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/emergency/duty-sign-ins": {
+      "get": {
+        "tags": ["emergency"],
+        "operationId": "listDutySignIns",
+        "summary": "应急值班签到记录列表",
+        "description": "返回应急值班签到 / 签退记录（按 id 倒序，最多 200 条）。值班排班本体（/emergency/duty）仍是只读参考配置，签到动作落独立的 fac_duty_sign_in 表。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=签到记录列表）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/DutySignInView" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "dutyDate": "2026-09-13",
+                      "shiftName": "白班",
+                      "department": "应急指挥中心",
+                      "personName": "杨恒朋",
+                      "signAction": "SIGN_IN",
+                      "signTime": "2026-09-13 08:00:00",
+                      "remark": "",
+                      "operator": "admin",
+                      "createdAt": "2026-09-13T08:00:03"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["emergency"],
+        "operationId": "createDutySignIn",
+        "summary": "应急值班签到 / 签退",
+        "description": "登记一条值班签到或签退记录。signAction 取 SIGN_IN（签到）/ SIGN_OUT（签退）；signTime 为空时由服务端按当前时间填充。需权限码 emergency:duty:write，并落 fac_audit_log 审计。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DutySignInWriteRequest" },
+              "example": {
+                "dutyDate": "2026-09-13",
+                "shiftName": "白班",
+                "department": "应急指挥中心",
+                "personName": "杨恒朋",
+                "signAction": "SIGN_IN",
+                "remark": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=落库后的签到记录）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/DutySignInView" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "dutyDate": "2026-09-13",
+                    "shiftName": "白班",
+                    "department": "应急指挥中心",
+                    "personName": "杨恒朋",
+                    "signAction": "SIGN_IN",
+                    "signTime": "2026-09-13 08:00:00",
+                    "remark": "",
+                    "operator": "admin",
+                    "createdAt": "2026-09-13T08:00:03"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "./_shared.json#/components/responses/BadRequest" },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
     }
   },
   "components": {
@@ -1403,6 +1632,158 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/EmergencyAssistStat" },
             "description": "4 项应急辅助 KPI"
+          }
+        }
+      },
+      "EmergencyCommandRecordWriteRequest": {
+        "type": "object",
+        "description": "应急指令下发 / 状态推进写请求（A2 业务写侧）。仅系统内部留痕，不触发任何物理设备。",
+        "required": ["commandCode", "currStatus"],
+        "properties": {
+          "commandCode": {
+            "type": "string",
+            "description": "指令编码（对应指挥指令 / 行动 id），必填",
+            "example": "w1"
+          },
+          "commandName": {
+            "type": "string",
+            "description": "指令名称",
+            "example": "发布防台防汛预警"
+          },
+          "commandKind": {
+            "type": "string",
+            "description": "指令类别（固定指令 / 临时指令）",
+            "example": "固定指令"
+          },
+          "currStatus": {
+            "type": "string",
+            "description": "推进后状态（待执行 / 执行中 / 已完成），必填",
+            "example": "执行中"
+          },
+          "dispatchMode": {
+            "type": "string",
+            "description": "下发方式（系统下发 / 人工下发）",
+            "example": "系统下发"
+          },
+          "target": {
+            "type": "string",
+            "description": "下发对象（岗位 / 人员 / 组织）",
+            "example": "各生产单位、承包商"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注说明",
+            "example": "要求停止露天高处及吊装作业"
+          }
+        }
+      },
+      "EmergencyCommandRecordView": {
+        "type": "object",
+        "description": "应急指令记录视图（落库后的完整行，含服务端填充的 prevStatus / operator / 时间戳）",
+        "properties": {
+          "id": { "type": "integer", "description": "记录 id", "example": 1 },
+          "commandCode": {
+            "type": "string",
+            "description": "指令编码",
+            "example": "w1"
+          },
+          "commandName": {
+            "type": "string",
+            "description": "指令名称",
+            "example": "发布防台防汛预警"
+          },
+          "commandKind": {
+            "type": "string",
+            "description": "指令类别（固定指令 / 临时指令）",
+            "example": "固定指令"
+          },
+          "prevStatus": {
+            "type": "string",
+            "description": "推进前状态（首次下发为空）",
+            "example": "待执行"
+          },
+          "currStatus": { "type": "string", "description": "推进后状态", "example": "执行中" },
+          "dispatchMode": { "type": "string", "description": "下发方式", "example": "系统下发" },
+          "target": {
+            "type": "string",
+            "description": "下发对象（岗位 / 人员 / 组织）",
+            "example": "各生产单位、承包商"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注说明",
+            "example": "要求停止露天高处及吊装作业"
+          },
+          "operator": { "type": "string", "description": "操作人账号", "example": "admin" },
+          "createdAt": {
+            "type": "string",
+            "description": "记录创建时间（ISO 本地时间，无时区）",
+            "example": "2026-09-13T09:20:11"
+          }
+        }
+      },
+      "DutySignInWriteRequest": {
+        "type": "object",
+        "description": "应急值班签到 / 签退写请求（A2 业务写侧）",
+        "required": ["dutyDate", "shiftName", "personName", "signAction"],
+        "properties": {
+          "dutyDate": {
+            "type": "string",
+            "description": "值班日期 YYYY-MM-DD",
+            "example": "2026-09-13"
+          },
+          "shiftName": {
+            "type": "string",
+            "description": "班次（白班 / 夜班）",
+            "example": "白班"
+          },
+          "department": {
+            "type": "string",
+            "description": "值班部门",
+            "example": "应急指挥中心"
+          },
+          "personName": { "type": "string", "description": "值班人员姓名", "example": "杨恒朋" },
+          "signAction": {
+            "type": "string",
+            "description": "签到动作：SIGN_IN 签到 / SIGN_OUT 签退",
+            "example": "SIGN_IN"
+          },
+          "remark": { "type": "string", "description": "备注说明", "example": "" }
+        }
+      },
+      "DutySignInView": {
+        "type": "object",
+        "description": "值班签到记录视图（落库后的完整行，含服务端填充的 signTime / operator）",
+        "properties": {
+          "id": { "type": "integer", "description": "记录 id", "example": 1 },
+          "dutyDate": {
+            "type": "string",
+            "description": "值班日期 YYYY-MM-DD",
+            "example": "2026-09-13"
+          },
+          "shiftName": {
+            "type": "string",
+            "description": "班次（白班 / 夜班）",
+            "example": "白班"
+          },
+          "department": { "type": "string", "description": "值班部门", "example": "应急指挥中心" },
+          "personName": { "type": "string", "description": "值班人员姓名", "example": "杨恒朋" },
+          "signAction": {
+            "type": "string",
+            "description": "签到动作：SIGN_IN 签到 / SIGN_OUT 签退",
+            "example": "SIGN_IN"
+          },
+          "signTime": {
+            "type": "string",
+            "description": "签到时间 YYYY-MM-DD HH:mm:ss（请求为空时由服务端按当前时间填充）",
+            "example": "2026-09-13 08:00:00"
+          },
+          "remark": { "type": "string", "description": "备注说明", "example": "" },
+          "operator": { "type": "string", "description": "操作人账号", "example": "admin" },
+          "createdAt": {
+            "type": "string",
+            "description": "记录创建时间（ISO 本地时间，无时区）",
+            "example": "2026-09-13T08:00:03"
           }
         }
       }

@@ -262,6 +262,123 @@
           "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
         }
       }
+    },
+    "/typhoon/dispatch-orders": {
+      "get": {
+        "tags": ["typhoon"],
+        "operationId": "listTyphoonDispatchOrders",
+        "summary": "台风资源调度单列表",
+        "description": "返回防汛排涝资源调度单（指派 / 确认 / 释放）列表，按 id 倒序，最多 200 条。资源清单本体（/typhoon/dispatch-resources）保持只读，调度动作落独立的 fac_typhoon_dispatch_order 表。",
+        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=调度单列表）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/TyphoonDispatchOrderView" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "orderNo": "TD-20260913-0001",
+                      "resourceCode": "TEAM-FX-01",
+                      "resourceName": "炼油防汛抢险一组",
+                      "dispatchAction": "ASSIGN",
+                      "prevStatus": "可调度",
+                      "currStatus": "已出动",
+                      "assignee": "高策",
+                      "quantity": 1,
+                      "remark": "支援6#路地磅北地沟",
+                      "operator": "admin",
+                      "createdAt": "2026-09-13T09:30:00"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["typhoon"],
+        "operationId": "createTyphoonDispatchOrder",
+        "summary": "台风资源调度（指派 / 确认 / 释放）",
+        "description": "登记一条资源调度单：dispatchAction 取 ASSIGN（指派）/ CONFIRM（确认）/ RELEASE（释放）。orderNo 由服务端按「TD-年月日-四位序号」生成；prevStatus 取该资源上一条调度单的 currStatus，首次调度为空。需权限码 typhoon:dispatch:write，并落 fac_audit_log 审计。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TyphoonDispatchOrderWriteRequest" },
+              "example": {
+                "resourceCode": "TEAM-FX-01",
+                "resourceName": "炼油防汛抢险一组",
+                "dispatchAction": "ASSIGN",
+                "assignee": "高策",
+                "quantity": 1,
+                "remark": "支援6#路地磅北地沟"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=落库后的调度单）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/TyphoonDispatchOrderView" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "orderNo": "TD-20260913-0001",
+                    "resourceCode": "TEAM-FX-01",
+                    "resourceName": "炼油防汛抢险一组",
+                    "dispatchAction": "ASSIGN",
+                    "prevStatus": "可调度",
+                    "currStatus": "已出动",
+                    "assignee": "高策",
+                    "quantity": 1,
+                    "remark": "支援6#路地磅北地沟",
+                    "operator": "admin",
+                    "createdAt": "2026-09-13T09:30:00"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "./_shared.json#/components/responses/BadRequest" },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
     }
   },
   "components": {
@@ -523,6 +640,81 @@
           "phone": { "type": "string", "description": "联系电话" },
           "longitude": { "type": "number", "description": "资源经度" },
           "latitude": { "type": "number", "description": "资源纬度" }
+        }
+      },
+      "TyphoonDispatchOrderWriteRequest": {
+        "type": "object",
+        "description": "台风（防汛排涝）资源调度单写请求（A2 业务写侧）",
+        "required": ["resourceCode", "dispatchAction"],
+        "properties": {
+          "resourceCode": {
+            "type": "string",
+            "description": "关联资源编码（fac_typhoon_dispatch_resource.resource_code），必填",
+            "example": "TEAM-FX-01"
+          },
+          "resourceName": {
+            "type": "string",
+            "description": "资源名称",
+            "example": "炼油防汛抢险一组"
+          },
+          "dispatchAction": {
+            "type": "string",
+            "description": "调度动作：ASSIGN 指派 / CONFIRM 确认 / RELEASE 释放，必填",
+            "example": "ASSIGN"
+          },
+          "assignee": {
+            "type": "string",
+            "description": "被指派单位 / 责任人",
+            "example": "高策"
+          },
+          "quantity": { "type": "integer", "description": "调度数量", "example": 1 },
+          "remark": { "type": "string", "description": "备注说明", "example": "支援6#路地磅北地沟" }
+        }
+      },
+      "TyphoonDispatchOrderView": {
+        "type": "object",
+        "description": "台风资源调度单视图（落库后的完整行，含服务端生成的 orderNo 与 prevStatus）",
+        "properties": {
+          "id": { "type": "integer", "description": "记录 id", "example": 1 },
+          "orderNo": {
+            "type": "string",
+            "description": "调度单号（服务端按 TD-年月日-四位序号 生成）",
+            "example": "TD-20260913-0001"
+          },
+          "resourceCode": {
+            "type": "string",
+            "description": "关联资源编码",
+            "example": "TEAM-FX-01"
+          },
+          "resourceName": {
+            "type": "string",
+            "description": "资源名称",
+            "example": "炼油防汛抢险一组"
+          },
+          "dispatchAction": {
+            "type": "string",
+            "description": "调度动作：ASSIGN 指派 / CONFIRM 确认 / RELEASE 释放",
+            "example": "ASSIGN"
+          },
+          "prevStatus": {
+            "type": "string",
+            "description": "调度前资源状态（首次调度为空）",
+            "example": "可调度"
+          },
+          "currStatus": { "type": "string", "description": "调度后资源状态", "example": "已出动" },
+          "assignee": { "type": "string", "description": "被指派单位 / 责任人", "example": "高策" },
+          "quantity": { "type": "integer", "description": "调度数量", "example": 1 },
+          "remark": {
+            "type": "string",
+            "description": "备注说明",
+            "example": "支援6#路地磅北地沟"
+          },
+          "operator": { "type": "string", "description": "操作人账号", "example": "admin" },
+          "createdAt": {
+            "type": "string",
+            "description": "记录创建时间（ISO 本地时间，无时区）",
+            "example": "2026-09-13T09:30:00"
+          }
         }
       }
     }
