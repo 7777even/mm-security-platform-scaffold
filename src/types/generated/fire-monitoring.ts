@@ -99,6 +99,30 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/fire/patrol-executions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 巡更执行记录列表
+     * @description 返回巡更执行上报记录（打卡与结果），按 id 倒序，最多 200 条。巡查计划本体（/fire/patrols）仍是只读班次记录，实际执行落独立的 fac_patrol_execution 表。
+     */
+    get: operations['listPatrolExecutions'];
+    put?: never;
+    /**
+     * 巡更执行上报（打卡与结果）
+     * @description 登记一条巡更执行记录：execResult 取 NORMAL（正常）/ ABNORMAL（异常），异常时 finding 填异常描述、workOrderNo 可填派单后的关联工单号。需权限码 fire-alarm:patrol:write，并落 fac_audit_log 审计。
+     */
+    post: operations['createPatrolExecution'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -232,6 +256,107 @@ export interface components {
       workOrderNo?: string;
       /** @description 15 项标准检查项逐条结果 */
       checkItems?: components['schemas']['FirePatrolCheckItem'][];
+    };
+    /** @description 巡更执行上报写请求（A2 业务写侧） */
+    PatrolExecutionWriteRequest: {
+      /**
+       * @description 巡查日期 YYYY-MM-DD，必填
+       * @example 2026-09-13
+       */
+      patrolDate: string;
+      /**
+       * @description 班次（上午 / 下午 / 夜间）
+       * @example 上午
+       */
+      shiftName?: string;
+      /**
+       * @description 巡查责任人姓名，必填
+       * @example 李强
+       */
+      dutyPerson: string;
+      /**
+       * @description 当班第几次巡查，如「第1次」
+       * @example 第1次
+       */
+      patrolCount?: string;
+      /**
+       * @description 本次巡查部位
+       * @example 罐区A
+       */
+      location?: string;
+      /**
+       * @description 执行结果：NORMAL 正常 / ABNORMAL 异常，必填
+       * @example NORMAL
+       */
+      execResult: string;
+      /**
+       * @description 异常描述（正常时为空）
+       * @example
+       */
+      finding?: string;
+      /**
+       * @description 派单后关联的工单号，可为空
+       * @example
+       */
+      workOrderNo?: string;
+    };
+    /** @description 巡更执行记录视图（落库后的完整行，含服务端填充的 operator / 时间戳） */
+    PatrolExecutionView: {
+      /**
+       * @description 记录 id
+       * @example 1
+       */
+      id?: number;
+      /**
+       * @description 巡查日期 YYYY-MM-DD
+       * @example 2026-09-13
+       */
+      patrolDate?: string;
+      /**
+       * @description 班次（上午 / 下午 / 夜间）
+       * @example 上午
+       */
+      shiftName?: string;
+      /**
+       * @description 巡查责任人姓名
+       * @example 李强
+       */
+      dutyPerson?: string;
+      /**
+       * @description 当班第几次巡查，如「第1次」
+       * @example 第1次
+       */
+      patrolCount?: string;
+      /**
+       * @description 本次巡查部位
+       * @example 罐区A
+       */
+      location?: string;
+      /**
+       * @description 执行结果：NORMAL 正常 / ABNORMAL 异常
+       * @example NORMAL
+       */
+      execResult?: string;
+      /**
+       * @description 异常描述（正常时为空）
+       * @example
+       */
+      finding?: string;
+      /**
+       * @description 派单后关联的工单号，可为空
+       * @example
+       */
+      workOrderNo?: string;
+      /**
+       * @description 操作人账号
+       * @example admin
+       */
+      operator?: string;
+      /**
+       * @description 记录创建时间（ISO 本地时间，无时区）
+       * @example 2026-09-13T09:40:00
+       */
+      createdAt?: string;
     };
   };
   responses: {
@@ -527,6 +652,114 @@ export interface operations {
           };
         };
       };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  listPatrolExecutions: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=巡更执行记录列表） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": [
+           *         {
+           *           "id": 1,
+           *           "patrolDate": "2026-09-13",
+           *           "shiftName": "上午",
+           *           "dutyPerson": "李强",
+           *           "patrolCount": "第1次",
+           *           "location": "罐区A",
+           *           "execResult": "NORMAL",
+           *           "finding": "",
+           *           "workOrderNo": "",
+           *           "operator": "admin",
+           *           "createdAt": "2026-09-13T09:40:00"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['PatrolExecutionView'][];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  createPatrolExecution: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "patrolDate": "2026-09-13",
+         *       "shiftName": "上午",
+         *       "dutyPerson": "李强",
+         *       "patrolCount": "第1次",
+         *       "location": "罐区A",
+         *       "execResult": "NORMAL",
+         *       "finding": "",
+         *       "workOrderNo": ""
+         *     }
+         */
+        'application/json': components['schemas']['PatrolExecutionWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=落库后的巡更执行记录） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 1,
+           *         "patrolDate": "2026-09-13",
+           *         "shiftName": "上午",
+           *         "dutyPerson": "李强",
+           *         "patrolCount": "第1次",
+           *         "location": "罐区A",
+           *         "execResult": "NORMAL",
+           *         "finding": "",
+           *         "workOrderNo": "",
+           *         "operator": "admin",
+           *         "createdAt": "2026-09-13T09:40:00"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['PatrolExecutionView'];
+          };
+        };
+      };
+      400: components['responses']['BadRequest'];
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
     };

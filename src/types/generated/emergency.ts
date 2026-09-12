@@ -494,6 +494,54 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/emergency/command-records': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 应急指令下发与状态推进记录列表
+     * @description 返回应急指令下发与状态推进的业务留痕列表（按 id 倒序，最多 200 条）。仅记录系统内部指令流转，不代表任何物理设备动作。
+     */
+    get: operations['listEmergencyCommandRecords'];
+    put?: never;
+    /**
+     * 应急指令下发 / 状态推进（业务留痕）
+     * @description 登记一条应急指令下发或状态推进记录。语义边界（D4 拍板）：仅系统内部指令记录与状态推进，服务端绝不触发任何物理设备——消防泵、广播强切、门禁断电、疏散喷淋等下行控制属零下行红线，由 HardControlPaths 在前后端双重拦截。prevStatus 由服务端取该 commandCode 上一条记录的 currStatus 自动填充，首次下发为空。需权限码 emergency:command:write，并落 fac_audit_log 审计。
+     */
+    post: operations['createEmergencyCommandRecord'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/emergency/duty-sign-ins': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 应急值班签到记录列表
+     * @description 返回应急值班签到 / 签退记录（按 id 倒序，最多 200 条）。值班排班本体（/emergency/duty）仍是只读参考配置，签到动作落独立的 fac_duty_sign_in 表。
+     */
+    get: operations['listDutySignIns'];
+    put?: never;
+    /**
+     * 应急值班签到 / 签退
+     * @description 登记一条值班签到或签退记录。signAction 取 SIGN_IN（签到）/ SIGN_OUT（签退）；signTime 为空时由服务端按当前时间填充。需权限码 emergency:duty:write，并落 fac_audit_log 审计。
+     */
+    post: operations['createDutySignIn'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1328,6 +1376,188 @@ export interface components {
       /** @description 4 项应急辅助 KPI */
       items?: components['schemas']['EmergencyAssistStat'][];
     };
+    /** @description 应急指令下发 / 状态推进写请求（A2 业务写侧）。仅系统内部留痕，不触发任何物理设备。 */
+    EmergencyCommandRecordWriteRequest: {
+      /**
+       * @description 指令编码（对应指挥指令 / 行动 id），必填
+       * @example w1
+       */
+      commandCode: string;
+      /**
+       * @description 指令名称
+       * @example 发布防台防汛预警
+       */
+      commandName?: string;
+      /**
+       * @description 指令类别（固定指令 / 临时指令）
+       * @example 固定指令
+       */
+      commandKind?: string;
+      /**
+       * @description 推进后状态（待执行 / 执行中 / 已完成），必填
+       * @example 执行中
+       */
+      currStatus: string;
+      /**
+       * @description 下发方式（系统下发 / 人工下发）
+       * @example 系统下发
+       */
+      dispatchMode?: string;
+      /**
+       * @description 下发对象（岗位 / 人员 / 组织）
+       * @example 各生产单位、承包商
+       */
+      target?: string;
+      /**
+       * @description 备注说明
+       * @example 要求停止露天高处及吊装作业
+       */
+      remark?: string;
+    };
+    /** @description 应急指令记录视图（落库后的完整行，含服务端填充的 prevStatus / operator / 时间戳） */
+    EmergencyCommandRecordView: {
+      /**
+       * @description 记录 id
+       * @example 1
+       */
+      id?: number;
+      /**
+       * @description 指令编码
+       * @example w1
+       */
+      commandCode?: string;
+      /**
+       * @description 指令名称
+       * @example 发布防台防汛预警
+       */
+      commandName?: string;
+      /**
+       * @description 指令类别（固定指令 / 临时指令）
+       * @example 固定指令
+       */
+      commandKind?: string;
+      /**
+       * @description 推进前状态（首次下发为空）
+       * @example 待执行
+       */
+      prevStatus?: string;
+      /**
+       * @description 推进后状态
+       * @example 执行中
+       */
+      currStatus?: string;
+      /**
+       * @description 下发方式
+       * @example 系统下发
+       */
+      dispatchMode?: string;
+      /**
+       * @description 下发对象（岗位 / 人员 / 组织）
+       * @example 各生产单位、承包商
+       */
+      target?: string;
+      /**
+       * @description 备注说明
+       * @example 要求停止露天高处及吊装作业
+       */
+      remark?: string;
+      /**
+       * @description 操作人账号
+       * @example admin
+       */
+      operator?: string;
+      /**
+       * @description 记录创建时间（ISO 本地时间，无时区）
+       * @example 2026-09-13T09:20:11
+       */
+      createdAt?: string;
+    };
+    /** @description 应急值班签到 / 签退写请求（A2 业务写侧） */
+    DutySignInWriteRequest: {
+      /**
+       * @description 值班日期 YYYY-MM-DD
+       * @example 2026-09-13
+       */
+      dutyDate: string;
+      /**
+       * @description 班次（白班 / 夜班）
+       * @example 白班
+       */
+      shiftName: string;
+      /**
+       * @description 值班部门
+       * @example 应急指挥中心
+       */
+      department?: string;
+      /**
+       * @description 值班人员姓名
+       * @example 杨恒朋
+       */
+      personName: string;
+      /**
+       * @description 签到动作：SIGN_IN 签到 / SIGN_OUT 签退
+       * @example SIGN_IN
+       */
+      signAction: string;
+      /**
+       * @description 备注说明
+       * @example
+       */
+      remark?: string;
+    };
+    /** @description 值班签到记录视图（落库后的完整行，含服务端填充的 signTime / operator） */
+    DutySignInView: {
+      /**
+       * @description 记录 id
+       * @example 1
+       */
+      id?: number;
+      /**
+       * @description 值班日期 YYYY-MM-DD
+       * @example 2026-09-13
+       */
+      dutyDate?: string;
+      /**
+       * @description 班次（白班 / 夜班）
+       * @example 白班
+       */
+      shiftName?: string;
+      /**
+       * @description 值班部门
+       * @example 应急指挥中心
+       */
+      department?: string;
+      /**
+       * @description 值班人员姓名
+       * @example 杨恒朋
+       */
+      personName?: string;
+      /**
+       * @description 签到动作：SIGN_IN 签到 / SIGN_OUT 签退
+       * @example SIGN_IN
+       */
+      signAction?: string;
+      /**
+       * @description 签到时间 YYYY-MM-DD HH:mm:ss（请求为空时由服务端按当前时间填充）
+       * @example 2026-09-13 08:00:00
+       */
+      signTime?: string;
+      /**
+       * @description 备注说明
+       * @example
+       */
+      remark?: string;
+      /**
+       * @description 操作人账号
+       * @example admin
+       */
+      operator?: string;
+      /**
+       * @description 记录创建时间（ISO 本地时间，无时区）
+       * @example 2026-09-13T08:00:03
+       */
+      createdAt?: string;
+    };
   };
   responses: {
     /** @description 未认证 / 令牌失效 */
@@ -1839,6 +2069,217 @@ export interface operations {
         };
       };
       401: components['responses']['Unauthorized'];
+    };
+  };
+  listEmergencyCommandRecords: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=指令记录列表） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": [
+           *         {
+           *           "id": 1,
+           *           "commandCode": "w1",
+           *           "commandName": "发布防台防汛预警",
+           *           "commandKind": "固定指令",
+           *           "prevStatus": "待执行",
+           *           "currStatus": "执行中",
+           *           "dispatchMode": "系统下发",
+           *           "target": "各生产单位、承包商",
+           *           "remark": "要求停止露天高处及吊装作业",
+           *           "operator": "admin",
+           *           "createdAt": "2026-09-13T09:20:11"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['EmergencyCommandRecordView'][];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  createEmergencyCommandRecord: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "commandCode": "w1",
+         *       "commandName": "发布防台防汛预警",
+         *       "commandKind": "固定指令",
+         *       "currStatus": "执行中",
+         *       "dispatchMode": "系统下发",
+         *       "target": "各生产单位、承包商",
+         *       "remark": "要求停止露天高处及吊装作业"
+         *     }
+         */
+        'application/json': components['schemas']['EmergencyCommandRecordWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=落库后的指令记录） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 1,
+           *         "commandCode": "w1",
+           *         "commandName": "发布防台防汛预警",
+           *         "commandKind": "固定指令",
+           *         "prevStatus": "待执行",
+           *         "currStatus": "执行中",
+           *         "dispatchMode": "系统下发",
+           *         "target": "各生产单位、承包商",
+           *         "remark": "要求停止露天高处及吊装作业",
+           *         "operator": "admin",
+           *         "createdAt": "2026-09-13T09:20:11"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['EmergencyCommandRecordView'];
+          };
+        };
+      };
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  listDutySignIns: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=签到记录列表） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": [
+           *         {
+           *           "id": 1,
+           *           "dutyDate": "2026-09-13",
+           *           "shiftName": "白班",
+           *           "department": "应急指挥中心",
+           *           "personName": "杨恒朋",
+           *           "signAction": "SIGN_IN",
+           *           "signTime": "2026-09-13 08:00:00",
+           *           "remark": "",
+           *           "operator": "admin",
+           *           "createdAt": "2026-09-13T08:00:03"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['DutySignInView'][];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  createDutySignIn: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "dutyDate": "2026-09-13",
+         *       "shiftName": "白班",
+         *       "department": "应急指挥中心",
+         *       "personName": "杨恒朋",
+         *       "signAction": "SIGN_IN",
+         *       "remark": ""
+         *     }
+         */
+        'application/json': components['schemas']['DutySignInWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=落库后的签到记录） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 1,
+           *         "dutyDate": "2026-09-13",
+           *         "shiftName": "白班",
+           *         "department": "应急指挥中心",
+           *         "personName": "杨恒朋",
+           *         "signAction": "SIGN_IN",
+           *         "signTime": "2026-09-13 08:00:00",
+           *         "remark": "",
+           *         "operator": "admin",
+           *         "createdAt": "2026-09-13T08:00:03"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['DutySignInView'];
+          };
+        };
+      };
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
     };
   };
 }
