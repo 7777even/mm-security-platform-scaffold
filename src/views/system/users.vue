@@ -2,7 +2,7 @@
 // 系统管理 · 用户管理（契约 docs/api/system.openapi.json）
 // 数据源为后端真实端点（/system/users），权限码由 /auth/me 下发。
 // 服务端硬防护：禁删/禁停用自己、保护最后一个启用 ADMIN、用户名唯一。
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import PanelCard from '@/components/common/PanelCard.vue';
 import {
@@ -52,6 +52,29 @@ const resetTarget = ref('');
 function errMsg(e: unknown): string {
   return e instanceof Error ? e.message : '操作失败';
 }
+
+/** 角色的数据范围（ALL=可见全部；DEPT/SELF 必须配防区才能看到行）。 */
+function dataScopeOf(roleCode?: string | null): string {
+  return (roles.value.find((r) => r.roleCode === roleCode)?.dataScope ?? '').toUpperCase();
+}
+
+/**
+ * R1 风险提示：data_scope≠ALL 且未分配防区的用户，服务端 DataScopeHelper 会拼 `1=0`，
+ * 登录后所有受控列表都是空的（不报错、只是没数据），线上极难排查。
+ * 这里在管理端显式标记，避免运维漏配。
+ */
+function zoneMissing(user: SystemUserItem): boolean {
+  return dataScopeOf(user.roleCode) !== 'ALL' && !(user.zoneCodes ?? '').trim();
+}
+
+function zoneCount(user: SystemUserItem): number {
+  return (user.zoneCodes ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean).length;
+}
+
+const zoneMissingCount = computed(() => rows.value.filter(zoneMissing).length);
 
 async function load(): Promise<void> {
   loading.value = true;
@@ -160,7 +183,9 @@ async function submit(): Promise<void> {
         realName: form.realName || undefined,
         roleCode: form.roleCode,
         status: form.status,
-        zoneCodes: selectedZones.value.length ? selectedZones.value.join(',') : undefined,
+        // 编辑态必须显式传空串：后端 update 只在 zoneCodes != null 时写入，
+        // 传 undefined（字段缺失）等于「不更新」，导致清空防区存不下去。
+        zoneCodes: selectedZones.value.join(','),
       });
       ElMessage.success('用户已更新');
     }
@@ -260,10 +285,32 @@ onMounted(async () => {
       >
     </div>
 
+    <!-- R1：未分配防区的非 ALL 用户会「零可见」，提前在管理端暴露，避免上线后才发现 -->
+    <el-alert
+      v-if="zoneMissingCount > 0"
+      type="warning"
+      :closable="false"
+      show-icon
+      class="alert"
+      :title="`当前有 ${zoneMissingCount} 个用户未分配防区`"
+      description="这些用户所属角色的数据范围不是「全部」，服务端会按最小权限拼 1=0，登录后设备/救援队伍等受控列表全为空（不报错）。请在编辑中补配「可访问防区」。"
+    />
+
     <el-table v-loading="loading" :data="rows" class="table" size="small" border>
       <el-table-column prop="username" label="用户名" min-width="130" />
       <el-table-column prop="realName" label="姓名" min-width="100" />
       <el-table-column prop="roleName" label="角色" min-width="110" />
+      <el-table-column label="数据范围" min-width="170">
+        <template #default="{ row }">
+          <el-tag v-if="zoneMissing(asUser(row))" type="danger" size="small">
+            未分配防区 · 零可见
+          </el-tag>
+          <el-tag v-else-if="dataScopeOf(row.roleCode) === 'ALL'" type="info" size="small">
+            全部
+          </el-tag>
+          <el-tag v-else type="success" size="small"> {{ zoneCount(asUser(row)) }} 个防区 </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="状态" width="90">
         <template #default="{ row }">
           <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
@@ -408,6 +455,10 @@ onMounted(async () => {
 
 .toolbar__item {
   width: 180px;
+}
+
+.alert {
+  margin-bottom: var(--space-md);
 }
 
 .table {
