@@ -321,5 +321,39 @@ export default defineConfig({
         inline: ['cesium', '@cesium/engine', '@cesium/widgets', 'element-plus'],
       },
     },
+    // 覆盖率门禁（CI 经 npm run test:coverage 触发）。
+    // all:false —— 仅对测试实际加载的文件插桩，避免对全量源码插桩导致 OOM（本地沙箱 4GB 堆即爆）；
+    // include 聚焦测试金字塔基座（关键 composable + 移动端 bridge + http 拦截器 + 已覆盖组件），
+    // src/screen 大屏存量（Cesium 重、覆盖低）暂不纳入门禁，待收敛后再放开。
+    coverage: {
+      provider: 'v8',
+      reportsDirectory: 'coverage',
+      all: false,
+      reporter: ['text', 'html', 'lcov'],
+      include: [
+        'src/services/**',
+        'src/composables/**',
+        'src/directives/**',
+        'src/components/**',
+        'apps/mobile/**',
+      ],
+      exclude: [
+        '**/*.spec.ts',
+        '**/*.spec.tsx',
+        '**/*.d.ts',
+        '**/index.ts',
+        'src/screen/**',
+        'src/types/**',
+        '**/__mocks__/**',
+      ],
+      // 阈值按实测 baseline 设定（先绿后严，防止回退）。本地实测：stmts/lines 83.86%、branch 77.21%、funcs 71.15%。
+      // 留 3~7pt 缓冲避免抖动，任一指标跌破即 CI 失败；后续随测试扩充可上调。
+      thresholds: {
+        statements: 80,
+        branches: 70,
+        functions: 65,
+        lines: 80,
+      },
+    },
   },
 });

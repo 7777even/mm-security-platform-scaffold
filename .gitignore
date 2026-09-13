@@ -22,3 +22,8 @@ docs/*.docx
 docs/*.doc
 docs/*.xlsx
 docs/*.xls
+
+# 测试覆盖率报告（vitest v8 coverage 生成，不入版本库）
+coverage/
+# Vite 加载配置时生成的临时副本（vite.config.ts.timestamp-*.mjs）
+*.timestamp-*.mjs

@@ -16,6 +16,7 @@
     "format": "prettier --write \"src/**/*.{ts,vue,js,css,json,md}\"",
     "stylelint": "stylelint \"src/**/*.{css,vue}\"",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "gate:screen": "node scripts/screen-local-data-gate.mjs",
     "prepare": "husky"
@@ -38,6 +39,7 @@
     "@types/leaflet": "^1.9.22",
     "@types/node": "^22.7.5",
     "@vitejs/plugin-vue": "^5.1.4",
+    "@vitest/coverage-v8": "^2.1.9",
     "@vue/test-utils": "^2.4.11",
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",

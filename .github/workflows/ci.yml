@@ -31,8 +31,17 @@ jobs:
       - name: 类型检查（vue-tsc）
         run: npm run type-check
 
-      - name: 单元测试（vitest）
-        run: npm run test
+      # 门禁：ESLint 必须为 0 error（存量 18 个 vue/require-default-prop 警告不阻断，但 error 数必须为 0）。
+      # 此前未接 CI，附 2 把 error 修到 0 但无守门，回归可能悄悄回涨。
+      - name: 代码静态检查（ESLint）
+        run: npm run lint
+
+      # 单元测试 + 覆盖率门禁：vite.config.ts 中 test.coverage.thresholds 设了下限
+      # （stmts/lines≥80%、branch≥70%、funcs≥65%），任一指标跌破即失败，防止测试回退。
+      # 覆盖聚焦测试金字塔基座（services/composables/directives/components/mobile），
+      # src/screen 大屏存量（Cesium 重、覆盖低）暂不纳入，待收敛后放开。
+      - name: 单元测试 + 覆盖率门禁（vitest + v8）
+        run: npm run test:coverage
 
       # 大屏门禁：逐条解析 src/screen 的 import，白名单之外的 lib/data 值导入直接 FAIL，
       # 防本地业务数据回退（详见 scripts/screen-local-data-gate.mjs，白名单已固化）。
@@ -58,6 +67,15 @@ jobs:
         with:
           name: dist
           path: dist/
+          if-no-files-found: warn
+
+      # 覆盖率报告上传（对齐后端 jacoco 上传），供 PR/MR 检视；text 摘要已在 test:coverage 步骤打印
+      - name: 上传覆盖率报告
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
           if-no-files-found: warn
 
   # 为什么前端仓也要跑对拍：契约真源在本仓 docs/api，后端 CI 的 contract-guard 会
