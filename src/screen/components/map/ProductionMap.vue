@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import SpriteImage from '../common/SpriteImage.vue';
 import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
-import MapMarkerIcon from './MapMarkerIcon.vue';
+import MapMarkerIcon from '@/components/map/MapMarkerIcon.vue';
 import { productionSprites } from '@/utils/productionSpriteConfig';
 import { productionMapControls } from '@/services/productionMapConfig';
 import { designImg } from '@/utils/designAssets';

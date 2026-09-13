@@ -1,6 +1,6 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import ClipImage from '../common/ClipImage.vue';
+import ClipImage from '@/components/common/ClipImage.vue';
 import { footerLabelClip } from '@/utils/footerClipConfig';
 import { fetchDashboardMessages, type SystemMessageItem } from '@/services/dashboard';
 import { backendUnavailableWarn } from '@/services/backendFallback';
