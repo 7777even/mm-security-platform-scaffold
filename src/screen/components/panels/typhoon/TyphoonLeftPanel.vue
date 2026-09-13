@@ -46,9 +46,14 @@ const draftInfo = ref<Array<{ label: string; value: string }>>([]);
 // 未配置 VITE_API_BASE 时 service 回落到本地 fixture；已配置但后端失败则为空集合并告警（不造假数据）。
 const dispatchResources = ref<EmergencyDispatchResource[]>([]);
 
+// 两个接口相互独立，并行拉取减少一次往返（原串行 await 多一次 RTT）。
+// http.ts 已对 GET 做 in-flight 去重，并行不会造成重复请求。
 onMounted(async () => {
-  dispatchResources.value = (await fetchTyphoonDispatchResources()) as EmergencyDispatchResource[];
-  const board = await fetchTyphoonResponseBoard();
+  const [resources, board] = await Promise.all([
+    fetchTyphoonDispatchResources(),
+    fetchTyphoonResponseBoard(),
+  ]);
+  dispatchResources.value = resources as EmergencyDispatchResource[];
   weatherAlertBanners.value = board.banners;
   weatherCommands.value = board.planCommands;
   temporaryCommands.value = board.temporaryCommands;
