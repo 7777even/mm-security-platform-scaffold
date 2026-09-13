@@ -104,7 +104,7 @@
         "tags": ["dashboard"],
         "operationId": "getWorkstations",
         "summary": "在线工位/工作站列表",
-        "description": "返回当前在线工位/工作站清单（前端只读订阅，不下行控制）。消除后端实现 /dashboard/workstations 的契约漂移。",
+        "description": "返回当前在线工位/工作站清单（前端只读订阅，不下行控制）。已套防区过滤（data_scope 行级 ABAC），非 ALL 角色仅见其 zone_codes 内工作站——与 GET /workstations 列表端点口径一致。",
         "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
         "responses": {
           "200": {
@@ -228,6 +228,79 @@
           "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
         }
       }
+    },
+    "/workstations": {
+      "get": {
+        "tags": ["dashboard"],
+        "operationId": "getWorkstationsPage",
+        "summary": "工作站/工位防区过滤分页列表",
+        "description": "登录可读的工位分页列表（零下行控制）。复用 data_scope 行级 ABAC，非 ALL 角色仅见其 zone_codes 内工作站；zone 模糊、online 是否在线筛选。与设备域 GET /devices 同形态。",
+        "parameters": [
+          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 1 },
+            "description": "页码（从 1 开始）"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 20 },
+            "description": "每页条数"
+          },
+          {
+            "name": "zone",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "区域模糊筛选"
+          },
+          {
+            "name": "online",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["true", "false", "1", "0"] },
+            "description": "是否在线筛选"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=WorkstationPageResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/WorkstationPageResult" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "list": [
+                      { "id": "WS-01", "name": "中控室工位-01", "zone": "罐区A", "online": true }
+                    ],
+                    "total": 1,
+                    "page": 1,
+                    "size": 20
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
     }
   },
   "components": {
@@ -274,6 +347,20 @@
           "name": { "type": "string", "description": "工位名", "example": "中控室工位-01" },
           "zone": { "type": "string", "description": "所属区域", "example": "罐区A" },
           "online": { "type": "boolean", "description": "是否在线", "example": true }
+        }
+      },
+      "WorkstationPageResult": {
+        "type": "object",
+        "description": "工作站分页结果。list 元素复用 Workstation schema。schema 名与后端 DTO 类名一致，确保 check-api-contract 精确对拍。",
+        "properties": {
+          "list": {
+            "type": "array",
+            "description": "当前页工作站",
+            "items": { "$ref": "#/components/schemas/Workstation" }
+          },
+          "total": { "type": "integer", "description": "总条数", "example": 1 },
+          "page": { "type": "integer", "description": "当前页码", "example": 1 },
+          "size": { "type": "integer", "description": "每页条数", "example": 20 }
         }
       },
       "AlarmTrendPoint": {

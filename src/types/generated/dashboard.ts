@@ -48,7 +48,7 @@ export interface paths {
     };
     /**
      * 在线工位/工作站列表
-     * @description 返回当前在线工位/工作站清单（前端只读订阅，不下行控制）。消除后端实现 /dashboard/workstations 的契约漂移。
+     * @description 返回当前在线工位/工作站清单（前端只读订阅，不下行控制）。已套防区过滤（data_scope 行级 ABAC），非 ALL 角色仅见其 zone_codes 内工作站——与 GET /workstations 列表端点口径一致。
      */
     get: operations['getWorkstations'];
     put?: never;
@@ -91,6 +91,26 @@ export interface paths {
      * @description 返回大屏底部滚动播报的系统消息（危险/预警两类），数据来源为 V24 fac_system_message 真实表，取代前端硬编码 systemMessages。
      */
     get: operations['getDashboardMessages'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/workstations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 工作站/工位防区过滤分页列表
+     * @description 登录可读的工位分页列表（零下行控制）。复用 data_scope 行级 ABAC，非 ALL 角色仅见其 zone_codes 内工作站；zone 模糊、online 是否在线筛选。与设备域 GET /devices 同形态。
+     */
+    get: operations['getWorkstationsPage'];
     put?: never;
     post?: never;
     delete?: never;
@@ -213,6 +233,26 @@ export interface components {
        * @example true
        */
       online?: boolean;
+    };
+    /** @description 工作站分页结果。list 元素复用 Workstation schema。schema 名与后端 DTO 类名一致，确保 check-api-contract 精确对拍。 */
+    WorkstationPageResult: {
+      /** @description 当前页工作站 */
+      list?: components['schemas']['Workstation'][];
+      /**
+       * @description 总条数
+       * @example 1
+       */
+      total?: number;
+      /**
+       * @description 当前页码
+       * @example 1
+       */
+      page?: number;
+      /**
+       * @description 每页条数
+       * @example 20
+       */
+      size?: number;
     };
     AlarmTrendPoint: {
       /**
@@ -492,6 +532,61 @@ export interface operations {
            */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['SystemMessageItem'][];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  getWorkstationsPage: {
+    parameters: {
+      query?: {
+        /** @description 页码（从 1 开始） */
+        page?: number;
+        /** @description 每页条数 */
+        size?: number;
+        /** @description 区域模糊筛选 */
+        zone?: string;
+        /** @description 是否在线筛选 */
+        online?: 'true' | 'false' | '1' | '0';
+      };
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=WorkstationPageResult） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "list": [
+           *           {
+           *             "id": "WS-01",
+           *             "name": "中控室工位-01",
+           *             "zone": "罐区A",
+           *             "online": true
+           *           }
+           *         ],
+           *         "total": 1,
+           *         "page": 1,
+           *         "size": 20
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['WorkstationPageResult'];
           };
         };
       };
