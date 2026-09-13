@@ -27,12 +27,12 @@ function sprite(
 
 export const preliminarySprites = {
   mapControlButtons: [
-    sprite('image_0004.png', 88, 38, 88, 38, { clip: 'fit' }),
-    sprite('image_0005.png', 88, 38, 88, 38, { clip: 'fit' }),
-    sprite('image_0006.png', 88, 38, 88, 38, { clip: 'fit' }),
-    sprite('image_0007.png', 105, 36, 105, 36, { clip: 'fit' }),
-    sprite('image_0008.png', 105, 36, 105, 36, { clip: 'fit' }),
-    sprite('image_0009.png', 107, 36, 107, 36, { clip: 'fit' }),
-    sprite('image_0010.png', 107, 57, 107, 57, { clip: 'fit' }),
+    sprite('image_0004.webp', 88, 38, 88, 38, { clip: 'fit' }),
+    sprite('image_0005.webp', 88, 38, 88, 38, { clip: 'fit' }),
+    sprite('image_0006.webp', 88, 38, 88, 38, { clip: 'fit' }),
+    sprite('image_0007.webp', 105, 36, 105, 36, { clip: 'fit' }),
+    sprite('image_0008.webp', 105, 36, 105, 36, { clip: 'fit' }),
+    sprite('image_0009.webp', 107, 36, 107, 36, { clip: 'fit' }),
+    sprite('image_0010.webp', 107, 57, 107, 57, { clip: 'fit' }),
   ],
 } as const;

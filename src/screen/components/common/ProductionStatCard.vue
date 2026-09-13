@@ -48,7 +48,7 @@ defineProps<{
 .stat-card__icon--0 {
   width: 76px;
   height: 76px;
-  background-image: url('/design/%E7%94%9F%E4%BA%A7%E5%BA%94%E6%80%A5%E7%9B%91%E6%B5%8B_image_0017.png');
+  background-image: url('/design/%E7%94%9F%E4%BA%A7%E5%BA%94%E6%80%A5%E7%9B%91%E6%B5%8B_image_0017.webp');
   background-size: 1438px 117px;
   background-position: -27px -18px;
 }
@@ -57,7 +57,7 @@ defineProps<{
 .stat-card__icon--1 {
   width: 76px;
   height: 76px;
-  background-image: url('/design/%E7%94%9F%E4%BA%A7%E5%BA%94%E6%80%A5%E7%9B%91%E6%B5%8B_image_0017.png');
+  background-image: url('/design/%E7%94%9F%E4%BA%A7%E5%BA%94%E6%80%A5%E7%9B%91%E6%B5%8B_image_0017.webp');
   background-size: 1438px 117px;
   background-position: -287px -18px;
   border-radius: 100%;
@@ -67,7 +67,7 @@ defineProps<{
 .stat-card__icon--2 {
   width: 76px;
   height: 76px;
-  background-image: url('/design/%E7%94%9F%E4%BA%A7%E5%BA%94%E6%80%A5%E7%9B%91%E6%B5%8B_image_0017.png');
+  background-image: url('/design/%E7%94%9F%E4%BA%A7%E5%BA%94%E6%80%A5%E7%9B%91%E6%B5%8B_image_0017.webp');
   background-size: 1438px 117px;
   background-position: -567px -18px;
   border-radius: 100%;
@@ -77,7 +77,7 @@ defineProps<{
 .stat-card__icon--3 {
   width: 76px;
   height: 76px;
-  background-image: url('/design/%E7%94%9F%E4%BA%A7%E5%BA%94%E6%80%A5%E7%9B%91%E6%B5%8B_image_0017.png');
+  background-image: url('/design/%E7%94%9F%E4%BA%A7%E5%BA%94%E6%80%A5%E7%9B%91%E6%B5%8B_image_0017.webp');
   background-size: 1438px 117px;
   background-position: -841px -18px;
   border-radius: 100%;
@@ -87,7 +87,7 @@ defineProps<{
 .stat-card__icon--4 {
   width: 76px;
   height: 76px;
-  background-image: url('/design/%E7%94%9F%E4%BA%A7%E5%BA%94%E6%80%A5%E7%9B%91%E6%B5%8B_image_0017.png');
+  background-image: url('/design/%E7%94%9F%E4%BA%A7%E5%BA%94%E6%80%A5%E7%9B%91%E6%B5%8B_image_0017.webp');
   background-size: 1438px 117px;
   background-position: -1110px -18px;
   border-radius: 100%;

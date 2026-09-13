@@ -37,219 +37,219 @@ export type PanelVariant =
   | TvPanelVariant;
 
 const firePanelBodyMap: Record<FirePanelVariant, string> = {
-  rescue: '矩形_4_0001.png',
-  equipment: '矩形_4_0002.png',
-  monitoring: '矩形_4_0003.png',
-  alarm: '矩形_4_0005.png',
-  duty: '矩形_4_0004.png',
+  rescue: '矩形_4_0001.webp',
+  equipment: '矩形_4_0002.webp',
+  monitoring: '矩形_4_0003.webp',
+  alarm: '矩形_4_0005.webp',
+  duty: '矩形_4_0004.webp',
 };
 
 const firePanelHeaderMap: Record<FirePanelVariant, string> = {
-  rescue: '矩形_5.png',
-  equipment: '矩形_5_0001.png',
-  monitoring: '矩形_5_0002.png',
-  alarm: '矩形_5_0004.png',
-  duty: '矩形_5_0003.png',
+  rescue: '矩形_5.webp',
+  equipment: '矩形_5_0001.webp',
+  monitoring: '矩形_5_0002.webp',
+  alarm: '矩形_5_0004.webp',
+  duty: '矩形_5_0003.webp',
 };
 
 const firePanelBottomMap: Record<FirePanelVariant, string> = {
-  rescue: '路径_3722.png',
-  equipment: '路径_3722_0001.png',
-  monitoring: '路径_3722_0002.png',
-  alarm: '路径_3722_0004.png',
-  duty: '路径_3722_0003.png',
+  rescue: '路径_3722.webp',
+  equipment: '路径_3722_0001.webp',
+  monitoring: '路径_3722_0002.webp',
+  alarm: '路径_3722_0004.webp',
+  duty: '路径_3722_0003.webp',
 };
 
 const firePanelIconMap: Record<FirePanelVariant, string> = {
-  rescue: '路径_0012.png',
-  equipment: '路径_0013.png',
-  monitoring: '路径_0014.png',
-  alarm: '路径_0016.png',
-  duty: '路径_0015.png',
+  rescue: '路径_0012.webp',
+  equipment: '路径_0013.webp',
+  monitoring: '路径_0014.webp',
+  alarm: '路径_0016.webp',
+  duty: '路径_0015.webp',
 };
 
 const productionPanelBodyMap: Record<ProductionPanelVariant, string> = {
-  facilities: '矩形_4_0001.png',
-  devices: '矩形_4_0004.png',
-  alarm: '矩形_4_0003.png',
-  risk: '矩形_4_0002.png',
+  facilities: '矩形_4_0001.webp',
+  devices: '矩形_4_0004.webp',
+  alarm: '矩形_4_0003.webp',
+  risk: '矩形_4_0002.webp',
 };
 
 const productionPanelHeaderMap: Record<ProductionPanelVariant, string> = {
-  facilities: '矩形_5.png',
-  devices: '矩形_5_0003.png',
-  alarm: '矩形_5_0002.png',
-  risk: '矩形_5_0001.png',
+  facilities: '矩形_5.webp',
+  devices: '矩形_5_0003.webp',
+  alarm: '矩形_5_0002.webp',
+  risk: '矩形_5_0001.webp',
 };
 
 const productionPanelBottomMap: Record<ProductionPanelVariant, string> = {
-  facilities: '路径_3722.png',
-  devices: '路径_3722_0003.png',
-  alarm: '路径_3722_0002.png',
-  risk: '路径_3722_0001.png',
+  facilities: '路径_3722.webp',
+  devices: '路径_3722_0003.webp',
+  alarm: '路径_3722_0002.webp',
+  risk: '路径_3722_0001.webp',
 };
 
 const productionPanelIconMap: Record<ProductionPanelVariant, string> = {
-  facilities: '路径_0011.png',
-  devices: '路径_0014.png',
-  alarm: '路径_0013.png',
-  risk: '路径_0012.png',
+  facilities: '路径_0011.webp',
+  devices: '路径_0014.webp',
+  alarm: '路径_0013.webp',
+  risk: '路径_0012.webp',
 };
 
 const preliminaryPanelBodyMap: Record<PreliminaryPanelVariant, string> = {
-  eventList: '矩形_4_0004.png',
-  duty: '矩形_4_0001.png',
-  rescue: '矩形_4_0002.png',
-  knowledge: '矩形_4_0003.png',
+  eventList: '矩形_4_0004.webp',
+  duty: '矩形_4_0001.webp',
+  rescue: '矩形_4_0002.webp',
+  knowledge: '矩形_4_0003.webp',
 };
 
 const preliminaryPanelHeaderMap: Record<PreliminaryPanelVariant, string> = {
-  eventList: '矩形_5.png',
-  duty: '矩形_4_0001.png',
-  rescue: '矩形_4_0002.png',
-  knowledge: '矩形_4_0003.png',
+  eventList: '矩形_5.webp',
+  duty: '矩形_4_0001.webp',
+  rescue: '矩形_4_0002.webp',
+  knowledge: '矩形_4_0003.webp',
 };
 
 const preliminaryPanelBottomMap: Record<PreliminaryPanelVariant, string> = {
-  eventList: '路径_3722_0003.png',
-  duty: '路径_3722.png',
-  rescue: '路径_3722_0001.png',
-  knowledge: '路径_3722_0002.png',
+  eventList: '路径_3722_0003.webp',
+  duty: '路径_3722.webp',
+  rescue: '路径_3722_0001.webp',
+  knowledge: '路径_3722_0002.webp',
 };
 
 const preliminaryPanelIconMap: Record<PreliminaryPanelVariant, string> = {
-  eventList: '路径_0015.png',
-  duty: '路径_0011.png',
-  rescue: '路径_0012.png',
-  knowledge: '路径_0013.png',
+  eventList: '路径_0015.webp',
+  duty: '路径_0011.webp',
+  rescue: '路径_0012.webp',
+  knowledge: '路径_0013.webp',
 };
 
 const fireEmergencyPanelBodyMap: Record<PreliminaryPanelVariant, string> = {
-  eventList: '矩形_4_0001.png',
-  duty: '矩形_4_0002.png',
-  rescue: '矩形_4_0003.png',
-  knowledge: '矩形_4_0004.png',
+  eventList: '矩形_4_0001.webp',
+  duty: '矩形_4_0002.webp',
+  rescue: '矩形_4_0003.webp',
+  knowledge: '矩形_4_0004.webp',
 };
 
 const fireEmergencyPanelHeaderMap: Record<PreliminaryPanelVariant, string> = {
-  eventList: '/images/title.png',
-  duty: '矩形_4_0002.png',
-  rescue: '矩形_4_0003.png',
-  knowledge: '矩形_4_0004.png',
+  eventList: '/images/title.webp',
+  duty: '矩形_4_0002.webp',
+  rescue: '矩形_4_0003.webp',
+  knowledge: '矩形_4_0004.webp',
 };
 
 const fireEmergencyPanelBottomMap: Record<PreliminaryPanelVariant, string> = {
-  eventList: '路径_3722.png',
-  duty: '路径_3722_0001.png',
-  rescue: '路径_3722_0002.png',
-  knowledge: '路径_3722_0003.png',
+  eventList: '路径_3722.webp',
+  duty: '路径_3722_0001.webp',
+  rescue: '路径_3722_0002.webp',
+  knowledge: '路径_3722_0003.webp',
 };
 
 const fireEmergencyPanelIconMap: Record<PreliminaryPanelVariant, string> = {
-  eventList: '路径_0011.png',
-  duty: '路径_0013.png',
-  rescue: '路径_0014.png',
-  knowledge: '路径_0015.png',
+  eventList: '路径_0011.webp',
+  duty: '路径_0013.webp',
+  rescue: '路径_0014.webp',
+  knowledge: '路径_0015.webp',
 };
 
 const accidentRescuePanelBodyMap: Record<AccidentRescuePanelVariant, string> = {
-  incidentDetail: '矩形_4_0005.png',
-  guidance: '矩形_4_0002.png',
-  duty: '矩形_4_0001.png',
-  auxiliary: '矩形_4_0003.png',
-  dynamics: '矩形_4_0004.png',
-  facilityDetail: '矩形_4_0004.png',
+  incidentDetail: '矩形_4_0005.webp',
+  guidance: '矩形_4_0002.webp',
+  duty: '矩形_4_0001.webp',
+  auxiliary: '矩形_4_0003.webp',
+  dynamics: '矩形_4_0004.webp',
+  facilityDetail: '矩形_4_0004.webp',
 };
 
 const accidentRescuePanelHeaderMap: Record<AccidentRescuePanelVariant, string> = {
-  incidentDetail: '矩形_5.png',
-  guidance: '矩形_4_0002.png',
-  duty: '矩形_4_0001.png',
-  auxiliary: '矩形_4_0003.png',
-  dynamics: '矩形_4_0004.png',
-  facilityDetail: '矩形_5.png',
+  incidentDetail: '矩形_5.webp',
+  guidance: '矩形_4_0002.webp',
+  duty: '矩形_4_0001.webp',
+  auxiliary: '矩形_4_0003.webp',
+  dynamics: '矩形_4_0004.webp',
+  facilityDetail: '矩形_5.webp',
 };
 
 const accidentRescuePanelBottomMap: Record<AccidentRescuePanelVariant, string> = {
-  incidentDetail: '路径_3722_0004.png',
-  guidance: '路径_3722_0001.png',
-  duty: '路径_3722.png',
-  auxiliary: '路径_3722_0002.png',
-  dynamics: '路径_3722_0003.png',
-  facilityDetail: '路径_3722_0003.png',
+  incidentDetail: '路径_3722_0004.webp',
+  guidance: '路径_3722_0001.webp',
+  duty: '路径_3722.webp',
+  auxiliary: '路径_3722_0002.webp',
+  dynamics: '路径_3722_0003.webp',
+  facilityDetail: '路径_3722_0003.webp',
 };
 
 const accidentRescuePanelIconMap: Record<AccidentRescuePanelVariant, string> = {
-  incidentDetail: '路径_0010.png',
-  guidance: '路径_0006.png',
-  duty: '路径_0005.png',
-  auxiliary: '路径_0007.png',
-  dynamics: '路径_0008.png',
-  facilityDetail: '路径_0015.png',
+  incidentDetail: '路径_0010.webp',
+  guidance: '路径_0006.webp',
+  duty: '路径_0005.webp',
+  auxiliary: '路径_0007.webp',
+  dynamics: '路径_0008.webp',
+  facilityDetail: '路径_0015.webp',
 };
 
 const securityPanelBodyMap: Record<SecurityPanelVariant, string> = {
-  entryStats: '矩形_4_0001.png',
-  patrolLeft: '矩形_4_0003.png',
-  alarmTrend: '矩形_4_0002.png',
-  patrolAlarm: '矩形_4_0004.png',
+  entryStats: '矩形_4_0001.webp',
+  patrolLeft: '矩形_4_0003.webp',
+  alarmTrend: '矩形_4_0002.webp',
+  patrolAlarm: '矩形_4_0004.webp',
 };
 
 const securityPanelHeaderMap: Record<SecurityPanelVariant, string> = {
-  entryStats: '矩形_5.png',
-  patrolLeft: '矩形_5.png',
-  alarmTrend: '矩形_5_0001.png',
-  patrolAlarm: '矩形_5_0001.png',
+  entryStats: '矩形_5.webp',
+  patrolLeft: '矩形_5.webp',
+  alarmTrend: '矩形_5_0001.webp',
+  patrolAlarm: '矩形_5_0001.webp',
 };
 
 const securityPanelBottomMap: Record<SecurityPanelVariant, string> = {
-  entryStats: '路径_3722.png',
-  patrolLeft: '路径_3722_0002.png',
-  alarmTrend: '路径_3722_0001.png',
-  patrolAlarm: '路径_3722_0003.png',
+  entryStats: '路径_3722.webp',
+  patrolLeft: '路径_3722_0002.webp',
+  alarmTrend: '路径_3722_0001.webp',
+  patrolAlarm: '路径_3722_0003.webp',
 };
 
 const securityPanelIconMap: Record<SecurityPanelVariant, string> = {
-  entryStats: '路径_0011.png',
-  patrolLeft: '路径_0094.png',
-  alarmTrend: '路径_0012.png',
-  patrolAlarm: '路径_0095.png',
+  entryStats: '路径_0011.webp',
+  patrolLeft: '路径_0094.webp',
+  alarmTrend: '路径_0012.webp',
+  patrolAlarm: '路径_0095.webp',
 };
 
 const tvPanelBodyMap: Record<TvPanelVariant, string> = {
-  videoOverview: '矩形_4_0001.png',
-  videoAnalysis: '矩形_4_0002.png',
-  eventAnalysis: '矩形_4_0003.png',
-  maintenance: '矩形_4_0004.png',
-  importantVideo: '矩形_4_0005.png',
-  plantInspection: '矩形_4_0006.png',
+  videoOverview: '矩形_4_0001.webp',
+  videoAnalysis: '矩形_4_0002.webp',
+  eventAnalysis: '矩形_4_0003.webp',
+  maintenance: '矩形_4_0004.webp',
+  importantVideo: '矩形_4_0005.webp',
+  plantInspection: '矩形_4_0006.webp',
 };
 
 const tvPanelHeaderMap: Record<TvPanelVariant, string> = {
-  videoOverview: '矩形_5.png',
-  videoAnalysis: '矩形_5_0001.png',
-  eventAnalysis: '矩形_5_0002.png',
-  maintenance: '矩形_5_0003.png',
-  importantVideo: '矩形_5.png',
-  plantInspection: '矩形_5_0001.png',
+  videoOverview: '矩形_5.webp',
+  videoAnalysis: '矩形_5_0001.webp',
+  eventAnalysis: '矩形_5_0002.webp',
+  maintenance: '矩形_5_0003.webp',
+  importantVideo: '矩形_5.webp',
+  plantInspection: '矩形_5_0001.webp',
 };
 
 const tvPanelBottomMap: Record<TvPanelVariant, string> = {
-  videoOverview: '路径_3722.png',
-  videoAnalysis: '路径_3722_0001.png',
-  eventAnalysis: '路径_3722_0002.png',
-  maintenance: '路径_3722_0003.png',
-  importantVideo: '路径_3722_0004.png',
-  plantInspection: '路径_3722_0005.png',
+  videoOverview: '路径_3722.webp',
+  videoAnalysis: '路径_3722_0001.webp',
+  eventAnalysis: '路径_3722_0002.webp',
+  maintenance: '路径_3722_0003.webp',
+  importantVideo: '路径_3722_0004.webp',
+  plantInspection: '路径_3722_0005.webp',
 };
 
 const tvPanelIconMap: Record<TvPanelVariant, string> = {
-  videoOverview: '路径_0011.png',
-  videoAnalysis: '路径_0012.png',
-  eventAnalysis: '路径_0013.png',
-  maintenance: '路径_0014.png',
-  importantVideo: '路径_0015.png',
-  plantInspection: '路径_0016.png',
+  videoOverview: '路径_0011.webp',
+  videoAnalysis: '路径_0012.webp',
+  eventAnalysis: '路径_0013.webp',
+  maintenance: '路径_0014.webp',
+  importantVideo: '路径_0015.webp',
+  plantInspection: '路径_0016.webp',
 };
 
 function createAssets(module: DesignModule) {
@@ -262,101 +262,101 @@ function createAssets(module: DesignModule) {
 
   // 生产/前序用 _0001 变体；消防/安全防恐仅有基础文件名
   const footerBg =
-    module === 'production' || module === 'preliminary' ? '矩形_6_0001.png' : '矩形_6.png';
+    module === 'production' || module === 'preliminary' ? '矩形_6_0001.webp' : '矩形_6.webp';
   const footerDeco =
-    module === 'production' || module === 'preliminary' ? '路径_3723_0001.png' : '路径_3723.png';
+    module === 'production' || module === 'preliminary' ? '路径_3723_0001.webp' : '路径_3723.webp';
   const systemMessageStrip =
     module === 'production'
-      ? 'image_0027.png'
+      ? 'image_0027.webp'
       : module === 'preliminary'
-        ? 'image_0016.png'
+        ? 'image_0016.webp'
         : module === 'fireEmergency'
-          ? 'image_0001.png'
+          ? 'image_0001.webp'
           : module === 'security'
-            ? 'image_0009.png'
+            ? 'image_0009.webp'
             : module === 'tv'
-              ? 'image_0008.png'
-              : 'image_0001.png';
+              ? 'image_0008.webp'
+              : 'image_0001.webp';
   const footerTickerBg =
     module === 'production'
-      ? 'image_0028.png'
+      ? 'image_0028.webp'
       : module === 'preliminary'
-        ? 'image_0017.png'
+        ? 'image_0017.webp'
         : module === 'fireEmergency'
-          ? 'image_0002.png'
+          ? 'image_0002.webp'
           : module === 'security'
-            ? 'image_0010.png'
+            ? 'image_0010.webp'
             : module === 'tv'
-              ? 'image_0009.png'
-              : 'image_0002.png';
+              ? 'image_0009.webp'
+              : 'image_0002.webp';
   const footerMoreButton =
     module === 'production'
-      ? 'image_0029.png'
+      ? 'image_0029.webp'
       : module === 'preliminary'
-        ? 'image_0018.png'
+        ? 'image_0018.webp'
         : module === 'fireEmergency'
-          ? 'image_0003.png'
+          ? 'image_0003.webp'
           : module === 'security'
-            ? 'image_0011.png'
+            ? 'image_0011.webp'
             : module === 'tv'
-              ? 'image_0010.png'
-              : 'image_0003.png';
-  const moreArrow = 'Color_Overlay-3.png';
+              ? 'image_0010.webp'
+              : 'image_0003.webp';
+  const moreArrow = 'Color_Overlay-3.webp';
 
   return {
-    mapBg: img('image.png'),
-    headerBg: img('路径_1.png'),
-    headerTitleDeco: img('路径_3720.png'),
-    headerTitleAccent: img('路径_3721.png'),
-    headerTitleLine: img('矩形_4.png'),
-    navActiveBg: img('矩形_1.png'),
-    navActiveLine: img('矩形_2.png'),
+    mapBg: img('image.webp'),
+    headerBg: img('路径_1.webp'),
+    headerTitleDeco: img('路径_3720.webp'),
+    headerTitleAccent: img('路径_3721.webp'),
+    headerTitleLine: img('矩形_4.webp'),
+    navActiveBg: img('矩形_1.webp'),
+    navActiveLine: img('矩形_2.webp'),
     navIcons: [
-      img('路径_0004.png'),
-      img('路径_0005.png'),
-      img('路径_0006.png'),
-      img('路径_0007.png'),
-      img('路径_0008.png'),
-      img('路径_0009.png'),
+      img('路径_0004.webp'),
+      img('路径_0005.webp'),
+      img('路径_0006.webp'),
+      img('路径_0007.webp'),
+      img('路径_0008.webp'),
+      img('路径_0009.webp'),
     ],
-    weatherIcon: img('路径_0010.png'),
-    userAvatar: img('图层121.png'),
-    userArrow: img('路径_4.png'),
+    weatherIcon: img('路径_0010.webp'),
+    userAvatar: img('图层121.webp'),
+    userArrow: img('路径_4.webp'),
     footerBg: img(footerBg),
     footerDeco: img(footerDeco),
     systemMessageStrip: img(systemMessageStrip),
     footerTickerBg: img(footerTickerBg),
     footerMoreButton: img(footerMoreButton),
-    zoneOverlays: [img('路径_3724.png'), img('路径_3727.png'), img('路径_3726.png')],
-    zoneLabelBg: img('矩形_52.png'),
-    alarmPopupBg: img('矩形_31.png'),
-    alarmStatusDot: img('圆形_30.png'),
-    fireMarkerOuter: img('圆形_41.png'),
-    fireMarkerInner: img('圆形_42.png'),
+    zoneOverlays: [img('路径_3724.webp'), img('路径_3727.webp'), img('路径_3726.webp')],
+    zoneLabelBg: img('矩形_52.webp'),
+    alarmPopupBg: img('矩形_31.webp'),
+    alarmStatusDot: img('圆形_30.webp'),
+    fireMarkerOuter: img('圆形_41.webp'),
+    fireMarkerInner: img('圆形_42.webp'),
     fireMarkerIcon: img(
       module === 'production'
-        ? '路径_0015.png'
+        ? '路径_0015.webp'
         : module === 'preliminary'
-          ? '路径_0014.png'
+          ? '路径_0014.webp'
           : module === 'fireEmergency'
-            ? '路径_0012.png'
+            ? '路径_0012.webp'
             : module === 'accidentRescue'
-              ? '路径_0009.png'
+              ? '路径_0009.webp'
               : module === 'tv'
-                ? '路径_0025.png'
-                : '路径_0011.png',
+                ? '路径_0025.webp'
+                : '路径_0011.webp',
     ),
-    fireMarkerShadow1: img('圆形_45.png'),
-    fireMarkerShadow2: img('圆形_46.png'),
-    fireMarkerBase: img('圆形_44.png'),
-    fireMarkerLine: img('矩形_60.png'),
-    fireMarkerDot: img('圆形_43.png'),
+    fireMarkerShadow1: img('圆形_45.webp'),
+    fireMarkerShadow2: img('圆形_46.webp'),
+    fireMarkerBase: img('圆形_44.webp'),
+    fireMarkerLine: img('矩形_60.webp'),
+    fireMarkerDot: img('圆形_43.webp'),
     moreArrow: img(moreArrow),
-    mapToggleActive: designImg('矩形_58.png', mapToggleModule),
-    mapToggleInactive: designImg('矩形_59.png', mapToggleModule),
-    statsBarBg: module === 'production' ? img('image_0017.png') : undefined,
-    riskSummaryBg: module === 'production' ? img('image_0013.png') : undefined,
-    riskWarningBg: module === 'production' ? img('image_0025.png') : undefined,
+    mapToggleActive: designImg('矩形_58.webp', mapToggleModule),
+    mapToggleInactive: designImg('矩形_59.webp', mapToggleModule),
+    statsBarBg: module === 'production' ? img('image_0017.webp') : undefined,
+    riskSummaryBg: module === 'production' ? img('image_0013.webp') : undefined,
+    riskWarningBg: module === 'production' ? img('image_0025.webp') : undefined,
   } as const;
 }
 
@@ -366,36 +366,36 @@ export const preliminaryAssets = createAssets('preliminary');
 export const fireEmergencyAssets = createAssets('fireEmergency');
 export const accidentRescueAssets = {
   ...createAssets('accidentRescue'),
-  routeOverlayMain: designImg('路径_3729.png', 'accidentRescue'),
-  routeOverlayBranch: designImg('路径_3730.png', 'accidentRescue'),
-  gateLabelBg: designImg('矩形_52.png', 'accidentRescue'),
-  gateMarkerOuter: designImg('圆形_28.png', 'accidentRescue'),
-  gateMarkerInner: designImg('圆形_29.png', 'accidentRescue'),
-  gateFlowIcon: designImg('圆形_27.png', 'accidentRescue'),
+  routeOverlayMain: designImg('路径_3729.webp', 'accidentRescue'),
+  routeOverlayBranch: designImg('路径_3730.webp', 'accidentRescue'),
+  gateLabelBg: designImg('矩形_52.webp', 'accidentRescue'),
+  gateMarkerOuter: designImg('圆形_28.webp', 'accidentRescue'),
+  gateMarkerInner: designImg('圆形_29.webp', 'accidentRescue'),
+  gateFlowIcon: designImg('圆形_27.webp', 'accidentRescue'),
   /** 合并后的车辆标点（圆环 + 箭头），默认朝右 */
-  vehicleMarkerCar: '/design/car.png',
-  fireMarkerGroundGlow: designImg('圆形_45_0001.png', 'accidentRescue'),
-  replayButtonBg: designImg('矩形_58.png', 'accidentRescue'),
-  vehiclePopupBg: designImg('矩形_31.png', 'accidentRescue'),
-  firePopupBg: designImg('矩形_31_0001.png', 'accidentRescue'),
-  backButtonOuter: designImg('圆形_42_0001.png', 'accidentRescue'),
-  backButtonIcon: designImg('路径_0010.png', 'accidentRescue'),
+  vehicleMarkerCar: '/design/car.webp',
+  fireMarkerGroundGlow: designImg('圆形_45_0001.webp', 'accidentRescue'),
+  replayButtonBg: designImg('矩形_58.webp', 'accidentRescue'),
+  vehiclePopupBg: designImg('矩形_31.webp', 'accidentRescue'),
+  firePopupBg: designImg('矩形_31_0001.webp', 'accidentRescue'),
+  backButtonOuter: designImg('圆形_42_0001.webp', 'accidentRescue'),
+  backButtonIcon: designImg('路径_0010.webp', 'accidentRescue'),
 } as const;
 export const securityAssets = {
   ...createAssets('security'),
-  zoneHighlight: designImg('路径_3728.png', 'security'),
-  gateLabelBg: designImg('矩形_52.png', 'security'),
-  gateMarkerOuter: designImg('圆形_28.png', 'security'),
-  gateMarkerInner: designImg('圆形_29.png', 'security'),
-  gateFlowIcon: designImg('圆形_27.png', 'security'),
-  mapToolbar: designImg('image_0014.png', 'security'),
-  linkageStatusGreen: designImg('矩形_59.png', 'security'),
-  linkageStatusOrange: designImg('矩形_59_0003.png', 'security'),
+  zoneHighlight: designImg('路径_3728.webp', 'security'),
+  gateLabelBg: designImg('矩形_52.webp', 'security'),
+  gateMarkerOuter: designImg('圆形_28.webp', 'security'),
+  gateMarkerInner: designImg('圆形_29.webp', 'security'),
+  gateFlowIcon: designImg('圆形_27.webp', 'security'),
+  mapToolbar: designImg('image_0014.webp', 'security'),
+  linkageStatusGreen: designImg('矩形_59.webp', 'security'),
+  linkageStatusOrange: designImg('矩形_59_0003.webp', 'security'),
   linkageIcons: [
-    designImg('图层_2.png', 'security'),
-    designImg('图层_3.png', 'security'),
-    designImg('图层_4.png', 'security'),
-    designImg('图层_5.png', 'security'),
+    designImg('图层_2.webp', 'security'),
+    designImg('图层_3.webp', 'security'),
+    designImg('图层_4.webp', 'security'),
+    designImg('图层_5.webp', 'security'),
   ],
 } as const;
 
@@ -403,59 +403,59 @@ export const tvAssets = {
   ...createAssets('tv'),
   inspectionCircleOverlays: [
     {
-      inner: designImg('圆形_48.png', 'tv'),
-      line: designImg('直线_14.png', 'tv'),
+      inner: designImg('圆形_48.webp', 'tv'),
+      line: designImg('直线_14.webp', 'tv'),
     },
     {
-      inner: designImg('圆形_48_0001.png', 'tv'),
-      line: designImg('直线_14_0001.png', 'tv'),
+      inner: designImg('圆形_48_0001.webp', 'tv'),
+      line: designImg('直线_14_0001.webp', 'tv'),
     },
   ],
   zoneLabelBgs: [
-    designImg('矩形_31.png', 'tv'),
-    designImg('矩形_31_0001.png', 'tv'),
-    designImg('矩形_31_0002.png', 'tv'),
-    designImg('矩形_31_0003.png', 'tv'),
+    designImg('矩形_31.webp', 'tv'),
+    designImg('矩形_31_0001.webp', 'tv'),
+    designImg('矩形_31_0002.webp', 'tv'),
+    designImg('矩形_31_0003.webp', 'tv'),
   ],
   cameraMarkers: [
     {
-      outer: designImg('圆形_45.png', 'tv'),
-      icon: designImg('路径_0021.png', 'tv'),
-      line: designImg('矩形_60.png', 'tv'),
-      dot: designImg('圆形_43.png', 'tv'),
+      outer: designImg('圆形_45.webp', 'tv'),
+      icon: designImg('路径_0021.webp', 'tv'),
+      line: designImg('矩形_60.webp', 'tv'),
+      dot: designImg('圆形_43.webp', 'tv'),
     },
     {
-      outer: designImg('圆形_45_0001.png', 'tv'),
-      icon: designImg('路径_0022.png', 'tv'),
-      line: designImg('矩形_60_0001.png', 'tv'),
-      dot: designImg('圆形_43_0001.png', 'tv'),
+      outer: designImg('圆形_45_0001.webp', 'tv'),
+      icon: designImg('路径_0022.webp', 'tv'),
+      line: designImg('矩形_60_0001.webp', 'tv'),
+      dot: designImg('圆形_43_0001.webp', 'tv'),
     },
     {
-      outer: designImg('圆形_45_0002.png', 'tv'),
-      icon: designImg('路径_0023.png', 'tv'),
-      line: designImg('矩形_60_0002.png', 'tv'),
-      dot: designImg('圆形_43_0002.png', 'tv'),
+      outer: designImg('圆形_45_0002.webp', 'tv'),
+      icon: designImg('路径_0023.webp', 'tv'),
+      line: designImg('矩形_60_0002.webp', 'tv'),
+      dot: designImg('圆形_43_0002.webp', 'tv'),
     },
     {
-      outer: designImg('圆形_45_0003.png', 'tv'),
-      icon: designImg('路径_0024.png', 'tv'),
-      line: designImg('矩形_60_0003.png', 'tv'),
-      dot: designImg('圆形_43_0003.png', 'tv'),
+      outer: designImg('圆形_45_0003.webp', 'tv'),
+      icon: designImg('路径_0024.webp', 'tv'),
+      line: designImg('矩形_60_0003.webp', 'tv'),
+      dot: designImg('圆形_43_0003.webp', 'tv'),
     },
   ],
-  alarmPopupBg: designImg('矩形_31_0004.png', 'tv'),
+  alarmPopupBg: designImg('矩形_31_0004.webp', 'tv'),
   alarmMarker: {
-    shadow1: designImg('圆形_45_0004.png', 'tv'),
-    shadow2: designImg('圆形_46.png', 'tv'),
-    base: designImg('圆形_44.png', 'tv'),
-    outer: designImg('圆形_41.png', 'tv'),
-    inner: designImg('圆形_42.png', 'tv'),
-    icon: designImg('路径_0025.png', 'tv'),
-    line: designImg('矩形_60_0004.png', 'tv'),
-    dot: designImg('圆形_43_0004.png', 'tv'),
+    shadow1: designImg('圆形_45_0004.webp', 'tv'),
+    shadow2: designImg('圆形_46.webp', 'tv'),
+    base: designImg('圆形_44.webp', 'tv'),
+    outer: designImg('圆形_41.webp', 'tv'),
+    inner: designImg('圆形_42.webp', 'tv'),
+    icon: designImg('路径_0025.webp', 'tv'),
+    line: designImg('矩形_60_0004.webp', 'tv'),
+    dot: designImg('圆形_43_0004.webp', 'tv'),
   },
   videoMonitorDetail: {
-    icon: designImg('路径_0015.png', 'tv'),
+    icon: designImg('路径_0015.webp', 'tv'),
   },
 } as const;
 

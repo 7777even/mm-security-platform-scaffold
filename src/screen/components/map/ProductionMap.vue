@@ -60,8 +60,8 @@ const visiblePersonnelMarkers = computed<DecoratedPersonnelMarker[]>(() =>
     popupBg: marker.popupBg ?? '',
     markerDot: marker.markerDot ?? '',
     markerLine: marker.markerLine ?? '',
-    markerOuter: designImg('圆形_41.png', 'production') ?? '',
-    markerInner: designImg('圆形_42.png', 'production') ?? '',
+    markerOuter: designImg('圆形_41.webp', 'production') ?? '',
+    markerInner: designImg('圆形_42.webp', 'production') ?? '',
   })),
 );
 

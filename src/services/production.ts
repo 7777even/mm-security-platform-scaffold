@@ -154,21 +154,21 @@ export interface ProductionDeviceQuery {
 
 // —— 开发期自包含 mock（纯静态演示）：与 V13 种子保持一致，便于无后端时对照 UI ——
 const DEV_FACILITIES: OverviewGridItem[] = [
-  { id: 1, name: '厂区', count: 596, image: 'image_0001.png' },
-  { id: 2, name: '生产装置', count: 596, image: 'image_0008.png' },
-  { id: 3, name: '仓库', count: 596, image: 'image_0006.png' },
-  { id: 4, name: '重大危险源', count: 596, image: 'image_0012.png' },
-  { id: 5, name: '储罐', count: 596, image: 'image_0007.png' },
+  { id: 1, name: '厂区', count: 596, image: 'image_0001.webp' },
+  { id: 2, name: '生产装置', count: 596, image: 'image_0008.webp' },
+  { id: 3, name: '仓库', count: 596, image: 'image_0006.webp' },
+  { id: 4, name: '重大危险源', count: 596, image: 'image_0012.webp' },
+  { id: 5, name: '储罐', count: 596, image: 'image_0007.webp' },
 ];
 
 const DEV_DEVICE_CATEGORIES: OverviewGridItem[] = [
-  { id: 1, name: '卡口/通道', count: 596, image: 'image_0002.png' },
-  { id: 2, name: '监测点', count: 596, image: 'image_0009.png' },
-  { id: 3, name: '人员定位', count: 596, image: 'image_0003.png' },
-  { id: 4, name: '消防设施', count: 596, image: 'image_0010.png' },
-  { id: 5, name: '通风设备', count: 596, image: 'image_0004.png' },
-  { id: 6, name: '广播', count: 596, image: 'image_0011.png' },
-  { id: 7, name: '电话', count: 596, image: 'image_0005.png' },
+  { id: 1, name: '卡口/通道', count: 596, image: 'image_0002.webp' },
+  { id: 2, name: '监测点', count: 596, image: 'image_0009.webp' },
+  { id: 3, name: '人员定位', count: 596, image: 'image_0003.webp' },
+  { id: 4, name: '消防设施', count: 596, image: 'image_0010.webp' },
+  { id: 5, name: '通风设备', count: 596, image: 'image_0004.webp' },
+  { id: 6, name: '广播', count: 596, image: 'image_0011.webp' },
+  { id: 7, name: '电话', count: 596, image: 'image_0005.webp' },
 ];
 
 const DEV_STATS: StatOverviewItem[] = [
@@ -205,7 +205,7 @@ const DEV_ALARMS: ProductionAlarmItem[] = [
     description: 'A装置区域发现人员跌倒。',
     status: '未处置',
     iconIndex: 0,
-    thumb: 'person_fall.png',
+    thumb: 'person_fall.webp',
   },
 ];
 

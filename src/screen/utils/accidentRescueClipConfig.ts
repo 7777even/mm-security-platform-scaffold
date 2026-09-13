@@ -36,7 +36,7 @@ const DUTY_ROW_Y = [52, 139];
 export const rescueDutyAvatarClips = Array.from({ length: 4 }, (_, i) => {
   const col = i % 2;
   const row = Math.floor(i / 2);
-  return clipFrom('image_0009.png', DUTY_W, DUTY_H, DUTY_ICON, DUTY_ICON, {
+  return clipFrom('image_0009.webp', DUTY_W, DUTY_H, DUTY_ICON, DUTY_ICON, {
     x: DUTY_COL_X[col],
     y: DUTY_ROW_Y[row],
   });
@@ -51,7 +51,7 @@ const AUX_ROW_Y = [10, 74, 138, 202];
 export const rescueAuxiliaryIconClips = Array.from({ length: 8 }, (_, i) => {
   const col = i % 2;
   const row = Math.floor(i / 2);
-  return clipFrom('image_0008.png', AUX_W, AUX_H, AUX_ICON, AUX_ICON, {
+  return clipFrom('image_0008.webp', AUX_W, AUX_H, AUX_ICON, AUX_ICON, {
     x: AUX_COL_X[col],
     y: AUX_ROW_Y[row],
   });
@@ -62,17 +62,20 @@ const TOOLBAR_ICON = { w: 52, h: 52 };
 const TOOLBAR_ICON_Y = 6;
 
 export const bottomToolbarIconClips = [
-  clipFrom('image_0012.png', 90, 87, TOOLBAR_ICON.w, TOOLBAR_ICON.h, { x: 19, y: TOOLBAR_ICON_Y }),
-  clipFrom('image_0013.png', 87, 86, TOOLBAR_ICON.w, TOOLBAR_ICON.h, { x: 17, y: TOOLBAR_ICON_Y }),
-  clipFrom('image_0014.png', 91, 84, TOOLBAR_ICON.w, TOOLBAR_ICON.h, { x: 19, y: TOOLBAR_ICON_Y }),
-  clipFrom('图片.png', 98, 86, TOOLBAR_ICON.w, TOOLBAR_ICON.h, { x: 23, y: TOOLBAR_ICON_Y }),
-  clipFrom('image_0015.png', 94, 84, TOOLBAR_ICON.w, TOOLBAR_ICON.h, { x: 21, y: TOOLBAR_ICON_Y }),
-  clipFrom('image_0016.png', 120, 87, TOOLBAR_ICON.w, TOOLBAR_ICON.h, { x: 34, y: TOOLBAR_ICON_Y }),
-  clipFrom('图片_0001.png', 98, 85, TOOLBAR_ICON.w, TOOLBAR_ICON.h, { x: 23, y: TOOLBAR_ICON_Y }),
+  clipFrom('image_0012.webp', 90, 87, TOOLBAR_ICON.w, TOOLBAR_ICON.h, { x: 19, y: TOOLBAR_ICON_Y }),
+  clipFrom('image_0013.webp', 87, 86, TOOLBAR_ICON.w, TOOLBAR_ICON.h, { x: 17, y: TOOLBAR_ICON_Y }),
+  clipFrom('image_0014.webp', 91, 84, TOOLBAR_ICON.w, TOOLBAR_ICON.h, { x: 19, y: TOOLBAR_ICON_Y }),
+  clipFrom('图片.webp', 98, 86, TOOLBAR_ICON.w, TOOLBAR_ICON.h, { x: 23, y: TOOLBAR_ICON_Y }),
+  clipFrom('image_0015.webp', 94, 84, TOOLBAR_ICON.w, TOOLBAR_ICON.h, { x: 21, y: TOOLBAR_ICON_Y }),
+  clipFrom('image_0016.webp', 120, 87, TOOLBAR_ICON.w, TOOLBAR_ICON.h, {
+    x: 34,
+    y: TOOLBAR_ICON_Y,
+  }),
+  clipFrom('图片_0001.webp', 98, 85, TOOLBAR_ICON.w, TOOLBAR_ICON.h, { x: 23, y: TOOLBAR_ICON_Y }),
 ];
 
 /** 动态卡片附件区占位图标 */
-export const dynamicsThumbClip = clipFrom('image_0010.png', 398, 163, 48, 48, {
+export const dynamicsThumbClip = clipFrom('image_0010.webp', 398, 163, 48, 48, {
   x: 332,
   y: 98,
 });

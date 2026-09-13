@@ -466,11 +466,11 @@ export const emergencyCommandStatusFilterOptions = [
 ] as const;
 
 export const eventCommandToolbarItems: BottomToolbarItem[] = [
-  { id: 'comm', label: '应急通讯', iconFile: 'image_0012.png' },
-  { id: 'monitor', label: '现场监控', iconFile: 'image_0013.png' },
-  { id: 'points', label: '监测点位', iconFile: 'image_0014.png' },
-  { id: 'facility', label: '应急消防设施', iconFile: 'image_0016.png' },
-  { id: 'resource', label: '应急资源', iconFile: '图片_0001.png' },
+  { id: 'comm', label: '应急通讯', iconFile: 'image_0012.webp' },
+  { id: 'monitor', label: '现场监控', iconFile: 'image_0013.webp' },
+  { id: 'points', label: '监测点位', iconFile: 'image_0014.webp' },
+  { id: 'facility', label: '应急消防设施', iconFile: 'image_0016.webp' },
+  { id: 'resource', label: '应急资源', iconFile: '图片_0001.webp' },
 ];
 
 /** 应急指挥详情底部工具栏图标索引（对应 bottomToolbarIconClips） */
@@ -560,13 +560,13 @@ export const rescueDynamics: RescueDynamicEntry[] = [
 ];
 
 export const bottomToolbarItems: BottomToolbarItem[] = [
-  { id: 'comm', label: '应急通讯', iconFile: 'image_0012.png' },
-  { id: 'monitor', label: '现场监控', iconFile: 'image_0013.png' },
-  { id: 'points', label: '监测点位', iconFile: 'image_0014.png' },
-  { id: 'evacuate', label: '应急疏散', iconFile: '图片.png' },
-  { id: 'location', label: '人员定位', iconFile: 'image_0015.png' },
-  { id: 'facility', label: '应急消防设施', iconFile: 'image_0016.png' },
-  { id: 'resource', label: '应急资源', iconFile: '图片_0001.png' },
+  { id: 'comm', label: '应急通讯', iconFile: 'image_0012.webp' },
+  { id: 'monitor', label: '现场监控', iconFile: 'image_0013.webp' },
+  { id: 'points', label: '监测点位', iconFile: 'image_0014.webp' },
+  { id: 'evacuate', label: '应急疏散', iconFile: '图片.webp' },
+  { id: 'location', label: '人员定位', iconFile: 'image_0015.webp' },
+  { id: 'facility', label: '应急消防设施', iconFile: 'image_0016.webp' },
+  { id: 'resource', label: '应急资源', iconFile: '图片_0001.webp' },
 ];
 
 export const accidentRescueMapControls = [

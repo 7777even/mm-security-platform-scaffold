@@ -40,13 +40,13 @@ function sprite(
 /** 地图控件图标（独立图片，非整格切图） */
 export const tvSprites = {
   mapControlButtons: [
-    sprite('image_0001.png', 88, 38),
-    sprite('image_0002.png', 88, 38),
-    sprite('image_0003.png', 88, 38),
-    sprite('image_0004.png', 105, 36),
-    sprite('image_0005.png', 105, 36),
-    sprite('image_0006.png', 107, 36),
-    sprite('image_0007.png', 107, 57),
+    sprite('image_0001.webp', 88, 38),
+    sprite('image_0002.webp', 88, 38),
+    sprite('image_0003.webp', 88, 38),
+    sprite('image_0004.webp', 105, 36),
+    sprite('image_0005.webp', 105, 36),
+    sprite('image_0006.webp', 107, 36),
+    sprite('image_0007.webp', 107, 57),
   ],
 } as const;
 
@@ -70,7 +70,7 @@ export function cssSpriteBg(
   } as const;
 }
 
-const VIDEO_SHEET = { w: 397, h: 342, src: tvImg('image_0015.png') };
+const VIDEO_SHEET = { w: 397, h: 342, src: tvImg('image_0015.webp') };
 const VIDEO_FRAME_W = 198;
 const VIDEO_FRAME_H = 86;
 const VIDEO_COL_X = [0, 199];
@@ -93,7 +93,7 @@ export function importantVideoFrameStyle(index: number) {
   } as const;
 }
 
-const INSPECT_SHEET = { w: 397, h: 365, src: tvImg('image_0016.png') };
+const INSPECT_SHEET = { w: 397, h: 365, src: tvImg('image_0016.webp') };
 const VEHICLE_THUMB_W = 88;
 const VEHICLE_THUMB_H = 58;
 const VEHICLE_ROW_Y = [48, 118, 188, 258, 328];

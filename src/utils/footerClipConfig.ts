@@ -6,13 +6,13 @@ const LABEL_VIEW_W = 132;
 const LABEL_VIEW_H = 52;
 
 const footerStripFile: Record<DesignModule, string> = {
-  fire: 'image_0001.png',
-  fireEmergency: 'image_0001.png',
-  accidentRescue: 'image_0001.png',
-  production: 'image_0027.png',
-  preliminary: 'image_0016.png',
-  security: 'image_0009.png',
-  tv: 'image_0008.png',
+  fire: 'image_0001.webp',
+  fireEmergency: 'image_0001.webp',
+  accidentRescue: 'image_0001.webp',
+  production: 'image_0027.webp',
+  preliminary: 'image_0016.webp',
+  security: 'image_0009.webp',
+  tv: 'image_0008.webp',
 };
 
 /** 底部条左侧「系统消息」标签区裁切 */

@@ -28,7 +28,7 @@ function clipFrom(
 }
 
 /** 398×795 事件列表雪碧图 */
-const EVENT_LIST_SHEET = { file: 'image_0011.png', w: 398, h: 795 };
+const EVENT_LIST_SHEET = { file: 'image_0011.webp', w: 398, h: 795 };
 const EVENT_ICON = { x: 14, size: 40 };
 const EVENT_ICON_ROW_Y = [108, 231, 354, 477, 600];
 
@@ -53,7 +53,7 @@ const RESCUE_ROW_Y = [10, 74, 138, 202];
 export const fireRescueIconClips = Array.from({ length: 8 }, (_, i) => {
   const col = i % 2;
   const row = Math.floor(i / 2);
-  return clipFrom('image_0012.png', RESCUE_W, RESCUE_H, RESCUE_ICON, RESCUE_ICON, {
+  return clipFrom('image_0012.webp', RESCUE_W, RESCUE_H, RESCUE_ICON, RESCUE_ICON, {
     x: RESCUE_COL_X[col],
     y: RESCUE_ROW_Y[row],
   });
@@ -68,7 +68,7 @@ const DUTY_ROW_Y = [52, 139];
 export const fireDutyAvatarClips = Array.from({ length: 4 }, (_, i) => {
   const col = i % 2;
   const row = Math.floor(i / 2);
-  return clipFrom('image_0013.png', DUTY_W, DUTY_H, DUTY_ICON, DUTY_ICON, {
+  return clipFrom('image_0013.webp', DUTY_W, DUTY_H, DUTY_ICON, DUTY_ICON, {
     x: DUTY_COL_X[col],
     y: DUTY_ROW_Y[row],
   });
@@ -80,7 +80,7 @@ const KNOW_ICON_W = 36;
 const KNOW_ICON_H = 40;
 const KNOW_ICON_Y = 12;
 const KNOW_COL_X = [10, 141, 272];
-const KNOW_ROW_FILES = ['image_0014.png', 'image_0015.png', 'image_0016.png'];
+const KNOW_ROW_FILES = ['image_0014.webp', 'image_0015.webp', 'image_0016.webp'];
 
 export const fireKnowledgeRowClips = KNOW_ROW_FILES.map((file) =>
   KNOW_COL_X.map((x) =>

@@ -28,7 +28,7 @@ function clipFrom(
 }
 
 /** 385×722 事件列表雪碧图（含搜索区 + 5 条事件卡片） */
-const EVENT_LIST_SHEET = { file: 'image_0019.png', w: 385, h: 722 };
+const EVENT_LIST_SHEET = { file: 'image_0019.webp', w: 385, h: 722 };
 const EVENT_ICON = { x: 14, size: 40 };
 /** 每条卡片左侧电话图标在雪碧图中的 Y 坐标 */
 const EVENT_ICON_ROW_Y = [108, 231, 354, 477, 600];
@@ -56,7 +56,7 @@ const RESCUE_ROW_Y = [10, 74, 138, 202];
 export const rescueIconClips = Array.from({ length: 8 }, (_, i) => {
   const col = i % 2;
   const row = Math.floor(i / 2);
-  return clipFrom('image_0011.png', RESCUE_W, RESCUE_H, RESCUE_ICON, RESCUE_ICON, {
+  return clipFrom('image_0011.webp', RESCUE_W, RESCUE_H, RESCUE_ICON, RESCUE_ICON, {
     x: RESCUE_COL_X[col],
     y: RESCUE_ROW_Y[row],
   });
@@ -72,14 +72,14 @@ const DUTY_ROW_Y = [52, 139];
 export const dutyAvatarClips = Array.from({ length: 4 }, (_, i) => {
   const col = i % 2;
   const row = Math.floor(i / 2);
-  return clipFrom('image_0012.png', DUTY_W, DUTY_H, DUTY_ICON, DUTY_ICON, {
+  return clipFrom('image_0012.webp', DUTY_W, DUTY_H, DUTY_ICON, DUTY_ICON, {
     x: DUTY_COL_X[col],
     y: DUTY_ROW_Y[row],
   });
 });
 
 /** 393×65 安全知识：单行三列横排，图标均来自同一张切图 */
-const KNOW_SPRITE = 'image_0013.png';
+const KNOW_SPRITE = 'image_0013.webp';
 const KNOW_W = 393;
 const KNOW_H = 65;
 const KNOW_ICON_W = 36;

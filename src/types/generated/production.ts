@@ -35,13 +35,13 @@ export interface paths {
              *             "id": 1,
              *             "name": "厂区",
              *             "count": 596,
-             *             "image": "image_0001.png"
+             *             "image": "image_0001.webp"
              *           },
              *           {
              *             "id": 2,
              *             "name": "生产装置",
              *             "count": 596,
-             *             "image": "image_0008.png"
+             *             "image": "image_0008.webp"
              *           }
              *         ],
              *         "devices": [
@@ -49,7 +49,7 @@ export interface paths {
              *             "id": 1,
              *             "name": "卡口/通道",
              *             "count": 596,
-             *             "image": "image_0002.png"
+             *             "image": "image_0002.webp"
              *           }
              *         ],
              *         "stats": [
@@ -126,7 +126,7 @@ export interface paths {
              *           "description": "A装置区域发现人员跌倒。",
              *           "status": "未处置",
              *           "iconIndex": 0,
-             *           "thumb": "person_fall.png"
+             *           "thumb": "person_fall.webp"
              *         }
              *       ]
              *     }
@@ -240,7 +240,7 @@ export interface paths {
              *           "latitude": 21.6789,
              *           "location": "化工区乙烯装置东侧",
              *           "count": 24,
-             *           "markerIcon": "person_cluster.png",
+             *           "markerIcon": "person_cluster.webp",
              *           "popupBg": "#0b2a4a",
              *           "markerDot": "#3ec6ff",
              *           "markerLine": "#3ec6ff"
@@ -330,7 +330,7 @@ export interface paths {
              *             "description": "生产装置区域发现人员跌倒。",
              *             "status": "未处置",
              *             "iconIndex": 0,
-             *             "thumb": "person_fall.png"
+             *             "thumb": "person_fall.webp"
              *           }
              *         ]
              *       }
@@ -496,7 +496,7 @@ export interface components {
       count?: number;
       /**
        * @description 卡片缩略图文件名（前端按 production 模块静态资源解析）
-       * @example image_0008.png
+       * @example image_0008.webp
        */
       image?: string;
     };
@@ -604,7 +604,7 @@ export interface components {
       iconIndex?: number;
       /**
        * @description 报警抓图文件名（前端静态资源解析，可为空）
-       * @example person_fall.png
+       * @example person_fall.webp
        */
       thumb?: string | null;
     };
@@ -695,7 +695,7 @@ export interface components {
       count?: number;
       /**
        * @description 标记图标文件名
-       * @example person_cluster.png
+       * @example person_cluster.webp
        */
       markerIcon?: string | null;
       /**

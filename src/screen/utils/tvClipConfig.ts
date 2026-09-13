@@ -31,7 +31,7 @@ const LABEL_VIEW_H = 24;
 const LABEL_CROP_X = 10;
 const LABEL_CROP_Y = 11;
 
-const LABEL_FILES = ['矩形_31.png', '矩形_31_0001.png', '矩形_31_0002.png', '矩形_31_0003.png'];
+const LABEL_FILES = ['矩形_31.webp', '矩形_31_0001.webp', '矩形_31_0002.webp', '矩形_31_0003.webp'];
 
 export const zoneLabelClips = LABEL_FILES.map((file) =>
   clipFrom(file, LABEL_W, LABEL_H, LABEL_VIEW_W, LABEL_VIEW_H, LABEL_CROP_X, LABEL_CROP_Y),

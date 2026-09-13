@@ -36,7 +36,7 @@ const PATROL_POS = [
 ];
 
 export const patrolZoneIconClips = PATROL_POS.map(({ x, y }) =>
-  clipFrom('image_0008.png', PATROL_W, PATROL_H, PATROL_ICON, PATROL_ICON, x, y),
+  clipFrom('image_0008.webp', PATROL_W, PATROL_H, PATROL_ICON, PATROL_ICON, x, y),
 );
 
 /** 958×66 地图底部工具条 */
@@ -46,5 +46,5 @@ const TOOLBAR_ICON_W = 120;
 const TOOLBAR_ICON_H = 66;
 
 export const mapToolbarClips = Array.from({ length: 6 }, (_, i) =>
-  clipFrom('image_0014.png', TOOLBAR_W, TOOLBAR_H, TOOLBAR_ICON_W, TOOLBAR_ICON_H, i * 160, 0),
+  clipFrom('image_0014.webp', TOOLBAR_W, TOOLBAR_H, TOOLBAR_ICON_W, TOOLBAR_ICON_H, i * 160, 0),
 );

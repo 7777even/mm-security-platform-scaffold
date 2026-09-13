@@ -19,7 +19,7 @@ const ALARM_H = 515;
 const ALARM_ROW = 129;
 
 export const alarmIconClips = Array.from({ length: 4 }, (_, i) => ({
-  src: img('image_0026.png'),
+  src: img('image_0026.webp'),
   imageWidth: ALARM_W,
   imageHeight: ALARM_H,
   viewWidth: 54,
@@ -29,7 +29,7 @@ export const alarmIconClips = Array.from({ length: 4 }, (_, i) => ({
 }));
 
 export const alarmThumbClips = Array.from({ length: 4 }, (_, i) => ({
-  src: img('image_0026.png'),
+  src: img('image_0026.webp'),
   imageWidth: ALARM_W,
   imageHeight: ALARM_H,
   viewWidth: 83,
@@ -44,7 +44,7 @@ const RISK_H = 143;
 const RISK_COL = RISK_W / 3;
 
 export const riskLevelClips = Array.from({ length: 3 }, (_, i) => ({
-  src: img('image_0013.png'),
+  src: img('image_0013.webp'),
   imageWidth: RISK_W,
   imageHeight: RISK_H,
   viewWidth: 28,
@@ -55,7 +55,7 @@ export const riskLevelClips = Array.from({ length: 3 }, (_, i) => ({
 
 /** 386×92 风险明细卡：仅裁切黄色标签内警告三角图标 */
 export const riskTagIconClip = {
-  src: img('image_0025.png'),
+  src: img('image_0025.webp'),
   imageWidth: 386,
   imageHeight: 92,
   viewWidth: 14,
