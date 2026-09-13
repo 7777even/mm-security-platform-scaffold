@@ -5,7 +5,7 @@ import type { ProductionAlarmItem } from '@/services/production';
 import ClipImage from './ClipImage.vue';
 import { User, Warning, UserFilled } from '@element-plus/icons-vue';
 import OneKeyBroadcastDialog from '../panels/production/OneKeyBroadcastDialog.vue';
-import { alarmThumbClips } from '../../utils/productionClipConfig';
+import { alarmThumbClips } from '@/utils/productionClipConfig';
 import { showToast } from '../../lib/composables/useToast';
 import { productionAlarmToDetail } from '../../lib/data/alarmDetailMock';
 import { useAlarmDetailPanel } from '../../lib/composables/useAlarmDetailPanel';

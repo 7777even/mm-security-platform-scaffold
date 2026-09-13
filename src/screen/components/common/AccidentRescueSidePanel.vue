@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getAssets, panelAssets, type AccidentRescuePanelVariant } from '../../utils/designAssets';
+import { getAssets, panelAssets, type AccidentRescuePanelVariant } from '@/utils/designAssets';
 
 const props = withDefaults(
   defineProps<{

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { assets } from '../../utils/designAssets';
+import { assets } from '@/utils/designAssets';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import {

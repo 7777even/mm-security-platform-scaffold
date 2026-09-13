@@ -38,7 +38,7 @@ import {
   applyPendingFireEmergencyListPage,
   type EmergencyEventCreatePayload,
 } from '../../../lib/composables/useFireEmergencyEventList';
-import type { DesignModule } from '../../../utils/designAssets';
+import type { DesignModule } from '@/utils/designAssets';
 import { useAccidentRescueNavigation } from '../../../lib/composables/useAccidentRescueNavigation';
 import { useShellRoute } from '../../../lib/composables/useShellRoute';
 import {

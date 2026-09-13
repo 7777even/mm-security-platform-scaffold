@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import {
-  panelAssets,
-  type DesignModule,
-  type PreliminaryPanelVariant,
-} from '../../utils/designAssets';
+import { panelAssets, type DesignModule, type PreliminaryPanelVariant } from '@/utils/designAssets';
 
 const props = withDefaults(
   defineProps<{

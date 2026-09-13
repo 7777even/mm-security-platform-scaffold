@@ -2,7 +2,7 @@
 import SpriteImage from '../common/SpriteImage.vue';
 import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
-import { fireEmergencySprites } from '../../utils/fireEmergencySpriteConfig';
+import { fireEmergencySprites } from '@/utils/fireEmergencySpriteConfig';
 import { fireEmergencyMapControls } from '../../lib/data/fireEmergencyMock';
 import type { EmergencyEventItem } from '../../lib/data/fireEmergencyMock';
 import { useMapControls } from '../../lib/composables/useMapControls';

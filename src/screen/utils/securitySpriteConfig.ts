@@ -1,4 +1,4 @@
-import { designImg } from './designAssets';
+import { designImg } from '@/utils/designAssets';
 
 const module = 'security' as const;
 const img = (file: string) => designImg(file, module);

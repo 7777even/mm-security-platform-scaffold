@@ -11,7 +11,7 @@ import {
   Warning,
 } from '@element-plus/icons-vue';
 import { fetchEmergencyStrength } from '@/services/emergency';
-import type { DesignModule } from '../../../utils/designAssets';
+import type { DesignModule } from '@/utils/designAssets';
 
 interface RescueStat {
   label: string;

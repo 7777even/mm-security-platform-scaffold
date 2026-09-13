@@ -3,7 +3,7 @@ import {
   formatElapsedDuration,
   getElapsedParts,
   parseIncidentStartTime,
-} from '../../utils/formatElapsedDuration';
+} from '@/utils/formatElapsedDuration';
 
 type TimeInput = MaybeRefOrGetter<string | undefined>;
 

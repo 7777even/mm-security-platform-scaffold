@@ -1,4 +1,4 @@
-import { isInsideBoundary, type LonLat } from '../../utils/accidentRescueGeo';
+import { isInsideBoundary, type LonLat } from '@/utils/accidentRescueGeo';
 import { fireBrigadeTeams } from './fireBrigadeMock';
 import type { FireBrigadeTeam } from '@/services/rescueResource';
 

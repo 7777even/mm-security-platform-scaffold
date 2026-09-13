@@ -24,6 +24,9 @@ export default tseslint.config(
       '.superpowers/**',
       '*.config.ts',
       '*.config.js',
+      // Vite 加载配置时生成的临时副本（vite.config.ts.timestamp-*.mjs），非源码，
+      // 真实 vite.config.ts 已被 *.config.ts 忽略；此临时 .mjs 不参与 lint。
+      '*.timestamp-*.mjs',
     ],
   },
   js.configs.recommended,

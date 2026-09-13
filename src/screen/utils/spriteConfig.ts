@@ -1,4 +1,4 @@
-import { designImg } from './designAssets';
+import { designImg } from '@/utils/designAssets';
 
 export type SpriteClip = 'none' | 'fit' | 'contain' | 'icon-left' | 'icon-top';
 

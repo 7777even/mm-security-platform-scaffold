@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getAssets, type DesignModule } from '../../utils/designAssets';
+import { getAssets, type DesignModule } from '@/utils/designAssets';
 
 export type MapMode = 'monitor' | 'preliminary';
 

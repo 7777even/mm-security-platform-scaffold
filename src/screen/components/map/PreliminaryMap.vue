@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import SpriteImage from '../common/SpriteImage.vue';
 import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
-import { preliminaryAssets } from '../../utils/designAssets';
+import { preliminaryAssets } from '@/utils/designAssets';
 import { preliminarySprites } from '../../utils/preliminarySpriteConfig';
 import { preliminaryMapControls } from '../../lib/data/preliminaryMock';
 import type { EmergencyEventItem } from '../../lib/data/preliminaryMock';

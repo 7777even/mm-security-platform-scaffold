@@ -5,7 +5,7 @@ import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
 import MapMarkerIcon from './MapMarkerIcon.vue';
 import SecurityToolbarIcon from './SecurityToolbarIcon.vue';
-import { securityAssets, tvAssets } from '../../utils/designAssets';
+import { securityAssets, tvAssets } from '@/utils/designAssets';
 import { securitySprites } from '../../utils/securitySpriteConfig';
 import {
   securityBoundaryEdgeFallback,

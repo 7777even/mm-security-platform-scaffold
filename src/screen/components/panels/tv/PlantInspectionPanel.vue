@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
-import { vehicleThumbStyle } from '../../../utils/tvSpriteConfig';
+import { vehicleThumbStyle } from '@/utils/tvSpriteConfig';
 import { fetchTvInspections } from '@/services/tv';
 import { useScreenAsyncState } from '../../../lib/composables/useScreenAsyncState';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';

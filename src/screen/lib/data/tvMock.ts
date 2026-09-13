@@ -3,7 +3,7 @@
  * 业务数据（概览/运行统计/维保工单/事件分析/入厂巡检）已迁移至 src/services/tv.ts
  * （/tv/overview、/tv/inspections），请勿在此回填业务 mock。
  */
-import { stagePercentToWorldPosition } from '../../utils/mapDesignGeo';
+import { stagePercentToWorldPosition } from '@/utils/mapDesignGeo';
 import type { BoundaryEdgeSide } from '../composables/sharedCesiumBridge';
 export interface TvMapPin {
   label: string;

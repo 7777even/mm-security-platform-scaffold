@@ -1,5 +1,5 @@
 import { computed, onMounted, onUnmounted, ref, watch, isRef, type Ref } from 'vue';
-import { formatDateTimeLabel } from '../../utils/formatDateTime';
+import { formatDateTimeLabel } from '@/utils/formatDateTime';
 import {
   getSharedMap,
   onSharedMapReady,

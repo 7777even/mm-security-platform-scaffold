@@ -1,4 +1,4 @@
-import { designImg } from './designAssets';
+import { designImg } from '@/utils/designAssets';
 import type { SpriteSpec } from './spriteConfig';
 
 function sprite(

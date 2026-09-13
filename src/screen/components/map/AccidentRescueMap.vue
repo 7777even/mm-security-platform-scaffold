@@ -3,8 +3,8 @@ import { computed, onMounted, watch, nextTick, ref, unref, type Ref } from 'vue'
 import SpriteImage from '../common/SpriteImage.vue';
 import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
-import { accidentRescueAssets, fireEmergencyAssets } from '../../utils/designAssets';
-import { accidentRescueSprites } from '../../utils/accidentRescueSpriteConfig';
+import { accidentRescueAssets, fireEmergencyAssets } from '@/utils/designAssets';
+import { accidentRescueSprites } from '@/utils/accidentRescueSpriteConfig';
 import {
   accidentRescueMapControls,
   accidentRescueMapMarkers,
@@ -18,7 +18,7 @@ import {
   getSharedMap,
 } from '../../lib/composables/sharedCesiumBridge';
 import { forwardWheelToCesiumMap } from '../../lib/composables/useMapOverlayWheelPassthrough';
-import { formatHazardSourceLevelLabel, hazardLevelToneClass } from '../../utils/hazardSourceLevel';
+import { formatHazardSourceLevelLabel, hazardLevelToneClass } from '@/utils/hazardSourceLevel';
 import { toggleFacilityDetail } from '../../lib/composables/useFacilityDetail';
 
 const props = withDefaults(

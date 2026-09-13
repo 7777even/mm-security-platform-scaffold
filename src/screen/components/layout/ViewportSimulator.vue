@@ -7,7 +7,7 @@ import {
   simulatedViewport,
   sizePanelOpen,
   toggleSizePanel,
-} from '../../utils/viewportSimulator';
+} from '@/utils/viewportSimulator';
 
 const TOOLBAR_HEIGHT = 32;
 const TOOLBAR_TRIGGER_HEIGHT = 8;

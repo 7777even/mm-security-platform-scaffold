@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onUnmounted, ref, watch } from 'vue';
-import { openSizePanel } from '../../utils/viewportSimulator';
+import { openSizePanel } from '@/utils/viewportSimulator';
 
 const props = defineProps<{
   open: boolean;

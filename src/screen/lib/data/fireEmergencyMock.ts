@@ -1,5 +1,5 @@
 import type { EmergencyEventGroup, EmergencyEventItem } from './preliminaryMock';
-import { stagePercentStringToWorldPosition } from '../../utils/mapDesignGeo';
+import { stagePercentStringToWorldPosition } from '@/utils/mapDesignGeo';
 
 export type { EmergencyEventItem, EmergencyEventGroup };
 

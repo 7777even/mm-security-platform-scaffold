@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import SurveillanceVideoDialog from '../../common/SurveillanceVideoDialog.vue';
-import { tvAssets } from '../../../utils/designAssets';
+import { tvAssets } from '@/utils/designAssets';
 import { TV_VIDEO_DETAIL_LAYOUT } from '../../../utils/tvVideoDetailLayout';
 import type { TvVideoMonitorDetail } from '../../../lib/data/tvMock';
 

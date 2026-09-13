@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { accidentRescueAssets } from '../../utils/designAssets';
+import { accidentRescueAssets } from '@/utils/designAssets';
 import { useElapsedDuration } from '../../lib/composables/useElapsedDuration';
 import { useAccidentRescueNavigation } from '../../lib/composables/useAccidentRescueNavigation';
 import UserMenuDropdown from './UserMenuDropdown.vue';

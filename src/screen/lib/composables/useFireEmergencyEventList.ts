@@ -21,7 +21,7 @@ import {
   PRELIMINARY_EVENT_CARD_SLOT,
   PRELIMINARY_GROUP_TITLE_SLOT,
 } from './usePreliminaryEventList';
-import { stagePercentStringToWorldPosition } from '../../utils/mapDesignGeo';
+import { stagePercentStringToWorldPosition } from '@/utils/mapDesignGeo';
 import { usePlantArea } from './usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();

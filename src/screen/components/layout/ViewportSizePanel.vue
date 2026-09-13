@@ -10,7 +10,7 @@ import {
   viewportPresets,
   viewportSimulator,
   type ViewportPresetId,
-} from '../../utils/viewportSimulator';
+} from '@/utils/viewportSimulator';
 
 const props = defineProps<{
   open: boolean;

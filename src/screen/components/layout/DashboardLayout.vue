@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import SystemMessageBar from './SystemMessageBar.vue';
-import type { DesignModule } from '../../utils/designAssets';
+import type { DesignModule } from '@/utils/designAssets';
 
 /** 全局开关：底部消息条暂定隐藏，后续按需求恢复 */
 const MESSAGE_BAR_ENABLED = false;

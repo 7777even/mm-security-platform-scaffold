@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
 import { Document, WarningFilled, Guide } from '@element-plus/icons-vue';
 import { fetchEmergencyKnowledge } from '@/services/knowledge';
-import type { DesignModule } from '../../../utils/designAssets';
+import type { DesignModule } from '@/utils/designAssets';
 
 interface KnowledgePanelItem {
   iconIndex: number;

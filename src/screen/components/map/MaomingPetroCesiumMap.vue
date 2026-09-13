@@ -35,7 +35,7 @@ import {
   patchTvInspectionScanState,
   resetTvInspectionScanState,
 } from '../../lib/composables/sharedCesiumBridge.ts';
-import { setAccidentRescueFlatViewActive } from '../../utils/accidentRescueFlatViewState.ts';
+import { setAccidentRescueFlatViewActive } from '@/utils/accidentRescueFlatViewState';
 import { fetchMapZoneSigns } from '../../../services/map';
 import {
   ACCIDENT_RESCUE_FLAT,

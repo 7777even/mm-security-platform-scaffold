@@ -1,10 +1,10 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import ClipImage from '../common/ClipImage.vue';
-import { footerLabelClip } from '../../utils/footerClipConfig';
+import { footerLabelClip } from '@/utils/footerClipConfig';
 import { fetchDashboardMessages, type SystemMessageItem } from '@/services/dashboard';
 import { backendUnavailableWarn } from '@/services/backendFallback';
-import type { DesignModule } from '../../utils/designAssets';
+import type { DesignModule } from '@/utils/designAssets';
 
 const props = defineProps<{
   module: DesignModule;

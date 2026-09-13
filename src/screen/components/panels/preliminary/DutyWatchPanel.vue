@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
 import { UserFilled } from '@element-plus/icons-vue';
 import { fetchDutyRoster } from '@/services/duty';
-import type { DesignModule } from '../../../utils/designAssets';
+import type { DesignModule } from '@/utils/designAssets';
 
 interface DutyWatchPerson {
   id: string | number;

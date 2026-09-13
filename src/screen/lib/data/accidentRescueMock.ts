@@ -3,7 +3,7 @@ import {
   accidentRescueMapMarkers,
   accidentRescueRouteWaypoints,
   type RescueRouteWaypoint,
-} from '../../utils/accidentRescueRoutePlanner';
+} from '@/utils/accidentRescueRoutePlanner';
 import fireSceneImage from '../../assets/semantic-scenes/fire-alarm-pipe-rack.png';
 import gasLeakSceneImage from '../../assets/semantic-scenes/production-gas-leak.png';
 

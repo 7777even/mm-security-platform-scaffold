@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { getAssets, type DesignModule } from '../../utils/designAssets';
+import { getAssets, type DesignModule } from '@/utils/designAssets';
 import { navItems } from '../../lib/data/nav';
 import UserMenuDropdown from './UserMenuDropdown.vue';
 import WeatherEntry from './WeatherEntry.vue';
