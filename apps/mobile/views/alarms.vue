@@ -45,7 +45,7 @@ const STATUS_TAG: Record<string, string> = {
         class="mb-chip"
         :class="{ 'mb-chip--on': filter === c }"
         role="tab"
-        :aria-selected="String(filter === c)"
+        :aria-selected="filter === c"
         @click="filter = c"
       >
         {{ c }}

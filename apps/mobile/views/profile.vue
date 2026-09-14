@@ -95,7 +95,7 @@ function toggleElder() {
           type="button"
           class="mb-menu__item mb-menu__item--btn"
           role="switch"
-          :aria-checked="String(elder)"
+          :aria-checked="elder"
           @click="toggleElder"
         >
           <span class="mb-menu__left">
@@ -109,7 +109,7 @@ function toggleElder() {
           type="button"
           class="mb-menu__item mb-menu__item--btn"
           role="switch"
-          :aria-checked="String(outdoor)"
+          :aria-checked="outdoor"
           @click="toggleOutdoor"
         >
           <span class="mb-menu__left">

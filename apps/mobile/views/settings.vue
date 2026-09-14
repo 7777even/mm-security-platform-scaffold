@@ -43,7 +43,7 @@ function logout() {
         type="button"
         class="mb-menu__item mb-menu__item--btn"
         role="switch"
-        :aria-checked="String(pushEnabled)"
+        :aria-checked="pushEnabled"
         @click="pushEnabled = !pushEnabled"
       >
         <span class="mb-menu__left">
@@ -57,7 +57,7 @@ function logout() {
         type="button"
         class="mb-menu__item mb-menu__item--btn"
         role="switch"
-        :aria-checked="String(offlineCache)"
+        :aria-checked="offlineCache"
         @click="offlineCache = !offlineCache"
       >
         <span class="mb-menu__left">

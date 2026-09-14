@@ -129,7 +129,7 @@ function pick(code: string, opt: Option) {
               type="button"
               class="mb-seg__opt"
               :class="{ 'mb-seg__opt--on': answers[item.code] === opt }"
-              :aria-pressed="String(answers[item.code] === opt)"
+              :aria-pressed="answers[item.code] === opt"
               @click="pick(item.code, opt)"
             >
               {{ opt }}

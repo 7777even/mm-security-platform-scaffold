@@ -53,7 +53,7 @@ const STATUS_TAG: Record<string, string> = {
         class="mb-seg__opt"
         :class="{ 'mb-seg__opt--on': cur === t }"
         role="tab"
-        :aria-selected="String(cur === t)"
+        :aria-selected="cur === t"
         @click="cur = t"
       >
         {{ t }}
