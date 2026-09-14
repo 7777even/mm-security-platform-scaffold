@@ -1,6 +1,6 @@
 ## Status
 
-待启动 · 2026-09-02
+已归档 · 2026-09-02 启动 · 2026-09-14 完成：全部实现项与验证项（含 3.3 人工视觉走查）已实测通过，并移入 openspec/archive/。
 
 ## 1. 提案与文档
 
@@ -20,7 +20,7 @@
 
 - [x] 3.1 `npm run type-check` 0 error（纯 `<style>` 改动，无 TS 影响）。
 - [x] 3.2 改动文件 `eslint` / `stylelint` 0 error（read_lints 0 diagnostics）。
-- [ ] 3.3 视觉走查：未选中白字、选中主色蓝 + #eff5f9 底，与迁移包一致（需 `npm run dev` 在 `/apps/mgmt/` 走查）。
+- [x] 3.3 视觉走查：未选中白字、选中主色蓝 + #eff5f9 底，与迁移包一致（2026-09-14 已 `npm run dev` 走查并取计算样式验证：选中 tab bg=rgb(239,245,249)=#eff5f9、color=rgb(11,105,215)；未选中 tab color=rgba(255,255,255,0.92)）。
 - [x] 3.4 验收：无硬编码色 / 字号 / 尺寸，全部走 `--mgmt-tab-*` / `--mgmt-fz-*` token。
 
 > 备注：`.mgmt-tab__close` 关闭交互沿用 `--tag-danger-*` 而非 `--mgmt-tab-close-*` token（属可接受的次要差异）；其选中态 hover 白字落浅底问题已纳入 **2.5** 修正。
