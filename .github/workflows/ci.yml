@@ -161,6 +161,6 @@ jobs:
             -f client_payload[source]=frontend-contract; then
             echo "已向后端仓发送 contract-updated 事件，触发其 contract-guard 重跑"
           else
-            echo "::warning::向后端仓发送 repository_dispatch 失败（HTTP 403 多为令牌无权限）。请确认 CONTRACT_REPO_TOKEN 这个 Fine-grained PAT 的 Repository access 列表包含 7777even/mm-security-platform-backend（目标后端仓，不是前端仓、也不是本地目录名 backend-scaffold），且在该仓 Permissions→Actions 为 Read and write（仅有 Contents:read 不足以触发 dispatch）；令牌值不变，前端仓 Secrets 也无需重配。可暂时手动 Re-run 后端 CI 兜底。"
+            echo "::warning::向后端仓发送 repository_dispatch 失败（HTTP 403 多为令牌无权限）。请确认 CONTRACT_REPO_TOKEN 这个 Fine-grained PAT 的 Repository access 列表包含 7777even/mm-security-platform-backend（目标后端仓，不是前端仓、也不是本地目录名 backend-scaffold），且在该仓 Permissions 里的 Contents 为 Read and write（GitHub 官方对该端点要求的是 Contents:write，Actions:write 无效，仅有 Contents:read 也不够）；令牌值不变，前端仓 Secrets 也无需重配。可暂时手动 Re-run 后端 CI 兜底。"
             exit 0
           fi
