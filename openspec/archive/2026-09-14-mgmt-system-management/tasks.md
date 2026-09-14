@@ -35,7 +35,8 @@
 - [x] `apps/mgmt/**` 临时 tsconfig 类型校验（`tsconfig.mgmt-verify.json`）0 错；eslint 0 error。
 - [x] openspec 四件套 + `.openspec.yaml`（本 Change）。
 - [x] `npx vite build --outDir dist-verify-mgmt-914` 通过（EXIT=0；写默认 `dist` 会在 static-copy 阶段触发 safe-delete 守卫覆盖旧 `dist/cesium`，改用全新 outDir 净过，与代码无关）。
-- [x] 自动化等价走查（vue-tsc 0 错 / `vite build` EXIT=0 / 5 路由命中真实视图非兜底页 / 静态骨架·标签·表格结构核对）；浏览器内人工逐页视觉走查归部署时 QA（规范 §8 自检清单）。
+- [x] 自动化等价走查（vue-tsc 0 错 / `vite build` EXIT=0 / 5 路由命中真实视图非兜底页 / 静态骨架·标签·表格结构核对）。
+- [x] 浏览器内视觉走查（agent-browser 0.27，dev `:5173`，实测 2026-09-14 18:43–18:48）：工作台 + 5 页均渲染真实后端数据——工作台 KPI 6/18/8/304、人员页 admin 账号、角色页 6 角色（数据范围 ALL/DEPT/SELF）、字典页消防报警类型 4 项、审计页真实事件 `mgmt.enter`、厂区页 7 防区；规范 §8 自检：骨架/面包屑/标签（启用·内置·自定义着色）/表格斑马纹/弹窗（新增表单向导 + 「操作确认」MessageBox，Teleport 至 body 生效）均正常；前端运行期零错误（仅 OpenTelemetry exporter 连不上 `:4317` 的环境噪声）。截图证据：仓库根 `ab-shots/00-workbench · 01-staff · 02-role · 03-dict · 04-audit · 05-area · 06-staff-dialog · 07-staff-resetpw`。
 - [x] 后端 `mvn test` 全绿（含新增读端点编译 + 契约守门）；实测 2026-09-14 MVN_EXIT=0、`check-api-contract --strict` 路由差异0/schema漂移0，后端已提交 `feat(security): 新增审计日志只读查询端点`（283e265）。
 - [ ] 待办（下一增量）：将 `apps/**` 纳入统一 `tsconfig` 类型检查（消除「mgmt 不在 type-check 范围」技术债）。
 
