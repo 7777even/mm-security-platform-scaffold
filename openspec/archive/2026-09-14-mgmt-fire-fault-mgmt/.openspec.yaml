@@ -1,0 +1,8 @@
+schema: change
+name: 2026-09-14-mgmt-fire-fault-mgmt
+title: 后台管理端消防设施故障管理页接后端
+status: proposed
+type: feature
+scope: mgmt
+created: '2026-09-14'
+owner: '@ai'
