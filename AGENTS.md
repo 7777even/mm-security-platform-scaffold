@@ -148,9 +148,10 @@
 ### 6.6 工程约定（Git / 提交 / 钩子 / 性能）
 
 - 路由与菜单：`src/router/`（含子应用路由 `shell/subappRouter.ts`）。
-- **Git 提交规范：`type(scope): 描述`（conventional commits + 端 scope）**。scope 固定枚举，禁止自造：`screen`（大屏壳 + `subapps/`）、`mgmt`（`apps/mgmt`）、`mobile`（`apps/mobile`）、`shared`（`src/` 跨端公共服务、`src/styles/tokens.css`、`vite.config.ts`）、`docs`、`chore`。跨端改动**按影响面拆成多个提交**：共享文件（token、公共服务）先行，端内跟随；确属一个原子改动且拆不开时才允许双 scope（如 `feat(mgmt,shared):`），不得常态化。提交信息**只写一句总结性语句**，简洁扼要，禁止写一长段描述或用 `- ` 等分点列表展开。禁止提交临时输出文件（如 `tsc-out.txt`、`vitest-out.txt`）。
+- **Git 提交规范：`type(scope): 描述`（conventional commits + 端 scope）**。scope 固定枚举，禁止自造：`screen`（大屏壳 + `subapps/`）、`mgmt`（`apps/mgmt`）、`mobile`（`apps/mobile`）、`shared`（`src/` 跨端公共服务、`src/styles/tokens.css`、`vite.config.ts`）、`docs`、`chore`、`contract`（`docs/api` 契约真源与生成类型）、`ci`（CI 流水线与门禁配置）。仓库名（`frontend`）、架构层（`services` / `components`）与工具名（`lint` / `build` / `types`）**不是 scope**：按改动所属端或域取名，跨端则写 `type: 描述` 不带括号。跨端改动**按影响面拆成多个提交**：共享文件（token、公共服务）先行，端内跟随；确属一个原子改动且拆不开时才允许双 scope（如 `feat(mgmt,shared):`），不得常态化。提交信息**只写一句总结性语句**，简洁扼要，禁止写一长段描述或用 `- ` 等分点列表展开。禁止提交临时输出文件（如 `tsc-out.txt`、`vitest-out.txt`）。
 - 提交前钩子（husky + lint-staged）会执行 eslint / prettier / stylelint，遵循现有 `.prettierrc.json`、`.stylelintrc.json` 配置，不新增例外。
 - 上述提交规范已**机控**（`.husky/commit-msg` → `scripts/commit-msg-lint.sh`）：header 格式 + 描述含中文 + scope ∈ 上列枚举 + 正文单句（禁 `- ` 分点、禁 `、`、禁 `；`/`！`/`？`，句号与逗号各不超过 1 个，正文不超过 180 字节）。违者提交被拒，**不得用 `--no-verify` 绕过**；确需新 scope 先改本节枚举再写提交。
+- 「禁止提交临时输出文件」同样机控（`.husky/pre-commit` → `scripts/pre-commit-guard.sh`）：暂存区命中 `dist/`、`coverage/`、`node_modules/`、`*-out.txt`、`*.log`、`*.tmp` 等即拒绝，`openspec/` 下的 QA 证据附件为例外。
 - 性能基线与验收记录见 `docs/perf/`；架构决策与规格见 `openspec/`。
 
 ### 6.7 品牌规范对齐（中石化 / 《石化智云 UI 规范》）

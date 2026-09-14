@@ -6,7 +6,8 @@
 set -eu
 
 # scope 固定枚举（AGENTS.md §4）。改枚举须同步改 AGENTS.md，禁止在代码里单方面放宽。
-ALLOWED_SCOPES="screen mgmt mobile shared docs chore"
+# 端 scope 之外，contract（docs/api 契约真源）与 ci（CI 流水线）为 2026-09-14 收编的正式枚举。
+ALLOWED_SCOPES="screen mgmt mobile shared docs chore contract ci"
 
 # 正文长度上限（字节）。中文 UTF-8 三字节/字，180 字节约合 60 个中文字，足以容纳一句总结。
 BODY_MAX_BYTES=180
