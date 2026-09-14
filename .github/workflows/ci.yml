@@ -156,7 +156,11 @@ jobs:
             echo "::warning::CONTRACT_REPO_TOKEN 未配置，跳过自动触发；请前端仓 Settings → Secrets 添加后手动 Re-run 后端 CI"
             exit 0
           fi
-          gh api repos/7777even/mm-security-platform-backend/dispatches \
+          if gh api repos/7777even/mm-security-platform-backend/dispatches \
             -f event_type=contract-updated \
-            -f client_payload[source]=frontend-contract
-          echo "已向后端仓发送 contract-updated 事件，触发其 contract-guard 重跑"
+            -f client_payload[source]=frontend-contract; then
+            echo "已向后端仓发送 contract-updated 事件，触发其 contract-guard 重跑"
+          else
+            echo "::warning::向后端仓发送 repository_dispatch 失败（HTTP 403 多为令牌无后端仓 Actions:write 权限）。请确认 CONTRACT_REPO_TOKEN 为对 7777even/mm-security-platform-backend 拥有 Actions:Read and write 的 PAT；可暂时手动 Re-run 后端 CI 兜底。"
+            exit 0
+          fi
