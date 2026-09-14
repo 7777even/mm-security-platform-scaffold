@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { Warning } from '@element-plus/icons-vue';
 import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import MgmtProTable from '../../components/MgmtProTable.vue';
-import { toastErr } from '../../utils/feedback';
-import { fetchAlarmPage } from '@/services/alarm';
+import { confirm, toastErr, toastOk } from '../../utils/feedback';
+import { deleteEmergencyEvent, fetchAlarmPage } from '@/services/alarm';
 import type { AlarmItem, AlarmLevel, AlarmStatus, AlarmType } from '@/services/alarm';
+import { reportAudit } from '@/services/audit';
+import { useAuthStore } from '@/stores/auth';
 
-// 报警记录（/alarm-record）：接后端 GET /api/v1/alarms 分页查询。
-// 只读订阅（后端 @RequireAuth 仅需登录），无下行控制；写操作（确认/派发/删除）
-// 需后端补端点（当前仅 create/update/delete 应急事件），留待下一批。
+// 报警记录（/alarm-record）：接后端 GET /api/v1/alarms 分页查询 + DELETE /api/v1/alarms/{id} 删除。
+// 列表只读订阅（后端 @RequireAuth 仅需登录）；删除属管理写操作，后端 @RequireAuth(role="ADMIN") 角色门禁，
+// 前端按当前用户角色 ADMIN 显隐按钮（与后端契约一致），并 reportAudit 留痕（等保二级安全审计）。
 
 function asAlarm(row: unknown): AlarmItem {
   return row as AlarmItem;
@@ -112,6 +114,26 @@ function formatTs(ts?: string): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+// 删除写操作：后端 @RequireAuth(role="ADMIN") 角色门禁；前端按当前用户角色显隐。
+const auth = useAuthStore();
+const isAdmin = computed(() => auth.role === 'ADMIN' || auth.roles.includes('ADMIN'));
+
+async function removeAlarm(row: AlarmItem): Promise<void> {
+  if (!(await confirm(`确认删除报警记录「${row.title || row.alarmId}」？删除后不可恢复。`))) return;
+  try {
+    await deleteEmergencyEvent(row.alarmId);
+    reportAudit({
+      action: 'alarm.record.delete',
+      module: 'alarm',
+      detail: { alarmId: row.alarmId },
+    });
+    toastOk('报警记录已删除');
+    await load();
+  } catch (err) {
+    toastErr(err, '删除失败：');
+  }
+}
+
 onMounted(load);
 </script>
 
@@ -188,6 +210,14 @@ onMounted(load);
           <span class="tag" :class="asAlarm(row).warned ? 'tag-warning' : 'tag-info'">
             {{ asAlarm(row).warned ? '是' : '否' }}
           </span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="100" fixed="right">
+        <template #default="{ row }">
+          <el-button v-if="isAdmin" link type="danger" @click="removeAlarm(asAlarm(row))">
+            删除
+          </el-button>
+          <span v-else>—</span>
         </template>
       </el-table-column>
     </MgmtProTable>
