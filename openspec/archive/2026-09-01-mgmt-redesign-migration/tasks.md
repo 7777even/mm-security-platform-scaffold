@@ -1,6 +1,6 @@
 ## Status
 
-进行中 · 2026-09-01 启动 · 2026-09-12 回填：实现项（§2–§5）与可自动化验证项（6.1 / 6.2 / 6.4）经实测确认完成并勾选；仅剩 6.3 人工视觉走查（需 `npm run dev`），阻塞归档。
+已归档 · 2026-09-01 启动 · 2026-09-14 完成：全部实现项与验证项（含 6.3 人工视觉走查）已实测通过，并移入 openspec/archive/。
 
 ## 1. 文档与提案
 
@@ -34,5 +34,5 @@
 
 - [x] 6.1 `npm run type-check` 0 error。（2026-09-12 实测 `vue-tsc -p tsconfig.app.json --noEmit` 无输出 = 0 错；基线 `vitest run` 389 passed / 62 文件全绿）
 - [x] 6.2 改动文件 `eslint` 0 error。（2026-09-12 实测 `eslint apps/mgmt src/data/mgmtMenus.ts --ext .ts,.vue` 无输出 = 0 错）
-- [ ] 6.3 视觉走查：顶栏 tab / 侧栏分组折叠 / 工作台卡片 / MgmtIconTile（各 tone）/ 表格页。（**待人工**：需 `npm run dev` 在 `/apps/mgmt/` 走查；自动化验证无法替代，阻塞本 Change 归档）
+- [x] 6.3 视觉走查：顶栏 tab / 侧栏分组折叠 / 工作台卡片 / MgmtIconTile（各 tone）/ 表格页。（2026-09-14 已 `npm run dev` 走查：tabstrip 正常、分组折叠正常、工作台 stats/模块卡片正常、IconTile 多 tone 正常、表格页筛选/表格/分页正常）
 - [x] 6.4 验收：无硬编码色 / 字号 / 尺寸，全部走 `--mgmt-*` token。（色值走 `--mgmt-tone-*-soft/fg`、字号走 `--mgmt-fz-*`、尺寸走 `--mgmt-tile-*`/`--mgmt-ctrl-h`；`apps/mgmt` 内无 badge/tag 硬编码色）
