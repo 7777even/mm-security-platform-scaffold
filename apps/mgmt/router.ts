@@ -9,7 +9,14 @@ import type { RouteRecordRaw } from 'vue-router';
 
 // 已接后端的系统管理页路径：显式指向服务驱动视图（优先于数据驱动的 module-embed 兜底页）。
 // 其余叶子仍统一走 module-embed.vue（原型 iframe / 静态数据兜底），后续按域逐步接入。
-const SERVICE_PATHS = ['/staff-mgmt', '/role-mgmt', '/dict-mgmt', '/audit-log', '/area-config'];
+const SERVICE_PATHS = [
+  '/staff-mgmt',
+  '/role-mgmt',
+  '/dict-mgmt',
+  '/audit-log',
+  '/area-config',
+  '/alarm-record',
+];
 
 function routeMeta(path: string, fallbackTitle: string) {
   const leaf = mgmtLeafByPath[path];
@@ -46,6 +53,11 @@ const serviceRoutes: RouteRecordRaw[] = [
     path: '/area-config',
     component: () => import('./views/system/AreaView.vue'),
     meta: routeMeta('/area-config', '茂名石化厂区配置'),
+  },
+  {
+    path: '/alarm-record',
+    component: () => import('./views/alarm/AlarmRecordView.vue'),
+    meta: routeMeta('/alarm-record', '报警记录'),
   },
 ];
 

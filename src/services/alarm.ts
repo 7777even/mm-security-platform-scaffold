@@ -65,7 +65,11 @@ export async function fetchAlarmTrend(): Promise<AlarmTrendPoint[]> {
   return request<AlarmTrendPoint[]>({ url: '/dashboard/alarm-trend', method: 'GET' });
 }
 
-export async function fetchAlarmPage(page = 1, size = 5): Promise<PageResult<AlarmItem>> {
+export async function fetchAlarmPage(
+  page = 1,
+  size = 5,
+  query?: { level?: AlarmLevel; status?: AlarmStatus; deviceCode?: string },
+): Promise<PageResult<AlarmItem>> {
   if (useDevMock()) return Promise.resolve(mockPage(page, size));
   // 未连后端：显式报错 + 空态（不回灌内存 mock 假数据）
   if (isAlarmOffline()) {
@@ -80,7 +84,7 @@ export async function fetchAlarmPage(page = 1, size = 5): Promise<PageResult<Ala
     return await request<PageResult<AlarmItem>>({
       url: '/alarms',
       method: 'GET',
-      params: { page, size },
+      params: { page, size, ...query },
     });
   } catch {
     notifyBackendOffline('alarm', '/alarms');
