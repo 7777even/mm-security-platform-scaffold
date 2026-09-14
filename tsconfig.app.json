@@ -20,5 +20,14 @@
     "paths": { "@/*": ["src/*"] },
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "env.d.ts", "components.d.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "apps/**/*.ts",
+    "apps/**/*.tsx",
+    "apps/**/*.vue",
+    "env.d.ts",
+    "components.d.ts"
+  ]
 }
