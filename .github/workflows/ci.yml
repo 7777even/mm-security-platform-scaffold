@@ -120,3 +120,38 @@ jobs:
           echo "  1) 若漂移源于契约标注（后端实现与种子数据为准）→ 改 docs/api/<domain>.openapi.json"
           echo "  2) 若漂移源于后端实现 → 改后端并先推送后端，再回到本仓跑 npm run gen:api-types"
           echo "  3) 无论如何，本仓（契约侧）必须先绿并推送，后端的 contract-guard 才可能通过"
+
+  # 根治跨仓契约竞态：本仓 docs/api 变更且 contract-guard 已绿后，主动向后端仓发
+  # repository_dispatch(contract-updated)，触发后端 contract-guard 重跑，
+  # 消除「后端先推、前端契约后到」的时序红（对应后端仓 ci.yml 的 repository_dispatch 触发器）。
+  # 需在本仓 Settings → Secrets 配置 CONTRACT_REPO_TOKEN（具备后端仓写权限的 PAT）；
+  # 未配置时本 job 自动跳过（if 守卫），不会破坏前端 CI。
+  notify-backend-contract:
+    name: 契约变更触发后端 CI 重跑（根治竞态）
+    needs: contract-guard
+    if: >-
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/feature/scaffold-rebuild' || github.ref == 'refs/heads/main') &&
+      secrets.CONTRACT_REPO_TOKEN != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出（判断 docs/api 是否变更）
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: 判断是否 docs/api 变更
+        id: changed
+        run: |
+          if git diff --name-only "${{ github.event.before }}" "${{ github.event.after }}" | grep -q '^docs/api/'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: 触发后端仓 contract-guard 重跑
+        if: steps.changed.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.CONTRACT_REPO_TOKEN }}
+        run: |
+          gh api repos/7777even/mm-security-platform-backend/dispatches \
+            -f event_type=contract-updated \
+            -f client_payload[source]=frontend-contract
