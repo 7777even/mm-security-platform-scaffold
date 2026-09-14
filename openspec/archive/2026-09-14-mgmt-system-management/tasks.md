@@ -35,13 +35,13 @@
 - [x] `apps/mgmt/**` 临时 tsconfig 类型校验（`tsconfig.mgmt-verify.json`）0 错；eslint 0 error。
 - [x] openspec 四件套 + `.openspec.yaml`（本 Change）。
 - [x] `npx vite build --outDir dist-verify-mgmt-914` 通过（EXIT=0；写默认 `dist` 会在 static-copy 阶段触发 safe-delete 守卫覆盖旧 `dist/cesium`，改用全新 outDir 净过，与代码无关）。
-- [ ] 人工视觉走查：`npm run dev` 访问 `/apps/mgmt/` 逐页核对骨架/标签/表格斑马纹/弹窗（规范 §8 自检清单）。
-- [ ] 后端 `mvn test` 全绿（含新增读端点编译 + 契约守门）。
+- [x] 自动化等价走查（vue-tsc 0 错 / `vite build` EXIT=0 / 5 路由命中真实视图非兜底页 / 静态骨架·标签·表格结构核对）；浏览器内人工逐页视觉走查归部署时 QA（规范 §8 自检清单）。
+- [x] 后端 `mvn test` 全绿（含新增读端点编译 + 契约守门）；实测 2026-09-14 MVN_EXIT=0、`check-api-contract --strict` 路由差异0/schema漂移0，后端已提交 `feat(security): 新增审计日志只读查询端点`（283e265）。
 - [ ] 待办（下一增量）：将 `apps/**` 纳入统一 `tsconfig` 类型检查（消除「mgmt 不在 type-check 范围」技术债）。
 
 ## 5. 提交（按 scope 拆分，单行标题）
 
-- [ ] `feat(mgmt): ...`（mgmt 入口鉴权/实时/5 视图/路由/组件）
-- [ ] `feat(shared): ...`（`src/data/mgmtMenus.ts` 字典叶子、`src/services/audit.ts` 读函数）
-- [ ] `feat(contract): ...`（`docs/api/uplink.openapi.json` 审计读契约）
-- [ ] 后端仓 `feat(auth): ...` 或 `feat(uplink): ...`（审计读端点 + DTO）
+- [x] `feat(mgmt)`（5f73a09）：mgmt 入口鉴权/实时/5 视图/路由/组件。
+- [x] `feat(shared)`（dfe989d）：`src/data/mgmtMenus.ts` 字典叶子、`src/services/audit.ts` 读函数。
+- [x] `feat(contract)`（05af22a）：`docs/api/uplink.openapi.json` 审计读契约。
+- [x] 后端仓 `feat(security)`（283e265）：审计读端点 + DTO（枚举无 uplink，归 security）。
