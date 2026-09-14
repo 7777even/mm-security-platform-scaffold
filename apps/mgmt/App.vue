@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref, watch, type Component } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import { subscribeAlarmPush } from '@/services/realtime';
 import {
   Aim,
   ArrowDown,
@@ -130,8 +132,19 @@ const toggleElder = () => {
 };
 applyElder();
 
-/* ---- 消息气泡 ---- */
-const msgCount = ref(3);
+/* ---- 当前登录用户（共享主壳登录态下发） ---- */
+const auth = useAuthStore();
+const userName = computed(() => auth.realName || auth.username || '未登录');
+
+/* ---- 实时告警角标：订阅 /ws/alarm 增量推送（与大屏同源，双向联动实时侧） ---- */
+const alarmCount = ref(0);
+let unsubscribeAlarm: (() => void) | undefined;
+onMounted(() => {
+  unsubscribeAlarm = subscribeAlarmPush(() => {
+    alarmCount.value += 1;
+  });
+});
+onUnmounted(() => unsubscribeAlarm?.());
 
 const toneClassByKey: Record<string, string> = {
   alarm: 'mgmt-tone--red',
@@ -300,9 +313,9 @@ function resolveIcon(name: string): Component {
             <el-icon :size="12"><Clock /></el-icon>
             {{ now }}
           </span>
-          <span class="mgmt-header__pill mgmt-header__pill--bell">
+          <span class="mgmt-header__pill mgmt-header__pill--bell" title="实时告警（WS 推送）">
             <el-icon :size="15"><Bell /></el-icon>
-            <span v-if="msgCount" class="mgmt-msg-badge">{{ msgCount }}</span>
+            <span v-if="alarmCount" class="mgmt-msg-badge">{{ alarmCount }}</span>
           </span>
           <button
             type="button"
@@ -317,7 +330,7 @@ function resolveIcon(name: string): Component {
           </button>
           <span class="mgmt-header__user">
             <el-icon :size="14"><Tickets /></el-icon>
-            张工
+            {{ userName }}
           </span>
         </header>
 

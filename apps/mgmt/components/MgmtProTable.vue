@@ -3,7 +3,7 @@
 // 浅主色表头 + 白底行 + 行高 ≈48 + 细分隔线（见 mgmt.css 的 el-table 覆盖）；
 // 列定义由父组件以 el-table-column 默认插槽传入；分页当前页实心主色圆、贴右
 defineProps<{
-  data: unknown[];
+  data: object[];
   total?: number;
   page?: number;
   pageSize?: number;
