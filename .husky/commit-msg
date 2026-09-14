@@ -1,1 +1,2 @@
-sh "$(dirname -- "$0")/../scripts/commit-msg-lint.sh" "$1"
+d=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+sh "$d/../scripts/commit-msg-lint.sh" "$1"
