@@ -94,6 +94,8 @@ onBeforeUnmount(() => {
 // 经此只读桥实时读取主壳内存态令牌，避免子应用发起的鉴权请求因无 Authorization 头而 401。
 const sharedProps = computed(() => ({
   user: auth.role,
+  username: auth.username,
+  realName: auth.realName,
   perms: auth.perms,
   theme: 'dark',
   routeParams: { ...route.params } as Record<string, string>,

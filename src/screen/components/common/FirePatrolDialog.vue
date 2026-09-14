@@ -5,6 +5,13 @@ import { fetchDictOptions } from '@/services/system';
 import { backendUnavailableWarn } from '@/services/backendFallback';
 import { useFirePatrolDialog } from '../../lib/composables/useFirePatrolDialog';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
+import { createPatrolExecution } from '@/services/businessWrite';
+import { pushGlobalToast } from '@/services/globalToast';
+import { useScreenPermission } from '../../lib/composables/useScreenPermission';
+
+const { hasPerm } = useScreenPermission();
+/** 巡更执行上报权限（fire-alarm:patrol:write），无权限则隐藏上报按钮 */
+const canPatrolReport = hasPerm('fire-alarm:patrol:write');
 
 const props = defineProps<{ open: boolean }>();
 const emit = defineEmits<{ close: [] }>();
@@ -180,6 +187,36 @@ function openWorkOrder(workOrderNo: string) {
 function openSelectedWorkOrder() {
   if (selectedRecord.value?.workOrderNo) {
     openWorkOrder(selectedRecord.value.workOrderNo);
+  }
+}
+
+const reportingId = ref<string | null>(null);
+
+/** 巡更执行上报（业务留痕）：把当前巡查记录的执行结果登记为巡更执行单 */
+async function reportPatrol(record: FirePatrolRecord): Promise<void> {
+  if (reportingId.value) return;
+  reportingId.value = record.id;
+  const findings = record.checkItems
+    .filter((item) => item.result === '异常')
+    .map((item) => item.abnormalDesc)
+    .filter((desc): desc is string => !!desc && desc !== '—');
+  try {
+    await createPatrolExecution({
+      patrolDate: record.patrolDate,
+      shiftName: record.shift,
+      dutyPerson: record.dutyPerson,
+      patrolCount: record.patrolCount,
+      location: record.locations.join('、'),
+      execResult: record.completed ? '已完成' : '未完成',
+      finding: findings.length ? findings.join('；') : '无异常',
+      workOrderNo: record.workOrderNo,
+    });
+    pushGlobalToast(`巡更执行已上报：${record.patrolDate} ${record.shift}班`, 'info');
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : '提交失败';
+    pushGlobalToast(reason, 'error');
+  } finally {
+    reportingId.value = null;
   }
 }
 </script>
@@ -374,6 +411,15 @@ function openSelectedWorkOrder() {
                       <td>
                         <button type="button" class="patrol__link" @click="openDetail(record)">
                           详情
+                        </button>
+                        <button
+                          v-if="canPatrolReport"
+                          type="button"
+                          class="patrol__link"
+                          :disabled="reportingId === record.id"
+                          @click="reportPatrol(record)"
+                        >
+                          {{ reportingId === record.id ? '上报中' : '上报' }}
                         </button>
                       </td>
                     </tr>

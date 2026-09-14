@@ -12,6 +12,13 @@ import {
   type EmergencyCommandInstructionStatus,
 } from '@/services/emergency';
 import { openCommandActionDetail } from '../../../lib/composables/useCommandActionDetail';
+import { createEmergencyCommandRecord } from '@/services/businessWrite';
+import { pushGlobalToast } from '@/services/globalToast';
+import { useScreenPermission } from '../../../lib/composables/useScreenPermission';
+
+const { hasPerm } = useScreenPermission();
+/** 应急指令下发权限（emergency:command:write），无权限则隐藏卡片操作按钮 */
+const canIssueCommand = hasPerm('emergency:command:write');
 
 withDefaults(
   defineProps<{
@@ -79,9 +86,30 @@ function handleCardClick(item: EmergencyCommandInstruction) {
   openCommandActionDetail(item.id);
 }
 
-function handleAction(item: EmergencyCommandInstruction, event: MouseEvent) {
+const issuing = ref(false);
+
+async function handleAction(item: EmergencyCommandInstruction, event: MouseEvent) {
   event.stopPropagation();
-  void item;
+  if (issuing.value) return;
+  issuing.value = true;
+  try {
+    // 业务留痕：登记指令流转（下发 / 推进状态），绝不触发物理设备。
+    // commandCode 取指令 id；currStatus 取卡片当前状态；服务端按同 commandCode 继承 commandName。
+    await createEmergencyCommandRecord({
+      commandCode: item.id,
+      commandName: item.name,
+      commandKind: item.type,
+      currStatus: item.status,
+      target: item.location,
+      remark: item.actionLabel,
+    });
+    pushGlobalToast(`指令「${item.name}」已记录`, 'info');
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : '提交失败';
+    pushGlobalToast(reason, 'error');
+  } finally {
+    issuing.value = false;
+  }
 }
 </script>
 
@@ -154,9 +182,10 @@ function handleAction(item: EmergencyCommandInstruction, event: MouseEvent) {
           @keydown.enter="handleCardClick(item)"
         >
           <button
-            v-if="item.actionLabel"
+            v-if="item.actionLabel && canIssueCommand"
             type="button"
             class="er-command-card__action"
+            :disabled="issuing"
             @click="handleAction(item, $event)"
           >
             {{ item.actionLabel }}

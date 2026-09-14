@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { EmergencyDispatchResource } from '@/services/accidentRescue';
+import { createTyphoonDispatchOrder } from '@/services/businessWrite';
+import { pushGlobalToast } from '@/services/globalToast';
+import { useScreenPermission } from '@/screen/lib/composables/useScreenPermission';
+import { useScreenIdentity } from '@/screen/lib/composables/useScreenIdentity';
+
+const { hasPerm } = useScreenPermission();
+/** 台风资源调度权限（typhoon:dispatch:write），无权限则隐藏调度按钮 */
+const canDispatch = hasPerm('typhoon:dispatch:write');
+const { displayName } = useScreenIdentity();
 
 const props = withDefaults(
   defineProps<{
@@ -66,13 +75,45 @@ function openItemDispatch(item: EmergencyDispatchResource) {
   openDispatch('app', item);
 }
 
-function confirmDispatch() {
-  const names = selectedResources.value.map((item) => item.name).join('、');
-  lastResult.value =
-    dispatchChannel.value === 'app'
-      ? `APP 指令已发送：${names}，等待接收确认。`
-      : `已发起电话调度：${names}，通话过程自动留痕。`;
-  dispatchOpen.value = false;
+const dispatching = ref(false);
+
+async function confirmDispatch() {
+  if (dispatching.value) return;
+  const targets = selectedResources.value;
+  if (!targets.length) {
+    dispatchOpen.value = false;
+    return;
+  }
+  const channel = dispatchChannel.value;
+  const action = channel === 'app' ? 'ASSIGN' : 'CALL';
+  const names = targets.map((item) => item.name).join('、');
+  dispatching.value = true;
+  try {
+    // 业务留痕：逐资源登记调度单据，绝不触发物理设备（强切/断电等由硬控拦截器兜底）。
+    await Promise.all(
+      targets.map((item) =>
+        createTyphoonDispatchOrder({
+          resourceCode: item.code,
+          resourceName: item.name,
+          dispatchAction: action,
+          assignee: displayName.value,
+          quantity: 1,
+          remark: instruction.value,
+        }),
+      ),
+    );
+    lastResult.value =
+      channel === 'app'
+        ? `APP 调度指令已下发：${names}，等待接收确认。`
+        : `电话调度已发起：${names}，通话过程自动留痕。`;
+    pushGlobalToast(`调度指令已下发（${targets.length} 条）`, 'info');
+    dispatchOpen.value = false;
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : '提交失败';
+    pushGlobalToast(reason, 'error');
+  } finally {
+    dispatching.value = false;
+  }
 }
 </script>
 
@@ -137,6 +178,7 @@ function confirmDispatch() {
         </div>
         <div class="resource-card__actions">
           <button
+            v-if="canDispatch"
             type="button"
             :disabled="item.status === '离线'"
             @click.stop="openItemDispatch(item)"
@@ -154,6 +196,7 @@ function confirmDispatch() {
     <footer class="resource-dispatch__footer">
       <span>调度过程记录发起人、时间、接收及现场反馈状态</span>
       <button
+        v-if="canDispatch"
         type="button"
         class="is-primary"
         :disabled="!selectedIds.length"
@@ -187,7 +230,9 @@ function confirmDispatch() {
           </div>
           <footer>
             <button @click="dispatchOpen = false">取消</button
-            ><button class="is-primary" @click="confirmDispatch">确认调度</button>
+            ><button class="is-primary" :disabled="dispatching" @click="confirmDispatch">
+              确认调度
+            </button>
           </footer>
         </section>
       </div>

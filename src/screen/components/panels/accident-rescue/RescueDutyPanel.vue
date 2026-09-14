@@ -3,6 +3,38 @@ import { computed, onMounted, ref } from 'vue';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
 import { fetchDutyRoster, type DutyMember } from '@/services/duty';
 import { UserFilled } from '@element-plus/icons-vue';
+import { createDutySignIn } from '@/services/businessWrite';
+import { pushGlobalToast } from '@/services/globalToast';
+import { useScreenPermission } from '../../../lib/composables/useScreenPermission';
+import { useScreenIdentity } from '../../../lib/composables/useScreenIdentity';
+
+const { hasPerm } = useScreenPermission();
+/** 值班签到权限（emergency:duty:write），无权限则隐藏签到/签退按钮 */
+const canDutySignIn = hasPerm('emergency:duty:write');
+const { displayName } = useScreenIdentity();
+
+const signing = ref(false);
+
+/** 值班签到 / 签退（业务留痕，实名取自当前操作员身份） */
+async function signDuty(signAction: 'SIGN_IN' | 'SIGN_OUT'): Promise<void> {
+  if (signing.value) return;
+  signing.value = true;
+  try {
+    await createDutySignIn({
+      dutyDate: new Date().toISOString().slice(0, 10),
+      shiftName: shift.value === 'day' ? '白班' : '夜班',
+      personName: displayName.value,
+      signAction,
+      remark: signAction === 'SIGN_IN' ? '大屏自助签到' : '大屏自助签退',
+    });
+    pushGlobalToast(signAction === 'SIGN_IN' ? '值班签到成功' : '值班签退成功', 'info');
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : '提交失败';
+    pushGlobalToast(reason, 'error');
+  } finally {
+    signing.value = false;
+  }
+}
 
 withDefaults(
   defineProps<{
@@ -50,6 +82,24 @@ const leader = computed(
 <template>
   <AccidentRescueSidePanel title="值班值守" variant="duty" :theme="theme">
     <template #actions>
+      <button
+        v-if="canDutySignIn"
+        class="panel-collapse-btn"
+        type="button"
+        :disabled="signing"
+        @click="signDuty('SIGN_IN')"
+      >
+        签到
+      </button>
+      <button
+        v-if="canDutySignIn"
+        class="panel-collapse-btn"
+        type="button"
+        :disabled="signing"
+        @click="signDuty('SIGN_OUT')"
+      >
+        签退
+      </button>
       <button
         class="panel-collapse-btn"
         type="button"
