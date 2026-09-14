@@ -190,7 +190,7 @@ function openSelectedWorkOrder() {
   }
 }
 
-const reportingId = ref<string | null>(null);
+const reportingId = ref<number | null>(null);
 
 /** 巡更执行上报（业务留痕）：把当前巡查记录的执行结果登记为巡更执行单 */
 async function reportPatrol(record: FirePatrolRecord): Promise<void> {
@@ -209,7 +209,7 @@ async function reportPatrol(record: FirePatrolRecord): Promise<void> {
       location: record.locations.join('、'),
       execResult: record.completed ? '已完成' : '未完成',
       finding: findings.length ? findings.join('；') : '无异常',
-      workOrderNo: record.workOrderNo,
+      workOrderNo: record.workOrderNo ?? undefined,
     });
     pushGlobalToast(`巡更执行已上报：${record.patrolDate} ${record.shift}班`, 'info');
   } catch (err) {
