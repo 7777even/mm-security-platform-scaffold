@@ -60,6 +60,13 @@ jobs:
       - name: 生产构建（vue-tsc -b && vite build）
         run: npm run build
 
+      # 子应用产物悬空引用门禁：wujie 子应用走预打包 IIFE（subapps/<name>/dist，gitignore 不入库，
+      # 主壳 `npm run build` 不构建它）。改了 public/design|images 或 designAssets.ts 却漏重建时，
+      # bundle 会仍引用已删除资源（典型 .png→.webp）→ 大屏整页图裂且后端无任何报错。
+      # 故 CI 先重建子应用、再校验产物引用的项目资产全部可解析（详见 scripts/check-subapp-assets.mjs）。
+      - name: 子应用产物悬空引用门禁（build:subapps + 校验）
+        run: npm run build:subapps && npm run gate:subapp-assets
+
       # 构建产物可追溯性对齐后端（后端上传 jacoco 报告）：仅构建成功时上传 dist/
       - name: 上传构建产物
         if: success()

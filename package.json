@@ -19,6 +19,7 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "gate:screen": "node scripts/screen-local-data-gate.mjs",
+    "gate:subapp-assets": "node scripts/check-subapp-assets.mjs",
     "prepare": "husky"
   },
   "dependencies": {

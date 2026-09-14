@@ -50,9 +50,11 @@
 
 **子应用产物必须重建（高频踩坑，改 `src/` 后必看）**：wujie 子应用是 `build:subapps` 预打的 IIFE 包，dev 下由 `vite.config.ts` 的 `serve-subapp-dist` 中间件**直传 `subapps/<name>/dist/` 产物**，不经 Vite 编译。因此改动 `src/` 下任何共享代码（典型：`services/token.ts` 的 wujie 令牌桥、`services/http.ts` 拦截器）或 `subapps/*/main.ts` 后，**必须重跑 `npm run build:subapps`**，否则子应用仍在跑旧包。
 
-- 典型症状：_*主壳接口全部正常、子应用（fm-* 大屏）接口全 401_* —— 2026-09-09 即因产物落后一天，子应用 `getAccessToken()` 还是无桥旧实现，导致 `/emergency/*` 不带 Authorization 全 401，易误判为后端鉴权问题。
-- 排查顺序：先看 dev server 启动日志的 `[subapp-stale]` 警告（列出落后于源码的子应用），再看子应用 iframe 内请求是否缺 Authorization 头。
+- 典型症状①：_*主壳接口全部正常、子应用（fm-* 大屏）接口全 401_* —— 2026-09-09 即因产物落后一天，子应用 `getAccessToken()` 还是无桥旧实现，导致 `/emergency/*` 不带 Authorization 全 401，易误判为后端鉴权问题。
+- 典型症状②（2026-09-14）：_*大屏设计图整页全裂、后端无任何报错*_ —— PNG→WebP 转换改了 `public/design` 与 `src/utils/designAssets.ts`，却漏重建子应用，旧 bundle 仍请求已删除的 `.png`（3191 处）→ 全部 404。**改 `public/design|images` 或 `designAssets.ts` 后同样必须重建子应用。**
+- 排查顺序：先看 dev server 启动日志的 `[subapp-stale]` 警告（列出落后于源码的子应用）；再看子应用 iframe 内请求是否缺 Authorization 头 / 图片是否 404。
 - 单个重建省时：`SUBAPP=fm-emergency npm run build:subapps`；避开批量删除守卫：`SUBAPP_NO_EMPTY=1 npm run build:subapps`。
+- **门禁**：`npm run gate:subapp-assets` 扫描已构建产物，校验其中的项目资产引用全部可解析（悬空即 FAIL：扩展名漂移 / 文件缺失），CI 已在 build 后 `build:subapps && gate:subapp-assets` 守门（见 `scripts/check-subapp-assets.mjs`）。
 
 ### 2.2 测试金字塔策略（基线 = 关键集成测试，先红后绿，回归闭环）
 
