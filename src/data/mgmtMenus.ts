@@ -1044,6 +1044,14 @@ const mgmtMenusRaw: MgmtGroupRaw[] = [
         { action: '新增角色' },
       ),
       L(
+        '字典管理',
+        '/dict-mgmt',
+        'library',
+        ['字典名称', '字典编码', '字典项数', '状态'],
+        [['报警等级', 'alarm_level', '4', ok('启用')]],
+        { action: '新增字典' },
+      ),
+      L(
         '审计日志管理',
         '/audit-log',
         'history',

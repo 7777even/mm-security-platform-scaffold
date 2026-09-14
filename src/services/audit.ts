@@ -1,4 +1,5 @@
 import http from '@/services/http';
+import { request } from '@/services/http';
 
 // 统一前端操作审计埋点（D1 C-2 等保二级「安全审计」）。
 // 设计：事件先入内存缓冲，随后异步落库；提交失败保留缓冲（离线优先，不丢事件）。
@@ -64,4 +65,34 @@ export function __resetAudit(): void {
   buffer = [];
   inflight = null;
   submitFn = defaultSubmit;
+}
+
+// ---------------------------------------------------------------- 审计日志查询（后台管理端消费）
+
+export interface AuditLogItem {
+  id: number;
+  action: string;
+  module?: string | null;
+  detailJson?: string | null;
+  eventAt?: number | null;
+  createdAt?: string | null;
+}
+
+export interface AuditLogPageResult {
+  list: AuditLogItem[];
+  total: number;
+  page: number;
+  size: number;
+}
+
+export interface AuditLogQuery {
+  page?: number;
+  size?: number;
+  module?: string;
+  action?: string;
+}
+
+/** 查询操作审计日志（GET /audit/log，分页 + 模块/动作过滤）。 */
+export function fetchAuditLog(query: AuditLogQuery = {}): Promise<AuditLogPageResult> {
+  return request<AuditLogPageResult>({ url: '/audit/log', method: 'GET', params: query });
 }
