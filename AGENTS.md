@@ -70,6 +70,7 @@
 4. **防重放签名**：生产环境（gateway-bypass=false）http 拦截器强制 HMAC-SHA256 签名头（timestamp / nonce / signature）；Dev 可经 gateway-bypass 挂起。
 5. **令牌内存态**：访问令牌走 HttpOnly Cookie / 内存态（`getAccessToken`），禁止 localStorage 明文。
 6. **目录与分层**：按功能模块为第一级；`services` 与 `adapter` 分离，跨端公共服务置于 `src/`。
+7. **跨库契约同步纪律（对拍真源 + 推送时序）**：本库 `docs/api/*.openapi.json` 是后端 `contract-guard` job 的**对拍真源**。改对外接口必须同交付走跨库四同步（OpenSpec → 前端契约 → 后端实现 → 前端重跑 `gen:api-types`）；其中**前端契约务必先推且自测绿 → 再推后端**——否则后端先推会触发 `contract-guard` 拉到尚未含新接口的契约快照而误报漂移致红。若不慎后端已先推导致红，**不要改实现去迁就**，等前端契约落地后由自动重跑或 Actions 页手动 Re-run 转绿。前端 CI 的 `notify-backend-contract` job 会在前端 `contract-guard` 绿且本次 `docs/api` 有变更时，用仓库 Secret `CONTRACT_REPO_TOKEN`（对后端仓有写权限的 PAT）向后端发 `repository_dispatch(contract-updated)` 触发其 CI 重跑；该 Secret 未配置时 job 自动跳过，不破坏前端 CI（详见 `README.md` §4）。
 
 ## 4. 工程记录闭环
 
