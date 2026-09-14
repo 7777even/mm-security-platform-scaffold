@@ -17,7 +17,7 @@
         "tags": ["system"],
         "operationId": "listSystemUsers",
         "summary": "用户分页查询",
-        "description": "分页查询系统用户。keyword 同时模糊匹配用户名与真实姓名；status / roleCode 为精确过滤。返回项不含口令哈希。",
+        "description": "分页查询系统用户。keyword 同时模糊匹配用户名与真实姓名；status / roleCode 为精确过滤。返回项不含口令哈希。调用需登录态。",
         "parameters": [
           { "$ref": "./_shared.json#/components/parameters/page" },
           { "$ref": "./_shared.json#/components/parameters/size" },
