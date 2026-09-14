@@ -125,14 +125,14 @@ jobs:
   # repository_dispatch(contract-updated)，触发后端 contract-guard 重跑，
   # 消除「后端先推、前端契约后到」的时序红（对应后端仓 ci.yml 的 repository_dispatch 触发器）。
   # 需在本仓 Settings → Secrets 配置 CONTRACT_REPO_TOKEN（具备后端仓写权限的 PAT）；
-  # 未配置时本 job 自动跳过（if 守卫），不会破坏前端 CI。
+  # 注意：GitHub Actions 的 if 表达式不支持 secrets 上下文，故「令牌是否缺失」改在
+  # dispatch step 内运行时判断——缺失则打印 warning 并以 exit 0 优雅跳过，不破坏前端 CI。
   notify-backend-contract:
     name: 契约变更触发后端 CI 重跑（根治竞态）
     needs: contract-guard
     if: >-
       github.event_name == 'push' &&
-      (github.ref == 'refs/heads/feature/scaffold-rebuild' || github.ref == 'refs/heads/main') &&
-      secrets.CONTRACT_REPO_TOKEN != ''
+      (github.ref == 'refs/heads/feature/scaffold-rebuild' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     steps:
       - name: 检出（判断 docs/api 是否变更）
@@ -152,6 +152,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.CONTRACT_REPO_TOKEN }}
         run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::CONTRACT_REPO_TOKEN 未配置，跳过自动触发；请前端仓 Settings → Secrets 添加后手动 Re-run 后端 CI"
+            exit 0
+          fi
           gh api repos/7777even/mm-security-platform-backend/dispatches \
             -f event_type=contract-updated \
             -f client_payload[source]=frontend-contract
+          echo "已向后端仓发送 contract-updated 事件，触发其 contract-guard 重跑"

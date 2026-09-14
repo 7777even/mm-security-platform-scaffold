@@ -1658,7 +1658,7 @@
         "tags": ["system"],
         "operationId": "listSystemZones",
         "summary": "防区下拉列表",
-        "description": "返回启用且未删除的防区主数据（data_scope 行级 ABAC 维度源），供系统管理用户表单「可访问防区」多选。该接口为只读查询，登录即可读（后端 @RequireAuth 仅要求登录，无 ADMIN 限制）。",
+        "description": "返回启用且未删除的防区主数据（data_scope 行级 ABAC 维度源），供系统管理用户表单「可访问防区」多选。该接口为只读查询、无需写权限，登录即可读（后端 @RequireAuth 仅要求登录，无 ADMIN 限制）。",
         "responses": {
           "200": {
             "description": "B3 成功包络（data=ZoneItem[]）",
