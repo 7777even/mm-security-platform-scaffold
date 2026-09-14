@@ -92,10 +92,10 @@ frontend-scaffold/
 
 该自动重跑依赖以下仓库 Secret：
 
-| Secret                | 作用                                                          | 缺失时的行为                                                                                                        |
-| --------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `CONTRACT_REPO_TOKEN` | 对**后端仓 `backend-scaffold`** 有 `actions:write` 权限的 PAT | `notify-backend-contract` job 自动跳过，不破坏前端 CI；此时需后端仓 Actions 页手动 Re-run，或走 `workflow_dispatch` |
+| Secret                | 作用                                                                                       | 缺失时的行为                                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `CONTRACT_REPO_TOKEN` | 对**后端 GitHub 仓 `7777even/mm-security-platform-backend`** 有 `actions:write` 权限的 PAT | `notify-backend-contract` job 自动跳过，不破坏前端 CI；此时需后端仓 Actions 页手动 Re-run，或走 `workflow_dispatch` |
 
-配置路径：前端仓 **Settings → Secrets and variables → Actions → New repository secret**，Name 填 `CONTRACT_REPO_TOKEN`，Value 填后端仓的 PAT（建议用 Fine-grained PAT，仅授予后端仓 `Read and Write` 的 `Actions` 作用域）。
+配置路径：前端仓 **Settings → Secrets and variables → Actions → New repository secret**，Name 填 `CONTRACT_REPO_TOKEN`，Value 填后端 GitHub 仓 `7777even/mm-security-platform-backend` 的 PAT（建议用 Fine-grained PAT，Repository access 选该后端仓、Repository permissions → `Actions` → `Read and Write`）。
 
 > 说明：前端 → 后端契约仓用的是 HTTPS 跨仓触发，与前端仓自身的 `CONTRACT_REPO_TOKEN || github.token` 不同——此处令牌必须指向**后端仓**授权，否则 `repository_dispatch` 会被拒绝。
