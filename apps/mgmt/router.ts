@@ -16,6 +16,7 @@ const SERVICE_PATHS = [
   '/audit-log',
   '/area-config',
   '/alarm-record',
+  '/fault-mgmt',
 ];
 
 function routeMeta(path: string, fallbackTitle: string) {
@@ -58,6 +59,11 @@ const serviceRoutes: RouteRecordRaw[] = [
     path: '/alarm-record',
     component: () => import('./views/alarm/AlarmRecordView.vue'),
     meta: routeMeta('/alarm-record', '报警记录'),
+  },
+  {
+    path: '/fault-mgmt',
+    component: () => import('./views/fire/FaultMgmtView.vue'),
+    meta: routeMeta('/fault-mgmt', '消防设施故障管理'),
   },
 ];
 
