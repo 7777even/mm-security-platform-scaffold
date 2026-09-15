@@ -195,7 +195,9 @@ onMounted(load);
       icon-tone="amber"
     >
       <template #actions>
-        <el-button type="primary" @click="openCreate">新增角色</el-button>
+        <el-button v-permission="'system:role:create'" type="primary" @click="openCreate"
+          >新增角色</el-button
+        >
       </template>
     </MgmtPageHead>
 
@@ -227,12 +229,34 @@ onMounted(load);
       </el-table-column>
       <el-table-column label="操作" width="240" fixed="right">
         <template #default="{ row }">
-          <el-button link type="primary" @click="openGrant(asRole(row))">授权</el-button>
-          <el-button link type="primary" @click="openEdit(asRole(row))">编辑</el-button>
-          <el-button link type="primary" @click="toggleStatus(asRole(row))">
+          <el-button
+            v-permission="'system:role:grant'"
+            link
+            type="primary"
+            @click="openGrant(asRole(row))"
+            >授权</el-button
+          >
+          <el-button
+            v-permission="'system:role:edit'"
+            link
+            type="primary"
+            @click="openEdit(asRole(row))"
+            >编辑</el-button
+          >
+          <el-button
+            v-permission="'system:role:edit'"
+            link
+            type="primary"
+            @click="toggleStatus(asRole(row))"
+          >
             {{ row.status === 1 ? '停用' : '启用' }}
           </el-button>
-          <el-button link type="danger" :disabled="row.builtIn" @click="removeRole(asRole(row))"
+          <el-button
+            v-permission="'system:role:delete'"
+            link
+            type="danger"
+            :disabled="row.builtIn"
+            @click="removeRole(asRole(row))"
             >删除</el-button
           >
         </template>

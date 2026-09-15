@@ -307,11 +307,28 @@ onMounted(async () => {
       </el-table-column>
       <el-table-column label="操作" width="230" fixed="right">
         <template #default="{ row }">
-          <el-button link type="primary" @click="openEdit(asUser(row))">编辑</el-button>
-          <el-button link type="primary" @click="toggleStatus(asUser(row))">
+          <el-button
+            v-permission="'system:user:edit'"
+            link
+            type="primary"
+            @click="openEdit(asUser(row))"
+            >编辑</el-button
+          >
+          <el-button
+            v-permission="'system:user:edit'"
+            link
+            type="primary"
+            @click="toggleStatus(asUser(row))"
+          >
             {{ row.status === 1 ? '停用' : '启用' }}
           </el-button>
-          <el-button link type="primary" @click="resetPwd(asUser(row))">重置口令</el-button>
+          <el-button
+            v-permission="'system:user:reset-pwd'"
+            link
+            type="primary"
+            @click="resetPwd(asUser(row))"
+            >重置口令</el-button
+          >
           <el-button
             v-permission="'system:user:delete'"
             link

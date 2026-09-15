@@ -224,7 +224,9 @@ onMounted(loadTypes);
       icon-tone="indigo"
     >
       <template #actions>
-        <el-button type="primary" @click="openTypeCreate">新增字典类型</el-button>
+        <el-button v-permission="'system:dict:create'" type="primary" @click="openTypeCreate"
+          >新增字典类型</el-button
+        >
       </template>
     </MgmtPageHead>
 
@@ -254,8 +256,16 @@ onMounted(loadTypes);
               <span class="dict-type-item__code">{{ t.dictCode }}</span>
             </div>
             <div class="dict-type-item__ops" @click.stop>
-              <el-button link type="primary" size="small" @click="openTypeEdit(t)">编辑</el-button>
               <el-button
+                v-permission="'system:dict:edit'"
+                link
+                type="primary"
+                size="small"
+                @click="openTypeEdit(t)"
+                >编辑</el-button
+              >
+              <el-button
+                v-permission="'system:dict:delete'"
                 link
                 type="danger"
                 size="small"
@@ -278,7 +288,12 @@ onMounted(loadTypes);
               >{{ selectedType.dictName }}（{{ selectedType.dictCode }}）</span
             >
           </span>
-          <el-button type="primary" size="small" :disabled="!selectedType" @click="openItemCreate"
+          <el-button
+            v-permission="'system:dict:create'"
+            type="primary"
+            size="small"
+            :disabled="!selectedType"
+            @click="openItemCreate"
             >新增字典项</el-button
           >
         </div>
@@ -298,8 +313,20 @@ onMounted(loadTypes);
           </el-table-column>
           <el-table-column label="操作" width="130" fixed="right">
             <template #default="{ row }">
-              <el-button link type="primary" @click="openItemEdit(asItem(row))">编辑</el-button>
-              <el-button link type="danger" @click="removeItem(asItem(row))">删除</el-button>
+              <el-button
+                v-permission="'system:dict:edit'"
+                link
+                type="primary"
+                @click="openItemEdit(asItem(row))"
+                >编辑</el-button
+              >
+              <el-button
+                v-permission="'system:dict:delete'"
+                link
+                type="danger"
+                @click="removeItem(asItem(row))"
+                >删除</el-button
+              >
             </template>
           </el-table-column>
         </el-table>
