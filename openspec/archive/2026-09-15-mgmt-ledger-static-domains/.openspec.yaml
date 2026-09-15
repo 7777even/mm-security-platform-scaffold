@@ -1,0 +1,8 @@
+schema: change
+name: 2026-09-15-mgmt-ledger-static-domains
+title: 后台管理端 18 个静态域接入通用台账真后端
+status: proposed
+type: feature
+scope: mgmt
+created: '2026-09-15'
+owner: '@ai'
