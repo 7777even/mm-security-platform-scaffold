@@ -1,0 +1,205 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "后台管理端通用台账接口（静态页真后端化）",
+    "description": "后台管理端（apps/mgmt）原由 mgmtMenus.ts 硬编码渲染的静态台账页，统一改走本通用能力：按 domain（菜单叶子 path 去前导 /）取元数据与分页数据。数据由后端 V51 迁移脚本种子化进 mgmt_ledger_* 表。仅 GET，零下行控制；支持 keyword 模糊搜索与 f_<列名>=值 的按列筛选。",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "paths": {
+    "/mgmt-ledger/{domain}/meta": {
+      "get": {
+        "summary": "获取台账元数据",
+        "description": "按 domain 返回列标题列表与筛选定义，用于前端通用表格渲染表头与筛选下拉。",
+        "tags": ["mgmt-ledger"],
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "域标识（菜单叶子 path 去掉前导 /，如 alarm-config）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "台账元数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MgmtLedgerMetaDto" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "domain": "alarm-config",
+                    "title": "报警规则配置",
+                    "columns": [
+                      "编号",
+                      "规则名称",
+                      "报警类型",
+                      "级别",
+                      "通知方式",
+                      "联动动作",
+                      "启用"
+                    ],
+                    "filters": []
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mgmt-ledger/{domain}": {
+      "get": {
+        "summary": "获取台账分页数据",
+        "description": "按 domain 返回分页后的二维单元格数据。支持 keyword 模糊搜索（任意单元格文本包含）与按列精确筛选（请求参数 f_<列名>=值，值为“全部”时忽略）。",
+        "tags": ["mgmt-ledger"],
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "域标识（菜单叶子 path 去掉前导 /，如 alarm-config）"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 1 },
+            "description": "页码，从 1 开始"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 20 },
+            "description": "每页条数"
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "关键字模糊搜索（匹配任意单元格文本）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "台账分页数据",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MgmtLedgerListResult" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "columns": [
+                      "编号",
+                      "规则名称",
+                      "报警类型",
+                      "级别",
+                      "通知方式",
+                      "联动动作",
+                      "启用"
+                    ],
+                    "filters": [],
+                    "rows": [
+                      [
+                        { "text": "R-001", "type": null },
+                        { "text": "FAS 一级火警", "type": null },
+                        { "text": "消防报警", "type": null },
+                        { "text": "一级", "type": "bad" },
+                        { "text": "APP+短信", "type": null },
+                        { "text": "推送+派单", "type": null },
+                        { "text": "是", "type": "ok" }
+                      ]
+                    ],
+                    "total": 3,
+                    "page": 1,
+                    "size": 20
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MgmtLedgerCellDto": {
+        "type": "object",
+        "description": "台账单元格。type 为 ok/warn/bad/null，前端据此着色（ok=绿 warn=橙 bad=红）。",
+        "properties": {
+          "text": { "type": "string", "description": "单元格文本", "example": "R-001" },
+          "type": {
+            "type": ["string", "null"],
+            "description": "状态类型：ok=正常 / warn=警告 / bad=异常 / null=普通文本",
+            "example": "bad"
+          }
+        }
+      },
+      "MgmtLedgerFilterDto": {
+        "type": "object",
+        "description": "列筛选定义。column 对应列标题，options 为可选项（含“全部”首项）。",
+        "properties": {
+          "column": { "type": "string", "description": "列标题", "example": "级别" },
+          "options": {
+            "type": "array",
+            "description": "可选项列表，首项通常为“全部”",
+            "items": { "type": "string", "description": "选项值", "example": "一级" }
+          }
+        }
+      },
+      "MgmtLedgerMetaDto": {
+        "type": "object",
+        "description": "台账元数据：列标题列表与筛选定义。",
+        "properties": {
+          "domain": { "type": "string", "description": "域标识", "example": "alarm-config" },
+          "title": { "type": "string", "description": "页面标题", "example": "报警规则配置" },
+          "columns": {
+            "type": "array",
+            "description": "列标题（顺序即渲染顺序）",
+            "items": { "type": "string", "description": "列标题", "example": "规则名称" }
+          },
+          "filters": {
+            "type": "array",
+            "description": "列筛选定义列表",
+            "items": { "$ref": "#/components/schemas/MgmtLedgerFilterDto" }
+          }
+        }
+      },
+      "MgmtLedgerListResult": {
+        "type": "object",
+        "description": "台账列表结果：列标题 + 筛选定义 + 二维单元格（外层行、内层列）。",
+        "properties": {
+          "columns": {
+            "type": "array",
+            "description": "列标题（顺序即渲染顺序）",
+            "items": { "type": "string", "description": "列标题", "example": "规则名称" }
+          },
+          "filters": {
+            "type": "array",
+            "description": "列筛选定义列表",
+            "items": { "$ref": "#/components/schemas/MgmtLedgerFilterDto" }
+          },
+          "rows": {
+            "type": "array",
+            "description": "行集合，每行是等长于 columns 的单元格数组",
+            "items": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/MgmtLedgerCellDto" }
+            }
+          },
+          "total": { "type": "integer", "description": "符合条件的总条数", "example": 3 },
+          "page": { "type": "integer", "description": "当前页码", "example": 1 },
+          "size": { "type": "integer", "description": "每页条数", "example": 20 }
+        }
+      }
+    }
+  }
+}
