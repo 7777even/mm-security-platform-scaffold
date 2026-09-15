@@ -116,6 +116,7 @@ const SERVICE_PATHS = [
   '/linkage-unit',
   '/emergency-pool',
   '/ef-medium',
+  '/ef-equipment',
   '/emergency-command',
   '/duty-sign-in',
   '/typhoon-dispatch',
@@ -149,6 +150,7 @@ const MGMT_LEDGER_PATHS = [
   '/linkage-unit',
   '/emergency-pool',
   '/ef-medium',
+  '/ef-equipment',
 ];
 const mgmtLedgerRoutes: RouteRecordRaw[] = MGMT_LEDGER_PATHS.map((p) => ({
   path: p,
