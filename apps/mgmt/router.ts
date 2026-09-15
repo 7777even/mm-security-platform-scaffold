@@ -53,6 +53,7 @@ const SERVICE_PATHS = [
   '/alarm-record',
   '/fault-mgmt',
   // 应急及演练管理域：已接后端只读台账
+  '/emergency-plan',
   '/emergency-knowledge',
   '/plan-mgmt',
   '/resource-mgmt',
@@ -71,6 +72,14 @@ const SERVICE_PATHS = [
   '/barrier-mgmt',
   '/personnel-registration',
   '/vehicle-registration',
+  // 设备管理域：已接后端设备台账接口
+  '/device-mgmt',
+  // 治安防恐管理域：已接后端卡口门禁接口
+  '/gate-mgmt',
+  // 消防设施管理域：已接后端防火巡查接口
+  '/patrol-mgmt',
+  // 应急及演练管理域：已接后端视频联动配置接口
+  '/auto-linkage',
   // 消防设施管理域：台账段 + 运行监控段（嵌套 helper 批量生成，共用视图）
   ...FIRE_FACILITY_LEDGER_PATHS,
   ...FIRE_MONITOR_PATHS,
@@ -81,7 +90,8 @@ const SERVICE_PATHS = [
   // 应急及演练管理域（补接通讯录 / 事故案例库；其余演练/预案/联动/危化品/监控池等无后端端点）
   '/contacts-mgmt',
   '/case-lib',
-  // 通用台账（静态页真后端化）：18 个原 mgmtMenus 硬编码静态域，统一走 MgmtLedgerView.vue
+  // 通用台账（静态页真后端化）：24 个原 mgmtMenus 硬编码静态域，统一走 MgmtLedgerView.vue
+  // （含 ④-C 扩展的 6 个生产必需域：key-location/incident-archive/drill-script/linkage-unit/emergency-pool/ef-medium）
   '/alarm-config',
   '/chemsafe-db',
   '/drill-mgmt',
@@ -100,6 +110,16 @@ const SERVICE_PATHS = [
   '/training-mgmt',
   '/water-system',
   '/broadcast-template',
+  '/key-location',
+  '/incident-archive',
+  '/drill-script',
+  '/linkage-unit',
+  '/emergency-pool',
+  '/ef-medium',
+  '/emergency-command',
+  '/duty-sign-in',
+  '/typhoon-dispatch',
+  '/patrol-execution',
 ];
 
 // 通用台账（静态页真后端化）：18 个原 mgmtMenus 硬编码静态域，复用同一 MgmtLedgerView.vue，
@@ -123,6 +143,12 @@ const MGMT_LEDGER_PATHS = [
   '/training-mgmt',
   '/water-system',
   '/broadcast-template',
+  '/key-location',
+  '/incident-archive',
+  '/drill-script',
+  '/linkage-unit',
+  '/emergency-pool',
+  '/ef-medium',
 ];
 const mgmtLedgerRoutes: RouteRecordRaw[] = MGMT_LEDGER_PATHS.map((p) => ({
   path: p,
@@ -220,6 +246,11 @@ const serviceRoutes: RouteRecordRaw[] = [
     component: () => import('./views/emergency/EmergencyExpertView.vue'),
     meta: routeMeta('/emergency-expert', '应急专家管理'),
   },
+  {
+    path: '/emergency-plan',
+    component: () => import('./views/emergency/EmergencyPlanView.vue'),
+    meta: routeMeta('/emergency-plan', '应急预案管理'),
+  },
   // —— 设备管理域（只读台账，接后端视频 / 监测点位 / 通讯设备接口）——
   {
     path: '/video-mgmt',
@@ -301,6 +332,51 @@ const serviceRoutes: RouteRecordRaw[] = [
     path: '/case-lib',
     component: () => import('./views/emergency/CaseLibView.vue'),
     meta: routeMeta('/case-lib', '事故案例库管理'),
+  },
+  // —— 设备管理域：装置/设备台账（接后端 /devices 分页）——
+  {
+    path: '/device-mgmt',
+    component: () => import('./views/production/DeviceView.vue'),
+    meta: routeMeta('/device-mgmt', '设备台账管理'),
+  },
+  // —— 治安防恐管理域：卡口门禁（接后端 /security/gate-controls）——
+  {
+    path: '/gate-mgmt',
+    component: () => import('./views/security/GateView.vue'),
+    meta: routeMeta('/gate-mgmt', '卡口门禁信息管理'),
+  },
+  // —— 消防设施管理域：日常防火巡查（接后端 /fire/patrols）——
+  {
+    path: '/patrol-mgmt',
+    component: () => import('./views/fire/PatrolView.vue'),
+    meta: routeMeta('/patrol-mgmt', '日常防火巡查管理'),
+  },
+  // —— 应急及演练管理域：应急自动联动配置（接后端 /video/linkages）——
+  {
+    path: '/auto-linkage',
+    component: () => import('./views/emergency/AutoLinkageView.vue'),
+    meta: routeMeta('/auto-linkage', '应急自动联动配置管理'),
+  },
+  // —— 业务写侧（D 类，接 businessWrite.ts 4 写端点 + v-permission 按钮级显隐）——
+  {
+    path: '/emergency-command',
+    component: () => import('./views/emergency/EmergencyCommandView.vue'),
+    meta: routeMeta('/emergency-command', '应急指令下发'),
+  },
+  {
+    path: '/duty-sign-in',
+    component: () => import('./views/emergency/DutySignInView.vue'),
+    meta: routeMeta('/duty-sign-in', '值班签到'),
+  },
+  {
+    path: '/typhoon-dispatch',
+    component: () => import('./views/typhoon/TyphoonDispatchView.vue'),
+    meta: routeMeta('/typhoon-dispatch', '台风资源调度'),
+  },
+  {
+    path: '/patrol-execution',
+    component: () => import('./views/fire/PatrolExecutionView.vue'),
+    meta: routeMeta('/patrol-execution', '消防巡更执行'),
   },
   // —— 通用台账（静态页真后端化，复用 MgmtLedgerView.vue）——
   ...mgmtLedgerRoutes,

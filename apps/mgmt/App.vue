@@ -13,6 +13,7 @@ import {
   Files,
   FirstAidKit,
   Grid,
+  Lightning,
   Message,
   Monitor,
   OfficeBuilding,
@@ -57,6 +58,7 @@ const iconNameByKey: Record<string, Component> = {
   monitor: Monitor,
   comm: Message,
   sys: Files,
+  typhoon: Lightning,
 };
 
 function isActiveTab(path: string): boolean {
