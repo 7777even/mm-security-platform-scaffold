@@ -8,7 +8,7 @@ export interface paths {
     };
     /**
      * 用户分页查询
-     * @description 分页查询系统用户。keyword 同时模糊匹配用户名与真实姓名；status / roleCode 为精确过滤。返回项不含口令哈希。
+     * @description 分页查询系统用户。keyword 同时模糊匹配用户名与真实姓名；status / roleCode 为精确过滤。返回项不含口令哈希。调用需登录态。
      */
     get: operations['listSystemUsers'];
     put?: never;
@@ -400,7 +400,7 @@ export interface paths {
     };
     /**
      * 防区下拉列表
-     * @description 返回启用且未删除的防区主数据（data_scope 行级 ABAC 维度源），供系统管理用户表单「可访问防区」多选。登录即可读（后端 @RequireAuth 仅要求登录，无 ADMIN 限制）。
+     * @description 返回启用且未删除的防区主数据（data_scope 行级 ABAC 维度源），供系统管理用户表单「可访问防区」多选。该接口为只读查询、无需任何写权限，登录即可读（后端 @RequireAuth 仅要求登录，无 ADMIN 限制）。
      */
     get: operations['listSystemZones'];
     put?: never;

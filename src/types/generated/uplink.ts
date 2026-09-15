@@ -6,7 +6,11 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /**
+     * 查询操作审计日志
+     * @description 分页查询前端操作审计落库记录（fac_audit_log），支持按模块/动作过滤。登录即可读，供后台管理端审计日志页消费。
+     */
+    get: operations['queryAudit'];
     put?: never;
     /**
      * 上报操作审计事件
@@ -105,6 +109,64 @@ export interface components {
        * @example 1717488000000
        */
       at?: number;
+    };
+    /** @description 审计日志项（fac_audit_log 只读投影） */
+    AuditLogItem: {
+      /**
+       * Format: int64
+       * @description 自增主键
+       * @example 1
+       */
+      id: number;
+      /**
+       * @description 操作动作标识（如 login / system.user.create）
+       * @example login
+       */
+      action: string;
+      /**
+       * @description 所属模块（可选）
+       * @example ADMIN
+       */
+      module?: string;
+      /**
+       * @description 扩展上下文 JSON 文本（可能为 null）
+       * @example null
+       */
+      detailJson?: string | null;
+      /**
+       * Format: int64
+       * @description 事件时间戳（毫秒，可能为 null）
+       * @example 1717488000000
+       */
+      eventAt?: number | null;
+      /**
+       * @description 落库时间（yyyy-MM-dd HH:mm:ss）
+       * @example 2026-09-14 10:20:00
+       */
+      createdAt?: string;
+    };
+    /** @description 审计日志分页结果（与前端 PageResult 同构） */
+    AuditLogPageResult: {
+      /** @description 当前页数据 */
+      list: components['schemas']['AuditLogItem'][];
+      /**
+       * Format: int64
+       * @description 总记录数
+       * @example 1
+       */
+      total: number;
+      /**
+       * Format: int64
+       * @description 当前页码（1-based）
+       * @example 1
+       */
+      page: number;
+      /**
+       * Format: int64
+       * @description 每页大小
+       * @example 20
+       */
+      size: number;
     };
     AuditEventBatch: {
       /** @description 审计事件批次 */
@@ -232,6 +294,59 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  queryAudit: {
+    parameters: {
+      query?: {
+        /** @description 页码（1-based） */
+        page?: number;
+        /** @description 每页大小 */
+        size?: number;
+        /** @description 按模块过滤（如 ADMIN / dashboard） */
+        module?: string;
+        /** @description 按动作标识过滤（如 login / system.user.create） */
+        action?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络，data 为审计分页结果 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "list": [
+           *           {
+           *             "id": 1,
+           *             "action": "login",
+           *             "module": "ADMIN",
+           *             "detailJson": null,
+           *             "eventAt": 1717488000000,
+           *             "createdAt": "2026-09-14 10:20:00"
+           *           }
+           *         ],
+           *         "total": 1,
+           *         "page": 1,
+           *         "size": 20
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['AuditLogPageResult'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
   reportAudit: {
     parameters: {
       query?: never;
