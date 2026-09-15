@@ -81,7 +81,54 @@ const SERVICE_PATHS = [
   // 应急及演练管理域（补接通讯录 / 事故案例库；其余演练/预案/联动/危化品/监控池等无后端端点）
   '/contacts-mgmt',
   '/case-lib',
+  // 通用台账（静态页真后端化）：18 个原 mgmtMenus 硬编码静态域，统一走 MgmtLedgerView.vue
+  '/alarm-config',
+  '/chemsafe-db',
+  '/drill-mgmt',
+  '/drill-evaluation',
+  '/ef-tank',
+  '/ef-tankfarm',
+  '/ef-unit',
+  '/ef-warehouse',
+  '/ef-warehouse-zone',
+  '/enterprise-basic',
+  '/fire-rescue-plan',
+  '/flood-point',
+  '/media-fire-params',
+  '/org-mgmt',
+  '/prod-emergency',
+  '/training-mgmt',
+  '/water-system',
+  '/broadcast-template',
 ];
+
+// 通用台账（静态页真后端化）：18 个原 mgmtMenus 硬编码静态域，复用同一 MgmtLedgerView.vue，
+// 由组件按 route.path 去前导 / 得到 domain 调 /api/v1/mgmt-ledger/{domain}。
+const MGMT_LEDGER_PATHS = [
+  '/alarm-config',
+  '/chemsafe-db',
+  '/drill-mgmt',
+  '/drill-evaluation',
+  '/ef-tank',
+  '/ef-tankfarm',
+  '/ef-unit',
+  '/ef-warehouse',
+  '/ef-warehouse-zone',
+  '/enterprise-basic',
+  '/fire-rescue-plan',
+  '/flood-point',
+  '/media-fire-params',
+  '/org-mgmt',
+  '/prod-emergency',
+  '/training-mgmt',
+  '/water-system',
+  '/broadcast-template',
+];
+const mgmtLedgerRoutes: RouteRecordRaw[] = MGMT_LEDGER_PATHS.map((p) => ({
+  path: p,
+  component: () => import('./views/MgmtLedgerView.vue'),
+  meta: routeMeta(p, '通用台账'),
+}));
 
 function routeMeta(path: string, fallbackTitle: string) {
   const leaf = mgmtLeafByPath[path];
@@ -255,6 +302,8 @@ const serviceRoutes: RouteRecordRaw[] = [
     component: () => import('./views/emergency/CaseLibView.vue'),
     meta: routeMeta('/case-lib', '事故案例库管理'),
   },
+  // —— 通用台账（静态页真后端化，复用 MgmtLedgerView.vue）——
+  ...mgmtLedgerRoutes,
 ];
 
 // 数据驱动兜底路由：未接入后端能力的叶子走 module-embed.vue
