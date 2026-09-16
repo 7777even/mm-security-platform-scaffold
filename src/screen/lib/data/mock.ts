@@ -40,16 +40,6 @@ export interface AlarmItem {
   latitude?: number;
 }
 
-export const fireAlarmTypeOptions = [
-  '全部类型',
-  '火灾告警',
-  'GDS报警',
-  '设备故障',
-  '视频识别',
-] as const;
-
-export const fireAlarmStatusOptions = ['全部状态', '未处置', '处置中', '已处置'] as const;
-
 export interface DutyPerson {
   id: number;
   name: string;
@@ -69,21 +59,6 @@ export interface MapControl {
   key: string;
   label: string;
 }
-
-export const fireEquipmentCategories = [
-  '火灾自动报警系统',
-  '消防水源',
-  '室外消火栓系统',
-  '自动喷水灭火系统',
-  '气体灭火系统',
-  '泡沫灭火系统',
-  '干粉灭火系统',
-  '防烟排烟系统',
-  '防火分隔设施',
-  '消防应急广播',
-  '应急照明及疏散指示系统',
-  '消防电源',
-] as const;
 
 /** 消防页地图报警点（WGS84；位于厂区北侧装置区内部） */
 export const fireAlarmMarker = {

@@ -83,7 +83,6 @@ const BY_DESIGN_VALUE_IMPORTS = {
   nodeGuidanceData: ['mockDutyRoster', 'mockNodeGuidances'],
   // 消防页地图固定标记与地图控件（几何/UI）
   mock: ['fireAlarmMarker', 'mapControls'],
-  nav: ['navItems'],
   // 节点配置默认值 + 锚点元数据 + 离线缓存读写（无后端演示模式兜底）
   nodeConfigData: [
     'ALL_NODE_IDS',
@@ -101,7 +100,6 @@ const BY_DESIGN_VALUE_IMPORTS = {
     'resolvePlantAreaCode',
     'resolvePlantAreaWorldPosition',
   ],
-  preliminaryMock: ['preliminaryMapControls'],
   // 救援地图坐标派生（几何）
   rescueMapCoords: ['coordsForFireBrigadeTeam', 'coordsForPagedSpread', 'coordsForSquadronPaged'],
   // 工业电视：静态地图控件/告警钉 + 巡检扫描几何 + 详情 DEV 回落解析器（仅 demo 用）。
