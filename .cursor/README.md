@@ -9,7 +9,6 @@
 │   ├── frontend-scaffold-core.mdc      # 入口/分级/openspec 唯一源/验证矩阵/提交/分层读取链
 │   ├── ui-tokens-theme.mdc             # token 单源/三端主题挂载/视觉语言/移动端特殊项
 │   ├── api-contract.mdc                # 零下行控制/B3 包络/20位MDM/HMAC签名/令牌内存态/L4门禁
-│   └── openapi-contract-writing.mdc    # 契约真源在本库/四条铁律/四同步顺序纪律/禁止平行契约体系
 ├── commands/                    # 显式触发：用户在 Cursor 里敲 /opsx:<name> 才跑
 │   ├── opsx-propose.md           # 创建 change 并生成 proposal/design/tasks/specs-delta 四件套
 │   ├── opsx-apply.md             # 按 tasks.md 逐项实施（TDD + 验收）

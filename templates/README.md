@@ -1,6 +1,6 @@
 # templates/ — 模板体系索引
 
-本目录存放 L3 / L4 治理所需的 **7 份可复用模板 + 1 份契约编写手册**，配合本库 `AGENTS.md` §7（四件套 + QA/Retro 即刻记录 + 模板体系）。新建对应文件时**复制模板填充**，避免格式漂移。
+本目录存放 L3 / L4 治理所需的 **6 份可复用模板 + 1 份契约编写手册**，配合本库 `AGENTS.md` §7（四件套 + QA/Retro 即刻记录 + 模板体系）。新建对应文件时**复制模板填充**，避免格式漂移。
 
 ## 四件套（openspec/changes/<name>/）
 
@@ -15,15 +15,14 @@
 
 ## 过程记录（engineering/）
 
-| 模板                        | 落点目录               | 关键约束                                                                 |
-| --------------------------- | ---------------------- | ------------------------------------------------------------------------ |
-| `_qa_template.md`           | `engineering/qa/`      | 范围 / 验收口径 / 实际命令与用例数 / 未运行项 / 结论；截图证据为必要附件 |
-| `_retro_template.md`        | `engineering/retro/`   | 做得好 / 问题 / 原因 / 改进方案 四段式                                   |
-| `_stage_report_template.md` | `engineering/reports/` | 对照 roadmap 判据的干系人阶段简报，用证据说话（`reports/README.md`）     |
+| 模板                 | 落点目录             | 关键约束                                                                 |
+| -------------------- | -------------------- | ------------------------------------------------------------------------ |
+| `_qa_template.md`    | `engineering/qa/`    | 范围 / 验收口径 / 实际命令与用例数 / 未运行项 / 结论；截图证据为必要附件 |
+| `_retro_template.md` | `engineering/retro/` | 做得好 / 问题 / 原因 / 改进方案 四段式                                   |
 
-> 发布检查模板（`_ship_template.md`）目前仅后端库有；本库如需，从 `backend-scaffold/templates/_ship_template.md` 取用后按前端构建链路改写。
+> 发布检查与阶段汇报两类模板目前仅后端库有（`_ship_template.md` / `_stage_report_template.md`，落点分别为 `engineering/ship/` 与 `engineering/plans/`）；本库如需，从后端库取用后按前端链路改写。**本库不建 `engineering/reports/`**——阶段汇报在 `engineering/plans/`。
 
-L3 / L4 任务完成后**即刻**写 QA + Retro，不允许攒到最后补；`reports/` 面向干系人，与 `qa/`+`retro/`（工程内部）不可互相顶替。
+L3 / L4 任务完成后**即刻**写 QA + Retro，不允许攒到最后补。
 
 ## API 契约
 
@@ -35,7 +34,6 @@ L3 / L4 任务完成后**即刻**写 QA + Retro，不允许攒到最后补；`re
 
 1. 新建 L3 / L4 变更：`cp templates/_openspec-{proposal,design,tasks,spec-delta}_template.md openspec/changes/<name>/`。
 2. 完成后：`cp templates/_qa_template.md engineering/qa/YYYY-MM-DD-<slug>.md`，同理 Retro。
-3. 阶段收口：`cp templates/_stage_report_template.md engineering/reports/YYYY-MM-DD-stage-<n>-report.md`。
-4. 编写 `src/services/**` 时对照 `api-contract-writing-guide.md` 自检（同款红线已固化在 `.cursor/rules/openapi-contract-writing.mdc`，由 harness 自动加载）。
+3. 编写 `src/services/**` 时对照 `api-contract-writing-guide.md` 自检（契约红线另见 `.cursor/rules/api-contract.mdc`，由 harness 自动加载）。
 
 > 本目录为模板源，不参与构建；文件名带 `_` 前缀以区别于真实实例。

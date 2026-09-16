@@ -252,20 +252,17 @@ L3 / L4 任务完成后**即刻**写 `engineering/qa/` 与 `engineering/retro/`�
 
 新建上述四件套与 QA/Retro 时，复制对应模板填充，避免格式漂移：
 
-| 模板                                         | 用途                                   |
-| -------------------------------------------- | -------------------------------------- |
-| `templates/_openspec-proposal_template.md`   | 四件套 · proposal                      |
-| `templates/_openspec-design_template.md`     | 四件套 · design                        |
-| `templates/_openspec-tasks_template.md`      | 四件套 · tasks                         |
-| `templates/_openspec-spec-delta_template.md` | 四件套 · spec-delta                    |
-| `templates/_qa_template.md`                  | engineering/qa 记录                    |
-| `templates/_retro_template.md`               | engineering/retro 记录                 |
-| `templates/_stage_report_template.md`        | engineering/reports 阶段简报（干系人） |
-| `templates/api-contract-writing-guide.md`    | §3 API 契约编写手册                    |
+| 模板                                         | 用途                   |
+| -------------------------------------------- | ---------------------- |
+| `templates/_openspec-proposal_template.md`   | 四件套 · proposal      |
+| `templates/_openspec-design_template.md`     | 四件套 · design        |
+| `templates/_openspec-tasks_template.md`      | 四件套 · tasks         |
+| `templates/_openspec-spec-delta_template.md` | 四件套 · spec-delta    |
+| `templates/_qa_template.md`                  | engineering/qa 记录    |
+| `templates/_retro_template.md`               | engineering/retro 记录 |
+| `templates/api-contract-writing-guide.md`    | §3 API 契约编写手册    |
 
 `templates/README.md` 为索引与用法说明。
-
-**落点区分**：`engineering/qa/`+`retro/` 面向工程内部；`engineering/ship/` 管上线检查与回滚；`engineering/reports/` 面向干系人（对照路线图判据的阶段简报）。三者不可互相顶替，各自 `README.md` 说明用法。
 
 ## 8. L4 硬门禁清单
 
