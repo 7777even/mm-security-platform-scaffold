@@ -7,4 +7,4 @@
 - [x] `docs/frozen-prototype.md` 移除 mgmt 五行并注明来源 Change
 - [x] `docs/system-facts.md` 回写
 - [x] 门禁：`vue-tsc` / `vitest` / `validate-api-contracts` / `openspec hygiene` / `vite build`
-- [ ] 真机联调：五页在运行中的后端下逐页视觉走查（对照 pc-admin 原型列定义）
+- [x] 真机联调：五页在运行中的后端下逐页视觉走查（对照 pc-admin 原型列定义；证据 `走查报告-2026-09-16-通讯通知管理五页.md` + `ab-shots/01..05-comm-*.png|.snap.txt`）
