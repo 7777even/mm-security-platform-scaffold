@@ -2,6 +2,45 @@
 
 面向 AI 助手 / 自动化编码的项目级约束入口。**动手前先按 §1 判定改动等级（L0–L4）；L1 及以上在生成或修改 UI 代码前，必须读完本文 §6 既有项目约束与目标端规范文档，再动手。**
 
+## 0. 跨库入口（umbrella · 复述自仓库根，clone 本库即可读到）
+
+本库是**前端脚手架**（Vue3 + Vite + wujie 微前端），与后端库 `backend-scaffold`（Spring Boot）是**平级双库、非 monorepo**：各有独立 `AGENTS.md`、独立 `openspec/`、独立 Git 提交 scope。
+
+⚠️ 仓库根目录 `mm-security-platform/` **不是 git 仓库**，其伞文件 `AGENTS.md` 不随任何仓库提交。为避免「clone 任一库都拿不到跨库入口」，本节把伞的要点复述在此；**两端 §0 内容保持一致，改动须两端同步**（前端本文件 / 后端 `backend-scaffold/AGENTS.md`）。
+
+### 0.1 仓库结构
+
+| 路径                 | 内容                                                                          |
+| -------------------- | ----------------------------------------------------------------------------- |
+| `backend-scaffold/`  | 安全管控指挥系统后端（Spring Boot + MyBatis-Plus）；其 `AGENTS.md` 为后端权威 |
+| `frontend-scaffold/` | 前端脚手架；**本文件为前端权威**                                              |
+
+- **契约机器可读真源（唯一）在**：本库 `docs/api/*.openapi.json`——由此 `npm run gen:api-types` 生成 TS 类型；后端只做实现对齐，不复制第二份。
+- **系统事实基线**：各库 `docs/system-facts.md`（人维护、随库提交的事实真源；与代码冲突以它为准，改动须回写）。
+
+### 0.2 规则优先级仲裁
+
+高 → 低，低阶规则不得覆盖高阶：
+
+1. 平台安全策略与人工当场指令
+2. **本库 `AGENTS.md`**（含 §6 红线、§3 API 契约）与目标端 `docs/UI规范-*.md`
+3. 已确认的 `openspec/changes/<name>/` 与 `openspec/specs/`
+4. 当前 Change 的 `tasks.md` 中正在执行的 Task
+5. 各库 `docs/system-facts.md`（系统事实：约束「现状认知」，不直接约束代码写法）
+6. 任何 skill / 插件自带的工作方法（含 superpowers）
+
+子库规则只能**加严**不可放宽；跨库契约冲突**先改契约 + 人工确认，再改代码**。
+
+### 0.3 跨库协作铁律（四同步，不可跳步）
+
+对外接口变更必须在**同一次交付**内完成：① openspec（两端各自 Change / spec）→ ② **本库** `docs/api/<domain>.openapi.json`（四条铁律）→ ③ 后端实现（跑 `check-api-contract.mjs --strict`）→ ④ 本库 `npm run gen:api-types`。**契约侧必须先绿并推送**，后端 `contract-guard` 才可能通过。细则见 §3。
+
+### 0.4 完成底线
+
+- 前端 `vitest run` + `vue-tsc` 须**全绿**；改 `src/` 或共享代码后须 `SUBAPP_NO_EMPTY=1 npm run build:subapps` 重建子应用产物。
+- 后端单测基线须全绿；带 DB 的 `*IT` 未执行须**如实报告**，禁止用「零 DB 通过」冒充。
+- 提交按 scope 拆分、不 amend；两库**独立提交、独立推送**。
+
 ## 1. 分级工作流（L0–L4 决策树）
 
 动手前先判定等级，并在回复中用一句话说明判定与理由。**分级只决定流程重量，不豁免 §6 红线、§2 验证矩阵与 §3 API 契约。**
@@ -213,17 +252,20 @@ L3 / L4 任务完成后**即刻**写 `engineering/qa/` 与 `engineering/retro/`�
 
 新建上述四件套与 QA/Retro 时，复制对应模板填充，避免格式漂移：
 
-| 模板                                         | 用途                   |
-| -------------------------------------------- | ---------------------- |
-| `templates/_openspec-proposal_template.md`   | 四件套 · proposal      |
-| `templates/_openspec-design_template.md`     | 四件套 · design        |
-| `templates/_openspec-tasks_template.md`      | 四件套 · tasks         |
-| `templates/_openspec-spec-delta_template.md` | 四件套 · spec-delta    |
-| `templates/_qa_template.md`                  | engineering/qa 记录    |
-| `templates/_retro_template.md`               | engineering/retro 记录 |
-| `templates/api-contract-writing-guide.md`    | §3 API 契约编写手册    |
+| 模板                                         | 用途                                   |
+| -------------------------------------------- | -------------------------------------- |
+| `templates/_openspec-proposal_template.md`   | 四件套 · proposal                      |
+| `templates/_openspec-design_template.md`     | 四件套 · design                        |
+| `templates/_openspec-tasks_template.md`      | 四件套 · tasks                         |
+| `templates/_openspec-spec-delta_template.md` | 四件套 · spec-delta                    |
+| `templates/_qa_template.md`                  | engineering/qa 记录                    |
+| `templates/_retro_template.md`               | engineering/retro 记录                 |
+| `templates/_stage_report_template.md`        | engineering/reports 阶段简报（干系人） |
+| `templates/api-contract-writing-guide.md`    | §3 API 契约编写手册                    |
 
 `templates/README.md` 为索引与用法说明。
+
+**落点区分**：`engineering/qa/`+`retro/` 面向工程内部；`engineering/ship/` 管上线检查与回滚；`engineering/reports/` 面向干系人（对照路线图判据的阶段简报）。三者不可互相顶替，各自 `README.md` 说明用法。
 
 ## 8. L4 硬门禁清单
 
