@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
 import { fetchDutyRoster, type DutyMember } from '@/services/duty';
+import { fetchDutySignIns, type DutySignInView } from '@/services/businessWrite';
 
 /**
  * 今日值班（docs/UI规范-移动端.md §5）
@@ -10,6 +11,10 @@ import { fetchDutyRoster, type DutyMember } from '@/services/duty';
  * 数据源：后端 /api/v1/emergency/duty（应急值班值守），经 fetchDutyRoster 拉取。
  * 取消原 data/mock.ts 静态数据；未连后端由 service 内部走空态 + 全局离线告警（不回灌假数据）。
  * 月历为纯前端几何（保留），值班名单改为真实成员。
+ *
+ * 「签到记录」区块读 /api/v1/emergency/duty-sign-ins（fac_duty_sign_in）——
+ * 与管理端「值班签到」写侧同一张表；值班花名册（/emergency/duty）与签到留痕是两张表，
+ * 此前他端看不到签到动作，本区块用于打通该写侧联动。
  */
 const YEAR = 2026;
 const MONTH = 8;
@@ -18,6 +23,9 @@ const TODAY = 21;
 const DUTY_DAYS = [18, 22];
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
+
+/** 签到动作枚举 → 中文（后端 /emergency/duty-sign-ins 只接受 SIGN_IN / SIGN_OUT 英文码）。 */
+const SIGN_ACTION_LABEL: Record<string, string> = { SIGN_IN: '签到', SIGN_OUT: '签退' };
 
 const days = computed(() => Array.from({ length: DAYS_IN_MONTH }, (_, i) => i + 1));
 
@@ -34,6 +42,8 @@ interface DutyRow {
 
 const loading = ref(false);
 const list = ref<DutyRow[]>([]);
+/** 最近签到记录（他端写、本端读）。 */
+const signIns = ref<DutySignInView[]>([]);
 
 function toRow(m: DutyMember): DutyRow {
   return {
@@ -48,10 +58,13 @@ function toRow(m: DutyMember): DutyRow {
 async function load(): Promise<void> {
   loading.value = true;
   try {
-    const roster = await fetchDutyRoster();
+    // 签到记录失败时内部已告警并返回空数组（不抛错），与花名册并列拉取不影响本页主数据。
+    const [roster, signInRows] = await Promise.all([fetchDutyRoster(), fetchDutySignIns()]);
     list.value = (roster.members ?? []).map(toRow);
+    signIns.value = signInRows.slice(0, 5);
   } catch {
     list.value = [];
+    signIns.value = [];
   } finally {
     loading.value = false;
   }
@@ -105,6 +118,24 @@ onMounted(load);
         <div class="mb-empty__art" />
         <p class="mb-empty__text">暂无值班信息</p>
       </div>
+
+      <template v-if="signIns.length">
+        <h2 class="mb-section__title duty__sec">签到记录</h2>
+        <div v-for="(s, i) in signIns" :key="s.id ?? `${s.dutyDate}-${i}`" class="mb-card">
+          <div class="mb-card__title">
+            <span>{{ s.personName || '—' }}</span>
+            <span class="tag" :class="s.signAction === 'SIGN_OUT' ? 'tag--info' : 'tag--success'">
+              {{ SIGN_ACTION_LABEL[s.signAction ?? ''] || s.signAction || '签到' }}
+            </span>
+          </div>
+          <p class="mb-card__desc">
+            {{ s.dutyDate }} {{ s.shiftName }} · {{ s.department || '—' }}
+          </p>
+          <p class="mb-card__desc">
+            签到时间 {{ s.signTime || '—' }}{{ s.remark ? ` · ${s.remark}` : '' }}
+          </p>
+        </div>
+      </template>
     </div>
   </div>
 </template>

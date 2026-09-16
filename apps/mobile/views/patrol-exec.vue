@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
 import { fetchFirePatrols, type FirePatrolRecord } from '@/services/fireMonitoring';
+import { fetchPatrolExecutions, type PatrolExecutionView } from '@/services/businessWrite';
 
 /**
  * 防火巡查执行（docs/UI规范-移动端.md §5）
@@ -10,6 +11,10 @@ import { fetchFirePatrols, type FirePatrolRecord } from '@/services/fireMonitori
  * 数据源：后端 /api/v1/fire/patrols（防火巡查记录），取首条作为当前执行任务，
  * 检查项按后端 checkItems 的 category 分组渲染。取消原 data/mock.ts 静态数据；
  * 未连后端走空态（不回灌假数据）。
+ *
+ * 「最近执行上报」区块读 /api/v1/fire/patrol-executions（fac_patrol_execution）——
+ * 与管理端「消防巡更执行」写侧同一张表，用于让移动端看到已提交的执行留痕
+ * （巡查计划 /fire/patrols 与执行上报是两张表，此前他端看不到上报结果）。
  */
 interface CheckItem {
   code: string;
@@ -24,11 +29,25 @@ interface CheckGroup {
 const OPTIONS = ['正常', '异常', '不适用'] as const;
 type Option = (typeof OPTIONS)[number];
 
+/** 执行结果枚举 → 中文（后端 /fire/patrol-executions 只接受 NORMAL / ABNORMAL 英文码）。 */
+const EXEC_RESULT_LABEL: Record<string, string> = { NORMAL: '正常', ABNORMAL: '异常' };
+
+/** 上报时间：后端 createdAt 为 ISO 8601，按告警页同口径格式化为本地 YYYY-MM-DD HH:mm。 */
+function formatTs(ts?: string): string {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return ts;
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
 const loading = ref(false);
 const patrol = ref<FirePatrolRecord | null>(null);
 const groups = ref<CheckGroup[]>([]);
 const loaded = ref(false);
 const clocked = ref(false);
+/** 最近执行上报（他端写、本端读，打通写侧联动）。 */
+const execs = ref<PatrolExecutionView[]>([]);
 
 /** 检查项编号 → 当前选项，默认取后端 result（缺省「正常」） */
 const answers = ref<Record<string, Option>>({});
@@ -48,10 +67,12 @@ function buildGroups(record: FirePatrolRecord | null): CheckGroup[] {
 async function load(): Promise<void> {
   loading.value = true;
   try {
-    const records = await fetchFirePatrols();
+    // 执行上报列表失败时内部已告警并返回空数组（不抛错），故与主数据并列拉取不影响本页。
+    const [records, executions] = await Promise.all([fetchFirePatrols(), fetchPatrolExecutions()]);
     const record = records[0] ?? null;
     patrol.value = record;
     groups.value = buildGroups(record);
+    execs.value = executions.slice(0, 5);
     const init: Record<string, Option> = {};
     groups.value.forEach((g) =>
       g.items.forEach((i) => {
@@ -62,6 +83,7 @@ async function load(): Promise<void> {
   } catch {
     patrol.value = null;
     groups.value = [];
+    execs.value = [];
   } finally {
     loading.value = false;
     loaded.value = true;
@@ -160,6 +182,24 @@ onMounted(load);
       <div v-if="!groups.length" class="mb-empty">
         <div class="mb-empty__art" />
         <p class="mb-empty__text">该巡查任务暂无检查项</p>
+      </div>
+
+      <div v-if="execs.length" class="patrol-exec__group">
+        <h2 class="mb-section__title patrol-exec__gtitle">最近执行上报</h2>
+        <div v-for="(e, i) in execs" :key="e.id ?? `${e.patrolDate}-${i}`" class="mb-card">
+          <div class="mb-card__title">
+            <span>{{ e.patrolDate }} {{ e.shiftName }}</span>
+            <span
+              class="tag"
+              :class="e.execResult === 'ABNORMAL' ? 'tag--warning' : 'tag--success'"
+            >
+              {{ EXEC_RESULT_LABEL[e.execResult ?? ''] || e.execResult || '—' }}
+            </span>
+          </div>
+          <p class="mb-card__desc">{{ e.dutyPerson || '—' }} · {{ e.location || '—' }}</p>
+          <p v-if="e.finding" class="mb-card__desc">发现：{{ e.finding }}</p>
+          <p class="mb-card__desc">上报时间 {{ formatTs(e.createdAt) }}</p>
+        </div>
       </div>
     </div>
 
