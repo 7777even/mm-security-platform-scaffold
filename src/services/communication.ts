@@ -47,3 +47,40 @@ export async function fetchCommunicationDevices(): Promise<CommunicationDeviceGr
 export async function fetchCommunicationDevice(id: string): Promise<CommunicationDevice> {
   return request<CommunicationDevice>({ url: '/communication/devices/' + id, method: 'GET' });
 }
+
+// —— 通讯通知记录（短信 / 电话通话 / 广播播报 / APP推送 / 语音对讲）——
+// 五类记录字段语义同构，后端以 record_type 区分后返回统一结构，前端按类型取用所需列。
+
+/** 通讯通知记录类型：与后端 record_type 取值一致。 */
+export type CommunicationRecordType = 'sms' | 'call' | 'broadcast' | 'push' | 'intercom';
+
+export interface CommunicationRecord {
+  recordNo: string;
+  recordType: string;
+  occurredAt: string;
+  category: string;
+  sender: string;
+  receiver: string;
+  summary: string;
+  result: string;
+  duration: string;
+  channel: string;
+  direction: string;
+  contentType: string;
+}
+
+export interface CommunicationRecordList {
+  items: CommunicationRecord[];
+  total: number;
+}
+
+/** 通讯通知记录列表；type 缺省返回全部五类。 */
+export async function fetchCommunicationRecords(
+  type?: CommunicationRecordType,
+): Promise<CommunicationRecordList> {
+  return request<CommunicationRecordList>({
+    url: '/communication/records',
+    method: 'GET',
+    params: type === undefined ? {} : { type },
+  });
+}
