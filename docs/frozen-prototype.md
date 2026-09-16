@@ -5,14 +5,14 @@
 
 ## 冻结页面（mgmt 端）
 
-| 路径              | 当前形态                                       | 冻结原因                                                                    |
-| ----------------- | ---------------------------------------------- | --------------------------------------------------------------------------- |
-| `/form`           | `apps/mgmt/views/form-wizard.vue` 流程填报向导 | 纯原型空壳，无后端填报存储端点                                              |
-| `/comm-sms`       | module-embed iframe 占位                       | 通讯记录类，本期非生产必需（CommDeviceController 仅有设备、无通知记录端点） |
-| `/comm-call`      | module-embed iframe 占位                       | 同上                                                                        |
-| `/comm-broadcast` | module-embed iframe 占位                       | 同上                                                                        |
-| `/comm-push`      | module-embed iframe 占位                       | 同上                                                                        |
-| `/comm-intercom`  | module-embed iframe 占位                       | 同上                                                                        |
+| 路径    | 当前形态                                       | 冻结原因                       |
+| ------- | ---------------------------------------------- | ------------------------------ |
+| `/form` | `apps/mgmt/views/form-wizard.vue` 流程填报向导 | 纯原型空壳，无后端填报存储端点 |
+
+> **已解除冻结（mgmt 端，2026-09-16）**：`/comm-sms`、`/comm-call`、`/comm-broadcast`、`/comm-push`、`/comm-intercom`
+> 经跨库四同步新增后端 `GET /api/v1/communication/records`（Change：`openspec/changes/2026-09-16-add-comm-records-domain/`，两端各一），
+> 前端改为服务驱动视图 `apps/mgmt/views/comm/CommRecordView.vue`（五页共用，按 `route.path` 区分记录类型与列定义）。
+> 原冻结原因「CommDeviceController 仅有设备、无通知记录端点」由新增 `CommRecordController` + `fac_comm_record` 表消除。
 
 ## 冻结页面（mobile 端）
 
