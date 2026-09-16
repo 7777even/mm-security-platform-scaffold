@@ -12,6 +12,10 @@ import SatelliteCloudMapDialog from '../components/panels/typhoon/SatelliteCloud
 import TyphoonRiskVideoWallDialog from '../components/panels/typhoon/TyphoonRiskVideoWallDialog.vue';
 import { resolveTyphoonEmergencyIncidentV2 } from '../lib/data/typhoonEmergencyMock';
 import { fetchTyphoonIncident } from '@/services/typhoonEmergency';
+import {
+  fetchTyphoonDispatchOrders,
+  type TyphoonDispatchOrderView,
+} from '@/services/businessWrite';
 import type { TyphoonEmergencyIncident } from '@/services/typhoonEmergency';
 import { useShellRoute } from '../lib/composables/useShellRoute';
 
@@ -43,8 +47,29 @@ const incidentReady = computed(() =>
   import.meta.env.VITE_API_BASE ? remoteIncident.value !== null : isDemo,
 );
 
+/** 资源调度单（真后端 /typhoon/dispatch-orders，与管理端「台风资源调度」写侧**同一张表**）。 */
+const dispatchOrders = ref<TyphoonDispatchOrderView[]>([]);
+
+/** 调度动作枚举 → 中文（后端只接受 ASSIGN / CONFIRM / RELEASE 英文码）。 */
+const DISPATCH_ACTION_LABEL: Record<string, string> = {
+  ASSIGN: '指派',
+  CONFIRM: '确认',
+  RELEASE: '解除',
+};
+
+/** ISO 8601 → HH:mm（应急动态的时间列口径）。 */
+function timeOf(ts?: string): string {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return ts;
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
 onMounted(async () => {
   remoteIncident.value = await fetchTyphoonIncident(eventId.value);
+  // 调度单失败时 service 内部已告警并返回空数组（不抛错），不影响本页主数据渲染。
+  dispatchOrders.value = await fetchTyphoonDispatchOrders();
 });
 const abnormalPoints = computed(() =>
   incident.value.mapRiskPoints.filter((point) => point.status !== 'normal'),
@@ -65,24 +90,27 @@ const selectedVideos = computed(() => {
 
 const dynamics = computed(() =>
   [
-    {
-      id: 1,
-      type: 'feedback',
-      time: '08:32',
-      tag: '现场反馈',
-      level: 'normal',
-      title: '西化学水泵房已启动移动泵组',
-      detail: '炼油中队反馈：一车一泵已到位，正在强制抽排，预计20分钟后再次上报水位。',
-    },
-    {
-      id: 2,
+    // 资源调度单（真后端）：与管理端「台风资源调度」写侧同一张表，替大屏补齐调度留痕；
+    // 此前这里是三条硬编码假动态（已删除，避免大屏展示不存在的事实）。
+    ...dispatchOrders.value.slice(0, 5).map((order, index) => ({
+      id: 100 + index,
       type: 'command',
-      time: '08:27',
-      tag: '指令下达',
-      level: 'warning',
-      title: '增援6#路地磅北地沟',
-      detail: '要求特勤中队增派大功率泵浦车，完成后通过APP反馈现场影像。',
-    },
+      time: timeOf(order.createdAt),
+      tag: '资源调度',
+      level: 'normal',
+      title:
+        `${DISPATCH_ACTION_LABEL[order.dispatchAction ?? ''] ?? order.dispatchAction ?? '调度'} ${
+          order.resourceName ?? order.resourceCode ?? ''
+        }`.trim(),
+      detail: [
+        order.assignee ? `执行人 ${order.assignee}` : '',
+        order.quantity ? `数量 ${order.quantity}` : '',
+        order.currStatus ? `状态 ${order.currStatus}` : '',
+        order.remark ?? '',
+      ]
+        .filter(Boolean)
+        .join('；'),
+    })),
     ...incident.value.riskWarnings.map((item, index) => ({
       id: 10 + index,
       type: 'alarm',
@@ -92,15 +120,6 @@ const dynamics = computed(() =>
       title: item.type,
       detail: item.content,
     })),
-    {
-      id: 20,
-      type: 'feedback',
-      time: '07:12',
-      tag: '状态更新',
-      level: 'normal',
-      title: '雨水泵站双机运行正常',
-      detail: '设备运行参数稳定，当前具备持续排涝能力。',
-    },
   ].filter((item) => dynamicFilter.value === 'all' || item.type === dynamicFilter.value),
 );
 

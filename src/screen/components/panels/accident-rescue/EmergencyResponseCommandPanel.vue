@@ -12,7 +12,11 @@ import {
   type EmergencyCommandInstructionStatus,
 } from '@/services/emergency';
 import { openCommandActionDetail } from '../../../lib/composables/useCommandActionDetail';
-import { createEmergencyCommandRecord } from '@/services/businessWrite';
+import {
+  createEmergencyCommandRecord,
+  fetchEmergencyCommandRecords,
+} from '@/services/businessWrite';
+import type { EmergencyCommandRecordView } from '@/services/businessWrite';
 import { pushGlobalToast } from '@/services/globalToast';
 import { useScreenPermission } from '../../../lib/composables/useScreenPermission';
 
@@ -42,9 +46,22 @@ const commandTab = computed(() => (activeTab.value === 0 ? 'fixed' : 'temp'));
 // B4 去 mock：指令分组改由后端服务拉取（原 resolveEmergencyCommandGroups 已删除）。
 // 切换 tab / 初次挂载时重新加载；后端不可用时 service 内部降级为空数组并告警。
 const groups = ref<EmergencyCommandGroup[]>([]);
+/** 指令流转留痕（真后端 /emergency/command-records）——与本面板下发指令写入的是同一张表。 */
+const commandRecords = ref<EmergencyCommandRecordView[]>([]);
+
+/** ISO 8601 → HH:mm（留痕时间列口径）。 */
+function timeOf(ts?: string): string {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return ts;
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${p(d.getHours())}:${p(d.getMinutes())}`;
+}
 
 async function loadGroups(): Promise<void> {
   groups.value = await fetchEmergencyCommandGroups(commandTab.value);
+  // 流转留痕：失败时 service 内部已告警并返回空数组（不抛错），不影响指令列表主渲染。
+  commandRecords.value = (await fetchEmergencyCommandRecords()).slice(0, 5);
 }
 
 onMounted(loadGroups);
@@ -217,6 +234,17 @@ async function handleAction(item: EmergencyCommandInstruction, event: MouseEvent
 
           <span v-if="item.done" class="er-command-card__done" aria-hidden="true">✓</span>
         </article>
+      </div>
+
+      <div v-if="commandRecords.length" class="er-command-panel__records">
+        <h5 class="er-command-panel__group-title">流转留痕</h5>
+        <p v-for="(r, i) in commandRecords" :key="r.id ?? i" class="er-command-record">
+          <span class="er-command-record__time">{{ timeOf(r.createdAt) }}</span>
+          <span class="er-command-record__text">
+            {{ r.commandName || r.commandCode }}：{{ r.prevStatus || '—' }} →
+            {{ r.currStatus || '—' }}
+          </span>
+        </p>
       </div>
     </div>
   </section>
@@ -455,5 +483,32 @@ async function handleAction(item: EmergencyCommandInstruction, event: MouseEvent
   color: var(--color-text-strong);
   font-size: 11px;
   line-height: 1;
+}
+
+.er-command-panel__records {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--panel-head-line);
+}
+
+.er-command-record {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #a8b8cc;
+}
+
+.er-command-record__time {
+  flex: none;
+  color: #7fa3c4;
+  font-variant-numeric: tabular-nums;
+}
+
+.er-command-record__text {
+  min-width: 0;
 }
 </style>
