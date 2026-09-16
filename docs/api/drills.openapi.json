@@ -1,0 +1,154 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "演练信息接口（移动端演练信息 / 演练详情）",
+    "description": "应急演练只读台账（含演练任务子项），供移动端演练信息列表与详情页取数，取代 apps/mobile/data/mock.ts 的 drills 静态数据。数据源为后端 fac_drill / fac_drill_task 表。",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "paths": {
+    "/drills": {
+      "get": {
+        "summary": "演练列表",
+        "description": "返回全部应急演练（按 id 升序），供移动端演练信息列表展示。",
+        "tags": ["drills"],
+        "responses": {
+          "200": {
+            "description": "演练列表",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DrillList" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "items": [
+                      {
+                        "id": 1,
+                        "drillCode": "YL-008",
+                        "name": "储运部液化烃储罐泄漏实战演练",
+                        "drillType": "实战演练",
+                        "form": "现场演练",
+                        "timeRange": "2026-08-18 09:30-11:30",
+                        "place": "储运部 T-301 罐区",
+                        "status": "进行中",
+                        "departments": "应急救援中心、储运部、消防大队、安环部",
+                        "taskCount": 2
+                      }
+                    ],
+                    "total": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/drills/{id}": {
+      "get": {
+        "summary": "演练详情",
+        "description": "按演练 id 返回单条演练详情（含演练任务子项）；未命中返回业务码 404（HTTP 200 + B3 包络）。",
+        "tags": ["drills"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "演练主键 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "演练详情",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DrillDetail" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "drillCode": "YL-008",
+                    "name": "储运部液化烃储罐泄漏实战演练",
+                    "drillType": "实战演练",
+                    "form": "现场演练",
+                    "timeRange": "2026-08-18 09:30-11:30",
+                    "place": "储运部 T-301 罐区",
+                    "status": "进行中",
+                    "departments": "应急救援中心、储运部、消防大队、安环部",
+                    "tasks": [
+                      { "name": "任务 1 · 现场泄漏点确认与上报", "status": "待确认" },
+                      { "name": "任务 2 · 模拟关断 T-301 进料切断阀", "status": "已提交" }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DrillList": {
+        "type": "object",
+        "description": "演练列表",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "演练项列表",
+            "items": { "$ref": "#/components/schemas/DrillItem" }
+          },
+          "total": { "type": "integer", "description": "演练总数" }
+        }
+      },
+      "DrillItem": {
+        "type": "object",
+        "description": "演练项（列表行）",
+        "properties": {
+          "id": { "type": "integer", "description": "主键 id" },
+          "drillCode": { "type": "string", "description": "演练编号" },
+          "name": { "type": "string", "description": "演练名称" },
+          "drillType": { "type": "string", "description": "演练类型（实战演练/桌面推演）" },
+          "form": { "type": "string", "description": "演练形式" },
+          "timeRange": { "type": "string", "description": "演练时间" },
+          "place": { "type": "string", "description": "演练地点" },
+          "status": { "type": "string", "description": "演练状态（计划中/进行中/已结束）" },
+          "departments": { "type": "string", "description": "参与部门（顿号分隔）" },
+          "taskCount": { "type": "integer", "description": "演练任务数" }
+        }
+      },
+      "DrillTaskItem": {
+        "type": "object",
+        "description": "演练任务子项",
+        "properties": {
+          "name": { "type": "string", "description": "任务名称" },
+          "status": { "type": "string", "description": "任务状态（待确认/已提交/未开始等）" }
+        }
+      },
+      "DrillDetail": {
+        "type": "object",
+        "description": "演练详情（含任务子项）",
+        "properties": {
+          "id": { "type": "integer", "description": "主键 id" },
+          "drillCode": { "type": "string", "description": "演练编号" },
+          "name": { "type": "string", "description": "演练名称" },
+          "drillType": { "type": "string", "description": "演练类型" },
+          "form": { "type": "string", "description": "演练形式" },
+          "timeRange": { "type": "string", "description": "演练时间" },
+          "place": { "type": "string", "description": "演练地点" },
+          "status": { "type": "string", "description": "演练状态" },
+          "departments": { "type": "string", "description": "参与部门" },
+          "tasks": {
+            "type": "array",
+            "description": "演练任务子项列表",
+            "items": { "$ref": "#/components/schemas/DrillTaskItem" }
+          }
+        }
+      }
+    }
+  }
+}

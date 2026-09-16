@@ -1,0 +1,129 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "化学品 MSDS 接口（移动端化学品知识 / MSDS 详情）",
+    "description": "危化品安全技术说明书（MSDS）只读台账，供移动端化学品知识检索与详情页取数，取代 apps/mobile/data/mock.ts 的 msds 静态数据。数据源为后端 fac_msds 表。详情按 CAS 号查询（与移动端 /msds/:cas 路由一致）。",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "paths": {
+    "/msds": {
+      "get": {
+        "summary": "化学品 MSDS 列表",
+        "description": "返回全部危化品 MSDS（按 id 升序），供移动端化学品知识列表 / 关键词检索展示。",
+        "tags": ["msds"],
+        "responses": {
+          "200": {
+            "description": "化学品 MSDS 列表",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MsdsList" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "items": [
+                      {
+                        "id": 1,
+                        "name": "乙烯（Ethylene）",
+                        "cas": "74-85-1",
+                        "classification": "易燃气体 类别1"
+                      }
+                    ],
+                    "total": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/msds/{cas}": {
+      "get": {
+        "summary": "化学品 MSDS 详情",
+        "description": "按 CAS 号返回单条 MSDS 详情；未命中返回业务码 404（HTTP 200 + B3 包络）。",
+        "tags": ["msds"],
+        "parameters": [
+          {
+            "name": "cas",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "化学品 CAS 号（如 74-85-1）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "化学品 MSDS 详情",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MsdsDetail" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "name": "乙烯（Ethylene）",
+                    "cas": "74-85-1",
+                    "classification": "易燃气体 类别1",
+                    "state": "气体（液化）",
+                    "boilingPoint": "-103.7℃",
+                    "flashPoint": "—",
+                    "explosionLimit": "2.7%-36%",
+                    "storage": "阴凉通风，远离火源热源",
+                    "safety": "禁火区域作业、接地防静电",
+                    "emergency": "切断泄漏源，喷雾稀释，下风向疏散"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MsdsList": {
+        "type": "object",
+        "description": "化学品 MSDS 列表",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "化学品项列表",
+            "items": { "$ref": "#/components/schemas/MsdsItem" }
+          },
+          "total": { "type": "integer", "description": "化学品总数" }
+        }
+      },
+      "MsdsItem": {
+        "type": "object",
+        "description": "化学品项（列表行）",
+        "properties": {
+          "id": { "type": "integer", "description": "主键 id" },
+          "name": { "type": "string", "description": "化学品名称" },
+          "cas": { "type": "string", "description": "CAS 号" },
+          "classification": { "type": "string", "description": "危险性分类" }
+        }
+      },
+      "MsdsDetail": {
+        "type": "object",
+        "description": "化学品 MSDS 详情",
+        "properties": {
+          "id": { "type": "integer", "description": "主键 id" },
+          "name": { "type": "string", "description": "化学品名称" },
+          "cas": { "type": "string", "description": "CAS 号" },
+          "classification": { "type": "string", "description": "危险性分类" },
+          "state": { "type": "string", "description": "物理状态" },
+          "boilingPoint": { "type": "string", "description": "沸点" },
+          "flashPoint": { "type": "string", "description": "闪点" },
+          "explosionLimit": { "type": "string", "description": "爆炸极限" },
+          "storage": { "type": "string", "description": "储存要求" },
+          "safety": { "type": "string", "description": "安全措施" },
+          "emergency": { "type": "string", "description": "应急处置" }
+        }
+      }
+    }
+  }
+}

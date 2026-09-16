@@ -1,0 +1,120 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "处置任务接口（移动端任务中心）",
+    "description": "处置任务只读台账，供移动端任务中心列表 / 详情 / 路径规划页取数，取代 apps/mobile/data/mock.ts 的 tasks 静态数据。数据源为后端 fac_dispatch_task 表。",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "paths": {
+    "/tasks": {
+      "get": {
+        "summary": "处置任务列表",
+        "description": "返回全部处置任务（按 id 升序），供移动端任务中心列表展示。",
+        "tags": ["tasks"],
+        "responses": {
+          "200": {
+            "description": "处置任务列表",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TaskList" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "items": [
+                      {
+                        "id": 1,
+                        "taskCode": "TASK-001",
+                        "title": "储运部液化烃储罐现场处置",
+                        "level": "紧急",
+                        "source": "后台派发",
+                        "area": "储运部 T-301",
+                        "deadline": "2026-08-18 11:30",
+                        "status": "待接收",
+                        "description": "前往 T-301 罐区核实泄漏点，反馈现场情况。"
+                      }
+                    ],
+                    "total": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{id}": {
+      "get": {
+        "summary": "处置任务详情",
+        "description": "按任务 id 返回单条处置任务详情；未命中返回业务码 404（HTTP 200 + B3 包络）。",
+        "tags": ["tasks"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "任务主键 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "处置任务详情",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TaskItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "taskCode": "TASK-001",
+                    "title": "储运部液化烃储罐现场处置",
+                    "level": "紧急",
+                    "source": "后台派发",
+                    "area": "储运部 T-301",
+                    "deadline": "2026-08-18 11:30",
+                    "status": "待接收",
+                    "description": "前往 T-301 罐区核实泄漏点，反馈现场情况。"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TaskList": {
+        "type": "object",
+        "description": "处置任务列表",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "任务项列表",
+            "items": { "$ref": "#/components/schemas/TaskItem" }
+          },
+          "total": { "type": "integer", "description": "任务总数" }
+        }
+      },
+      "TaskItem": {
+        "type": "object",
+        "description": "处置任务项",
+        "properties": {
+          "id": { "type": "integer", "description": "主键 id" },
+          "taskCode": { "type": "string", "description": "任务编号" },
+          "title": { "type": "string", "description": "任务名称" },
+          "level": { "type": "string", "description": "级别（紧急/重要/一般）" },
+          "source": { "type": "string", "description": "任务来源" },
+          "area": { "type": "string", "description": "任务区域 / 位置" },
+          "deadline": { "type": "string", "description": "要求完成时间" },
+          "status": { "type": "string", "description": "任务状态" },
+          "description": { "type": "string", "description": "任务内容描述" }
+        }
+      }
+    }
+  }
+}
