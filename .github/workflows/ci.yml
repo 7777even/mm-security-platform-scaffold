@@ -123,7 +123,7 @@ jobs:
       - name: 失败排查指引
         if: failure()
         run: |
-          echo "::error::契约与后端 main 实现存在漂移。按 AGENTS.md §11 四同步处理："
+          echo "::error::契约与后端 main 实现存在漂移。按后端仓 AGENTS.md §11.2「契约变更四同步」处理（本仓无 §11，四同步细则在后端库）："
           echo "  1) 若漂移源于契约标注（后端实现与种子数据为准）→ 改 docs/api/<domain>.openapi.json"
           echo "  2) 若漂移源于后端实现 → 改后端并先推送后端，再回到本仓跑 npm run gen:api-types"
           echo "  3) 无论如何，本仓（契约侧）必须先绿并推送，后端的 contract-guard 才可能通过"
