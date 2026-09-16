@@ -121,6 +121,13 @@ const SERVICE_PATHS = [
   '/duty-sign-in',
   '/typhoon-dispatch',
   '/patrol-execution',
+  // 通讯通知管理域：短信 / 电话通话 / 广播播报 / APP推送 / 语音对讲五类记录
+  // 已接后端 GET /communication/records（Change：openspec/changes/2026-09-16-add-comm-records-domain/）
+  '/comm-sms',
+  '/comm-call',
+  '/comm-broadcast',
+  '/comm-push',
+  '/comm-intercom',
 ];
 
 // 通用台账（静态页真后端化）：18 个原 mgmtMenus 硬编码静态域，复用同一 MgmtLedgerView.vue，
@@ -379,6 +386,32 @@ const serviceRoutes: RouteRecordRaw[] = [
     path: '/patrol-execution',
     component: () => import('./views/fire/PatrolExecutionView.vue'),
     meta: routeMeta('/patrol-execution', '消防巡更执行'),
+  },
+  // —— 通讯通知管理域（五类通讯记录共用同一视图，按 route.path 决定记录类型与列）——
+  {
+    path: '/comm-sms',
+    component: () => import('./views/comm/CommRecordView.vue'),
+    meta: routeMeta('/comm-sms', '短信记录'),
+  },
+  {
+    path: '/comm-call',
+    component: () => import('./views/comm/CommRecordView.vue'),
+    meta: routeMeta('/comm-call', '电话通话记录'),
+  },
+  {
+    path: '/comm-broadcast',
+    component: () => import('./views/comm/CommRecordView.vue'),
+    meta: routeMeta('/comm-broadcast', '广播播报记录'),
+  },
+  {
+    path: '/comm-push',
+    component: () => import('./views/comm/CommRecordView.vue'),
+    meta: routeMeta('/comm-push', 'APP推送记录'),
+  },
+  {
+    path: '/comm-intercom',
+    component: () => import('./views/comm/CommRecordView.vue'),
+    meta: routeMeta('/comm-intercom', '语音对讲记录'),
   },
   // —— 通用台账（静态页真后端化，复用 MgmtLedgerView.vue）——
   ...mgmtLedgerRoutes,
