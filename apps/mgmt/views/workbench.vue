@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { Component } from 'vue';
 import {
@@ -13,6 +13,8 @@ import {
   Warning,
 } from '@element-plus/icons-vue';
 import { mgmtMenus, firstLeafPath, leafCount, flattenLeaves } from '@/data/mgmtMenus';
+import { fetchDashboardOverview } from '@/services/alarm';
+import type { DashboardOverview } from '@/services/alarm';
 
 // 工作台（导航门户，UI 规范 §5.1「主界面级」形态）：
 // 由 mgmtMenus 数据驱动——模块卡 / 子页 / 页面数全部取自真实菜单，点模块卡或子页真实跳转。
@@ -44,12 +46,36 @@ const toneByKey: Record<string, Tone> = {
   sys: 'primary',
 };
 
-// 统计卡（原型右上 4 项）；子系统数动态取自菜单分组数，其余为代表性示例值（同原型写死语义）
+// 统计卡：接真后端 GET /dashboard/overview（与大屏同一数据源，保证两端数字一致）。
+// 后端不可达时显示 '--'（不回退假数据）。子系统数动态取自菜单分组数。
+// 原「在办工单」为写死示例值且后端暂无工单域接口 → 以真实「风险指数」替代。
+const overview = ref<DashboardOverview | null>(null);
+
+onMounted(async () => {
+  try {
+    overview.value = await fetchDashboardOverview();
+  } catch {
+    overview.value = null; // 后端不可达：显示 '--'，不造假数据
+  }
+});
+
 const stats = computed(() => [
-  { label: '今日告警', value: 6, tone: 'danger' as Tone },
-  { label: '在办工单', value: 18, tone: 'warning' as Tone },
+  {
+    label: '当前告警',
+    value: overview.value ? overview.value.activeAlarm : '--',
+    tone: 'danger' as Tone,
+  },
+  {
+    label: '风险指数',
+    value: overview.value ? overview.value.riskIndex : '--',
+    tone: 'warning' as Tone,
+  },
   { label: '子系统', value: mgmtMenus.length, tone: 'primary' as Tone },
-  { label: '在线设备', value: 304, tone: 'success' as Tone },
+  {
+    label: '在线设备',
+    value: overview.value ? overview.value.deviceOnline : '--',
+    tone: 'success' as Tone,
+  },
 ]);
 
 // 每个分组展示的前 4 个子页 + 余量
