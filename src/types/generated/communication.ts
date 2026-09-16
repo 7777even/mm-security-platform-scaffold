@@ -186,6 +186,73 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/communication/records': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 通讯通知记录列表
+     * @description 按记录类型返回短信、电话通话、广播播报、APP推送、语音对讲五类通讯通知记录；type 缺省时返回全部类型。用于后台管理端「通讯通知管理」五个记录页。
+     */
+    get: {
+      parameters: {
+        query?: {
+          /** @description 记录类型：sms 短信 / call 电话通话 / broadcast 广播播报 / push APP推送 / intercom 语音对讲；不传返回全部 */
+          type?: 'sms' | 'call' | 'broadcast' | 'push' | 'intercom';
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 通讯通知记录列表 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "items": [
+             *           {
+             *             "recordNo": "SMS-091",
+             *             "recordType": "sms",
+             *             "occurredAt": "2026-08-21 09:03",
+             *             "category": "告警通知",
+             *             "sender": "系统",
+             *             "receiver": "138****2211",
+             *             "summary": "T-301 感温报警，请立即核实",
+             *             "result": "成功",
+             *             "duration": "",
+             *             "channel": "短信网关",
+             *             "direction": "下发",
+             *             "contentType": "文本"
+             *           }
+             *         ],
+             *         "total": 1
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['CommunicationRecordList'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -231,6 +298,80 @@ export interface components {
       data?: unknown;
       /** @example a1b2c3d4 */
       traceId?: string;
+    };
+    /** @description 通讯通知记录条目（五类记录的统一视图，各类型按需填充字段） */
+    CommunicationRecord: {
+      /**
+       * @description 记录编号
+       * @example SMS-091
+       */
+      recordNo?: string;
+      /**
+       * @description 记录类型：sms/call/broadcast/push/intercom
+       * @example sms
+       */
+      recordType?: string;
+      /**
+       * @description 发生时间（发送/通话/播报/推送时间）
+       * @example 2026-08-21 09:03
+       */
+      occurredAt?: string;
+      /**
+       * @description 业务分类
+       * @example 告警通知
+       */
+      category?: string;
+      /**
+       * @description 发起方
+       * @example 系统
+       */
+      sender?: string;
+      /**
+       * @description 接收方/对象
+       * @example 138****2211
+       */
+      receiver?: string;
+      /**
+       * @description 内容摘要
+       * @example T-301 感温报警，请立即核实
+       */
+      summary?: string;
+      /**
+       * @description 状态/结果
+       * @example 成功
+       */
+      result?: string;
+      /**
+       * @description 通话/播报时长
+       * @example 00:42
+       */
+      duration?: string;
+      /**
+       * @description 通道（信道/关联设备/业务通道）
+       * @example CH-3
+       */
+      channel?: string;
+      /**
+       * @description 呼叫方向（呼入/外呼/组呼/单呼）
+       * @example 组呼
+       */
+      direction?: string;
+      /**
+       * @description 内容类型（文本/语音）
+       * @example 文本
+       */
+      contentType?: string;
+    };
+    /** @description 通讯通知记录列表 */
+    CommunicationRecordList: {
+      /** @description 记录条目列表 */
+      items?: components['schemas']['CommunicationRecord'][];
+      /**
+       * Format: int32
+       * @description 记录总数
+       * @example 3
+       */
+      total?: number;
     };
     /** @description 通讯设备分组聚合（广播/电话/对讲） */
     CommunicationDeviceGroups: {
