@@ -18,6 +18,10 @@ jobs:
     steps:
       - name: 检出前端源码
         uses: actions/checkout@v4
+        with:
+          # fetch-depth: 2 —— 「新增文件测试覆盖守门」需要 HEAD~1 才能算增量新增文件。
+          # 不用 0（全历史）：本仓 .git 约 157MB，全克隆不划算。
+          fetch-depth: 2
 
       - name: 配置 Node 20
         uses: actions/setup-node@v4
@@ -56,6 +60,14 @@ jobs:
       # archive/ 必须带日期前缀；四件套缺失为告警（存量 Change 允许只有 proposal+tasks）。
       - name: OpenSpec 卫生检查（全勾必归档）
         run: node scripts/check-openspec-hygiene.mjs
+
+      # 新增文件测试覆盖守门：本次新增的 src/services|composables、apps/*/data|composables 下的 .ts
+      # 必须被某个 *.spec.ts 引用，或在脚本 ALLOWLIST 登记并写明理由。
+      # 动机：覆盖率门禁是 coverage.all:false + 白名单，未被测试加载的文件不插桩，
+      # 新增「零测试文件」不会拉低覆盖率、能静默通过——该缺口由此脚本兜住。
+      # 依赖上面的 fetch-depth: 2 才能取到 HEAD~1；取不到时脚本只告警不失败。
+      - name: 新增文件测试覆盖守门（增量）
+        run: node scripts/check-spec-coverage.mjs
 
       - name: 生产构建（vue-tsc -b && vite build）
         run: npm run build
