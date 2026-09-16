@@ -16,9 +16,17 @@
 
 ## 冻结页面（mobile 端）
 
-以下 mobile 视图引 `../data/mock` / `../data/geo` 静态数据，且后端无对应端点，冻结为原型红线（不接本仓后端）：
+以下 mobile 视图后端无对应 REST 端点，冻结为原型红线（不接本仓后端），待建后端端点后解除：
 
-- `/tasks`、`/orders`、`/tickets` 等无后端端点的 mock 页（注：events / alarms 有后端端点，归 ④-E 接后端，不在此冻结）
+- （暂无。`/tasks`、`/drills`、`/msds` 均已建后端并解除冻结，见下方「已解除冻结」。）
+
+> **已解除冻结**（原 ④-A 冻结，2026-09-16 真后端化，端点见括注）：`/orders`、`/orders/:id`（fireFacility work-orders）、`/tickets`、`/ticket-exec`（specialOperation）、`/patrols`、`/patrol-exec`（fireMonitoring）、`/contacts`（emergencyPhone）、`/duty`（duty）、`/videos`、`/videos/:id`（video）、`/library`（knowledge）、`/resources`（rescueResource）、`/ops`（device）、`/plans`、`/plans/:id`（emergencyPlan）。events / alarms / messages 归 ④-E 已于更早接后端，不在此列。
+>
+> **2026-09-16 追加**：`/tasks`、`/tasks/:id`、`/path`（处置任务域）经跨库四同步新增后端 `GET /api/v1/tasks`（Change：`openspec/changes/2026-09-16-add-tasks-domain/`，两端各一）解除冻结。
+>
+> **2026-09-16 追加**：`/drills`、`/drills/:id`（应急演练域）经跨库四同步新增后端 `GET /api/v1/drills`（Change：`openspec/changes/2026-09-16-add-drills-domain/`，两端各一）解除冻结。
+>
+> **2026-09-16 追加**：`/msds`、`/msds/:cas`（化学品 MSDS 域）经跨库四同步新增后端 `GET /api/v1/msds`（按 CAS 详情，Change：`openspec/changes/2026-09-16-add-msds-domain/`，两端各一）解除冻结。
 
 ## 不接后端原则
 
