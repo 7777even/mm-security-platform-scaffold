@@ -158,7 +158,8 @@ function main() {
   }
 
   if (reportOnly) {
-    console.log(`基线：${range}　新增文件 ${added.length} 个，命中目标模式 ${targets.length} 个。`);
+    // 分隔符用全角空格（\u3000），写成转义而非字面量，避免触发 no-irregular-whitespace
+    console.log(`基线：${range}\u3000新增文件 ${added.length} 个，命中目标模式 ${targets.length} 个。`);
     console.log(`spec 文件总数：${specCount}\n`);
     for (const r of rows) {
       const mark = r.referenced ? `✓ 已引用（${r.by}）` : '✗ 未被引用';

@@ -11,6 +11,10 @@ export default tseslint.config(
       '**/dist*/**',
       'public/**',
       'node_modules',
+      // vitest 产物（含 lcov-report 里的 JS），非源码。
+      // 不忽略会导致「本地先跑 test:coverage 再 lint」比 CI 多出一批告警，干扰对拍。
+      'coverage/**',
+      '**/coverage/**',
       '.verify-out/**',
       '**/.verify-out/**',
       '.verify-tmp/**',
