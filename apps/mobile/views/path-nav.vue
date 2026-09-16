@@ -1,22 +1,40 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
 import MapPanel from '../components/MapPanel.vue';
 import { MM_CENTER, demoRoute, routeMarkers } from '../data/geo';
-import { tasks } from '../data/mock';
+import { fetchTasks, type TaskItem } from '@/services/task';
+import { isOfflineNoBackend, notifyBackendOffline } from '@/services/backendFallback';
 
 /**
  * 任务路径规划（docs/UI规范-移动端.md §5.1）
  *
- * ui-redesign 迁移（2026-08，源 views/mobile/PathNav.vue）：
- * - 图例上提为共享类 `.mb-legend*`（原为内联 `.legend .g/.o/.r` + hex）。
- * - 避让提示改用共享类 `.mb-banner .mb-banner--warning`；参考实现的 `.warn` 内联了
- *   `#ffe0b8` / `#b9770e` 两个硬编码色，违反 token 单一真源，改为语义色 token。
- * - 地图中心由字面量 `[21.668, 110.926]` 改为复用 `data/geo.ts` 的 `MM_CENTER`，
- *   与标注 / 轨迹数据同源，避免中心点随数据调整而失配。
- * - 任务信息改取 `data/mock.ts` 的 tasks[0]，替换参考的写死文案。
+ * 任务信息取自后端 /api/v1/tasks（首条），取代原 data/mock.ts 的 tasks[0]。
+ * 地图中心 / 标注 / 轨迹仍复用 data/geo.ts（几何与 UI 结构，by-design 非后端缺口）。
+ * - 图例 / 避让提示走共享类；地图中心复用 MM_CENTER 与标注同源。
  */
-const task = tasks[0];
+const loading = ref(false);
+const task = ref<TaskItem | null>(null);
+
+async function load(): Promise<void> {
+  loading.value = true;
+  try {
+    if (isOfflineNoBackend()) {
+      notifyBackendOffline('tasks', '/tasks');
+      task.value = null;
+      return;
+    }
+    const res = await fetchTasks();
+    task.value = res.items?.[0] ?? null;
+  } catch {
+    task.value = null;
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(load);
 </script>
 
 <template>
@@ -24,17 +42,22 @@ const task = tasks[0];
     <MobileHeader variant="back" title="任务路径规划" back-to="/tasks" />
 
     <div class="mb-stack">
-      <div class="mb-card">
+      <div v-if="task" class="mb-card">
         <div class="mb-card__title">
           <span class="path-nav__name">
             <Icon name="task" size="var(--mb-ico-md)" />
-            处置任务 · {{ task.name }}
+            处置任务 · {{ task.title }}
           </span>
           <span class="tag tag--danger">{{ task.level }}</span>
         </div>
         <p class="mb-card__desc">
-          {{ task.id }} · 目标：{{ task.area }} · 时限 {{ task.deadline }}
+          {{ task.taskCode }} · 目标：{{ task.area }} · 时限 {{ task.deadline }}
         </p>
+      </div>
+
+      <div v-else-if="!loading" class="mb-empty">
+        <div class="mb-empty__art" />
+        <p class="mb-empty__text">暂无关联处置任务</p>
       </div>
 
       <MapPanel

@@ -1,39 +1,95 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
-import { orders } from '../data/mock';
+import {
+  fetchFireFacilityWorkOrders,
+  type FireFacilityWorkOrderItem,
+} from '@/services/fireFacility';
+import { isOfflineNoBackend, notifyBackendOffline } from '@/services/backendFallback';
 
 /**
  * 报修工单详情（docs/UI规范-移动端.md §5）
  *
- * ui-redesign 迁移（2026-08，源 views/mobile/OrderDetail.vue）：
- * - 流程节点上提为共享类 `.mb-steps*`：已完成 / 当前 / 未开始三态走语义色 token，
- *   替换参考内联的 `.steps span` + `#f0f4f8` 硬编码底。
- * - 只读字段由「一字段一白卡」改为共享类 `.mb-detail` 分组卡，与 alarm-detail 一致。
- * - 处置结果录入用共享类 `.mb-textarea`；现场照片占位用 `.mb-photo`（热区 64）。
- * - 参考的 `<button style="margin-top:8px">` 内联样式删除，间距统一走 `.mb-stack` 的 gap。
+ * 数据源：后端 /api/v1/fire-facility/work-orders（按 workOrderNo 取列表内命中项）。
+ * 取消原 data/mock.ts 静态数据；未连后端走空态 + 全局离线告警。后端工单无独立详情端点，
+ * 采用列表内按工单号匹配（列表已含 timeline 全量字段）。
  */
+interface Order {
+  id: string;
+  device: string;
+  type: string;
+  level: string;
+  st: string;
+  time: string;
+  owner: string;
+  deadline: string;
+  phen: string;
+}
+
 const route = useRoute();
-const order = computed(() => orders.find((x) => x.id === route.params.id) ?? orders[0]);
+const loading = ref(false);
+const order = ref<Order | null>(null);
+
+function toRow(w: FireFacilityWorkOrderItem): Order {
+  return {
+    id: w.workOrderNo,
+    device: w.facilityName ?? w.facilityCode ?? '—',
+    type: w.facilityType ?? '—',
+    level: w.faultLevel ?? '',
+    st: w.status,
+    time: w.dispatchTime ?? '',
+    owner: w.repairPerson ?? '待指派',
+    deadline: w.estimatedFinish ?? '—',
+    phen: w.description ?? '',
+  };
+}
+
+async function load(): Promise<void> {
+  loading.value = true;
+  try {
+    if (isOfflineNoBackend()) {
+      notifyBackendOffline('fire-facility', '/fire-facility/work-orders');
+      order.value = null;
+      return;
+    }
+    const res = await fetchFireFacilityWorkOrders();
+    const id = String(route.params.id);
+    const hit = (res.items ?? []).find((w) => w.workOrderNo === id);
+    order.value = hit ? toRow(hit) : null;
+  } catch {
+    order.value = null;
+  } finally {
+    loading.value = false;
+  }
+}
 
 const STEPS = ['待确认', '已确认', '已派单', '维修中', '待验收', '已闭环'];
 
-const currentStep = computed(() => Math.max(0, STEPS.indexOf(order.value.st)));
+const currentStep = computed(() => Math.max(0, STEPS.indexOf(order.value?.st ?? '')));
 
 function stepClass(i: number): string {
   if (i < currentStep.value) return 'mb-steps__item mb-steps__item--done';
   if (i === currentStep.value) return 'mb-steps__item mb-steps__item--on';
   return 'mb-steps__item';
 }
+
+onMounted(load);
 </script>
 
 <template>
   <div class="mb-page">
     <MobileHeader variant="back" title="工单详情" back-to="/orders" />
 
-    <div class="mb-stack">
+    <p v-if="loading" class="mb-loading">加载中…</p>
+
+    <div v-else-if="!order" class="mb-empty">
+      <div class="mb-empty__art" />
+      <p class="mb-empty__text">未找到该工单</p>
+    </div>
+
+    <div v-else class="mb-stack">
       <div class="mb-steps">
         <span v-for="(s, i) in STEPS" :key="s" :class="stepClass(i)">{{ s }}</span>
       </div>
@@ -48,12 +104,12 @@ function stepClass(i: number): string {
           <span class="mb-detail__value">{{ order.device }}</span>
         </div>
         <div class="mb-detail__row">
-          <span class="mb-detail__label">故障类型 / 级别</span>
-          <span class="mb-detail__value">{{ order.type }} · {{ order.level }}</span>
+          <span class="mb-detail__label">设备类型 / 级别</span>
+          <span class="mb-detail__value">{{ order.type }} · {{ order.level || '—' }}</span>
         </div>
         <div class="mb-detail__row">
           <span class="mb-detail__label">故障现象</span>
-          <span class="mb-detail__value">{{ order.phen }}</span>
+          <span class="mb-detail__value">{{ order.phen || '—' }}</span>
         </div>
         <div class="mb-detail__row">
           <span class="mb-detail__label">负责人 / 期限</span>
@@ -88,5 +144,11 @@ function stepClass(i: number): string {
 .order-detail__photos {
   display: flex;
   gap: var(--space-sm);
+}
+
+.mb-loading {
+  text-align: center;
+  color: var(--mb-muted);
+  padding: var(--space-lg) 0;
 }
 </style>

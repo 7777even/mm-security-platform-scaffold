@@ -1,29 +1,72 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
-import { cams } from '../data/mock';
+import { fetchVideoCameras, type VideoCameraItem } from '@/services/video';
+import { isOfflineNoBackend, notifyBackendOffline } from '@/services/backendFallback';
 
 // 视频监控（宫格页模板，docs/UI规范-移动端.md §5）
-// - 参考原型为单列卡片，本脚手架共享类已有 .mb-video-grid（2 列）宫格，移动端更贴近
-// - 画面位为占位（流媒体接入后替换 .mb-video__thumb 内内容），不引入任何流媒体依赖
-// - 点位状态只用 .tag--success / --danger / --warning 三档，禁止自造色阶
-// - 数据为演示数据（data/mock.ts）；接入后由视频点位列表接口驱动
+// - 数据源：后端 /api/v1/video/cameras（摄像头分页网格），经 fetchVideoCameras 拉取。
+//   取消原 data/mock.ts 静态数据；未连后端走空态 + 全局离线告警（不回灌假数据）。
+// - 区域 chips 由后端返回点位位置派生（原为硬编码常量）。
+// - 点位状态只用 .tag--success / --danger 两档，禁止自造色阶。
 
-const CHIPS = ['全部', '储运部', '乙烯装置', '聚丙烯', '门岗周界'] as const;
+interface Cam {
+  id: string;
+  name: string;
+  area: string;
+  type: string;
+  st: string;
+  ai: boolean;
+}
+
+const loading = ref(false);
+const list = ref<Cam[]>([]);
 const filter = ref<string>('全部');
 
-const list = computed(() =>
-  filter.value === '全部' ? cams : cams.filter((c) => c.area === filter.value),
+function toRow(c: VideoCameraItem): Cam {
+  const online = c.status === 'live' || c.status === 'ai';
+  return {
+    id: String(c.id),
+    name: c.name,
+    area: c.location,
+    type: c.cameraType,
+    st: online ? '在线' : '离线',
+    ai: c.status === 'ai',
+  };
+}
+
+async function load(): Promise<void> {
+  loading.value = true;
+  try {
+    if (isOfflineNoBackend()) {
+      notifyBackendOffline('video', '/video/cameras');
+      list.value = [];
+      return;
+    }
+    const page = await fetchVideoCameras(1, 100);
+    list.value = (page.list ?? []).map(toRow);
+  } catch {
+    list.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+const chips = computed(() => ['全部', ...new Set(list.value.map((c) => c.area).filter(Boolean))]);
+
+const filtered = computed(() =>
+  filter.value === '全部' ? list.value : list.value.filter((c) => c.area === filter.value),
 );
 
-/** 点位状态 → 标签类（在线绿 / 维修中橙 / 离线红） */
+/** 点位状态 → 标签类（在线绿 / 离线红） */
 const STATUS_TAG: Record<string, string> = {
   在线: 'tag--success',
-  维修中: 'tag--warning',
   离线: 'tag--danger',
 };
+
+onMounted(load);
 </script>
 
 <template>
@@ -32,7 +75,7 @@ const STATUS_TAG: Record<string, string> = {
 
     <div class="mb-chips" role="tablist" aria-label="视频点位区域筛选">
       <button
-        v-for="c in CHIPS"
+        v-for="c in chips"
         :key="c"
         type="button"
         class="mb-chip"
@@ -45,16 +88,20 @@ const STATUS_TAG: Record<string, string> = {
       </button>
     </div>
 
-    <div v-if="list.length > 0" class="mb-video-grid">
-      <RouterLink v-for="c in list" :key="c.id" class="mb-video" :to="`/videos/${c.id}`">
+    <p v-if="loading" class="mb-loading">加载中…</p>
+
+    <div v-else-if="filtered.length > 0" class="mb-video-grid">
+      <RouterLink v-for="c in filtered" :key="c.id" class="mb-video" :to="`/videos/${c.id}`">
         <div class="mb-video__thumb">
           <Icon name="play" size="var(--mb-ico-play)" />
         </div>
         <div class="video__head">
           <span class="mb-video__name">{{ c.name }}</span>
-          <span class="tag" :class="STATUS_TAG[c.st]">{{ c.st }}{{ c.ai ? ' · AI' : '' }}</span>
+          <span class="tag" :class="STATUS_TAG[c.st] ?? 'tag--info'"
+            >{{ c.st }}{{ c.ai ? ' · AI' : '' }}</span
+          >
         </div>
-        <p class="video__meta">{{ c.id }} · {{ c.type }}{{ c.ptz ? ' · 支持 PTZ' : '' }}</p>
+        <p class="video__meta">{{ c.id }} · {{ c.type }}</p>
       </RouterLink>
     </div>
 
@@ -77,5 +124,11 @@ const STATUS_TAG: Record<string, string> = {
   margin: 0;
   font-size: var(--mb-fz-tip);
   color: var(--mb-body);
+}
+
+.mb-loading {
+  text-align: center;
+  color: var(--mb-muted);
+  padding: var(--space-lg) 0;
 }
 </style>

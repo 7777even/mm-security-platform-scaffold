@@ -1,33 +1,50 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
-import { contacts } from '../data/mock';
+import { fetchEmergencyPhones, type EmergencyPhone } from '@/services/emergencyPhone';
 
 /**
  * 应急通讯录（docs/UI规范-移动端.md §5）
  *
- * ui-redesign 迁移（2026-08，源 views/mobile/Contacts.vue）：
- * - 搜索框上提为共享类 `.mb-search*`（原为页面内联 `.search-wrap`），热区由 40px 提到 48。
- * - 列表中姓名前的图标色由硬编码 #1677FF 改为继承主色 `--primary-mobile`。
- * - 参考实现的搜索框仅作展示、无过滤逻辑；此处补上按姓名 / 部门 / 电话过滤，
- *   空结果渲染 `.mb-empty`，避免"输入无反应"的假控件。
+ * 数据源：后端 /api/v1/emergency/phones（应急电话通讯录），经 fetchEmergencyPhones 拉取。
+ * 取消原 data/mock.ts 静态数据；未连后端由 service 内部走空态 + 全局离线告警（不回灌假数据）。
+ * 后端仅「名称 / 号码 / 分类」，列表按分类 + 号码展示，搜索覆盖名称 / 分类 / 号码。
  */
 interface Contact {
+  id: string;
   dept: string;
   name: string;
-  role: string;
   tel: string;
 }
 
-const list: Contact[] = contacts;
+const loading = ref(false);
+const list = ref<Contact[]>([]);
 const keyword = ref('');
+
+function toRow(p: EmergencyPhone): Contact {
+  return { id: p.id, dept: p.category, name: p.name, tel: p.number };
+}
+
+async function load(): Promise<void> {
+  loading.value = true;
+  try {
+    const book = await fetchEmergencyPhones();
+    list.value = (book.entries ?? []).map(toRow);
+  } catch {
+    list.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
 
 const filtered = computed(() => {
   const k = keyword.value.trim();
-  if (!k) return list;
-  return list.filter((c) => `${c.name}${c.dept}${c.role}${c.tel}`.includes(k));
+  if (!k) return list.value;
+  return list.value.filter((c) => `${c.name}${c.dept}${c.tel}`.includes(k));
 });
+
+onMounted(load);
 </script>
 
 <template>
@@ -36,11 +53,13 @@ const filtered = computed(() => {
 
     <div class="mb-search">
       <Icon name="search" size="var(--mb-ico-md)" color="var(--mb-muted)" />
-      <input v-model="keyword" class="mb-search__input" placeholder="搜索姓名 / 部门 / 电话" />
+      <input v-model="keyword" class="mb-search__input" placeholder="搜索名称 / 分类 / 号码" />
     </div>
 
-    <div v-if="filtered.length" class="mb-stack">
-      <div v-for="c in filtered" :key="c.tel" class="mb-card">
+    <p v-if="loading" class="mb-loading">加载中…</p>
+
+    <div v-else-if="filtered.length" class="mb-stack">
+      <div v-for="c in filtered" :key="c.id" class="mb-card">
         <div class="mb-card__title">
           <span class="contacts__name">
             <Icon name="user" size="var(--mb-ico-md)" />
@@ -51,7 +70,7 @@ const filtered = computed(() => {
             拨号
           </button>
         </div>
-        <p class="mb-card__desc">{{ c.dept }} · {{ c.role }} · {{ c.tel }}</p>
+        <p class="mb-card__desc">{{ c.dept }} · {{ c.tel }}</p>
       </div>
     </div>
 
@@ -68,5 +87,11 @@ const filtered = computed(() => {
   align-items: center;
   gap: var(--space-xs);
   color: var(--primary-mobile);
+}
+
+.mb-loading {
+  text-align: center;
+  color: var(--mb-muted);
+  padding: var(--space-lg) 0;
 }
 </style>

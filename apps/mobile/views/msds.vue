@@ -1,23 +1,56 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
-import { msds } from '../data/mock';
+import { fetchMsdsList } from '@/services/msds';
+import { isOfflineNoBackend, notifyBackendOffline } from '@/services/backendFallback';
 
 // 危化品 MSDS 检索（列表页模板，docs/UI规范-移动端.md §5 / §5.1）
-// - 搜索框沿用 .mb-input（热区 48，参考项目原为 40px 未达 §1.4，迁移时按 token 提升）
-// - 列表卡沿用 .mb-card / .mb-card--link，危化品分类只用 .tag--warning，禁止自造色阶
-// - 数据为演示数据（data/mock.ts）；接入后改由 MSDS 检索接口驱动
+// 数据源：后端 /api/v1/msds（化学品 MSDS），经 fetchMsdsList 拉取，取代原 data/mock.ts 静态数据。
+// - 搜索框沿用 .mb-input；危化品分类只用 .tag--warning，禁止自造色阶。
 
+interface MsdsRow {
+  id: number;
+  name: string;
+  cas: string;
+  clsShort: string;
+}
+
+const loading = ref(false);
 const keyword = ref('');
+const list = ref<MsdsRow[]>([]);
+
+async function load(): Promise<void> {
+  loading.value = true;
+  try {
+    if (isOfflineNoBackend()) {
+      notifyBackendOffline('msds', '/msds');
+      list.value = [];
+      return;
+    }
+    const res = await fetchMsdsList();
+    list.value = (res.items ?? []).map((m) => ({
+      id: m.id,
+      name: m.name,
+      cas: m.cas,
+      clsShort: (m.classification ?? '').split('/')[0],
+    }));
+  } catch {
+    list.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
 
 /** 按名称 / CAS 号模糊检索（空关键字返回全量） */
-const list = computed(() => {
+const filtered = computed(() => {
   const kw = keyword.value.trim().toLowerCase();
-  if (!kw) return msds;
-  return msds.filter((m) => m.name.toLowerCase().includes(kw) || m.cas.includes(kw));
+  if (!kw) return list.value;
+  return list.value.filter((m) => m.name.toLowerCase().includes(kw) || m.cas.includes(kw));
 });
+
+onMounted(load);
 </script>
 
 <template>
@@ -26,9 +59,11 @@ const list = computed(() => {
 
     <input v-model="keyword" class="mb-input msds-search" placeholder="搜索名称 / CAS 号" />
 
-    <div v-if="list.length > 0" class="mb-stack">
+    <p v-if="loading" class="mb-loading">加载中…</p>
+
+    <div v-else-if="filtered.length > 0" class="mb-stack">
       <RouterLink
-        v-for="m in list"
+        v-for="m in filtered"
         :key="m.cas"
         class="mb-card mb-card--link"
         :to="`/msds/${m.cas}`"
@@ -38,7 +73,7 @@ const list = computed(() => {
             <Icon name="flask" size="var(--mb-ico-sm)" mono />
             {{ m.name }}
           </span>
-          <span class="tag tag--warning">{{ m.cls.split('/')[0] }}</span>
+          <span v-if="m.clsShort" class="tag tag--warning">{{ m.clsShort }}</span>
         </div>
         <p class="mb-card__desc">CAS：{{ m.cas }}</p>
       </RouterLink>
@@ -62,5 +97,11 @@ const list = computed(() => {
   align-items: center;
   gap: var(--space-xs);
   min-width: 0;
+}
+
+.mb-loading {
+  text-align: center;
+  color: var(--mb-muted);
+  padding: var(--space-lg) 0;
 }
 </style>

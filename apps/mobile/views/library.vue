@@ -1,34 +1,49 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import MobileHeader from '../components/MobileHeader.vue';
 import IconTile from '../components/IconTile.vue';
-import { library } from '../data/mock';
+import { fetchEmergencyKnowledge, type KnowledgeItem } from '@/services/knowledge';
 
 // 辅助资料库（列表页模板，docs/UI规范-移动端.md §5）
-// - 列表行沿用 .mb-row（行高 48），行尾以 .mb-row__desc 承载版本 / 大小 / 离线缓存标记
-// - 资料类型只用 .tag--* 枚举着色，禁止自造色阶
-// - 数据为演示数据（data/mock.ts）；接入后改由资料库列表接口 + 离线缓存桥接驱动
+// 数据源：后端 /api/v1/emergency/knowledge（应急生产安全知识分类），经 fetchEmergencyKnowledge
+// 拉取。取消原 data/mock.ts 静态数据；未连后端由 service 内部走空态 + 全局离线告警。
+// - 后端为「知识分类 + 条目数」形态（岗位应急处置卡 / 危化品知识库 / 疏散路线等），
+//   列表按分类标题 + 条目数展示，搜索按标题过滤。
+// - 列表行沿用 .mb-row（行高 48）；分类标签只用 .tag--* 枚举着色。
 
 interface LibraryItem {
-  n: string;
-  t: string;
-  v: string;
-  s: string;
+  id: string;
+  title: string;
+  count: number;
 }
 
-/** 资料类型 → 标签类（PDF 主蓝 / 图片成功绿） */
-const TYPE_TAG: Record<string, string> = {
-  PDF: 'tag--info',
-  图片: 'tag--success',
-};
-
+const loading = ref(false);
 const keyword = ref('');
+const list = ref<LibraryItem[]>([]);
 
-const list = computed<LibraryItem[]>(() => {
+function toRow(k: KnowledgeItem): LibraryItem {
+  return { id: k.id, title: k.title, count: k.count };
+}
+
+async function load(): Promise<void> {
+  loading.value = true;
+  try {
+    const res = await fetchEmergencyKnowledge();
+    list.value = (res.items ?? []).map(toRow);
+  } catch {
+    list.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+const filtered = computed(() => {
   const kw = keyword.value.trim();
-  if (!kw) return library;
-  return library.filter((l) => l.n.includes(kw) || l.t.includes(kw));
+  if (!kw) return list.value;
+  return list.value.filter((l) => l.title.includes(kw));
 });
+
+onMounted(load);
 </script>
 
 <template>
@@ -38,17 +53,19 @@ const list = computed<LibraryItem[]>(() => {
     <input
       v-model="keyword"
       class="mb-input library-search"
-      placeholder="全文搜索：平面图 / 预案 / MSDS / 通讯录"
+      placeholder="搜索：岗位处置卡 / 危化品知识 / 疏散路线"
     />
 
-    <div v-if="list.length > 0" class="mb-stack">
-      <div v-for="l in list" :key="l.n" class="mb-row">
+    <p v-if="loading" class="mb-loading">加载中…</p>
+
+    <div v-else-if="filtered.length > 0" class="mb-stack">
+      <div v-for="l in filtered" :key="l.id" class="mb-row">
         <IconTile name="book" tone="navy" size="sm" />
         <div class="mb-row__main">
-          <div class="mb-row__title">{{ l.n }}</div>
+          <div class="mb-row__title">{{ l.title }}</div>
         </div>
-        <span class="mb-row__desc library-meta">{{ l.v }} · {{ l.s }} · 已缓存</span>
-        <span class="tag" :class="TYPE_TAG[l.t]">{{ l.t }}</span>
+        <span class="mb-row__desc library-meta">{{ l.count }} 条</span>
+        <span class="tag tag--info">知识库</span>
       </div>
     </div>
 
@@ -66,7 +83,7 @@ const list = computed<LibraryItem[]>(() => {
   margin-bottom: var(--mb-card-gap);
 }
 
-/* 行尾元信息（版本 · 大小 · 缓存标记）：不换行、右对齐，避免挤压标题 */
+/* 行尾元信息（条目数）：不换行、右对齐，避免挤压标题 */
 .library-meta {
   flex-shrink: 0;
   margin-top: 0;
@@ -76,5 +93,11 @@ const list = computed<LibraryItem[]>(() => {
 
 .library-cache {
   margin-top: var(--mb-card-gap);
+}
+
+.mb-loading {
+  text-align: center;
+  color: var(--mb-muted);
+  padding: var(--space-lg) 0;
 }
 </style>

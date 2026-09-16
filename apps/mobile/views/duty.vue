@@ -1,19 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
-import { duty } from '../data/mock';
+import { fetchDutyRoster, type DutyMember } from '@/services/duty';
 
 /**
  * 今日值班（docs/UI规范-移动端.md §5）
  *
- * ui-redesign 迁移（2026-08，源 views/mobile/Duty.vue）：
- * - 月历上提为共享类 `.mb-calendar__grid` / `.mb-cell`（原为页面内联 `.days`），
- *   并补齐参考实现缺失的星期表头与「1 号对齐真实星期」的前置空格，
- *   否则整月日期会整体错位一列。
- * - 值班列表复用 `.mb-row`（行高 48）+ `.mb-avatar`；参考实现的 `.av` 内联样式删除。
- * - `!important` 提权（.today / .duty 的 color）取消：共享类已按 token 取值，无需覆盖。
- * - 数据来源改用 `data/mock.ts` 的 duty（含 shift / room / tel），替换参考的内联数组。
+ * 数据源：后端 /api/v1/emergency/duty（应急值班值守），经 fetchDutyRoster 拉取。
+ * 取消原 data/mock.ts 静态数据；未连后端由 service 内部走空态 + 全局离线告警（不回灌假数据）。
+ * 月历为纯前端几何（保留），值班名单改为真实成员。
  */
 const YEAR = 2026;
 const MONTH = 8;
@@ -28,7 +24,40 @@ const days = computed(() => Array.from({ length: DAYS_IN_MONTH }, (_, i) => i + 
 /** 1 号落在星期几 → 前置空格数，保证日期与星期列对齐 */
 const leadingBlanks = computed(() => new Date(YEAR, MONTH - 1, 1).getDay());
 
-const list = duty;
+interface DutyRow {
+  id: string;
+  shift: string;
+  name: string;
+  room: string;
+  tel: string;
+}
+
+const loading = ref(false);
+const list = ref<DutyRow[]>([]);
+
+function toRow(m: DutyMember): DutyRow {
+  return {
+    id: m.id,
+    shift: m.shift,
+    name: m.name,
+    room: m.department,
+    tel: m.phone,
+  };
+}
+
+async function load(): Promise<void> {
+  loading.value = true;
+  try {
+    const roster = await fetchDutyRoster();
+    list.value = (roster.members ?? []).map(toRow);
+  } catch {
+    list.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(load);
 </script>
 
 <template>
@@ -56,16 +85,25 @@ const list = duty;
 
       <h2 class="mb-section__title duty__sec">今日值班（{{ MONTH }}月{{ TODAY }}日）</h2>
 
-      <div v-for="d in list" :key="d.tel" class="mb-row">
-        <span class="mb-avatar mb-avatar--sm">{{ d.name.slice(0, 1) }}</span>
-        <div class="mb-row__main">
-          <p class="mb-row__title">{{ d.name }}</p>
-          <p class="mb-row__desc">{{ d.shift }} · {{ d.room }}</p>
+      <p v-if="loading" class="mb-loading">加载中…</p>
+
+      <template v-else-if="list.length">
+        <div v-for="d in list" :key="d.id" class="mb-row">
+          <span class="mb-avatar mb-avatar--sm">{{ d.name.slice(0, 1) }}</span>
+          <div class="mb-row__main">
+            <p class="mb-row__title">{{ d.name }}</p>
+            <p class="mb-row__desc">{{ d.shift }} · {{ d.room }}</p>
+          </div>
+          <button type="button" class="mb-btn-primary mb-btn-sm">
+            <Icon name="phone" size="var(--mb-ico-xs)" />
+            拨号
+          </button>
         </div>
-        <button type="button" class="mb-btn-primary mb-btn-sm">
-          <Icon name="phone" size="var(--mb-ico-xs)" />
-          拨号
-        </button>
+      </template>
+
+      <div v-else class="mb-empty">
+        <div class="mb-empty__art" />
+        <p class="mb-empty__text">暂无值班信息</p>
       </div>
     </div>
   </div>
@@ -80,5 +118,11 @@ const list = duty;
 
 .duty__sec {
   margin: var(--space-md) 0 0;
+}
+
+.mb-loading {
+  text-align: center;
+  color: var(--mb-muted);
+  padding: var(--space-lg) 0;
 }
 </style>

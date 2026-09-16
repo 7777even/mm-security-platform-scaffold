@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { RouterLink } from 'vue-router';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
 import IconTile from '../components/IconTile.vue';
 import MapPanel from '../components/MapPanel.vue';
 import { MM_CENTER, alarmMarkers } from '../data/geo';
+import { fetchAlarmPage } from '@/services/alarm';
+import { fetchTasks } from '@/services/task';
+import { fetchEmergencyEvents } from '@/services/emergencyEvent';
+import { fetchMessages } from '@/services/message';
+import { isOfflineNoBackend } from '@/services/backendFallback';
 
 // 首页：对齐 ui-redesign 参考 Home.vue（2026-08-31 二次迁移补齐）
-// - 地图区由占位卡替换为真实 MapPanel（Leaflet·高德），与参考一致 interactive=false
-// - 区块链接落地到真实路由（/alarms /map /events /tasks），替换此前的 /tasks 占位
-// - 补齐参考的「快捷功能」12 宫格——这是通讯录/值班/工单等新页面在 UI 上的唯一入口
-// - 图标统一走共享 Icon / IconTile 组件（AGENTS.md §5 复用既有能力），删除页内内联 SVG
+// - 告警概览 / 待办 / 事件条 / 未读**复用后端既有端点**（不新增接口）：
+//   告警 → /alarms（与大屏报警面板同源，按 type 聚合）；待办 → /tasks；事件条 → /emergency-events；未读 → 消息中心 /messages。
+// - 地图区由占位卡替换为真实 MapPanel（Leaflet·高德）；区块链接落地到真实路由
+// - 图标统一走共享 Icon / IconTile；取消页内硬编码统计（不回灌假数据）
 
 /** 告警等级 → 语义色档（浅底图标 + 同色数字） */
 type AlertSeverity = 'danger' | 'warning' | 'info';
@@ -23,14 +29,14 @@ interface AlertStat {
   icon: string;
 }
 
-const alertStats: AlertStat[] = [
-  { key: 'fire', label: '消防报警', value: 2, severity: 'danger', icon: 'fire' },
-  { key: 'dcs', label: 'DCS 报警', value: 1, severity: 'warning', icon: 'dashboard' },
-  { key: 'gds', label: 'GDS 气体', value: 1, severity: 'danger', icon: 'flask' },
-  { key: 'perimeter', label: '周界入侵', value: 1, severity: 'warning', icon: 'shield' },
-  { key: 'video', label: '视频AI', value: 1, severity: 'info', icon: 'video' },
-  { key: 'person', label: '人员异常', value: 1, severity: 'info', icon: 'user' },
-];
+/** 后端告警类型（/alarms 的 type 枚举）→ 展示元数据 */
+const TYPE_META: Record<string, { label: string; icon: string; severity: AlertSeverity }> = {
+  FIRE: { label: '火灾报警', icon: 'fire', severity: 'danger' },
+  GAS: { label: '气体报警', icon: 'flask', severity: 'danger' },
+  TEMP: { label: '温度报警', icon: 'dashboard', severity: 'warning' },
+  CCTV: { label: '视频AI', icon: 'video', severity: 'info' },
+  SOS: { label: '紧急求助', icon: 'user', severity: 'warning' },
+};
 
 /** 告警等级 → IconTile 色板（对齐参考 statTone） */
 const SEVERITY_TONE: Record<AlertSeverity, 'red' | 'orange' | 'blue'> = {
@@ -39,13 +45,22 @@ const SEVERITY_TONE: Record<AlertSeverity, 'red' | 'orange' | 'blue'> = {
   info: 'blue',
 };
 
-const userName = ref('张工');
-const userRole = ref('消防业务管理员 · 今日值班');
-const pendingCount = ref(3);
-const unreadCount = ref(5);
-const alarmTotal = computed(() => alertStats.reduce((sum, s) => sum + s.value, 0));
+interface TodoTask {
+  id: string;
+  title: string;
+  meta: string;
+  status: string;
+}
 
-/** 快捷功能宫格：路由均已落地， tone 沿用参考配色并映射到 iconset 色板 */
+const TASK_STATUS_TAG: Record<string, string> = {
+  待接收: 'tag--warning',
+  待执行: 'tag--info',
+  执行中: 'tag--warning',
+  已签收: 'tag--info',
+  已完成: 'tag--success',
+};
+
+/** 快捷功能宫格：路由均已落地，tone 映射到 iconset 色板 */
 interface QuickLink {
   name: string;
   to: string;
@@ -68,22 +83,74 @@ const quicks: QuickLink[] = [
   { name: '操作票', to: '/tickets', icon: 'ticket', tone: 'purple' },
 ];
 
-interface TodoTask {
-  id: string;
-  title: string;
-  meta: string;
-  status: '待执行' | '执行中';
+const alertStats = ref<AlertStat[]>([]);
+const alarmTotal = ref(0);
+const pendingCount = ref(0);
+const unreadCount = ref(0);
+const eventCount = ref(0);
+const todoTasks = ref<TodoTask[]>([]);
+const userName = ref('张工');
+const userRole = ref('消防业务管理员 · 今日值班');
+
+async function loadAlarmStats(): Promise<void> {
+  try {
+    const page = await fetchAlarmPage(1, 200);
+    alarmTotal.value = page.total ?? 0;
+    const byType = new Map<string, number>();
+    (page.list ?? []).forEach((a) => byType.set(a.type, (byType.get(a.type) ?? 0) + 1));
+    alertStats.value = Array.from(byType.entries()).map(([t, n]) => {
+      const meta = TYPE_META[t] ?? { label: t, icon: 'alarm', severity: 'info' as AlertSeverity };
+      return { key: t, label: meta.label, value: n, severity: meta.severity, icon: meta.icon };
+    });
+  } catch {
+    alertStats.value = [];
+    alarmTotal.value = 0;
+  }
 }
 
-const TASK_STATUS_TAG: Record<TodoTask['status'], string> = {
-  待执行: 'tag--info',
-  执行中: 'tag--warning',
-};
+async function loadTodo(): Promise<void> {
+  try {
+    const res = await fetchTasks();
+    const items = res.items ?? [];
+    pendingCount.value = items.filter((t) => t.status !== '已完成').length;
+    todoTasks.value = items.slice(0, 2).map((t) => ({
+      id: t.taskCode,
+      title: t.title,
+      meta: [t.area, t.deadline].filter(Boolean).join(' · '),
+      status: t.status,
+    }));
+  } catch {
+    pendingCount.value = 0;
+    todoTasks.value = [];
+  }
+}
 
-const todoTasks: TodoTask[] = [
-  { id: 'T-2081', title: '3号罐区防火巡检', meta: '08:00 - 12:00 · 东区', status: '执行中' },
-  { id: 'T-2082', title: '消防水泵房例行检查', meta: '09:30 - 11:00 · 动力站', status: '待执行' },
-];
+async function loadEventCount(): Promise<void> {
+  try {
+    const groups = await fetchEmergencyEvents();
+    eventCount.value = groups.reduce((n, g) => n + (g.events?.length ?? 0), 0);
+  } catch {
+    eventCount.value = 0;
+  }
+}
+
+async function loadUnread(): Promise<void> {
+  try {
+    const msgs = await fetchMessages();
+    unreadCount.value = msgs.filter((m) => !m.read).length;
+  } catch {
+    unreadCount.value = 0;
+  }
+}
+
+async function load(): Promise<void> {
+  if (isOfflineNoBackend()) {
+    return; // 未连后端：各 loader 内已有三态兜底，保持空态
+  }
+  await Promise.all([loadAlarmStats(), loadTodo(), loadEventCount(), loadUnread()]);
+}
+
+onMounted(load);
 </script>
 
 <template>
@@ -108,7 +175,7 @@ const todoTasks: TodoTask[] = [
       </div>
     </section>
 
-    <!-- 今日告警概览：3 列图标卡 × 2 行 -->
+    <!-- 今日告警概览：3 列图标卡（按后端 type 聚合） -->
     <section class="mb-section">
       <div class="mb-section__head">
         <span class="mb-section__title">
@@ -117,7 +184,7 @@ const todoTasks: TodoTask[] = [
         </span>
         <RouterLink to="/alarms" class="mb-section__link">全部 →</RouterLink>
       </div>
-      <div class="alert-grid">
+      <div v-if="alertStats.length" class="alert-grid">
         <RouterLink v-for="stat in alertStats" :key="stat.key" to="/alarms" class="alert-card">
           <IconTile :name="stat.icon" :tone="SEVERITY_TONE[stat.severity]" shape="rounded" />
           <b class="alert-card__value" :class="`alert-card__value--${stat.severity}`">{{
@@ -125,6 +192,10 @@ const todoTasks: TodoTask[] = [
           }}</b>
           <span class="alert-card__label">{{ stat.label }}</span>
         </RouterLink>
+      </div>
+      <div v-else class="mb-empty">
+        <div class="mb-empty__art" />
+        <p class="mb-empty__text">暂无告警</p>
       </div>
     </section>
 
@@ -150,16 +221,16 @@ const todoTasks: TodoTask[] = [
     </section>
 
     <!-- 应急事件警示条 -->
-    <RouterLink to="/events" class="event-strip">
+    <RouterLink v-if="eventCount > 0" to="/events" class="event-strip">
       <span class="event-strip__text">
         <Icon name="event" size="var(--mb-ico-sm)" />
-        应急事件 3 条进行中
+        应急事件 {{ eventCount }} 条进行中
       </span>
       <span class="event-strip__link">查看 →</span>
     </RouterLink>
 
     <!-- 待办任务 -->
-    <section class="mb-section">
+    <section v-if="todoTasks.length" class="mb-section">
       <div class="mb-section__head">
         <span class="mb-section__title">
           <Icon name="task" size="var(--mb-ico-sm)" />
@@ -170,13 +241,15 @@ const todoTasks: TodoTask[] = [
       <div v-for="task in todoTasks" :key="task.id" class="mb-card todo-card">
         <div class="todo-card__row">
           <span class="todo-card__title">{{ task.title }}</span>
-          <span class="tag" :class="TASK_STATUS_TAG[task.status]">{{ task.status }}</span>
+          <span class="tag" :class="TASK_STATUS_TAG[task.status] ?? 'tag--info'">{{
+            task.status
+          }}</span>
         </div>
         <p class="todo-card__meta">{{ task.id }} · {{ task.meta }}</p>
       </div>
     </section>
 
-    <!-- 快捷功能：全部业务页面的入口宫格（对齐参考 Home.vue quicks） -->
+    <!-- 快捷功能：全部业务页面的入口宫格 -->
     <section class="mb-section">
       <div class="mb-section__head">
         <span class="mb-section__title">

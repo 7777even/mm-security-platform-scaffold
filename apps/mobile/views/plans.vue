@@ -1,22 +1,50 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
-import { plans } from '../data/mock';
+import { fetchEmergencyPlanCatalog } from '@/services/emergencyPlan';
 
 // 应急预案（列表页模板，docs/UI规范-移动端.md §5）
-// - 搜索框沿用 .mb-input（热区 48，参考项目原为 40px，按 token 提升）
-// - 编号标签用 .tag--info，状态/等级着色不在此页出现，禁止自造色阶
-// - 数据为演示数据（data/mock.ts）；接入后由预案列表接口驱动
+// 数据源：后端 /api/v1/emergency-plans/catalog（应急预案目录，4 行层级），
+// 经 fetchEmergencyPlanCatalog 拉取。取消原 data/mock.ts 静态数据；未连后端回落空态（零下行控制）。
+// - 编号标签用 .tag--info，状态/等级着色不在此页出现，禁止自造色阶。
 
+interface PlanRow {
+  id: string;
+  name: string;
+  label: string;
+  current: boolean;
+}
+
+const loading = ref(false);
 const keyword = ref('');
+const list = ref<PlanRow[]>([]);
 
-const list = computed(() => {
+async function load(): Promise<void> {
+  loading.value = true;
+  try {
+    const res = await fetchEmergencyPlanCatalog();
+    list.value = (res.items ?? []).map((it) => ({
+      id: it.id,
+      name: it.planName || it.label,
+      label: it.label,
+      current: it.isCurrent,
+    }));
+  } catch {
+    list.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+const filtered = computed(() => {
   const kw = keyword.value.trim();
-  if (!kw) return plans;
-  return plans.filter((p) => p.name.includes(kw) || p.id.includes(kw));
+  if (!kw) return list.value;
+  return list.value.filter((p) => p.name.includes(kw) || p.id.includes(kw));
 });
+
+onMounted(load);
 </script>
 
 <template>
@@ -25,9 +53,11 @@ const list = computed(() => {
 
     <input v-model="keyword" class="mb-input plan__search" placeholder="搜索预案名称 / 编号" />
 
-    <div v-if="list.length > 0" class="mb-stack">
+    <p v-if="loading" class="mb-loading">加载中…</p>
+
+    <div v-else-if="filtered.length > 0" class="mb-stack">
       <RouterLink
-        v-for="p in list"
+        v-for="p in filtered"
         :key="p.id"
         class="mb-card mb-card--link"
         :to="`/plans/${p.id}`"
@@ -39,7 +69,7 @@ const list = computed(() => {
           </span>
           <span class="tag tag--info">{{ p.id }}</span>
         </div>
-        <p class="mb-card__desc">适用：{{ p.scope }} · 级别：{{ p.level }} · {{ p.ver }}</p>
+        <p class="mb-card__desc">层级：{{ p.label }}{{ p.current ? ' · 当前预案' : '' }}</p>
       </RouterLink>
     </div>
 
@@ -59,5 +89,11 @@ const list = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: var(--space-xs);
+}
+
+.mb-loading {
+  text-align: center;
+  color: var(--mb-muted);
+  padding: var(--space-lg) 0;
 }
 </style>

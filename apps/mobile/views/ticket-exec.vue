@@ -1,18 +1,16 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
-import { tickets } from '../data/mock';
+import { fetchSpecialOperations, type SpecialOperationItem } from '@/services/specialOperation';
+import { isOfflineNoBackend, notifyBackendOffline } from '@/services/backendFallback';
 
 /**
  * 操作票执行（docs/UI规范-移动端.md §5）
  *
- * ui-redesign 迁移（2026-08，源 views/mobile/TicketExec.vue）：
- * - 步骤序号上提为共享类 `.mb-stepno`（复用既有 `--mb-step-dot` 尺寸 token），
- *   替换参考内联的 `.idx`；已完成节点转成功色，与 patrol-exec 的执行语义一致。
- * - 附件区上提为共享类 `.mb-upload`（虚线描边占位）。
- * - 主操作「确认本步完成」改为 `.mb-safe-bar` 固定底部条：执行页步骤长、需单手连点，
- *   固定条可避免滚到页尾才能提交；页面用 `.mb-page--bar` 预留底部安全区。
- * - 票头信息取 `data/mock.ts` 的 tickets[0]，替换参考的写死文案。
+ * 数据源：后端 /api/v1/special-operations（特殊作业票），取首条作为当前执行票。
+ * 取消原 data/mock.ts 静态数据；未连后端走空态 + 全局离线告警（不回灌假数据）。
+ * - 票头信息取自后端作业票；作业步骤后端暂无对应端点，暂以占位步骤渲染（标注待接入）。
  */
 interface ExecStep {
   name: string;
@@ -21,7 +19,16 @@ interface ExecStep {
   cur: boolean;
 }
 
-const ticket = tickets[0];
+interface TicketHead {
+  name: string;
+  grade: string;
+  st: string;
+}
+
+const loading = ref(false);
+const ticket = ref<TicketHead | null>(null);
+
+// TODO(后端接续)：作业票步骤/唱票明细暂无端点，步骤为占位；补端点后改为真实数据源。
 const TOTAL_STEPS = 12;
 const CURRENT_STEP = 3;
 
@@ -31,13 +38,48 @@ const steps: ExecStep[] = [
   { name: '切换泵组运行状态', tip: '当前步骤 · 请唱票确认', done: false, cur: true },
   { name: '核对出口压力', tip: '待执行', done: false, cur: false },
 ];
+
+function toHead(o: SpecialOperationItem): TicketHead {
+  return {
+    name: o.content || `${o.area} · ${o.type}`,
+    grade: o.level,
+    st: o.status,
+  };
+}
+
+async function load(): Promise<void> {
+  loading.value = true;
+  try {
+    if (isOfflineNoBackend()) {
+      notifyBackendOffline('special-operation', '/special-operations');
+      ticket.value = null;
+      return;
+    }
+    const page = await fetchSpecialOperations({ page: 1, size: 1 });
+    const first = page.list?.[0];
+    ticket.value = first ? toHead(first) : null;
+  } catch {
+    ticket.value = null;
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(load);
 </script>
 
 <template>
   <div class="mb-page mb-page--bar">
     <MobileHeader variant="back" title="操作票执行" back-to="/tickets" />
 
-    <div class="mb-stack">
+    <p v-if="loading" class="mb-loading">加载中…</p>
+
+    <div v-else-if="!ticket" class="mb-empty">
+      <div class="mb-empty__art" />
+      <p class="mb-empty__text">暂无执行中的操作票</p>
+    </div>
+
+    <div v-else class="mb-stack">
       <div class="mb-card">
         <h2 class="mb-card__title">{{ ticket.name }}</h2>
         <p class="mb-card__desc">
@@ -64,7 +106,7 @@ const steps: ExecStep[] = [
       </button>
     </div>
 
-    <div class="mb-safe-bar">
+    <div v-if="ticket" class="mb-safe-bar">
       <button type="button" class="mb-btn-primary mb-btn-block">确认本步完成</button>
     </div>
   </div>
@@ -86,5 +128,11 @@ const steps: ExecStep[] = [
 .ticket-exec__main {
   flex: 1;
   min-width: 0;
+}
+
+.mb-loading {
+  text-align: center;
+  color: var(--mb-muted);
+  padding: var(--space-lg) 0;
 }
 </style>

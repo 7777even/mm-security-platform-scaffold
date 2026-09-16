@@ -1,28 +1,68 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
-import { drills } from '../data/mock';
+import { fetchDrills } from '@/services/drill';
+import { isOfflineNoBackend, notifyBackendOffline } from '@/services/backendFallback';
 
 // 演练信息（列表页模板，docs/UI规范-移动端.md §5 / §5.1）
-// - 筛选 chip 热区 48（参考项目原为 30px，未达 §1.4 要求，迁移时按 token 提升）
-// - 演练状态只用 .tag--danger / --info / --success 三档，禁止自造色阶
-// - 数据为演示数据（data/mock.ts）；接入后由演练计划列表接口驱动
+// 数据源：后端 /api/v1/drills（应急演练），经 fetchDrills 拉取，取代原 data/mock.ts 静态数据。
+// - 筛选 chip 由后端状态派生（原为硬编码常量）；热区 48。
+// - 演练状态只用 .tag--danger / --info / --success 三档，禁止自造色阶。
 
-const CHIPS = ['全部', '计划中', '进行中'] as const;
-const filter = ref<string>('全部');
+interface DrillRow {
+  id: number;
+  code: string;
+  name: string;
+  st: string;
+  time: string;
+  place: string;
+  taskCount: number;
+}
 
-const list = computed(() =>
-  filter.value === '全部' ? drills : drills.filter((d) => d.st === filter.value),
-);
-
-/** 演练状态 → 标签类 */
 const STATUS_TAG: Record<string, string> = {
   进行中: 'tag--danger',
   计划中: 'tag--info',
   已结束: 'tag--success',
 };
+
+const loading = ref(false);
+const list = ref<DrillRow[]>([]);
+const filter = ref<string>('全部');
+
+async function load(): Promise<void> {
+  loading.value = true;
+  try {
+    if (isOfflineNoBackend()) {
+      notifyBackendOffline('drills', '/drills');
+      list.value = [];
+      return;
+    }
+    const res = await fetchDrills();
+    list.value = (res.items ?? []).map((d) => ({
+      id: d.id,
+      code: d.drillCode,
+      name: d.name,
+      st: d.status,
+      time: d.timeRange,
+      place: d.place,
+      taskCount: d.taskCount,
+    }));
+  } catch {
+    list.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+const chips = computed(() => ['全部', ...new Set(list.value.map((d) => d.st).filter(Boolean))]);
+
+const filtered = computed(() =>
+  filter.value === '全部' ? list.value : list.value.filter((d) => d.st === filter.value),
+);
+
+onMounted(load);
 </script>
 
 <template>
@@ -31,7 +71,7 @@ const STATUS_TAG: Record<string, string> = {
 
     <div class="mb-chips" role="tablist" aria-label="演练状态筛选">
       <button
-        v-for="c in CHIPS"
+        v-for="c in chips"
         :key="c"
         type="button"
         class="mb-chip"
@@ -44,9 +84,11 @@ const STATUS_TAG: Record<string, string> = {
       </button>
     </div>
 
-    <div v-if="list.length > 0" class="mb-stack">
+    <p v-if="loading" class="mb-loading">加载中…</p>
+
+    <div v-else-if="filtered.length > 0" class="mb-stack">
       <RouterLink
-        v-for="d in list"
+        v-for="d in filtered"
         :key="d.id"
         class="mb-card mb-card--link"
         :to="`/drills/${d.id}`"
@@ -56,10 +98,10 @@ const STATUS_TAG: Record<string, string> = {
             <Icon name="drill" size="var(--mb-ico-sm)" />
             {{ d.name }}
           </span>
-          <span class="tag" :class="STATUS_TAG[d.st]">{{ d.st }}</span>
+          <span class="tag" :class="STATUS_TAG[d.st] ?? 'tag--info'">{{ d.st }}</span>
         </div>
-        <p class="mb-card__desc">{{ d.id }} · {{ d.time }}</p>
-        <p class="mb-card__desc">{{ d.place }} · 我的任务：{{ d.tasks.length }} 项</p>
+        <p class="mb-card__desc">{{ d.code }} · {{ d.time }}</p>
+        <p class="mb-card__desc">{{ d.place }} · 我的任务：{{ d.taskCount }} 项</p>
       </RouterLink>
     </div>
 
@@ -75,5 +117,11 @@ const STATUS_TAG: Record<string, string> = {
   display: inline-flex;
   align-items: center;
   gap: var(--space-xs);
+}
+
+.mb-loading {
+  text-align: center;
+  color: var(--mb-muted);
+  padding: var(--space-lg) 0;
 }
 </style>

@@ -1,60 +1,86 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import MobileHeader from '../components/MobileHeader.vue';
-import { tasks } from '../data/mock';
+import { fetchTaskDetail, type TaskItem } from '@/services/task';
+import { isOfflineNoBackend, notifyBackendOffline } from '@/services/backendFallback';
 
 /**
  * 任务详情（docs/UI规范-移动端.md §5）
  *
- * ui-redesign 迁移（2026-08，源 views/mobile/TaskDetail.vue）：
- * - 只读字段由参考的「一字段一白卡」改为共享类 `.mb-detail` 分组卡（标签左 / 值右，
- *   行高 48），与 alarm-detail / plan-detail 的详情页模板保持一致。
- * - 「路径规划 →」入口保留在「位置」行内，热区由 `.mb-detail__row` 承担（≥48）。
- * - 等级标签走 `.tag--*` 枚举；主操作「一键确认接收」唯一，次操作用白底描边。
+ * 数据源：后端 /api/v1/tasks/{id}（处置任务详情），经 fetchTaskDetail 拉取。
+ * 取消原 data/mock.ts 静态数据；未连后端 / 未命中走空态 + 全局离线告警（不回灌假数据）。
+ * - 只读字段用 .mb-detail 分组卡（标签左 / 值右，行高 48），与 alarm-detail / plan-detail 一致。
+ * - 等级标签走 .tag--* 枚举。
  */
 const route = useRoute();
-const task = computed(() => tasks.find((x) => x.id === route.params.id) ?? tasks[0]);
+const loading = ref(false);
+const task = ref<TaskItem | null>(null);
 
 const LEVEL_TAG: Record<string, string> = {
   紧急: 'tag--danger',
   重要: 'tag--warning',
   一般: 'tag--info',
 };
+
+async function load(): Promise<void> {
+  loading.value = true;
+  try {
+    if (isOfflineNoBackend()) {
+      notifyBackendOffline('tasks', '/tasks/{id}');
+      task.value = null;
+      return;
+    }
+    task.value = await fetchTaskDetail(String(route.params.id));
+  } catch {
+    task.value = null;
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(load);
 </script>
 
 <template>
   <div class="mb-page">
     <MobileHeader variant="back" title="任务详情" back-to="/tasks" />
 
-    <div class="mb-stack">
+    <p v-if="loading" class="mb-loading">加载中…</p>
+
+    <div v-else-if="!task" class="mb-empty">
+      <div class="mb-empty__art" />
+      <p class="mb-empty__text">未找到该任务</p>
+    </div>
+
+    <div v-else class="mb-stack">
       <div class="mb-card">
         <div class="mb-card__title">
-          <span>{{ task.name }}</span>
-          <span class="tag" :class="LEVEL_TAG[task.level]">{{ task.level }}</span>
+          <span>{{ task.title }}</span>
+          <span class="tag" :class="LEVEL_TAG[task.level] ?? 'tag--info'">{{ task.level }}</span>
         </div>
-        <p class="mb-card__desc">{{ task.id }}</p>
+        <p class="mb-card__desc">{{ task.taskCode }} · {{ task.status }}</p>
       </div>
 
       <div class="mb-detail">
         <div class="mb-detail__row">
           <span class="mb-detail__label">任务来源</span>
-          <span class="mb-detail__value">{{ task.src }}</span>
+          <span class="mb-detail__value">{{ task.source || '—' }}</span>
         </div>
         <div class="mb-detail__row">
           <span class="mb-detail__label">位置</span>
           <span class="mb-detail__value">
-            {{ task.area }}
+            {{ task.area || '—' }}
             <RouterLink class="task-detail__path" to="/path">路径规划 →</RouterLink>
           </span>
         </div>
         <div class="mb-detail__row">
           <span class="mb-detail__label">要求完成时间</span>
-          <span class="mb-detail__value">{{ task.deadline }}</span>
+          <span class="mb-detail__value">{{ task.deadline || '—' }}</span>
         </div>
         <div class="mb-detail__row">
           <span class="mb-detail__label">任务内容</span>
-          <span class="mb-detail__value">{{ task.desc }}</span>
+          <span class="mb-detail__value">{{ task.description || '—' }}</span>
         </div>
       </div>
 
@@ -71,5 +97,11 @@ const LEVEL_TAG: Record<string, string> = {
   font-size: var(--mb-fz-help);
   color: var(--primary-mobile);
   text-decoration: none;
+}
+
+.mb-loading {
+  text-align: center;
+  color: var(--mb-muted);
+  padding: var(--space-lg) 0;
 }
 </style>
