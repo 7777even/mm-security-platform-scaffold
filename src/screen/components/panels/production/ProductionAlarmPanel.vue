@@ -2,9 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import ProductionAlarmCard from '../../common/ProductionAlarmCard.vue';
-import type { ProductionAlarmItem } from '@/services/production';
-import { fetchAlarmPage } from '@/services/alarm';
-import { toProductionAlarmItem } from '../../../lib/adapters/alarmAdapter';
+import { fetchProductionAlarms, type ProductionAlarmItem } from '@/services/production';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
@@ -13,8 +11,9 @@ const visibleProductionAlarms = computed(() => filterByPlantArea(realAlarms.valu
 
 onMounted(async () => {
   try {
-    const page = await fetchAlarmPage(1, 20);
-    realAlarms.value = page.list.map((alarm, i) => toProductionAlarmItem(alarm, i));
+    // 同源修正：生产区域安全告警走生产域专属端点 /production/alarms（fac_production_alarm），
+    // 不再误用通用报警 /alarms（fac_alarm）——两者本是不同表、不同业务。
+    realAlarms.value = await fetchProductionAlarms();
   } catch {
     // 暴露式降级：后端不可用时保持空列表，不静默回落硬编码假数据
     realAlarms.value = [];

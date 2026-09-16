@@ -1,6 +1,6 @@
 import { ref, type Ref } from 'vue';
-import { fetchAlarmPage } from '@/services/alarm';
-import { toScreenAlarm } from '../adapters/alarmAdapter';
+import { fetchAlarmPage, fetchFireAlarmPage } from '@/services/alarm';
+import { toScreenAlarm, toScreenAlarmFromFire } from '../adapters/alarmAdapter';
 import type { AlarmItem as ScreenAlarmItem } from '../data/mock';
 import { backendUnavailableWarn } from '@/services/backendFallback';
 import { subscribeAlarmPush } from '@/services/realtime';
@@ -75,4 +75,44 @@ subscribeAlarmPush((alarm) => {
 /** 按本地 id 查找报警（供地图点位点击等按 id 反查的场合）。 */
 export function findScreenAlarm(id: number | string): ScreenAlarmItem | undefined {
   return screenAlarms.value.find((item) => String(item.id) === String(id));
+}
+
+/* ==================== 消防报警源（与大屏消防模块/管理端同源：/fire-alarms） ==================== */
+// 背景：上面的 screenAlarms 服务「地图点位反查」，数据来自 /alarms（fac_alarm，经 /map/alarms 撒点），
+// 不能改源，否则地图点按 id 反查会失效。而消防页的「声光报警」语义属于消防报警，此前复用了同一份
+// fac_alarm 数据 → 同一屏出现两套报警源。
+// 故拆出独立消防报警源（GET /fire-alarms，fac_fire_alarm），仅用于消防页声光报警等消防场景。
+// 无实时推送通道（后端 /ws/alarm 增量基于 fac_alarm），采用"进入页面/按需拉取"，与声光报警的
+// fetch-on-demand 语义一致。
+
+export const screenFireAlarms: Ref<ScreenAlarmItem[]> = ref([]);
+export const screenFireAlarmLoading = ref(false);
+
+let fireLoaded = false;
+let fireInflight: Promise<void> | null = null;
+
+/** 拉取消防报警（与大屏消防模块同源）；失败不置 loaded，允许后续重试。 */
+export function refreshScreenFireAlarms(size = 20): Promise<void> {
+  if (fireLoaded) return Promise.resolve();
+  if (fireInflight) return fireInflight;
+  screenFireAlarmLoading.value = true;
+  fireInflight = fetchFireAlarmPage(1, size)
+    .then((page) => {
+      const list = page?.list ?? [];
+      screenFireAlarms.value = list.map((item, index) => toScreenAlarmFromFire(item, index));
+      fireLoaded = true;
+    })
+    .catch((error: unknown) => {
+      screenFireAlarms.value = [];
+      backendUnavailableWarn(
+        'screen-fire-alarm',
+        '/fire-alarms',
+        error instanceof Error ? error.message : '请求失败',
+      );
+    })
+    .finally(() => {
+      screenFireAlarmLoading.value = false;
+      fireInflight = null;
+    });
+  return fireInflight;
 }

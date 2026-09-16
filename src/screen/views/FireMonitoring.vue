@@ -45,18 +45,19 @@ import {
 import { rescueDrawerActive } from '../lib/composables/useRescueDrawerActive';
 import { useAlarmDetailPanel } from '../lib/composables/useAlarmDetailPanel';
 import { fireAlarmToDetail } from '../lib/data/alarmDetailMock';
-import { refreshScreenAlarms, screenAlarms } from '../lib/composables/useScreenAlarmFeed';
+import { refreshScreenFireAlarms, screenFireAlarms } from '../lib/composables/useScreenAlarmFeed';
 import { showToast } from '../lib/composables/useToast';
 import fireAlarmSnapshot from '../assets/semantic-scenes/fire-alarm-pipe-rack.png';
 
 const { alarmDetailOpen, openAlarmDetail } = useAlarmDetailPanel();
 const router = useRouter();
 const soundLightAlarmOpen = ref(false);
-// 声光报警弹窗取真实后端 /alarms 的首条；无真实报警时不开窗（不造假数据冒充后端）。
-const soundLightAlarm = computed(() => screenAlarms.value[0] ?? null);
+// 声光报警弹窗取消防报警源（GET /fire-alarms，与大屏消防模块/管理端同源）的首条；
+// 无消防报警时不开窗（不造假数据冒充后端）。不再复用地图那套 /alarms（fac_alarm）。
+const soundLightAlarm = computed(() => screenFireAlarms.value[0] ?? null);
 
 async function openSoundLightAlarm() {
-  await refreshScreenAlarms();
+  await refreshScreenFireAlarms();
   if (!soundLightAlarm.value) {
     showToast('当前无实时报警');
     return;
@@ -64,8 +65,8 @@ async function openSoundLightAlarm() {
   soundLightAlarmOpen.value = true;
 }
 
-// 进入消防监控页即预热真实报警源，避免点击声光报警时才首次请求。
-onMounted(() => void refreshScreenAlarms());
+// 进入消防监控页即预热消防报警源，避免点击声光报警时才首次请求。
+onMounted(() => void refreshScreenFireAlarms());
 
 function closeSoundLightAlarm() {
   soundLightAlarmOpen.value = false;
