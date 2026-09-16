@@ -479,6 +479,23 @@ const mgmtMenusRaw: MgmtGroupRaw[] = [
     icon: 'event',
     children: [
       L(
+        '应急事件',
+        '/emergency-event',
+        'event',
+        ['事件编号', '事件标题', '事件类型', '所处位置', '发生时间', '危害源等级', '状态'],
+        [
+          [
+            '1',
+            '罐区泄漏先期处置',
+            '事件',
+            '储运部 T-301',
+            '2026-08-21 09:03',
+            '三级',
+            warn('进行中'),
+          ],
+        ],
+      ),
+      L(
         '应急知识库',
         '/emergency-knowledge',
         'library',

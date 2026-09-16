@@ -60,6 +60,8 @@ const SERVICE_PATHS = [
   '/emergency-team',
   '/emergency-vehicle',
   '/emergency-expert',
+  // 应急及演练管理域：补管理端缺失的「应急事件」页（大屏/移动端早已读 /emergency-events）
+  '/emergency-event',
   // 设备管理域：已接后端只读台账
   '/video-mgmt',
   '/video-health',
@@ -254,6 +256,12 @@ const serviceRoutes: RouteRecordRaw[] = [
     path: '/emergency-expert',
     component: () => import('./views/emergency/EmergencyExpertView.vue'),
     meta: routeMeta('/emergency-expert', '应急专家管理'),
+  },
+  // —— 应急及演练管理域：应急事件（接后端 /emergency-events，与大屏/移动端同源）——
+  {
+    path: '/emergency-event',
+    component: () => import('./views/emergency/EmergencyEventView.vue'),
+    meta: routeMeta('/emergency-event', '应急事件'),
   },
   {
     path: '/emergency-plan',
