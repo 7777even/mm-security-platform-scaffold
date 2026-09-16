@@ -7,9 +7,9 @@ import FireFacilityMonitoringDialog from '../common/FireFacilityMonitoringDialog
 import SurveillanceVideoDialog from '../common/SurveillanceVideoDialog.vue';
 import type { AlarmItem } from '../../lib/data/mock';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
-import { fetchAlarmPage } from '@/services/alarm';
+import { fetchFireAlarmPage } from '@/services/alarm';
 import { fetchFireMonitorAreas, type FireMonitorArea } from '@/services/fireSituation';
-import { toScreenAlarm } from '../../lib/adapters/alarmAdapter';
+import { toScreenAlarmFromFire } from '../../lib/adapters/alarmAdapter';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
 import { showToast } from '../../lib/composables/useToast';
 import fireAreaScene from '../../assets/semantic-scenes/fire-alarm-pipe-rack.png';
@@ -60,15 +60,17 @@ const demoAlarmEnabled = ref(true);
 const areaSearch = ref('');
 
 const { selectedPlantArea, selectedPlantAreaDefinition, filterByPlantArea } = usePlantArea();
-// 实时报警：直连真后端 /alarms（services 层在缺 VITE_API_BASE 时回落 dev mock），
-// 经 toScreenAlarm 适配为 AlarmCard 所需的本地形状。厂区过滤沿用既有 filterByPlantArea。
+// 实时报警：与大屏消防模块/管理端消防报警同源，直连真后端 GET /fire-alarms（fac_fire_alarm）；
+// 「进行中报警」只取 status=ACTIVE（进行中），已闭环不进本列表。services 层缺 VITE_API_BASE 时回落 dev mock。
 const realAlarms = ref<AlarmItem[]>([]);
 const visibleAlarms = computed(() => filterByPlantArea(realAlarms.value));
 
 onMounted(async () => {
   try {
-    const res = await fetchAlarmPage(1, 20);
-    realAlarms.value = res.list.map((a, i) => toScreenAlarm(a, i));
+    const res = await fetchFireAlarmPage(1, 1000);
+    realAlarms.value = res.list
+      .filter((a) => a.status === 'ACTIVE')
+      .map((a, i) => toScreenAlarmFromFire(a, i));
   } catch {
     // 真实接口异常时保持空列表（面板降级为「消防态势平稳」），不阻断其它模块
   }

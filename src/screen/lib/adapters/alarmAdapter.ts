@@ -3,7 +3,12 @@
 // 而 AlarmCard 期望 title/titleColor/source/status/location/time/description 等本地形状，
 // 二者存在漂移，此处做单向映射，使真实告警可直喂大屏卡片，无需改动 AlarmCard。
 import type { AlarmItem as ScreenAlarmItem } from '@/screen/lib/data/mock';
-import type { AlarmItem as ApiAlarmItem, AlarmType, AlarmStatus } from '@/services/alarm';
+import type {
+  AlarmItem as ApiAlarmItem,
+  AlarmType,
+  AlarmStatus,
+  FireAlarmItem,
+} from '@/services/alarm';
 
 const TYPE_LABEL: Record<AlarmType, string> = {
   FIRE: '火灾告警',
@@ -91,5 +96,31 @@ export function toProductionAlarmItem(alarm: ApiAlarmItem, index = 0): Productio
     status: STATUS_LABEL[alarm.status ?? 'ACTIVE'],
     iconIndex: Math.min(Math.max(level - 1, 0), 3),
     thumb: null,
+  };
+}
+
+/**
+ * 将后端消防报警 FireAlarmItem（GET /fire-alarms，fac_fire_alarm）映射为大屏 AlarmCard 本地形状。
+ * 与大屏消防模块/管理端消防报警同源；`time` 后端已是 "YYYY-MM-DD HH:mm:ss" 字符串，直接透传；
+ * 消防报警 level 为 '-'（无数字级别），titleColor 改由状态推导（进行中=红 / 已闭环=橙）。
+ */
+export function toScreenAlarmFromFire(alarm: FireAlarmItem, index = 0): ScreenAlarmItem {
+  const titleColor: ScreenAlarmItem['titleColor'] =
+    alarm.status === 'CLOSED' ? 'warning' : 'danger';
+  return {
+    id: alarmIdAsNumber(alarm.alarmId) || index + 1,
+    title: alarm.title ?? alarm.typeLabel,
+    titleColor,
+    alarmType: alarm.typeLabel,
+    source: alarm.source || '火灾报警',
+    location: alarm.location ?? '',
+    time: alarm.time ?? '',
+    description: alarm.description ?? '',
+    status: STATUS_LABEL[alarm.status ?? 'ACTIVE'],
+    rescueEventId: alarm.rescueEventId ? Number(alarm.rescueEventId) || 0 : 0,
+    monitorId: alarm.monitorId ?? '',
+    monitorLabel: alarm.monitorLabel ?? '',
+    onsiteMonitorId: alarm.onsiteMonitorId ?? '',
+    onsiteMonitorLabel: alarm.onsiteMonitorLabel ?? '',
   };
 }

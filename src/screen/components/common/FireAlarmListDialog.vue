@@ -87,6 +87,7 @@ async function loadAlarms() {
   }
 }
 
+// 列表跟随页面「厂区」筛选。默认厂区为「全厂区」→ 显示接口全部；切到某厂区则只显示该厂区。
 const filteredItems = computed(() =>
   filterByPlantArea(allItems.value).filter((item) => {
     if (typeFilter.value !== SENTINEL_TYPE && item.typeLabel !== typeFilter.value) return false;

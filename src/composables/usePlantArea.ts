@@ -7,7 +7,8 @@ import {
   type PlantAreaCode,
 } from '@/services/map-data/plantAreas';
 
-const selectedPlantArea = ref<PlantAreaCode>('refinery');
+// 默认「全厂区」：刚进入大屏页时展示全厂数据，不预选某个具体厂区（否则各面板/告警列表会被默认厂区过滤而少数据）。
+const selectedPlantArea = ref<PlantAreaCode>('all');
 
 export function usePlantArea() {
   const selectedPlantAreaDefinition = computed(() =>
