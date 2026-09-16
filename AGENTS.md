@@ -78,12 +78,15 @@
 | 文档、规范、AGENTS                                   | `git diff --check`                               |
 | 单端单文件组件或样式                                 | `npx eslint <path>` 或 `npm run type-check`      |
 | 跨端公共服务、`tokens.css`、`src/composables/`       | `npm run type-check` + `npx eslint <受影响路径>` |
+| **新增 `src/services                                 | composables`、`apps/*/data`下的`.ts`**           | **`node scripts/check-spec-coverage.mjs`（须有 spec 引用；CI 已守门）** |
 | 关键路径 `deviceCode` / `usePermission` / `realtime` | `npx vitest run <spec 路径>`                     |
 | 构建配置、依赖、`vite.config.ts`、多入口             | `npm run build`                                  |
 | `subapps/**`                                         | `npm run build:subapps`                          |
 | L3 / L4                                              | 按 `tasks.md` 验收标准全量，不得以 L1 / L2 降级  |
 
 禁止为形式化验证在每次 L1 / L2 后连跑 lint + type-check + build + build:subapps 四套；只跑矩阵中对应的一行。
+
+> **为什么「新增文件必须有 spec」要单独守门**：覆盖率门禁是 `coverage.all:false` + `include` 白名单，**未被测试加载的文件不插桩**——新增零测试文件不会拉低覆盖率、门禁照样绿。`all:true` 会全量插桩 OOM，不能翻开关，故用 `scripts/check-spec-coverage.mjs` 做增量校验（范围＝`HEAD~1..HEAD`，即最近一次提交新增的文件）。确不需测试的，在脚本 `ALLOWLIST` 登记并写理由。
 
 环境注记：本机 `vite build` 清空 `dist/` 会触发批量删除守卫而失败，验证编译是否通过时用 `npx vite build --emptyOutDir=false`，或指到全新的 `--outDir`。
 

@@ -75,7 +75,9 @@
 
 - `vitest run` **316 passed（52 文件）**（2026-09-16 实测；**勿手写此数字**，以当次 `vitest run` 汇总为准）；`vue-tsc -p tsconfig.app.json --noEmit` **0 错**。
 - `node scripts/validate-api-contracts.mjs` **通过（32 域）**（2026-09-16 实测；域数= `docs/api/*.openapi.json` 文件数，新增域会变，**勿手写**）；铁律 ④（2xx 响应需 `example`）对**二进制响应窄豁免**——仅当响应**无 `application/json`** 且**全部媒体类型**为 `image|audio|video/*`、`application/octet-stream` 或 `schema.format=binary` 时跳过，JSON 分支缺 example 仍报错（2026-09-10 起，修订掉 V26/V29 快照端点的 2 处误报）。现存 1 处非阻塞警告：`realtime.openapi.json` 的 `/ws/alarm` GET 无 2xx 响应（WS 握手本非 2xx，属合理，勿为消警告而造响应）。
-- **覆盖率门禁的强度边界（重要）**：`vite.config.ts` 的 `coverage.all: false` + `include` 白名单（`src/services|composables|directives|components`、`apps/mobile`；**排除 `src/screen/**`**）。含义：**没被任何测试加载的文件根本不插桩** → 新增一个零测试的 `src/services/xxx.ts` 不会拉低覆盖率、门禁照样绿。故覆盖率门禁**只防存量回退，不防新增代码零测试**；`all: true` 会因全量插桩 OOM（注释已说明），不要简单翻开关。新增文件仍需靠测试评审兜住。
+- **覆盖率门禁的强度边界（重要）**：`vite.config.ts` 的 `coverage.all: false` + `include` 白名单（`src/services|composables|directives|components`、`apps/mobile`；**排除 `src/screen/**`**）。含义：**没被任何测试加载的文件根本不插桩** → 新增一个零测试的 `src/services/xxx.ts` 不会拉低覆盖率、门禁照样绿。故覆盖率门禁**只防存量回退，不防新增代码零测试**；`all: true` 会因全量插桩 OOM（注释已说明），不要简单翻开关。
+  > ✅ **该缺口已用增量门禁兜住**：`scripts/check-spec-coverage.mjs`（2026-09-16 新增，已进前端 CI `verify` job）。规则＝本次**新增**（`git diff --diff-filter=A`）的 `src/services|composables`、`apps/*/data|composables` 下 `.ts` 必须被某个 `*.spec.ts` **import 引用**（按说明符解析路径，兼容 `@/...` 别名与 `./...` 同目录写法），或在脚本 `ALLOWLIST` 登记并写理由。**检查范围＝`HEAD~1..HEAD`**（CI checkout 为 `fetch-depth: 2`；本仓 `.git` 约 157MB，不做全历史 clone）→ 多提交推送只覆盖最后一个提交，属**有意取舍（宁可漏检不误报）**；显式看到"无法计算差异"的告警时**不等于通过**。
+  > 正/负双向已验证：`businessWrite.ts`（有配套 spec）放行 ✓；历史提交 `2b8975b` 新增的 `drill.ts`/`msds.ts`/`task.ts`（无 spec）**exit 1** ✓。
 - 单测 fake timers **禁用 `setTimeout(r,0)`** 冲刷 fetch，改 `await Promise.resolve()` 循环。
 
 ## 8. 里程碑速记
