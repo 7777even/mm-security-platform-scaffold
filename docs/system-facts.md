@@ -57,6 +57,20 @@
 > 状态（2026-09-10 收尾完成）：早年「12 缺口清单」已过时，多数面板已接 `fetch*` 服务。原残留的 3 处「组件直读 mock 常量」已全部接线后端（端点本就就绪，无需改后端/契约）：① 主壳 `src/components/layout/SystemMessageBar.vue` → `fetchDashboardMessages()`（`/dashboard/messages`）；② `src/screen/components/panels/FireRescueForce.vue` → `fetchRescueForces()`（`/fire/rescue-forces`）；③ `src/screen/components/map/FireBrigadeMapOverlay.vue` → 消费 `useFireBrigadeView()` 的 `fireBrigadeItems` / `selectedFireBrigade`（`/rescue-resources/brigades`）——其 composable 初始态预填 `fireBrigadeMock` fixture + loader `Array.isArray` 守卫，避免空态与清空回归。**死 mock 已清**：两个副本 `src/services/map-data/mock.ts` 与 `src/screen/lib/data/mock.ts` 中，`specialOperations`/`fireEquipment`/`equipmentStatus`/`rescueStats`/`systemMessages`/`alarms` 六个无引用常量已删；保留仍被引用的 `fireEquipmentCategories`（同级 `fireFacilityMonitoringMock.ts` 相对 `./mock` 引用）、`fireAlarmMarker`、`dutyPersons`、`mapControls` 与全部类型。⚠️ 这两个 `mock.ts` 是**双副本、各被相对 `./mock` 引用**（`alarmDetailMock.ts` / `fireFacilityMonitoringMock.ts`，两侧各一份），勿整体删除、删常量前须 grep 相对路径。剩 2 处演示告警单点硬钉（`TvMap` `tvAlarmMarker`、`CenterMap` `fireAlarmMarker`）**已于 2026-09-10 接 `/map/alarms`**：两处均「初始态 fixture 兜底 + onMounted 取首条有限坐标接管」（TvMap 换 `alarmMarker` ref 的位置/状态并联动屏幕锚点；CenterMap 换 `alarmTarget` ref 的飞掠目标；`fetchAlarmPoints` 失败自带 FALLBACK 点位，绝不白屏）。`MapAlarmVideoPopups` 与 `alarmDetailMock` 对 `fireAlarmMarker` 的引用是**兜底坐标/fixture 内部引用**，非展示硬钉，保留。按设计本地、非缺口：地图控件按钮数组、路线几何、工具栏/动态 tab、处置指引 `guidanceSteps`。
 > 补记（2026-09-10 B4/B5/B6）：**B 类硬缺口已清零**。④ 事故救援指令详情接 `/emergency/commands` + `/{id}`；⑤ 防恐巡更轨迹接 `/security/track/{timeline,summary}`、检索详情接 `/security/search/{vehicle,person}/{id}`；⑥ `SecurityStatusPanel` 的周界入侵告警接 `/security/perimeter-alarms/latest`（抓拍 `/{id}/snapshot`，blob→objectURL），`alarmDetailMock.ts` 两份副本新增 `perimeterAlarmToDetail` 适配器（后端 DTO → 30+ 字段 `AlarmDetailItem`，typeFields/timeline 在适配器组装），**`demoAlarmDetails` + `resolveDemoAlarmDetailById` 死常量已删除**。`SECURITY_IMAGES` 等本地图片仍被 `fireAlarmToDetail` / `patrolAlarmToDetail` 引用，保留。
 
+## 6.1 报警口径（三端分工，2026-09-16 定）
+
+同一个「报警」在三端读**不同的表**，属**职责分工**、非数据不一致——**勿擅自"统一"到一张表**：
+
+| 位置                                                                         | 端点                 | 表                     | 语义                                 |
+| ---------------------------------------------------------------------------- | -------------------- | ---------------------- | ------------------------------------ |
+| 大屏 · 安全报警面板 / 消防报警列表弹窗                                       | `/fire-alarms`       | `fac_fire_alarm`       | 消防专项（面板仅取 `status=ACTIVE`） |
+| 大屏 · 地图报警撒点（`useScreenAlarmFeed` 主 feed，含 `/ws/alarm` 实时增量） | `/alarms`            | `fac_alarm`            | 全类型告警流                         |
+| 大屏 · 生产区域面板                                                          | `/production/alarms` | `fac_production_alarm` | 生产域告警                           |
+| 管理端 · 报警记录                                                            | `/fire-alarms`       | `fac_fire_alarm`       | 消防专项（全部状态）                 |
+| 移动端 · 告警明细 / 详情                                                     | `/alarms`            | `fac_alarm`            | 全类型告警（五类 + 来源设备）        |
+
+**判据**：移动端要展示五类告警（消防/气体/温度/视频AI/SOS）与来源设备编码，仅 `fac_alarm` 具备 `type` 与 `device_code` 两个字段；`fac_fire_alarm` 二者皆无（只有 `type_label` 细类与 `source`/`object_name`），且 16 条种子全为消防记录（含误报标记、关联灭火事件）。故移动端对齐「大屏地图报警撒点」那一路，**不**对齐消防报警面板与管理端报警记录。
+
 ## 7. 门禁基线
 
 - `vitest run` 约 **410 passed**；`vue-tsc -p tsconfig.app.json --noEmit` **0 错**。

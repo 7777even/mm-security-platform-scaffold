@@ -12,7 +12,10 @@ import {
 import { liveAlarms } from '../data/liveCache';
 
 // 告警明细（docs/UI规范-移动端.md §5 / §5.1）
-// 数据源：后端 /api/v1/alarms（通用告警分页，与大屏报警面板 / 后台告警记录同源），经 fetchAlarmPage 拉取。
+// 数据源：后端 /api/v1/alarms（通用告警分页，fac_alarm）——与大屏「地图报警撒点」同源（useScreenAlarmFeed 主 feed，含 /ws/alarm 实时增量）。
+// 口径说明（2026-09-16 定）：**不**对齐大屏「安全报警面板」与管理端「报警记录」——那两处读 /fire-alarms（fac_fire_alarm，消防专项记录）。
+// 依据：本页要展示五类告警（消防/气体/温度/视频AI/SOS）+ 来源设备编码，只有 fac_alarm 具备 type 与 device_code 字段；
+// fac_fire_alarm 无五类 type、无设备编码，且全为消防记录（含误报标记/关联灭火事件），换过去会丢两类字段与 10 条非消防告警。
 // 取消原 data/mock.ts 静态数据；未连后端由 service 内部走空态 + 全局离线告警（不回灌假数据）。
 // - 筛选 chip 热区 48，等级 / 状态着色只用规范 §8 枚举映射，禁止自造色阶
 
