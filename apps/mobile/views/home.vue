@@ -4,8 +4,10 @@ import { RouterLink } from 'vue-router';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
 import IconTile from '../components/IconTile.vue';
-import MapPanel from '../components/MapPanel.vue';
-import { MM_CENTER, alarmMarkers } from '../data/geo';
+import MapPanel, { type MapMarker } from '../components/MapPanel.vue';
+import { MM_CENTER } from '../data/geo';
+import { fetchAlarmPoints } from '@/services/map';
+import { mapPointsToMarkers } from '../lib/mapAlarm';
 import { fetchAlarmPage } from '@/services/alarm';
 import { fetchTasks } from '@/services/task';
 import { fetchEmergencyEvents } from '@/services/emergencyEvent';
@@ -89,6 +91,7 @@ const pendingCount = ref(0);
 const unreadCount = ref(0);
 const eventCount = ref(0);
 const todoTasks = ref<TodoTask[]>([]);
+const mapMarkers = ref<MapMarker[]>([]);
 const userName = ref('张工');
 const userRole = ref('消防业务管理员 · 今日值班');
 
@@ -143,11 +146,26 @@ async function loadUnread(): Promise<void> {
   }
 }
 
+async function loadMapMarkers(): Promise<void> {
+  try {
+    const pts = await fetchAlarmPoints();
+    mapMarkers.value = mapPointsToMarkers(pts).slice(0, 3);
+  } catch {
+    mapMarkers.value = [];
+  }
+}
+
 async function load(): Promise<void> {
   if (isOfflineNoBackend()) {
     return; // 未连后端：各 loader 内已有三态兜底，保持空态
   }
-  await Promise.all([loadAlarmStats(), loadTodo(), loadEventCount(), loadUnread()]);
+  await Promise.all([
+    loadAlarmStats(),
+    loadTodo(),
+    loadEventCount(),
+    loadUnread(),
+    loadMapMarkers(),
+  ]);
 }
 
 onMounted(load);
@@ -213,7 +231,7 @@ onMounted(load);
           height="var(--mb-map-h-sm)"
           :center="MM_CENTER"
           :zoom="12"
-          :markers="alarmMarkers.slice(0, 3)"
+          :markers="mapMarkers"
           :label="`报警态势 · ${alarmTotal} 起`"
           :interactive="false"
         />
