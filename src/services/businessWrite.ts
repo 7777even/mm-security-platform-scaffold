@@ -1,4 +1,4 @@
-import { request } from '@/services/http';
+import { ApiError, request } from '@/services/http';
 import {
   backendUnavailableWarn,
   isDemoMode,
@@ -143,6 +143,56 @@ function assertWritable(domain: string, endpoint: string): void {
   );
 }
 
+/**
+ * 写链路熔断降级（高并发兜底，对应任务「熔断降级保障高并发下数据一致」）。
+ * 对每条写端点维护轻量熔断器：
+ *  - 仅「基础设施级失败」（网络错误 / HTTP 5xx）计入熔断；应用级 4xx（校验/权限）不计入，
+ *    避免用户误填表单触发误熔断、误伤正常写能力。
+ *  - 连续失败达阈值即熔断 ~10s，期间写请求直接快速失败并提示「服务繁忙」，
+ *    不再向已过载的后端继续施压，防止「请求堆积 → 超时重试 → 重复提交/数据不一致」。
+ *  - 熔断期内允许一次半开试探，成功即复位。
+ */
+const BREAKER_THRESHOLD = 5;
+const BREAKER_COOLDOWN_MS = 10_000;
+interface BreakerState {
+  consecutiveFailures: number;
+  openedAt: number | null;
+}
+const writeBreakers = new Map<string, BreakerState>();
+
+function isInfraFailure(err: unknown): boolean {
+  if (err instanceof ApiError) return (err.status ?? 0) >= 500;
+  return true; // 非 ApiError = 网络层失败（超时/断网/连接重置），均计入熔断
+}
+
+async function withWriteBreaker<T>(endpoint: string, fn: () => Promise<T>): Promise<T> {
+  const now = Date.now();
+  const st = writeBreakers.get(endpoint) ?? { consecutiveFailures: 0, openedAt: null };
+  if (st.openedAt !== null && now - st.openedAt < BREAKER_COOLDOWN_MS) {
+    throw new BusinessWriteUnavailableError(endpoint, '服务暂时繁忙（熔断保护），请稍后重试');
+  }
+  const halfOpen = st.openedAt !== null;
+  try {
+    const res = await fn();
+    writeBreakers.set(endpoint, { consecutiveFailures: 0, openedAt: null });
+    return res;
+  } catch (err) {
+    if (isInfraFailure(err)) {
+      const failures = halfOpen ? BREAKER_THRESHOLD : st.consecutiveFailures + 1;
+      writeBreakers.set(endpoint, {
+        consecutiveFailures: failures,
+        openedAt: failures >= BREAKER_THRESHOLD ? now : null,
+      });
+    }
+    throw err;
+  }
+}
+
+/** 仅测试用：清空写链路熔断器状态，保证用例间相互独立。 */
+export function __resetWriteBreakersForTest(): void {
+  writeBreakers.clear();
+}
+
 function isRecord(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === 'object';
 }
@@ -172,7 +222,14 @@ export async function createEmergencyCommandRecord(
 ): Promise<EmergencyCommandRecordView> {
   const endpoint = '/emergency/command-records';
   assertWritable('business-write', endpoint);
-  return request<EmergencyCommandRecordView>({ url: endpoint, method: 'POST', data: payload });
+  return withWriteBreaker(endpoint, () =>
+    request<EmergencyCommandRecordView>({
+      url: endpoint,
+      method: 'POST',
+      data: payload,
+      timeout: 8000,
+    }),
+  );
 }
 
 /** GET /emergency/command-records */
@@ -198,7 +255,9 @@ export async function fetchEmergencyCommandRecords(): Promise<EmergencyCommandRe
 export async function createDutySignIn(payload: DutySignInWriteRequest): Promise<DutySignInView> {
   const endpoint = '/emergency/duty-sign-ins';
   assertWritable('business-write', endpoint);
-  return request<DutySignInView>({ url: endpoint, method: 'POST', data: payload });
+  return withWriteBreaker(endpoint, () =>
+    request<DutySignInView>({ url: endpoint, method: 'POST', data: payload, timeout: 8000 }),
+  );
 }
 
 /** GET /emergency/duty-sign-ins */
@@ -226,7 +285,14 @@ export async function createTyphoonDispatchOrder(
 ): Promise<TyphoonDispatchOrderView> {
   const endpoint = '/typhoon/dispatch-orders';
   assertWritable('business-write', endpoint);
-  return request<TyphoonDispatchOrderView>({ url: endpoint, method: 'POST', data: payload });
+  return withWriteBreaker(endpoint, () =>
+    request<TyphoonDispatchOrderView>({
+      url: endpoint,
+      method: 'POST',
+      data: payload,
+      timeout: 8000,
+    }),
+  );
 }
 
 /** GET /typhoon/dispatch-orders */
@@ -254,7 +320,9 @@ export async function createPatrolExecution(
 ): Promise<PatrolExecutionView> {
   const endpoint = '/fire/patrol-executions';
   assertWritable('business-write', endpoint);
-  return request<PatrolExecutionView>({ url: endpoint, method: 'POST', data: payload });
+  return withWriteBreaker(endpoint, () =>
+    request<PatrolExecutionView>({ url: endpoint, method: 'POST', data: payload, timeout: 8000 }),
+  );
 }
 
 /** GET /fire/patrol-executions */

@@ -1,10 +1,26 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-vi.mock('@/services/http', () => ({
-  request: vi.fn(),
-}));
+vi.mock('@/services/http', () => {
+  class ApiError extends Error {
+    code: number;
+    status?: number;
+    constructor(
+      code: number,
+      message: string,
+      _data?: unknown,
+      _traceId?: string,
+      status?: number,
+    ) {
+      super(message);
+      this.name = 'ApiError';
+      this.code = code;
+      this.status = status;
+    }
+  }
+  return { request: vi.fn(), ApiError };
+});
 
-import { request } from '@/services/http';
+import { ApiError, request } from '@/services/http';
 import {
   createDutySignIn,
   createEmergencyCommandRecord,
@@ -15,6 +31,7 @@ import {
   fetchPatrolExecutions,
   fetchTyphoonDispatchOrders,
   BusinessWriteUnavailableError,
+  __resetWriteBreakersForTest,
 } from './businessWrite';
 import { isHardControl } from './hardControlGuard';
 import { resetBackendOfflineNoticesForTest } from './backendFallback';
@@ -139,5 +156,50 @@ describe('businessWrite 服务（A2 业务写侧）', () => {
     expect(await fetchDutySignIns()).toEqual([]);
     expect(await fetchTyphoonDispatchOrders()).toEqual([]);
     expect(await fetchPatrolExecutions()).toEqual([]);
+  });
+});
+
+describe('写链路熔断降级（高并发兜底）', () => {
+  beforeEach(() => {
+    __resetWriteBreakersForTest();
+  });
+
+  it('连续 5 次基础设施失败 → 熔断，期间写请求快速失败且不再下发', async () => {
+    vi.stubEnv('VITE_API_BASE', 'http://localhost:8787/api/v1');
+    mockRequest.mockClear();
+    mockRequest.mockRejectedValue(new Error('network down')); // 非 ApiError = 基础设施失败
+    const payload = { dutyDate: '2026-09-13', personName: 't', signAction: 'SIGN_IN' };
+    for (let i = 0; i < 5; i++) {
+      await expect(createDutySignIn(payload)).rejects.toBeInstanceOf(Error);
+    }
+    expect(mockRequest).toHaveBeenCalledTimes(5);
+    const beforeShort = mockRequest.mock.calls.length;
+    await expect(createDutySignIn(payload)).rejects.toBeInstanceOf(BusinessWriteUnavailableError);
+    expect(mockRequest.mock.calls.length).toBe(beforeShort); // 熔断后未再发请求
+  });
+
+  it('应用级 4xx（校验/权限）不计入熔断', async () => {
+    vi.stubEnv('VITE_API_BASE', 'http://localhost:8787/api/v1');
+    mockRequest.mockClear();
+    mockRequest.mockRejectedValue(new ApiError(403, 'no permission', undefined, undefined, 403));
+    const payload = { dutyDate: '2026-09-13', personName: 't', signAction: 'SIGN_IN' };
+    for (let i = 0; i < 5; i++) {
+      await expect(createDutySignIn(payload)).rejects.toBeInstanceOf(ApiError);
+    }
+    await expect(createDutySignIn(payload)).rejects.toBeInstanceOf(ApiError);
+    expect(mockRequest).toHaveBeenCalledTimes(6); // 4xx 未触发熔断，仍真实下发
+  });
+
+  it('失败未达阈值 + 一次成功 → 计数复位', async () => {
+    vi.stubEnv('VITE_API_BASE', 'http://localhost:8787/api/v1');
+    mockRequest.mockClear();
+    const payload = { dutyDate: '2026-09-13', personName: 't', signAction: 'SIGN_IN' };
+    mockRequest.mockRejectedValue(new Error('network down'));
+    for (let i = 0; i < 3; i++) await expect(createDutySignIn(payload)).rejects.toBeDefined();
+    mockRequest.mockResolvedValue({ id: 1 });
+    await expect(createDutySignIn(payload)).resolves.toEqual({ id: 1 });
+    mockRequest.mockRejectedValue(new Error('network down'));
+    for (let i = 0; i < 3; i++) await expect(createDutySignIn(payload)).rejects.toBeDefined();
+    expect(mockRequest).toHaveBeenCalledTimes(7); // 3+1+3，无误熔断
   });
 });

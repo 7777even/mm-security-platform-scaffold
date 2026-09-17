@@ -29,12 +29,15 @@ export class ApiError extends Error {
   readonly code: number;
   readonly data?: unknown;
   readonly traceId?: string;
-  constructor(code: number, message: string, data?: unknown, traceId?: string) {
+  /** HTTP 状态码（网络层失败时为 undefined）。用于熔断等需区分 4xx/5xx 的场景。 */
+  readonly status?: number;
+  constructor(code: number, message: string, data?: unknown, traceId?: string, status?: number) {
     super(message);
     this.name = 'ApiError';
     this.code = code;
     this.data = data;
     this.traceId = traceId;
+    this.status = status;
   }
 }
 
@@ -114,7 +117,7 @@ http.interceptors.response.use(
     // 统一 B3 包络错误：后端（GlobalExceptionHandler / JwtFilter / HmacFilter）均收敛为
     // { code, message, data?, traceId? } 形态，统一抽取为 ApiError 供页面消费。
     if (body && typeof body === 'object' && typeof body.code === 'number' && 'message' in body) {
-      const apiErr = new ApiError(body.code, String(body.message), body.data, body.traceId);
+      const apiErr = new ApiError(body.code, String(body.message), body.data, body.traceId, status);
       if (status === 401) {
         // 后端已将 401/403 业务码映射为真实 HTTP 状态码，此处按 HTTP 状态判定。
         // 清除内存态令牌，避免后续请求继续携带死令牌反复 401。
