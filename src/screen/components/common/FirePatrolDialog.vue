@@ -8,6 +8,7 @@ import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFa
 import { createPatrolExecution } from '@/services/businessWrite';
 import { pushGlobalToast } from '@/services/globalToast';
 import { useScreenPermission } from '../../lib/composables/useScreenPermission';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 const { hasPerm } = useScreenPermission();
 /** 巡更执行上报权限（fire-alarm:patrol:write），无权限则隐藏上报按钮 */
@@ -72,6 +73,16 @@ async function loadPatrols(): Promise<void> {
     patrolLoading.value = false;
   }
 }
+
+// 三端实时刷新（realtime-channel spec）：任一端上报巡查执行（fire.patrol 域），
+// 本弹窗若处于打开态则自动重拉巡查记录（关闭态无消费方，免无谓请求）。
+useDomainAutoRefresh(
+  'fire.patrol',
+  () => {
+    if (props.open) void loadPatrols();
+  },
+  { immediate: false },
+);
 
 const filteredRecords = computed(() =>
   patrolRecords.value.filter((record) => {

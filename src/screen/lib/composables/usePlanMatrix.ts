@@ -18,6 +18,7 @@ import {
   isOfflineNoBackend,
   notifyBackendOffline,
 } from '@/services/backendFallback';
+import { subscribeDomainChange } from '@/services/realtime';
 import type { PlanCardStatus } from '../data/planMatrixMock';
 
 /** 预案 Tab 键 → 面板行 id（联动高亮），与 emergencyPlanSwitchMock 对齐。 */
@@ -316,6 +317,19 @@ function setColumnWidth(subPhaseId: string, width: number) {
     // ignore
   }
 }
+
+/**
+ * 三端实时刷新（realtime-channel spec）：任一端新增/编辑/删除行动卡（emergency.plan 域），
+ * 清空列表缓存后重拉预案列表与当前实例，使预案矩阵视图实时反映变更。
+ */
+async function refreshPlanMatrix(): Promise<void> {
+  plans.value = [];
+  await ensureMatrixData(activePlanId.value || undefined);
+}
+
+subscribeDomainChange('emergency.plan', () => {
+  void refreshPlanMatrix();
+});
 
 export function usePlanMatrix() {
   return {

@@ -12,6 +12,7 @@ import {
   isOfflineNoBackend,
   notifyBackendOffline,
 } from '@/services/backendFallback';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 const props = defineProps<{
   open: boolean;
@@ -25,19 +26,35 @@ const activeTab = ref<'vehicle' | 'person'>('vehicle');
 const vehicleBlacklist = ref<BlacklistVehicleItem[]>([]);
 const personBlacklist = ref<BlacklistPersonItem[]>([]);
 
+/** 拉取黑名单（车辆 + 人员）；打开弹窗与实时刷新共用。失败保持现状，不打断已有视图。 */
+async function reload(): Promise<void> {
+  try {
+    const data = await fetchBlacklist();
+    vehicleBlacklist.value = data.vehicles;
+    personBlacklist.value = data.persons;
+  } catch {
+    // 打开 / 实时刷新失败：保持当前列表，不假清空
+  }
+}
+
 watch(
   () => props.open,
   (visible) => {
     if (visible) {
       activeTab.value = 'vehicle';
-      void fetchBlacklist()
-        .then((data) => {
-          vehicleBlacklist.value = data.vehicles;
-          personBlacklist.value = data.persons;
-        })
-        .catch(() => {});
+      void reload();
     }
   },
+);
+
+// 三端实时刷新（realtime-channel spec）：任一端新增/移除黑名单（blacklist 域），
+// 本弹窗若处于打开态则自动重拉（关闭态无消费方，免无谓请求）。
+useDomainAutoRefresh(
+  'blacklist',
+  () => {
+    if (props.open) void reload();
+  },
+  { immediate: false },
 );
 
 /** 是否落库：配置了 VITE_API_BASE 才走后端删除，否则维持本地移除（纯静态演示）。 */

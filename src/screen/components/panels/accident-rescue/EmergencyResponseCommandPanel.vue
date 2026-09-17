@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import {
   emergencyCommandInstructionTabs,
   emergencyCommandPhaseFilterOptions,
@@ -66,6 +67,9 @@ async function loadGroups(): Promise<void> {
 
 onMounted(loadGroups);
 watch(commandTab, loadGroups);
+
+// 三端实时刷新：任一端下发应急指令，本面板自动重拉（realtime-channel spec）
+useDomainAutoRefresh('emergency.command', loadGroups, { immediate: false });
 
 const filteredGroups = computed(() => {
   const statusMap: Record<string, EmergencyCommandInstructionStatus | null> = {

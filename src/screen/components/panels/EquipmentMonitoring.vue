@@ -12,6 +12,7 @@ import FirePatrolDialog from '../common/FirePatrolDialog.vue';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
 import { useFirePatrolDialog } from '../../lib/composables/useFirePatrolDialog';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 use([PieChart, CanvasRenderer]);
 const activeTab = ref<'monitor' | 'inspect'>('monitor');
@@ -37,6 +38,18 @@ onMounted(async () => {
   if (status) equipmentStatus.value = status;
   patrolRecords.value = patrols;
 });
+
+/** 仅重拉巡查记录（三端实时刷新用；设备状态不随巡查变更）。 */
+async function loadPatrols(): Promise<void> {
+  try {
+    patrolRecords.value = await fetchFirePatrols();
+  } catch {
+    // 实时刷新失败保持现状，不打断面板
+  }
+}
+
+// 三端实时刷新（realtime-channel spec）：任一端上报巡查执行（fire.patrol 域），本面板巡查记录自动重拉。
+useDomainAutoRefresh('fire.patrol', loadPatrols, { immediate: false });
 
 const TODAY = '2026-08-20';
 const todayRecords = computed(() =>

@@ -18,6 +18,7 @@ import {
 } from '@/services/businessWrite';
 import type { TyphoonEmergencyIncident } from '@/services/typhoonEmergency';
 import { useShellRoute } from '../lib/composables/useShellRoute';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 use([LineChart, GridComponent, MarkLineComponent, TooltipComponent, CanvasRenderer]);
 
@@ -71,6 +72,12 @@ onMounted(async () => {
   // 调度单失败时 service 内部已告警并返回空数组（不抛错），不影响本页主数据渲染。
   dispatchOrders.value = await fetchTyphoonDispatchOrders();
 });
+
+/** 三端实时刷新：任一端提交台风调度单，本页「应急动态-指令」实时补齐（realtime-channel spec）。 */
+async function loadDispatchOrders(): Promise<void> {
+  dispatchOrders.value = await fetchTyphoonDispatchOrders();
+}
+useDomainAutoRefresh('typhoon.dispatch', loadDispatchOrders, { immediate: false });
 const abnormalPoints = computed(() =>
   incident.value.mapRiskPoints.filter((point) => point.status !== 'normal'),
 );

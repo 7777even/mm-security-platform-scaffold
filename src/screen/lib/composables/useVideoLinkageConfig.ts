@@ -15,6 +15,7 @@ import {
   isOfflineNoBackend,
   notifyBackendOffline,
 } from '@/services/backendFallback';
+import { subscribeDomainChange } from '@/services/realtime';
 
 export const linkageDialogOpen = ref(false);
 export const linkageEditMode = ref(false);
@@ -202,3 +203,10 @@ export function useVideoLinkageConfig() {
     loadLinkageConfigs,
   };
 }
+
+// 三端实时刷新（realtime-channel spec）：任一端新增/编辑/删除联动配置（video.linkage 域），本端列表自动重拉。
+// 本模块为模块级单例（大屏视频墙 VideoWallSidebar / 联动配置弹窗共享同一份 configs），故按 store 级订阅常驻；
+// 回调强制重拉（force=true）以绕开 loadLinkageConfigs 的本地缓存守卫（configs 非空即直接 return）。
+subscribeDomainChange('video.linkage', () => {
+  void loadLinkageConfigs(true);
+});

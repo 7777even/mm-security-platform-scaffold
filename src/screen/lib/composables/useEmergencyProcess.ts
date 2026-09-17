@@ -33,6 +33,7 @@ import {
   isOfflineNoBackend,
   notifyBackendOffline,
 } from '@/services/backendFallback';
+import { subscribeDomainChange } from '@/services/realtime';
 
 const STAGE_ID_TO_NODE_ID: Record<number, string> = {
   1: 'alarmJudgement',
@@ -598,3 +599,9 @@ export function useEmergencyProcess() {
     stopAutoDemo,
   };
 }
+
+// 三端实时刷新（realtime-channel spec）：任一端保存节点联动配置（emergency.node-phase-config 域），
+// 本端重拉覆盖 nodeConfigs，使大屏节点联动配置即时生效。
+subscribeDomainChange('emergency.node-phase-config', () => {
+  void loadNodeConfigsRemote();
+});
