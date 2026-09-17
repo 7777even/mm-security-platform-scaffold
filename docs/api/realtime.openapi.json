@@ -2,9 +2,9 @@
   "openapi": "3.0.3",
   "info": {
     "title": "实时监视 Realtime API（WebSocket）",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "x-contract": "WS",
-    "description": "监测预警实时中枢（仅订阅只读监视流）。契约源：src/services/realtime.ts、src/services/ws.ts。除既有 alarm.push 告警增量外，服务端还会对全部数据写操作广播 `<domain>.changed` 刷新通知（domain 为业务域标识，如 device/workstation/role/ledger/emergency.command 等），客户端据此重新拉取对应域只读数据，实现三端写后实时刷新。",
+    "description": "监测预警实时中枢（仅订阅只读监视流）。契约源：src/services/realtime.ts、src/services/ws.ts。除既有 alarm.push 告警增量外，服务端还会对全部数据写操作广播 `<domain>.changed` 刷新通知（domain 为业务域标识，如 device/workstation/role/ledger/emergency.command 等），客户端据此重新拉取对应域只读数据，实现三端写后实时刷新。\n\n**握手鉴权（v1.2 新增）**：浏览器 WebSocket 升级请求无法携带 Authorization 头，故访问令牌须经 `?token=` 查询参数注入连接 URL（令牌为纯内存态，见 token.ts 合规红线）。服务端握手拦截器校验令牌（类型须 access、未失效），校验失败返回 HTTP 401 并拒绝升级；校验通过则把会话绑定到 LoginUser 身份，供后续按 zone_codes 防区过滤推送（fail-open 按域，与 REST ABAC 一致）。客户端在连接**从未成功打开**且可能因令牌失效被拒时，会经 `refreshToken` 回调尝试续期一次（依赖 HttpOnly 刷新 Cookie），成功后立即重建连接，避免对失效令牌无限重连锤击。",
     "x-redline": "零下行控制红线：客户端仅消费 alarm.push 等只读监视数据，公开面只暴露 connect/close 生命周期，不提供任何硬控写端点（消防泵/应急广播/逃生门禁等）。"
   },
   "servers": [
@@ -23,7 +23,7 @@
         "summary": "订阅实时监视流（告警增量 + 全域数据变更通知）",
         "description": "建立 WebSocket 连接，接收服务端下发的只读监视消息：既有 alarm.push（告警增量），以及对全部数据写操作广播的 `<domain>.changed`（刷新通知，客户端据此重新拉取对应域只读数据）。客户端不发送任何硬控指令。",
         "x-websocket": {
-          "connection": "WebSocket；默认地址 VITE_ALARM_WS_URL 或 /ws/alarm；心跳 15s（客户端发 {type:'ping',ts}），指数退避重连（1s·2^n，上限 30s）。",
+          "connection": "WebSocket；默认地址 VITE_ALARM_WS_URL 或 /ws/alarm；握手须经 `?token=<accessToken>` 注入访问令牌（浏览器 WS 无法带 Authorization 头），令牌失效收 401。心跳 15s（客户端发 {type:'ping',ts}），指数退避重连（1s·2^n，上限 30s）；连接从未成功打开时令牌刷新一次后重建。",
           "messages": [
             {
               "direction": "server→client",
