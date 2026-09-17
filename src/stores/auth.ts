@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { setAccessToken, clearAccessToken } from '@/services/token';
-import { logout as logoutApi, fetchCurrentUser } from '@/services/auth';
+import { logout as logoutApi, fetchCurrentUser, refresh } from '@/services/auth';
 import type { MeResult } from '@/services/auth';
 import { reportAudit } from '@/services/audit';
-import { subscribeDomainChange } from '@/services/realtime';
+import { subscribeDomainChange, setRealtimeTokenRefresher } from '@/services/realtime';
 
 // 权限来源后端化（rbac-permission spec §权限来源后端化）：
 // 权限码不再硬编码在前端（旧 ROLE_PERMS 已退役），改由 GET /auth/me 的 perms 下发，
@@ -94,6 +94,22 @@ export const useAuthStore = defineStore('auth', () => {
   subscribeDomainChange('system.user', () => {
     void refetchMe();
   });
+
+  // 注册实时通道令牌刷新器（单向依赖 realtime，避免循环引用）：
+  // WS 握手被拒（access 令牌失效）时，由 ws.ts 触发一次续期（依赖 HttpOnly 刷新 Cookie）。
+  // 成功则将新令牌写入内存态；失败（刷新 Cookie 亦失效）返回 false，由实时层退回退避重连。
+  async function refreshRealtimeToken(): Promise<boolean> {
+    try {
+      const res = await refresh();
+      setAccessToken(res.accessToken);
+      accessToken.value = res.accessToken;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  setRealtimeTokenRefresher(refreshRealtimeToken);
 
   return {
     accessToken,

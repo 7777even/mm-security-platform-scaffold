@@ -3,6 +3,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { startRealtime, stopRealtime, subscribeAlarmPush, subscribeDomainChange } from './realtime';
 import type { DomainChangeEvent } from './realtime';
 import { useAlarmStore } from '@/stores/alarm';
+import { setAccessToken, clearAccessToken } from '@/services/token';
 
 // 复刻 ws.spec 的 FakeSocket，用于驱动 onmessage（node 环境无全局 WebSocket）
 class FakeSocket {
@@ -84,6 +85,13 @@ describe('realtime 监测预警中枢（alarm.push）', () => {
     startWithFake();
     startRealtime({ url: 'ws://t', createSocket: (u) => new FakeSocket(u) });
     expect(FakeSocket.instances).toHaveLength(1);
+  });
+
+  it('startRealtime 将 access token 注入 WS 握手 URL（?token=）', () => {
+    setAccessToken('rt-injected');
+    startRealtime({ url: 'ws://t', createSocket: (u) => new FakeSocket(u) });
+    expect(FakeSocket.instances[0]!.url).toBe('ws://t?token=rt-injected');
+    clearAccessToken();
   });
 
   it('subscribeAlarmPush 订阅者收到 alarm.push 增量（与 store 入库并行）', () => {

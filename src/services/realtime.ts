@@ -4,6 +4,7 @@ import { logger } from '@/utils/logger';
 import { useAlarmStore } from '@/stores/alarm';
 import type { AlarmItem } from './alarm';
 import type { WebSocketLike } from './ws';
+import { getAccessToken } from '@/services/token';
 
 // 监测预警实时中枢（D1 §2「监测预警」）。仅订阅只读监视流，将 `alarm.push` / `<domain>.changed`
 // 分发至对应消费方。严格不暴露任何硬控写端点（零下行控制红线，由 realtime-channel spec 约束）。
@@ -17,6 +18,18 @@ const DOMAIN_CHANGED_SUFFIX = '.changed';
 const DOMAIN_DEBOUNCE_MS = 400;
 
 let client: RealtimeClient | null = null;
+
+// WS 握手令牌刷新器（由 auth store 单向注册，规避 realtime ↔ auth 循环依赖）。
+// 鉴权失败的实时连接经 ws.ts 的 refreshToken 回调触发；默认未注册时退化为纯退避重连。
+let tokenRefresher: (() => Promise<boolean>) | null = null;
+
+/**
+ * 注册实时通道令牌刷新器（auth store 调用）。WS 握手被拒（令牌失效）时，
+ * RealtimeClient 会调用此刷新器尝试续期一次，成功后立即重建连接。
+ */
+export function setRealtimeTokenRefresher(fn: () => Promise<boolean>): void {
+  tokenRefresher = fn;
+}
 
 function isAlarmItem(v: unknown): v is AlarmItem {
   return (
@@ -171,6 +184,9 @@ export function startRealtime(opts: RealtimeHubOptions = {}): void {
     url: opts.url ?? DEFAULT_URL,
     createSocket: opts.createSocket,
     onMessage: dispatch,
+    // 浏览器 WS 无法带 Authorization 头，令牌经 ?token= 注入；wujie 子应用经 token.ts 桥接主壳令牌。
+    getToken: () => getAccessToken(),
+    refreshToken: tokenRefresher ?? undefined,
   });
   client.connect();
 }
