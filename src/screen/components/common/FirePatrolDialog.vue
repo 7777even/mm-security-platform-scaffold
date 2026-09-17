@@ -207,10 +207,11 @@ async function reportPatrol(record: FirePatrolRecord): Promise<void> {
       dutyPerson: record.dutyPerson,
       patrolCount: record.patrolCount,
       location: record.locations.join('、'),
-      execResult: record.completed ? '已完成' : '未完成',
+      execResult: record.completed ? 'NORMAL' : 'ABNORMAL',
       finding: findings.length ? findings.join('；') : '无异常',
       workOrderNo: record.workOrderNo ?? undefined,
     });
+    await loadPatrols();
     pushGlobalToast(`巡更执行已上报：${record.patrolDate} ${record.shift}班`, 'info');
   } catch (err) {
     const reason = err instanceof Error ? err.message : '提交失败';

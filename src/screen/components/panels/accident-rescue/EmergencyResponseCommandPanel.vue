@@ -120,6 +120,7 @@ async function handleAction(item: EmergencyCommandInstruction, event: MouseEvent
       target: item.location,
       remark: item.actionLabel,
     });
+    await loadGroups();
     pushGlobalToast(`指令「${item.name}」已记录`, 'info');
   } catch (err) {
     const reason = err instanceof Error ? err.message : '提交失败';

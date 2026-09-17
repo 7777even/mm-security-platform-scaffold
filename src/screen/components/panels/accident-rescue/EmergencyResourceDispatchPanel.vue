@@ -85,7 +85,9 @@ async function confirmDispatch() {
     return;
   }
   const channel = dispatchChannel.value;
-  const action = channel === 'app' ? 'ASSIGN' : 'CALL';
+  // 后端 dispatchAction 只接受 ASSIGN/CONFIRM/RELEASE；电话调度是对同一指派动作的电话发起，
+  // 统一登记为 ASSIGN（已指派），渠道差异体现在 lastResult 文案与 remark，不污染枚举。
+  const action = 'ASSIGN';
   const names = targets.map((item) => item.name).join('、');
   dispatching.value = true;
   try {
