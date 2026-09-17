@@ -25,5 +25,8 @@ docs/*.xls
 
 # 测试覆盖率报告（vitest v8 coverage 生成，不入版本库）
 coverage/
+# Playwright E2E 产物（HTML 报告 / trace / 失败截图与录像，不入版本库）
+playwright-report/
+test-results/
 # Vite 加载配置时生成的临时副本（vite.config.ts.timestamp-*.mjs）
 *.timestamp-*.mjs

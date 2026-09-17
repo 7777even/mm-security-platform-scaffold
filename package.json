@@ -18,6 +18,10 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
     "gate:screen": "node scripts/screen-local-data-gate.mjs",
     "gate:subapp-assets": "node scripts/check-subapp-assets.mjs",
     "prepare": "husky"
@@ -37,6 +41,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
+    "@playwright/test": "^1.62.1",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^22.7.5",
     "@vitejs/plugin-vue": "^5.1.4",
