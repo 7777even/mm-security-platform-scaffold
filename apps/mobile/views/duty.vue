@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
 import { fetchDutyRoster, type DutyMember } from '@/services/duty';
@@ -71,6 +72,9 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+
+// 三端实时刷新：任一端提交值班签到，本页签到记录自动刷新（realtime-channel spec）
+useDomainAutoRefresh('emergency.duty', load, { immediate: false });
 </script>
 
 <template>

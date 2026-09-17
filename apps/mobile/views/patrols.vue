@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
 import { fetchFirePatrols, type FirePatrolRecord } from '@/services/fireMonitoring';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 日常防火巡查（列表页模板，docs/UI规范-移动端.md §5 / §5.1）
 // - 数据源：后端 /api/v1/fire/patrols（防火巡查记录），经 fetchFirePatrols 拉取。
@@ -68,6 +69,9 @@ function abnText(p: PatrolItem): string {
 }
 
 onMounted(load);
+
+// 三端实时刷新（realtime-channel spec）：任一端上报巡查执行（fire.patrol 域），本页自动重拉。
+useDomainAutoRefresh('fire.patrol', load, { immediate: false });
 </script>
 
 <template>

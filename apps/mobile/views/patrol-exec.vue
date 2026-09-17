@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
 import { fetchFirePatrols, type FirePatrolRecord } from '@/services/fireMonitoring';
@@ -105,6 +106,9 @@ function pick(code: string, opt: Option) {
 }
 
 onMounted(load);
+
+// 三端实时刷新：任一端上报巡更，本页执行留痕自动刷新（realtime-channel spec）
+useDomainAutoRefresh('fire.patrol', load, { immediate: false });
 </script>
 
 <template>

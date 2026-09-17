@@ -9,6 +9,7 @@ import {
   type AlarmStatus,
   type AlarmType,
 } from '@/services/alarm';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { liveAlarms } from '../data/liveCache';
 
 // 告警明细（docs/UI规范-移动端.md §5 / §5.1）
@@ -116,6 +117,9 @@ async function load() {
 }
 
 onMounted(load);
+
+// 三端实时刷新（realtime-channel spec）：任一端处置/改动告警（alarm 域：应急事件增/改/删），本页自动重拉。
+useDomainAutoRefresh('alarm', load, { immediate: false });
 </script>
 
 <template>

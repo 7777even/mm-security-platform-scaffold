@@ -9,6 +9,7 @@ import { tokenSource } from './bridges';
 import { setAccessToken } from '@/services/token';
 import { login } from '@/services/auth';
 import { onUnauthorized } from '@/services/http';
+import { startRealtime } from '@/services/realtime';
 import { logger } from '@/utils/logger';
 
 // 移动端 H5 独立应用入口（详设 V1.5 §5.3：Android 原生壳（hybrid）内嵌业务页，
@@ -58,6 +59,9 @@ async function bootstrap(): Promise<void> {
     void router.push('/login');
   });
   await ensureMobileToken();
+  // 实时中枢：订阅 /ws/alarm 只读监视流（与主壳 / 管理端 / 各子应用同源），
+  // 使移动端在任一端改动（值班签到 / 巡查执行 / 告警 / 系统管理等）时实时刷新（realtime-channel spec）。
+  startRealtime();
   app.use(createPinia()).use(router).mount('#app');
 }
 

@@ -13,6 +13,7 @@ import { fetchTasks } from '@/services/task';
 import { fetchEmergencyEvents } from '@/services/emergencyEvent';
 import { fetchMessages } from '@/services/message';
 import { isOfflineNoBackend } from '@/services/backendFallback';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 首页：对齐 ui-redesign 参考 Home.vue（2026-08-31 二次迁移补齐）
 // - 告警概览 / 待办 / 事件条 / 未读**复用后端既有端点**（不新增接口）：
@@ -169,6 +170,9 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+
+// 三端实时刷新（realtime-channel spec）：任一端处置/改动告警（alarm 域），首页「今日告警概览」自动重拉。
+useDomainAutoRefresh('alarm', loadAlarmStats, { immediate: false });
 </script>
 
 <template>
