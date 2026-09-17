@@ -7,8 +7,8 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * 订阅报警实时推送
-     * @description 建立 WebSocket 连接，仅接收服务端下发的只读监视消息（topic=alarm.push）。客户端不发送任何硬控指令。
+     * 订阅实时监视流（告警增量 + 全域数据变更通知）
+     * @description 建立 WebSocket 连接，接收服务端下发的只读监视消息：既有 alarm.push（告警增量），以及对全部数据写操作广播的 `<domain>.changed`（刷新通知，客户端据此重新拉取对应域只读数据）。客户端不发送任何硬控指令。
      */
     get: operations['subscribeAlarmPush'];
     put?: never;
@@ -64,6 +64,30 @@ export interface components {
       data?: unknown;
       /** @example a1b2c3d4 */
       traceId?: string;
+    };
+    /** @description 全域数据变更刷新通知载荷。服务端对任一写操作广播 `<domain>.changed` 时携带；客户端据此重新拉取该域只读数据。 */
+    RealtimeDataChange: {
+      /**
+       * @description 业务域标识，如 device/workstation/role/ledger/emergency.command 等
+       * @example device
+       */
+      domain?: string;
+      /**
+       * @description 写操作类型
+       * @example updated
+       * @enum {string}
+       */
+      action?: 'created' | 'updated' | 'deleted';
+      /**
+       * @description 被变更记录的主键；当前留空，客户端按域整体重新拉取
+       * @example null
+       */
+      id?: string | null;
+      /**
+       * @description 变更后的数据体；当前留空，客户端按域整体重新拉取权威数据
+       * @example null
+       */
+      data?: Record<string, never> | null;
     };
   };
   responses: {

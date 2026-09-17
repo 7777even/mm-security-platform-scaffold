@@ -2,9 +2,9 @@
   "openapi": "3.0.3",
   "info": {
     "title": "实时监视 Realtime API（WebSocket）",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "x-contract": "WS",
-    "description": "监测预警实时中枢（仅订阅只读监视流）。契约源：src/services/realtime.ts、src/services/ws.ts。",
+    "description": "监测预警实时中枢（仅订阅只读监视流）。契约源：src/services/realtime.ts、src/services/ws.ts。除既有 alarm.push 告警增量外，服务端还会对全部数据写操作广播 `<domain>.changed` 刷新通知（domain 为业务域标识，如 device/workstation/role/ledger/emergency.command 等），客户端据此重新拉取对应域只读数据，实现三端写后实时刷新。",
     "x-redline": "零下行控制红线：客户端仅消费 alarm.push 等只读监视数据，公开面只暴露 connect/close 生命周期，不提供任何硬控写端点（消防泵/应急广播/逃生门禁等）。"
   },
   "servers": [
@@ -20,8 +20,8 @@
       "get": {
         "tags": ["realtime"],
         "operationId": "subscribeAlarmPush",
-        "summary": "订阅报警实时推送",
-        "description": "建立 WebSocket 连接，仅接收服务端下发的只读监视消息（topic=alarm.push）。客户端不发送任何硬控指令。",
+        "summary": "订阅实时监视流（告警增量 + 全域数据变更通知）",
+        "description": "建立 WebSocket 连接，接收服务端下发的只读监视消息：既有 alarm.push（告警增量），以及对全部数据写操作广播的 `<domain>.changed`（刷新通知，客户端据此重新拉取对应域只读数据）。客户端不发送任何硬控指令。",
         "x-websocket": {
           "connection": "WebSocket；默认地址 VITE_ALARM_WS_URL 或 /ws/alarm；心跳 15s（客户端发 {type:'ping',ts}），指数退避重连（1s·2^n，上限 30s）。",
           "messages": [
@@ -48,6 +48,21 @@
               }
             },
             {
+              "direction": "server→client",
+              "name": "data.changed",
+              "description": "全域数据变更刷新通知。topic 为 `<domain>.changed`（domain 取业务域标识，全部写操作域均遵循此约定，如 device/workstation/role/ledger/emergency.command/typhoon.dispatch/fire-alarm.patrol 等）。payload 仅作刷新触发信号，客户端收到后重新拉取该域权威只读数据；不携带控制指令（零下行控制红线）。",
+              "payload": { "$ref": "#/components/schemas/RealtimeDataChange" },
+              "example": {
+                "topic": "device.changed",
+                "payload": {
+                  "domain": "device",
+                  "action": "updated",
+                  "id": null,
+                  "data": null
+                }
+              }
+            },
+            {
               "direction": "client→server",
               "name": "ping",
               "description": "心跳保活（非业务消息）。",
@@ -64,6 +79,39 @@
         "responses": {
           "101": { "description": "WebSocket 协议切换成功（连接建立）" },
           "401": { "description": "未认证（令牌缺失/失效）" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RealtimeDataChange": {
+        "type": "object",
+        "description": "全域数据变更刷新通知载荷。服务端对任一写操作广播 `<domain>.changed` 时携带；客户端据此重新拉取该域只读数据。",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "业务域标识，如 device/workstation/role/ledger/emergency.command 等",
+            "example": "device"
+          },
+          "action": {
+            "type": "string",
+            "enum": ["created", "updated", "deleted"],
+            "description": "写操作类型",
+            "example": "updated"
+          },
+          "id": {
+            "type": "string",
+            "nullable": true,
+            "description": "被变更记录的主键；当前留空，客户端按域整体重新拉取",
+            "example": null
+          },
+          "data": {
+            "type": "object",
+            "nullable": true,
+            "description": "变更后的数据体；当前留空，客户端按域整体重新拉取权威数据",
+            "example": null
+          }
         }
       }
     }

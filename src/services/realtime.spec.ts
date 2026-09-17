@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { startRealtime, stopRealtime, subscribeAlarmPush } from './realtime';
+import { startRealtime, stopRealtime, subscribeAlarmPush, subscribeDomainChange } from './realtime';
+import type { DomainChangeEvent } from './realtime';
 import { useAlarmStore } from '@/stores/alarm';
 
 // 复刻 ws.spec 的 FakeSocket，用于驱动 onmessage（node 环境无全局 WebSocket）
@@ -43,7 +44,7 @@ function makeAlarmPayload(over: Record<string, unknown> = {}) {
   };
 }
 
-describe('realtime 监测预警中枢', () => {
+describe('realtime 监测预警中枢（alarm.push）', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     FakeSocket.reset();
@@ -132,5 +133,93 @@ describe('realtime 监测预警中枢', () => {
     expect(useAlarmStore().alarms).toHaveLength(1);
     warnSpy.mockRestore();
     unsubscribe();
+  });
+});
+
+describe('realtime 多域变更路由与去抖（<domain>.changed）', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    FakeSocket.reset();
+  });
+  afterEach(() => {
+    stopRealtime();
+    vi.useRealTimers();
+  });
+
+  function startWithFake() {
+    startRealtime({ url: 'ws://t', createSocket: (u) => new FakeSocket(u) });
+    return FakeSocket.instances[0]!;
+  }
+
+  it('<domain>.changed 按域路由到对应订阅者', () => {
+    const userHandler = vi.fn();
+    const roleHandler = vi.fn();
+    subscribeDomainChange('system.user', userHandler);
+    subscribeDomainChange('system.role', roleHandler);
+
+    const s = startWithFake();
+    s.onmessage?.({
+      data: JSON.stringify({
+        topic: 'system.user.changed',
+        payload: { domain: 'system.user', action: 'created', id: '1', data: null },
+      }),
+    });
+    vi.advanceTimersByTime(400);
+
+    expect(userHandler).toHaveBeenCalledTimes(1);
+    expect(roleHandler).not.toHaveBeenCalled();
+    const events = userHandler.mock.calls[0][0] as DomainChangeEvent[];
+    expect(events[0].domain).toBe('system.user');
+    expect(events[0].action).toBe('created');
+  });
+
+  it('同一域 400ms 内的多次变更按去抖合并为一次回调', () => {
+    const handler = vi.fn();
+    subscribeDomainChange('alarm', handler);
+    const s = startWithFake();
+    s.onmessage?.({
+      data: JSON.stringify({
+        topic: 'alarm.changed',
+        payload: { domain: 'alarm', action: 'created', id: 'A', data: null },
+      }),
+    });
+    s.onmessage?.({
+      data: JSON.stringify({
+        topic: 'alarm.changed',
+        payload: { domain: 'alarm', action: 'updated', id: 'A', data: null },
+      }),
+    });
+    vi.advanceTimersByTime(200);
+    expect(handler).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(200);
+    expect(handler).toHaveBeenCalledTimes(1);
+    const events = handler.mock.calls[0][0] as DomainChangeEvent[];
+    expect(events).toHaveLength(2);
+  });
+
+  it('未知 topic 被忽略且不抛异常', () => {
+    const handler = vi.fn();
+    subscribeDomainChange('system.user', handler);
+    const s = startWithFake();
+    expect(() =>
+      s.onmessage?.({ data: JSON.stringify({ topic: 'unknown.topic', payload: {} }) }),
+    ).not.toThrow();
+    vi.advanceTimersByTime(400);
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it('退订后不再收到该域变更', () => {
+    const handler = vi.fn();
+    const unsub = subscribeDomainChange('system.user', handler);
+    unsub();
+    const s = startWithFake();
+    s.onmessage?.({
+      data: JSON.stringify({
+        topic: 'system.user.changed',
+        payload: { domain: 'system.user', action: 'updated', id: '1', data: null },
+      }),
+    });
+    vi.advanceTimersByTime(400);
+    expect(handler).not.toHaveBeenCalled();
   });
 });

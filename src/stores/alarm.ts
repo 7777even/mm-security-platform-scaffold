@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import { fetchAlarmPage } from '@/services/alarm';
+import { subscribeDomainChange } from '@/services/realtime';
 import type { AlarmItem, AlarmStatus, AlarmLevel } from '@/services/alarm';
 
 // 监测预警实时状态（D1 §2「监测预警」二级功能）。
@@ -55,5 +57,16 @@ export const useAlarmStore = defineStore('alarm', () => {
     return true;
   }
 
-  return { alarms, activeCount, ingestAlarm, paged, ack };
+  // 整域重新拉取：被 `<domain>.changed`（alarm 域）触发，保证 REST 写（管理端）亦能实时反映到大屏。
+  async function refresh(): Promise<void> {
+    const page = await fetchAlarmPage(1, 50);
+    alarms.value = page.list;
+  }
+
+  // 订阅后端实时广播：任意端对 alarm 域的写操作（create/update/delete）都会触发整域刷新。
+  subscribeDomainChange('alarm', () => {
+    void refresh();
+  });
+
+  return { alarms, activeCount, ingestAlarm, paged, ack, refresh };
 });
