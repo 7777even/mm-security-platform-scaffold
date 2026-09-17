@@ -2,6 +2,7 @@
 // 系统管理 · 角色管理（契约 docs/api/system.openapi.json）
 // 角色 CRUD + 角色-菜单授权（授权树整表覆盖保存；后端保存后权限缓存即时失效）。
 import { onMounted, reactive, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import PanelCard from '@/components/common/PanelCard.vue';
 import {
@@ -190,6 +191,9 @@ onMounted(async () => {
   await loadTree();
   await load();
 });
+
+// 三端实时刷新：任一端改写 system.role（含授权），本列表自动重拉（realtime-channel spec）
+useDomainAutoRefresh('system.role', load, { immediate: false });
 </script>
 
 <template>

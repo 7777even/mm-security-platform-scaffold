@@ -2,6 +2,7 @@
 // 系统管理 · 数据字典（契约 docs/api/system.openapi.json）
 // 两级维护：字典类型（左）+ 字典项（右）。业务只读端点 GET /system/dicts/{dictCode} 登录即可用。
 import { onMounted, reactive, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import PanelCard from '@/components/common/PanelCard.vue';
 import {
@@ -247,6 +248,10 @@ onMounted(async () => {
   await loadTypes();
   await loadItems();
 });
+
+// 三端实时刷新：字典类型/项任一端改写，本页自动重拉（realtime-channel spec）
+useDomainAutoRefresh('system.dict-type', loadTypes, { immediate: false });
+useDomainAutoRefresh('system.dict-item', loadItems, { immediate: false });
 </script>
 
 <template>

@@ -4,6 +4,7 @@ import { setAccessToken, clearAccessToken } from '@/services/token';
 import { logout as logoutApi, fetchCurrentUser } from '@/services/auth';
 import type { MeResult } from '@/services/auth';
 import { reportAudit } from '@/services/audit';
+import { subscribeDomainChange } from '@/services/realtime';
 
 // 权限来源后端化（rbac-permission spec §权限来源后端化）：
 // 权限码不再硬编码在前端（旧 ROLE_PERMS 已退役），改由 GET /auth/me 的 perms 下发，
@@ -79,6 +80,21 @@ export const useAuthStore = defineStore('auth', () => {
     return permsList.some((p) => hasPerm(p));
   }
 
+  // 三端实时刷新（realtime-channel spec）：管理员在任何端改动「本用户」账号 / 角色 / 菜单授权（system.user 域），
+  // 本端重取 /auth/me 刷新权限快照，实现授权变更即时生效。未登录（无内存令牌）时跳过，避免无 token 触发 401。
+  async function refetchMe(): Promise<void> {
+    if (!accessToken.value) return;
+    try {
+      setMe(await fetchCurrentUser());
+    } catch {
+      // 401 / 网络异常：保持现有快照，交由 http 层统一处理
+    }
+  }
+
+  subscribeDomainChange('system.user', () => {
+    void refetchMe();
+  });
+
   return {
     accessToken,
     username,
@@ -92,6 +108,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     loadMe,
+    refetchMe,
     hasPerm,
     hasAny,
   };

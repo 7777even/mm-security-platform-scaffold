@@ -3,6 +3,7 @@
 // 数据源为后端真实端点（/system/users），权限码由 /auth/me 下发。
 // 服务端硬防护：禁删/禁停用自己、保护最后一个启用 ADMIN、用户名唯一。
 import { computed, onMounted, reactive, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import PanelCard from '@/components/common/PanelCard.vue';
 import {
@@ -260,6 +261,9 @@ onMounted(async () => {
   await loadZones();
   await load();
 });
+
+// 三端实时刷新：任一端改写 system.user，本列表自动重拉（realtime-channel spec）
+useDomainAutoRefresh('system.user', load, { immediate: false });
 </script>
 
 <template>

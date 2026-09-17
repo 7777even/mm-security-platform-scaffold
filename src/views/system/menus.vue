@@ -3,6 +3,7 @@
 // 统一授权轴（ADR-2）：DIR 目录 / MENU 菜单 / BUTTON 按钮；BUTTON 不参与导航，仅贡献权限码。
 // 删除为拒绝式保护：有子节点或已被角色授权时后端返回 409。
 import { computed, onMounted, reactive, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import PanelCard from '@/components/common/PanelCard.vue';
 import {
@@ -161,6 +162,9 @@ onMounted(async () => {
   await load();
   await loadPerms();
 });
+
+// 三端实时刷新：任一端改写 system.menu，本菜单树自动重拉（realtime-channel spec）
+useDomainAutoRefresh('system.menu', load, { immediate: false });
 </script>
 
 <template>
