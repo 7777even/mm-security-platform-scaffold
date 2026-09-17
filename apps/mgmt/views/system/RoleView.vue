@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { Key } from '@element-plus/icons-vue';
 import type { ElTree } from 'element-plus';
 import MgmtProTable from '../../components/MgmtProTable.vue';
@@ -184,6 +185,9 @@ async function saveGrant(): Promise<void> {
 }
 
 onMounted(load);
+
+// 三端实时刷新：任一端改写 system.role（含授权），本列表自动重拉（realtime-channel spec）
+useDomainAutoRefresh('system.role', load, { immediate: false });
 </script>
 
 <template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { User } from '@element-plus/icons-vue';
 import MgmtProTable from '../../components/MgmtProTable.vue';
 import MgmtPageHead from '../../components/MgmtPageHead.vue';
@@ -223,6 +224,9 @@ onMounted(async () => {
     zones.value = [];
   }
 });
+
+// 三端实时刷新：任一端改写 system.user，本列表自动重拉（realtime-channel spec）
+useDomainAutoRefresh('system.user', load, { immediate: false });
 </script>
 
 <template>

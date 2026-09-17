@@ -6,6 +6,7 @@ import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import { toastErr } from '../../utils/feedback';
 import { fetchFirePatrols } from '@/services/fireMonitoring';
 import type { FirePatrolRecord } from '@/services/fireMonitoring';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 日常防火巡查管理（/patrol-mgmt）：接后端 /fire/patrols。
 const rows = ref<FirePatrolRecord[]>([]);
@@ -33,6 +34,9 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+
+// 三端实时刷新（realtime-channel spec）：任一端上报巡查执行（fire.patrol 域），本页自动重拉。
+useDomainAutoRefresh('fire.patrol', load, { immediate: false });
 </script>
 
 <template>

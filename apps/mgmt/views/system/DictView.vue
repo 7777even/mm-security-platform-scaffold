@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { Collection } from '@element-plus/icons-vue';
 import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import { confirm, toastErr, toastOk } from '../../utils/feedback';
@@ -213,6 +214,10 @@ async function removeItem(it: DictItemItem): Promise<void> {
 }
 
 onMounted(loadTypes);
+
+// 三端实时刷新：字典类型/项任一端改写，本页自动重拉（realtime-channel spec）
+useDomainAutoRefresh('system.dict-type', loadTypes, { immediate: false });
+useDomainAutoRefresh('system.dict-item', loadItems, { immediate: false });
 </script>
 
 <template>

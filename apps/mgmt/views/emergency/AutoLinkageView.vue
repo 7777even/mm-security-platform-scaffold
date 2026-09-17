@@ -6,6 +6,7 @@ import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import { toastErr } from '../../utils/feedback';
 import { fetchVideoLinkages } from '@/services/video';
 import type { VideoLinkageItem } from '@/services/video';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 应急自动联动配置管理（/auto-linkage）：接后端 /video/linkages。
 // 只读台账；新增/编辑/删除为写侧能力（见 ④-D businessWrite 写链路接通）。
@@ -26,6 +27,9 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+
+// 三端实时刷新（realtime-channel spec）：任一端新增/编辑/删除联动配置（video.linkage 域），本页自动重拉。
+useDomainAutoRefresh('video.linkage', load, { immediate: false });
 </script>
 
 <template>

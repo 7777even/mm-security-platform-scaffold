@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { Promotion } from '@element-plus/icons-vue';
 import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import MgmtProTable from '../../components/MgmtProTable.vue';
@@ -74,6 +75,9 @@ async function submit(): Promise<void> {
 }
 
 onMounted(load);
+
+// 三端实时刷新：任一端下发应急指令，本列表自动重拉（realtime-channel spec）
+useDomainAutoRefresh('emergency.command', load, { immediate: false });
 </script>
 
 <template>

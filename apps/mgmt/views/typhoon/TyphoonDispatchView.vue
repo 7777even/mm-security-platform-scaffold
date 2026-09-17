@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { Van } from '@element-plus/icons-vue';
 import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import MgmtProTable from '../../components/MgmtProTable.vue';
@@ -76,6 +77,9 @@ async function submit(): Promise<void> {
 }
 
 onMounted(load);
+
+// 三端实时刷新：任一端提交台风调度单，本列表自动重拉（realtime-channel spec）
+useDomainAutoRefresh('typhoon.dispatch', load, { immediate: false });
 </script>
 
 <template>
