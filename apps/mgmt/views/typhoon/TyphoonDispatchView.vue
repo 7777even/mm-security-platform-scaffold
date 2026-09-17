@@ -10,6 +10,13 @@ import type {
   TyphoonDispatchOrderWriteRequest,
 } from '@/services/businessWrite';
 
+// 后端枚举强校验英文码：下拉 label 显示中文、value 存英文码。
+const DISPATCH_ACTION_LABEL: Record<string, string> = {
+  ASSIGN: '指派',
+  CONFIRM: '确认',
+  RELEASE: '释放',
+};
+
 // 台风资源调度（/typhoon-dispatch）：接后端 /typhoon/dispatch-orders（GET 列表 + POST 调度单）。
 // 业务留痕：调度单落独立表，资源清单本体保持只读；写按钮受 typhoon:dispatch:write 权限码控制。
 
@@ -34,7 +41,7 @@ const saving = ref(false);
 const form = reactive<TyphoonDispatchOrderWriteRequest>({
   resourceCode: '',
   resourceName: '',
-  dispatchAction: '指派',
+  dispatchAction: 'ASSIGN',
   assignee: '',
   quantity: undefined,
   remark: '',
@@ -44,7 +51,7 @@ function openCreate(): void {
   Object.assign(form, {
     resourceCode: '',
     resourceName: '',
-    dispatchAction: '指派',
+    dispatchAction: 'ASSIGN',
     assignee: '',
     quantity: undefined,
     remark: '',
@@ -93,7 +100,9 @@ onMounted(load);
         <template #default="{ row }">{{ row.resourceName || '—' }}</template>
       </el-table-column>
       <el-table-column prop="dispatchAction" label="调度动作" min-width="100">
-        <template #default="{ row }">{{ row.dispatchAction || '—' }}</template>
+        <template #default="{ row }">{{
+          DISPATCH_ACTION_LABEL[row.dispatchAction] || row.dispatchAction || '—'
+        }}</template>
       </el-table-column>
       <el-table-column prop="assignee" label="指派对象" min-width="120">
         <template #default="{ row }">{{ row.assignee || '—' }}</template>
@@ -130,9 +139,9 @@ onMounted(load);
         </el-form-item>
         <el-form-item label="调度动作" required>
           <el-select v-model="form.dispatchAction" style="width: 100%">
-            <el-option label="指派" value="指派" />
-            <el-option label="确认" value="确认" />
-            <el-option label="释放" value="释放" />
+            <el-option label="指派" value="ASSIGN" />
+            <el-option label="确认" value="CONFIRM" />
+            <el-option label="释放" value="RELEASE" />
           </el-select>
         </el-form-item>
         <el-form-item label="指派对象">

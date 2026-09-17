@@ -7,6 +7,9 @@ import { toastErr, toastOk } from '../../utils/feedback';
 import { createPatrolExecution, fetchPatrolExecutions } from '@/services/businessWrite';
 import type { PatrolExecutionView, PatrolExecutionWriteRequest } from '@/services/businessWrite';
 
+// 后端枚举强校验英文码：下拉 label 显示中文、value 存英文码。
+const EXEC_RESULT_LABEL: Record<string, string> = { NORMAL: '正常', ABNORMAL: '异常' };
+
 // 消防巡更执行（/patrol-execution）：接后端 /fire/patrol-executions（GET 列表 + POST 上报）。
 // 业务留痕：巡更记录落独立表，巡查计划本体保持只读；写按钮受 fire-alarm:patrol:write 权限码控制。
 
@@ -34,7 +37,7 @@ const form = reactive<PatrolExecutionWriteRequest>({
   dutyPerson: '',
   patrolCount: '',
   location: '',
-  execResult: '正常',
+  execResult: 'NORMAL',
   finding: '',
   workOrderNo: '',
 });
@@ -46,7 +49,7 @@ function openCreate(): void {
     dutyPerson: '',
     patrolCount: '',
     location: '',
-    execResult: '正常',
+    execResult: 'NORMAL',
     finding: '',
     workOrderNo: '',
   });
@@ -105,14 +108,14 @@ onMounted(load);
           <span
             class="tag"
             :class="
-              row.execResult === '正常'
+              row.execResult === 'NORMAL'
                 ? 'tag-success'
-                : row.execResult === '异常'
+                : row.execResult === 'ABNORMAL'
                   ? 'tag-bad'
                   : 'tag-warning'
             "
           >
-            {{ row.execResult || '—' }}
+            {{ EXEC_RESULT_LABEL[row.execResult] || row.execResult || '—' }}
           </span>
         </template>
       </el-table-column>
@@ -152,9 +155,8 @@ onMounted(load);
         </el-form-item>
         <el-form-item label="执行结果" required>
           <el-select v-model="form.execResult" style="width: 100%">
-            <el-option label="正常" value="正常" />
-            <el-option label="异常" value="异常" />
-            <el-option label="未完成" value="未完成" />
+            <el-option label="正常" value="NORMAL" />
+            <el-option label="异常" value="ABNORMAL" />
           </el-select>
         </el-form-item>
         <el-form-item label="发现">

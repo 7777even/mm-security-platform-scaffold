@@ -7,6 +7,9 @@ import { toastErr, toastOk } from '../../utils/feedback';
 import { createDutySignIn, fetchDutySignIns } from '@/services/businessWrite';
 import type { DutySignInView, DutySignInWriteRequest } from '@/services/businessWrite';
 
+// 后端枚举强校验英文码：下拉 label 显示中文、value 存英文码。
+const SIGN_ACTION_LABEL: Record<string, string> = { SIGN_IN: '签到', SIGN_OUT: '签退' };
+
 // 值班签到（/duty-sign-in）：接后端 /emergency/duty-sign-ins（GET 列表 + POST 签到）。
 // 业务留痕；写按钮受 emergency:duty:write 权限码控制（v-permission）。
 
@@ -33,7 +36,7 @@ const form = reactive<DutySignInWriteRequest>({
   shiftName: '',
   department: '',
   personName: '',
-  signAction: '签到',
+  signAction: 'SIGN_IN',
   remark: '',
 });
 
@@ -43,7 +46,7 @@ function openCreate(): void {
     shiftName: '',
     department: '',
     personName: '',
-    signAction: '签到',
+    signAction: 'SIGN_IN',
     remark: '',
   });
   dialogVisible.value = true;
@@ -56,7 +59,7 @@ async function submit(): Promise<void> {
   saving.value = true;
   try {
     await createDutySignIn({ ...form });
-    toastOk(form.signAction === '签到' ? '签到成功' : '签退成功');
+    toastOk(form.signAction === 'SIGN_IN' ? '签到成功' : '签退成功');
     dialogVisible.value = false;
     await load();
   } catch (err) {
@@ -95,8 +98,8 @@ onMounted(load);
       <el-table-column prop="personName" label="姓名" min-width="100" />
       <el-table-column prop="signAction" label="签到动作" min-width="100">
         <template #default="{ row }">
-          <span class="tag" :class="row.signAction === '签退' ? 'tag-info' : 'tag-success'">
-            {{ row.signAction || '—' }}
+          <span class="tag" :class="row.signAction === 'SIGN_OUT' ? 'tag-info' : 'tag-success'">
+            {{ SIGN_ACTION_LABEL[row.signAction] || row.signAction || '—' }}
           </span>
         </template>
       </el-table-column>
@@ -130,8 +133,8 @@ onMounted(load);
         </el-form-item>
         <el-form-item label="签到动作" required>
           <el-select v-model="form.signAction" style="width: 100%">
-            <el-option label="签到" value="签到" />
-            <el-option label="签退" value="签退" />
+            <el-option label="签到" value="SIGN_IN" />
+            <el-option label="签退" value="SIGN_OUT" />
           </el-select>
         </el-form-item>
         <el-form-item label="备注">
