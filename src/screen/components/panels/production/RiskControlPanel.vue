@@ -55,7 +55,7 @@ const visibleRiskWarnings = computed(() => filterByPlantArea(riskWarnings.value)
       <div class="risk-panel__list">
         <div v-for="item in visibleRiskWarnings" :key="item.id" class="risk-card">
           <div class="risk-card__head">
-            <div class="risk-card__tag">
+            <div class="risk-card__tag" :class="`risk-card__tag--${item.level}`">
               <span class="risk-card__tag-icon" aria-hidden="true"><Warning /></span>
               <span class="risk-card__tag-text">{{ item.levelLabel }}</span>
             </div>
@@ -193,8 +193,41 @@ const visibleRiskWarnings = computed(() => filterByPlantArea(riskWarnings.value)
   gap: 4px;
   flex-shrink: 0;
   padding: 3px 10px 3px 6px;
-  background: linear-gradient(180deg, var(--color-warning) 0%, #c88a10 100%);
   border-radius: 2px;
+}
+
+/*
+ * 等级色标：此前所有等级共用琥珀渐变，导致「红色」条目也显示成橙黄色，
+ * 与同面板顶部汇总色标（红/橙/黄）自相矛盾。改为按 item.level 取告警分级令牌。
+ */
+.risk-card__tag--red {
+  background: linear-gradient(
+    180deg,
+    var(--color-alarm-1) 0%,
+    color-mix(in srgb, var(--color-alarm-1) 68%, #000) 100%
+  );
+}
+
+.risk-card__tag--orange {
+  background: linear-gradient(
+    180deg,
+    var(--color-alarm-2) 0%,
+    color-mix(in srgb, var(--color-alarm-2) 68%, #000) 100%
+  );
+}
+
+/* 黄底配白字对比度不足：沿用仓库既有约定（--color-alarm-3 底 + 深色字，见 ProductionAreaTopBar） */
+.risk-card__tag--yellow {
+  background: linear-gradient(
+    180deg,
+    var(--color-alarm-3) 0%,
+    color-mix(in srgb, var(--color-alarm-3) 68%, #000) 100%
+  );
+}
+
+.risk-card__tag--yellow .risk-card__tag-icon,
+.risk-card__tag--yellow .risk-card__tag-text {
+  color: #1a1200;
 }
 
 .risk-card__tag-icon {
