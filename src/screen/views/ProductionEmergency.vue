@@ -174,16 +174,29 @@ const shellDrawerActive = computed(() => productionDeviceDrawerActive.value);
   flex-shrink: 0;
 }
 
+/*
+ * 左栏四段比例：设备台账需 ≥1.5 段才能露出数据行（表头 30px + 行高 38px），
+ * 原来「1fr」仅余 34px 可视区 → 一行数据都看不见（表格像空的）；值守工位在
+ * 0.9 段时其内容刚好完整容纳（实测 clientHeight === scrollHeight），故让出高度。
+ */
 .sidebar--left {
   width: 338px;
-  grid-template-rows: minmax(0, 1.4fr) minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows:
+    minmax(0, 1.15fr)
+    minmax(0, 1.25fr)
+    minmax(0, 1.6fr)
+    minmax(0, 0.9fr);
   align-content: start;
   gap: 11px;
 }
 
+/*
+ * 右栏原为固定 592px/295px，按设计稿比例算下来比左栏总高少 39px
+ * → 右栏底部留空、与左栏不齐。改用设计稿原始比例（582+43 / 285+43）作 fr 权重填满整列。
+ */
 .sidebar--right {
   width: 419px;
-  grid-template-rows: 592px 295px;
+  grid-template-rows: minmax(0, 592fr) minmax(0, 295fr);
   gap: 10px;
 }
 
