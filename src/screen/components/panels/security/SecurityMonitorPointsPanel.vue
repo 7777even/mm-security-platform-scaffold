@@ -79,7 +79,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <PanelCard title="安全监测点位" variant="devices" module="security" :show-more="false">
+  <!-- variant 必须取 SecurityPanelVariant：原先误用生产域的 'devices'，
+       security 切图映射里没有该键 → 头/底/图标/底纹四张切图全部 404（面板 chrome 残缺） -->
+  <PanelCard title="安全监测点位" variant="patrolAlarm" module="security" :show-more="false">
     <template #header-extra>
       <span class="mp__badge">实时 · 报警 {{ alarmCount }} / 设备 {{ deviceCount }}</span>
     </template>
