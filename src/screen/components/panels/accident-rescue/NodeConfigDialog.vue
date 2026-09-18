@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import {
   ALL_NODE_IDS,
   CAMERA_ANCHOR_METADATA,
+  cloneDefaultNodeConfigs,
   type CameraAnchorType,
   type NodePhaseConfig,
 } from '../../../lib/data/nodeConfigData';
@@ -10,10 +11,22 @@ import { useEmergencyProcess } from '../../../lib/composables/useEmergencyProces
 
 const process = useEmergencyProcess();
 
+/**
+ * 深拷贝指定节点的联动配置。
+ * live 模式下 `nodeConfigs` 初值为 `{}`（远端尚未拉回），直接取 `nodeConfigs.value[id]`
+ * 会得到 undefined，而 `JSON.stringify(undefined)` 返回 undefined（非字符串），
+ * `JSON.parse(undefined)` 即抛 `"undefined" is not valid JSON` —— 本组件在 setup 阶段就执行，
+ * 故整页白屏。此处按「现有配置 → 默认配置（含 alarmJudgement 兜底）」逐级降级，
+ * 保证入参恒为对象（与 useEmergencyProcess 的 currentNodeConfig 降级意图一致）。
+ */
+function cloneNodeConfig(id: string): NodePhaseConfig {
+  const defaults = cloneDefaultNodeConfigs();
+  const source = process.nodeConfigs.value[id] ?? defaults[id] ?? defaults.alarmJudgement;
+  return JSON.parse(JSON.stringify(source)) as NodePhaseConfig;
+}
+
 const selectedNodeId = ref<string>(process.currentNodeId.value);
-const draft = ref<NodePhaseConfig>(
-  JSON.parse(JSON.stringify(process.nodeConfigs.value[selectedNodeId.value])),
-);
+const draft = ref<NodePhaseConfig>(cloneNodeConfig(selectedNodeId.value));
 const savedTip = ref(false);
 
 watch(
@@ -21,14 +34,14 @@ watch(
   (open) => {
     if (open) {
       selectedNodeId.value = process.currentNodeId.value;
-      draft.value = JSON.parse(JSON.stringify(process.nodeConfigs.value[selectedNodeId.value]));
+      draft.value = cloneNodeConfig(selectedNodeId.value);
       savedTip.value = false;
     }
   },
 );
 
 watch(selectedNodeId, (id) => {
-  draft.value = JSON.parse(JSON.stringify(process.nodeConfigs.value[id]));
+  draft.value = cloneNodeConfig(id);
   savedTip.value = false;
 });
 
@@ -81,7 +94,7 @@ async function handleSave() {
     [selectedNodeId.value]: JSON.parse(JSON.stringify(draft.value)),
   };
   if (!(await process.saveNodeConfig(next))) return;
-  draft.value = JSON.parse(JSON.stringify(process.nodeConfigs.value[selectedNodeId.value]));
+  draft.value = cloneNodeConfig(selectedNodeId.value);
   savedTip.value = true;
   setTimeout(() => {
     savedTip.value = false;
@@ -90,7 +103,7 @@ async function handleSave() {
 
 async function handleReset() {
   if (!(await process.resetNodeConfig())) return;
-  draft.value = JSON.parse(JSON.stringify(process.nodeConfigs.value[selectedNodeId.value]));
+  draft.value = cloneNodeConfig(selectedNodeId.value);
 }
 
 const nodeLabel = (id: string) => process.nodeConfigs.value[id]?.nodeName ?? id;

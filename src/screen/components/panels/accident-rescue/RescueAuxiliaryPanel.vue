@@ -202,7 +202,46 @@ const iconList = computed(() => (props.layout === 'eventCommand' ? KNOWLEDGE_ICO
 }
 
 .aux-grid--event-command {
-  grid-template-rows: repeat(3, minmax(0, 1fr));
+  /* 知识库条目数由后端决定（现 9 项），固定 3 行会导致第 4 行起溢出错位——
+     改为隐式自动行、按容器高度均分（9 项=5 行，5 项=3 行均可容纳）。 */
+  grid-template-rows: none;
+  grid-auto-rows: minmax(0, 1fr);
+}
+
+.aux-grid--event-command .aux-item {
+  /* 行高随条目数收缩，去掉固定最小高避免溢出容器 */
+  min-height: 0;
+  padding: 6px 10px;
+  gap: 8px;
+}
+
+/* 图标块由 rescue 布局的 48×48 降级为紧凑尺寸——
+   9 项压 5 行时单行卡片内容高仅约 28px，48px 图标块会上下撑破卡片边框。 */
+.aux-grid--event-command .aux-item__icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+}
+
+.aux-grid--event-command .aux-item__icon {
+  width: 16px;
+  height: 16px;
+}
+
+.aux-grid--event-command .aux-item__value {
+  font-size: 16px;
+  line-height: 1.15;
+}
+
+.aux-grid--event-command .aux-item__label {
+  margin-top: 2px;
+  font-size: 11px;
+
+  /* 单行截断：长标题（如「危险化学品泄漏处置」）不再换行撑破卡片 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: keep-all;
 }
 
 .aux-item {
