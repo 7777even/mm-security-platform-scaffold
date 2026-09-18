@@ -74,6 +74,7 @@ interface QuickLink {
 const quicks: QuickLink[] = [
   { name: '通讯录', to: '/contacts', icon: 'phone', tone: 'green' },
   { name: '今日值班', to: '/duty', icon: 'calendar', tone: 'teal' },
+  { name: '应急事件', to: '/events', icon: 'event', tone: 'red' },
   { name: '应急预案', to: '/plans', icon: 'plan', tone: 'blue' },
   { name: 'MSDS', to: '/msds', icon: 'flask', tone: 'orange' },
   { name: '防火巡查', to: '/patrols', icon: 'patrol', tone: 'orange' },
