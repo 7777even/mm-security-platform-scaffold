@@ -6,6 +6,7 @@ import { LineChart } from 'echarts/charts';
 import { GridComponent, MarkLineComponent, TooltipComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import AccidentRescueHeader from '../components/layout/AccidentRescueHeader.vue';
+import AccidentRescueSidePanel from '../components/common/AccidentRescueSidePanel.vue';
 import MapPageShell from '../components/map/MapPageShell.vue';
 import TyphoonRiskMapOverlay from '../components/map/TyphoonRiskMapOverlay.vue';
 import SatelliteCloudMapDialog from '../components/panels/typhoon/SatelliteCloudMapDialog.vue';
@@ -243,67 +244,68 @@ function openPointVideo(point: RiskPoint) {
       </div>
 
       <main class="sense-workspace">
-        <aside class="sense-left panel">
-          <header class="panel-title">
-            <div>
-              <small>MONITORING</small>
-              <h2>监测与趋势</h2>
+        <aside class="sense-left">
+          <AccidentRescueSidePanel class="typhoon-panel" variant="auxiliary" title="重要监测对象">
+            <template #actions>
+              <span class="typhoon-muted">{{ incident.monitoringObjects.length }} 个点位</span>
+              <button class="typhoon-link" type="button" @click="cloudMapOpen = true">
+                卫星云图
+              </button>
+            </template>
+            <div class="typhoon-panel-body">
+              <div class="monitor-grid">
+                <article
+                  v-for="(item, index) in incident.monitoringObjects"
+                  :key="item.id"
+                  :class="`is-${item.status}`"
+                >
+                  <header>
+                    <span>{{ item.name }}</span
+                    ><em>{{ item.statusText }}</em>
+                  </header>
+                  <div>
+                    <strong>{{ item.value }}</strong
+                    ><small>{{ item.unit }}</small
+                    ><i>{{ index === 2 ? '↑ 0.08m/h' : index === 1 ? '↑ 0.03m/h' : '— 稳定' }}</i>
+                  </div>
+                  <footer>
+                    {{
+                      index === 2
+                        ? '警戒 0.40m'
+                        : index === 1
+                          ? '警戒 0.60m'
+                          : index === 3
+                            ? '2/2台在线'
+                            : '警戒 1.00m'
+                    }}
+                  </footer>
+                </article>
+              </div>
             </div>
-            <button @click="cloudMapOpen = true">卫星云图</button>
-          </header>
+          </AccidentRescueSidePanel>
 
-          <section class="monitor-section">
-            <div class="section-head">
-              <strong>重要监测对象</strong
-              ><span>{{ incident.monitoringObjects.length }} 个点位</span>
-            </div>
-            <div class="monitor-grid">
-              <article
-                v-for="(item, index) in incident.monitoringObjects"
-                :key="item.id"
-                :class="`is-${item.status}`"
-              >
-                <header>
-                  <span>{{ item.name }}</span
-                  ><em>{{ item.statusText }}</em>
-                </header>
+          <AccidentRescueSidePanel class="typhoon-panel" variant="guidance" title="气象研判">
+            <template #actions><span class="typhoon-muted">未来2小时</span></template>
+            <div class="typhoon-panel-body">
+              <div class="weather-kpis">
                 <div>
-                  <strong>{{ item.value }}</strong
-                  ><small>{{ item.unit }}</small
-                  ><i>{{ index === 2 ? '↑ 0.08m/h' : index === 1 ? '↑ 0.03m/h' : '— 稳定' }}</i>
+                  <small>预计降雨</small><strong>35<em>mm</em></strong>
                 </div>
-                <footer>
-                  {{
-                    index === 2
-                      ? '警戒 0.40m'
-                      : index === 1
-                        ? '警戒 0.60m'
-                        : index === 3
-                          ? '2/2台在线'
-                          : '警戒 1.00m'
-                  }}
-                </footer>
-              </article>
-            </div>
-          </section>
-
-          <section class="weather-brief">
-            <div class="section-head"><strong>气象研判</strong><span>未来2小时</span></div>
-            <div class="weather-kpis">
-              <div>
-                <small>预计降雨</small><strong>35<em>mm</em></strong>
+                <div>
+                  <small>最大风力</small><strong>8<em>级</em></strong>
+                </div>
+                <div><small>影响持续</small><strong>20:00</strong></div>
               </div>
-              <div>
-                <small>最大风力</small><strong>8<em>级</em></strong>
-              </div>
-              <div><small>影响持续</small><strong>20:00</strong></div>
+              <p>{{ incident.meteorologySummary }}</p>
             </div>
-            <p>{{ incident.meteorologySummary }}</p>
-          </section>
+          </AccidentRescueSidePanel>
 
-          <section class="chart-section">
-            <div class="section-head">
-              <strong>天气趋势</strong>
+          <AccidentRescueSidePanel
+            class="typhoon-panel typhoon-panel--chart"
+            variant="dynamics"
+            title="天气趋势"
+          >
+            <div class="typhoon-panel-body typhoon-panel-body--fill">
               <div class="mini-tabs">
                 <button :class="{ active: trendMetric === 'rain' }" @click="trendMetric = 'rain'">
                   降雨</button
@@ -311,16 +313,26 @@ function openPointVideo(point: RiskPoint) {
                   风速
                 </button>
               </div>
+              <div class="typhoon-chart-wrap">
+                <VChart class="trend-chart" :option="trendOption" autoresize />
+              </div>
             </div>
-            <VChart class="trend-chart" :option="trendOption" autoresize />
-          </section>
+          </AccidentRescueSidePanel>
 
-          <section class="chart-section water-chart-section">
-            <div class="section-head">
-              <strong>水位趋势</strong><span class="water-point">西化学水泵房⌄</span>
+          <AccidentRescueSidePanel
+            class="typhoon-panel typhoon-panel--chart"
+            variant="dynamics"
+            title="水位趋势"
+          >
+            <template #actions
+              ><span class="typhoon-muted water-point">西化学水泵房⌄</span></template
+            >
+            <div class="typhoon-panel-body typhoon-panel-body--fill">
+              <div class="typhoon-chart-wrap">
+                <VChart class="trend-chart" :option="waterOption" autoresize />
+              </div>
             </div>
-            <VChart class="trend-chart" :option="waterOption" autoresize />
-          </section>
+          </AccidentRescueSidePanel>
         </aside>
 
         <div class="map-toolbar panel">
@@ -334,77 +346,84 @@ function openPointVideo(point: RiskPoint) {
           ><span><i class="normal" />正常</span><b></b><span class="zone">色块为业务分区</span>
         </div>
 
-        <aside class="sense-right panel">
-          <section class="right-block duty-block">
-            <div class="section-head">
-              <strong>值班信息</strong><span class="online">● 当前白班</span>
+        <aside class="sense-right">
+          <AccidentRescueSidePanel class="typhoon-panel" variant="duty" title="值班信息">
+            <template #actions><span class="online">● 当前白班</span></template>
+            <div class="typhoon-panel-body">
+              <div class="leader">
+                <span class="avatar">杨</span>
+                <div><strong>杨恒朋</strong><small>值班领导 · 在线</small></div>
+                <button>快捷通讯</button>
+              </div>
+              <div class="duty-members">
+                <span v-for="person in incident.dutyPersons.slice(1)" :key="person.id"
+                  ><i>{{ person.name.slice(0, 1) }}</i
+                  ><b>{{ person.name }}</b
+                  ><small>{{ person.role }}</small></span
+                >
+              </div>
             </div>
-            <div class="leader">
-              <span class="avatar">杨</span>
-              <div><strong>杨恒朋</strong><small>值班领导 · 在线</small></div>
-              <button>快捷通讯</button>
-            </div>
-            <div class="duty-members">
-              <span v-for="person in incident.dutyPersons.slice(1)" :key="person.id"
-                ><i>{{ person.name.slice(0, 1) }}</i
-                ><b>{{ person.name }}</b
-                ><small>{{ person.role }}</small></span
-              >
-            </div>
-          </section>
+          </AccidentRescueSidePanel>
 
-          <section class="right-block resource-block">
-            <div class="section-head"><strong>应急资料</strong><button>全部资料</button></div>
-            <div class="resource-grid">
-              <article v-for="(item, index) in incident.auxiliaryItems" :key="item.id">
-                <span>{{ ['案', '知', '图', '专'][index] }}</span>
-                <div>
-                  <strong>{{ item.count }}</strong
-                  ><small>{{ item.line1 }}</small
-                  ><em>{{ ['已启动 1套', '已匹配 6条', '当前启用 2条', '推荐 3套'][index] }}</em>
-                </div>
-              </article>
+          <AccidentRescueSidePanel class="typhoon-panel" variant="auxiliary" title="应急资料">
+            <template #actions
+              ><button class="typhoon-link" type="button">全部资料</button></template
+            >
+            <div class="typhoon-panel-body">
+              <div class="resource-grid">
+                <article v-for="(item, index) in incident.auxiliaryItems" :key="item.id">
+                  <span>{{ ['案', '知', '图', '专'][index] }}</span>
+                  <div>
+                    <strong>{{ item.count }}</strong
+                    ><small>{{ item.line1 }}</small
+                    ><em>{{ ['已启动 1套', '已匹配 6条', '当前启用 2条', '推荐 3套'][index] }}</em>
+                  </div>
+                </article>
+              </div>
             </div>
-          </section>
+          </AccidentRescueSidePanel>
 
-          <section class="right-block dynamics-block">
-            <div class="section-head">
-              <strong>应急动态</strong><span>{{ dynamics.length }} 条动态</span>
+          <AccidentRescueSidePanel
+            class="typhoon-panel typhoon-panel--grow"
+            variant="dynamics"
+            title="应急动态"
+          >
+            <div class="typhoon-panel-body typhoon-panel-body--fill">
+              <div class="dynamic-tabs">
+                <button :class="{ active: dynamicFilter === 'all' }" @click="dynamicFilter = 'all'">
+                  全部</button
+                ><button
+                  :class="{ active: dynamicFilter === 'alarm' }"
+                  @click="dynamicFilter = 'alarm'"
+                >
+                  告警</button
+                ><button
+                  :class="{ active: dynamicFilter === 'command' }"
+                  @click="dynamicFilter = 'command'"
+                >
+                  指令</button
+                ><button
+                  :class="{ active: dynamicFilter === 'feedback' }"
+                  @click="dynamicFilter = 'feedback'"
+                >
+                  反馈
+                </button>
+              </div>
+              <div class="dynamic-list">
+                <article v-for="item in dynamics" :key="item.id" :class="`is-${item.level}`">
+                  <time>{{ item.time }}</time
+                  ><i />
+                  <div>
+                    <header>
+                      <span>{{ item.tag }}</span
+                      ><strong>{{ item.title }}</strong>
+                    </header>
+                    <p>{{ item.detail }}</p>
+                  </div>
+                </article>
+              </div>
             </div>
-            <nav class="dynamic-tabs">
-              <button :class="{ active: dynamicFilter === 'all' }" @click="dynamicFilter = 'all'">
-                全部</button
-              ><button
-                :class="{ active: dynamicFilter === 'alarm' }"
-                @click="dynamicFilter = 'alarm'"
-              >
-                告警</button
-              ><button
-                :class="{ active: dynamicFilter === 'command' }"
-                @click="dynamicFilter = 'command'"
-              >
-                指令</button
-              ><button
-                :class="{ active: dynamicFilter === 'feedback' }"
-                @click="dynamicFilter = 'feedback'"
-              >
-                反馈
-              </button>
-            </nav>
-            <div class="dynamic-list">
-              <article v-for="item in dynamics" :key="item.id" :class="`is-${item.level}`">
-                <time>{{ item.time }}</time
-                ><i />
-                <div>
-                  <header>
-                    <span>{{ item.tag }}</span
-                    ><strong>{{ item.title }}</strong>
-                  </header>
-                  <p>{{ item.detail }}</p>
-                </div>
-              </article>
-            </div>
-          </section>
+          </AccidentRescueSidePanel>
         </aside>
       </main>
 
@@ -431,12 +450,9 @@ function openPointVideo(point: RiskPoint) {
   flex-direction: column;
   width: 100%;
   height: 100%;
-  color: #eaf5ff;
+  color: var(--color-text);
   pointer-events: none;
 
-  --line: rgb(83 165 213 / 22%);
-  --muted: #7f9bb1;
-  --cyan: #39c6ff;
   --red: var(--color-danger);
   --amber: #ffb84c;
 }
@@ -445,12 +461,12 @@ function openPointVideo(point: RiskPoint) {
   pointer-events: auto;
 }
 
+/* 地图覆盖类浮层：与标准事件详情页统一（radius-sm + 面板描边蓝 + 按钮底色） */
 .panel {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: linear-gradient(180deg, rgb(5 26 47 / 94%), rgb(3 17 33 / 94%));
-  box-shadow: 0 12px 36px rgb(0 7 20 / 34%);
-  backdrop-filter: blur(10px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--map-facility-btn-bg);
+  box-shadow: 0 8px 24px rgb(0 7 20 / 30%);
 }
 
 .event-state {
@@ -463,9 +479,9 @@ function openPointVideo(point: RiskPoint) {
   gap: 0;
   height: 38px;
   padding: 0 7px;
-  border: 1px solid rgb(75 176 229 / 28%);
-  border-radius: 8px;
-  background: rgb(3 19 37 / 91%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--map-facility-btn-bg);
   transform: translateX(-50%);
   box-shadow: 0 8px 26px rgb(0 8 20 / 30%);
 }
@@ -473,7 +489,7 @@ function openPointVideo(point: RiskPoint) {
 .event-state > span {
   padding: 0 11px;
   border-right: 1px solid rgb(99 156 190 / 16%);
-  color: #9ab1c4;
+  color: var(--color-text-muted);
   font-size: 11px;
   white-space: nowrap;
 }
@@ -482,7 +498,7 @@ function openPointVideo(point: RiskPoint) {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #ffd18c;
+  color: var(--amber);
   font-weight: 600;
 }
 
@@ -500,7 +516,7 @@ function openPointVideo(point: RiskPoint) {
 
 .event-state b {
   margin-left: 4px;
-  color: #edf7ff;
+  color: var(--color-text-strong);
   font-size: 15px;
 }
 
@@ -514,7 +530,7 @@ function openPointVideo(point: RiskPoint) {
 
 .event-state small {
   padding: 0 9px;
-  color: #657f95;
+  color: var(--color-text-muted);
   font-size: 9px;
   white-space: nowrap;
 }
@@ -525,93 +541,121 @@ function openPointVideo(point: RiskPoint) {
   justify-content: space-between;
   flex: 1;
   min-height: 0;
-  padding: 62px 24px 18px;
+
+  /* 与标准事件详情页左右栏对齐：左 20 / 右 39，顶部 18（栏顶 y=95）。 */
+  padding: 18px 39px 18px 20px;
   pointer-events: none;
 }
 
 .sense-left,
 .sense-right {
-  width: 390px;
+  /* 与标准事件详情页左右栏同宽（419px），并复用 AccidentRescueSidePanel 皮肤 */
+  width: 419px;
   min-height: 0;
-  padding: 13px;
-  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
   pointer-events: auto;
 }
 
-.sense-left {
+/* 台风页面板复用标准事件详情页 AccidentRescueSidePanel 皮肤（同一套设计素材），
+   高度分配也与标准页一致：信息面板取内容高度，图表/动态面板等分剩余空间。 */
+.sense-left > .typhoon-panel,
+.sense-right > .typhoon-panel {
+  /* 覆盖 AccidentRescueSidePanel 自带的 height:100%，改由 flex 分配 / 内容自然决定 */
+  height: auto;
+  flex: 0 0 auto;
+}
+
+.sense-left > .typhoon-panel--chart,
+.sense-right > .typhoon-panel--chart,
+.sense-left > .typhoon-panel--grow,
+.sense-right > .typhoon-panel--grow {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+/* 覆盖面板内部 content 的 flex:1 1 0（basis 0 在自动高度下会塌陷），
+   改 basis auto：在定高面板内仍填满，自动高度下则自然撑开。 */
+.typhoon-panel :deep(.accident-rescue-panel__content) {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.typhoon-panel-body {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 6px;
+  min-height: 0;
 }
 
-.panel-title,
-.section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.typhoon-panel-body--fill {
+  height: 100%;
 }
 
-.panel-title small {
-  display: block;
-  color: #4f8dac;
-  font-size: 8px;
-  letter-spacing: 1.2px;
+.typhoon-panel-body p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.55;
 }
 
-.panel-title h2 {
-  margin: 2px 0 0;
-  font-size: 17px;
+/* 面板头部右侧动作：与标准页头部按钮同口径（24px 高、2px 圆角、蓝色描边按钮） */
+.typhoon-panel :deep(.accident-rescue-panel__actions) {
+  gap: 8px;
 }
 
-.panel-title button,
-.section-head button {
-  border: 0;
-  background: none;
-  color: #55bde7;
-  font-size: 9px;
+.typhoon-link {
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid rgb(31 157 224 / 46%);
+  border-radius: var(--radius-sm);
+  background: rgb(0 47 82 / 82%);
+  color: #8ddcff;
+  font-family: var(--font-body);
+  font-size: 11px;
   cursor: pointer;
 }
 
-.section-head strong {
-  font-size: 12px;
+.typhoon-muted {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  white-space: nowrap;
 }
 
-.section-head > span {
-  color: #6e8ca4;
-  font-size: 9px;
+.typhoon-chart-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-top: 6px;
 }
 
-.monitor-section,
-.weather-brief,
-.chart-section {
-  padding: 10px;
-  border: 1px solid rgb(81 153 194 / 13%);
-  border-radius: 7px;
-  background: rgb(4 22 40 / 48%);
-}
+/* ---- 重要监测对象 ---- */
 
+/* 卡片皮肤与标准事件详情页 aux-item 一致：4px 圆角 + 描边蓝 + 极淡底 + 内高光 */
 .monitor-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px;
-  margin-top: 8px;
 }
 
 .monitor-grid article {
-  padding: 8px;
-  border: 1px solid rgb(70 184 133 / 20%);
-  border-radius: 6px;
-  background: rgb(31 136 91 / 4%);
+  padding: 6px 10px;
+  border: 1px solid rgb(0 110 190 / 32%);
+  border-radius: var(--radius-md);
+  background: rgb(0 18 40 / 55%);
+  box-shadow: inset 0 1px 0 rgb(120 180 255 / 6%);
 }
 
 .monitor-grid article.is-warning {
-  border-color: rgb(255 184 76 / 28%);
-  background: rgb(255 163 38 / 5%);
+  border-color: rgb(240 180 41 / 32%);
+  background: rgb(48 32 10 / 45%);
 }
 
 .monitor-grid article.is-critical {
-  border-color: rgb(255 98 107 / 30%);
-  background: rgb(255 70 83 / 6%);
+  border-color: rgb(255 90 74 / 32%);
+  background: rgb(52 16 14 / 45%);
 }
 
 .monitor-grid header {
@@ -622,15 +666,15 @@ function openPointVideo(point: RiskPoint) {
 
 .monitor-grid header span {
   overflow: hidden;
-  color: #bcd0df;
-  font-size: 9px;
+  color: var(--color-text);
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .monitor-grid header em {
   color: var(--color-success);
-  font-size: 8px;
+  font-size: 11px;
   font-style: normal;
   white-space: nowrap;
 }
@@ -646,107 +690,102 @@ function openPointVideo(point: RiskPoint) {
 .monitor-grid article > div {
   display: flex;
   align-items: baseline;
-  margin-top: 5px;
+  margin-top: 4px;
 }
 
 .monitor-grid article > div strong {
-  font-size: 19px;
+  font-size: 18px;
 }
 
 .monitor-grid article > div small {
   margin-left: 2px;
-  color: #8aa2b5;
-  font-size: 9px;
+  color: var(--color-text-muted);
+  font-size: 11px;
 }
 
 .monitor-grid article > div i {
   margin-left: auto;
-  color: #7895aa;
-  font-size: 8px;
+  color: var(--color-text-muted);
+  font-size: 11px;
   font-style: normal;
 }
 
 .monitor-grid footer {
-  margin-top: 4px;
-  color: #66849b;
-  font-size: 8px;
+  margin-top: 3px;
+  color: var(--color-text-muted);
+  font-size: 11px;
 }
 
-.weather-brief {
-  flex: 0 0 auto;
-}
+/* ---- 气象研判 ---- */
 
+/* 与标准页 KPI 卡片同皮肤（此前是 5px 圆角无描边的自定义小块） */
 .weather-kpis {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  margin-top: 7px;
-  border-radius: 5px;
-  background: rgb(3 14 27 / 42%);
+  gap: 6px;
 }
 
 .weather-kpis div {
-  padding: 6px 8px;
-  border-right: 1px solid rgb(95 154 190 / 12%);
-}
-
-.weather-kpis div:last-child {
-  border: 0;
+  padding: 6px 10px;
+  border: 1px solid rgb(0 110 190 / 32%);
+  border-radius: var(--radius-md);
+  background: rgb(0 18 40 / 55%);
+  box-shadow: inset 0 1px 0 rgb(120 180 255 / 6%);
 }
 
 .weather-kpis small {
   display: block;
-  color: #6f8da5;
-  font-size: 8px;
+  color: var(--color-text-muted);
+  font-size: 11px;
 }
 
 .weather-kpis strong {
   display: block;
   margin-top: 3px;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .weather-kpis em {
   margin-left: 2px;
-  color: #7e9bb0;
-  font-size: 8px;
+  color: var(--color-text-muted);
+  font-size: 11px;
   font-style: normal;
 }
 
-.weather-brief p {
-  margin: 7px 0 0;
-  color: #9db3c4;
-  font-size: 9px;
-  line-height: 1.5;
-}
+/* ---- 图表 ---- */
 
-.chart-section {
-  display: flex;
-  flex: 1;
-  min-height: 118px;
-  flex-direction: column;
-}
-
+/* 分段式页签条：与标准页 dynamics-panel__tabs / accident-info__tabs 完全同口径
+   （28px 高、2px 圆角、1px 描边、分段分隔线、选中态蓝色渐变） */
 .mini-tabs {
-  display: flex;
-  gap: 2px;
-  padding: 2px;
-  border-radius: 4px;
-  background: rgb(0 10 22 / 45%);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  flex-shrink: 0;
+  height: 28px;
+  border: 1px solid var(--panel-head-line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 
 .mini-tabs button {
-  height: 20px;
-  padding: 0 7px;
+  height: 28px;
+  padding: 0;
   border: 0;
-  border-radius: 3px;
-  background: transparent;
-  color: #708da4;
-  font-size: 8px;
+  border-right: 1px solid rgb(0 110 190 / 28%);
+  background: var(--map-facility-btn-bg);
+  color: #a8b8cc;
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mini-tabs button:last-child {
+  border-right: none;
 }
 
 .mini-tabs button.active {
-  background: rgb(45 169 225 / 17%);
-  color: #bdeaff;
+  color: var(--color-text-strong);
+  font-weight: 500;
+  background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
 }
 
 .trend-chart {
@@ -759,10 +798,7 @@ function openPointVideo(point: RiskPoint) {
   color: #a4bfd2 !important;
 }
 
-.water-chart-section {
-  min-height: 126px;
-}
-
+/* ---- 地图浮层 ---- */
 .map-toolbar {
   position: absolute;
   left: 50%;
@@ -777,19 +813,23 @@ function openPointVideo(point: RiskPoint) {
 
 .map-toolbar button {
   height: 26px;
-  padding: 0 9px;
+  padding: 0 10px;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: transparent;
-  color: #7793a8;
-  font-size: 9px;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: 11px;
   cursor: pointer;
 }
 
-.map-toolbar button.active,
 .map-toolbar button:hover {
-  background: rgb(45 169 225 / 16%);
-  color: #d6f3ff;
+  color: var(--color-text-strong);
+}
+
+.map-toolbar button.active {
+  background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
+  color: var(--color-text-strong);
 }
 
 .map-toolbar i {
@@ -814,8 +854,8 @@ function openPointVideo(point: RiskPoint) {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #8ca3b5;
-  font-size: 8px;
+  color: var(--color-text-muted);
+  font-size: 11px;
 }
 
 .map-legend span i {
@@ -842,50 +882,37 @@ function openPointVideo(point: RiskPoint) {
 }
 
 .map-legend .zone {
-  color: #5f7c91;
+  color: var(--color-text-muted);
 }
 
-.sense-right {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+/* ---- 值班信息 ---- */
 
-.right-block {
-  padding: 10px;
-  border: 1px solid rgb(81 153 194 / 13%);
-  border-radius: 7px;
-  background: rgb(4 22 40 / 48%);
-}
-
-.duty-block {
-  flex: 0 0 142px;
-}
-
+/* 人员卡皮肤与标准页 duty-card 一致：2px 圆角 + 描边蓝 + rgb(0 18 40 / 55%) 底 */
 .online {
   color: var(--color-success) !important;
+  font-size: 11px;
 }
 
 .leader {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 8px;
-  padding: 7px;
-  border-radius: 6px;
-  background: rgb(8 34 57 / 72%);
+  padding: 6px 8px;
+  border: 1px solid rgb(0 110 190 / 32%);
+  border-radius: var(--radius-sm);
+  background: rgb(0 18 40 / 55%);
 }
 
 .avatar {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  border: 1px solid rgb(57 198 255 / 35%);
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-accent-glow);
   border-radius: 50%;
-  background: #0a3b57;
-  color: #81dcff;
-  font-size: 13px;
+  background: var(--color-accent-faint);
+  color: #7cdbff;
+  font-size: 15px;
 }
 
 .leader div {
@@ -895,91 +922,103 @@ function openPointVideo(point: RiskPoint) {
 }
 
 .leader strong {
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .leader small {
   margin-top: 3px;
-  color: #6aa58a;
-  font-size: 8px;
+  color: var(--color-success);
+  font-size: 12px;
 }
 
 .leader button {
   height: 24px;
-  border: 1px solid rgb(57 177 226 / 25%);
-  border-radius: 4px;
-  background: rgb(26 125 168 / 10%);
+  padding: 0 8px;
+  border: 1px solid rgb(31 157 224 / 46%);
+  border-radius: var(--radius-sm);
+  background: rgb(0 47 82 / 82%);
   color: #8ddcff;
-  font-size: 8px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  cursor: pointer;
 }
 
 .duty-members {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 5px;
-  margin-top: 6px;
 }
 
 .duty-members > span {
   display: grid;
-  grid-template-columns: 20px 1fr;
+  grid-template-columns: 24px minmax(0, 1fr);
   align-items: center;
-  padding: 4px;
-  border-radius: 4px;
-  background: rgb(5 25 43 / 60%);
+  padding: 4px 6px;
+  border: 1px solid rgb(0 110 190 / 32%);
+  border-radius: var(--radius-sm);
+  background: rgb(0 18 40 / 55%);
 }
 
 .duty-members i {
   grid-row: 1/3;
   display: grid;
   place-items: center;
-  width: 17px;
-  height: 17px;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--color-accent-glow);
   border-radius: 50%;
-  background: #103a52;
+  background: var(--color-accent-faint);
   color: #8ccce9;
-  font-size: 8px;
+  font-size: 11px;
   font-style: normal;
 }
 
 .duty-members b {
-  font-size: 8px;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .duty-members small {
-  color: #648096;
-  font-size: 7px;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.resource-block {
-  flex: 0 0 158px;
-}
+/* ---- 应急资料 ---- */
 
+/* 与标准页 aux-item 同皮肤：4px 圆角 + 描边蓝 + 284 图标块 */
 .resource-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px;
-  margin-top: 8px;
 }
 
 .resource-grid article {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px;
-  border-radius: 5px;
-  background: rgb(7 31 52 / 70%);
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid rgb(0 110 190 / 32%);
+  border-radius: var(--radius-md);
+  background: rgb(0 18 40 / 55%);
+  box-shadow: inset 0 1px 0 rgb(120 180 255 / 6%);
 }
 
 .resource-grid article > span {
   display: grid;
+  flex-shrink: 0;
   place-items: center;
-  width: 25px;
-  height: 25px;
-  border-radius: 5px;
-  background: rgb(46 169 221 / 12%);
-  color: #63cef8;
-  font-size: 11px;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgb(0 100 180 / 28%);
+  border-radius: 3px;
+  background: rgb(0 28 58 / 65%);
+  color: var(--color-accent);
+  font-size: 13px;
 }
 
 .resource-grid article > div {
@@ -990,77 +1029,80 @@ function openPointVideo(point: RiskPoint) {
 }
 
 .resource-grid strong {
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .resource-grid small {
-  color: #95adbf;
-  font-size: 8px;
+  color: var(--color-text-muted);
+  font-size: 11px;
 }
 
 .resource-grid em {
   grid-column: 1/-1;
   margin-top: 2px;
   color: var(--color-success);
-  font-size: 7px;
+  font-size: 11px;
   font-style: normal;
 }
 
-.dynamics-block {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  flex-direction: column;
-}
+/* ---- 应急动态 ---- */
 
+/* 页签条与标准页完全同口径（分段式 28px） */
 .dynamic-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 2px;
-  margin-top: 8px;
-  padding: 2px;
-  border-radius: 5px;
-  background: rgb(0 11 23 / 42%);
+  flex-shrink: 0;
+  height: 28px;
+  border: 1px solid var(--panel-head-line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 
 .dynamic-tabs button {
-  height: 24px;
+  height: 28px;
+  padding: 0;
   border: 0;
-  border-radius: 3px;
-  background: transparent;
-  color: #728da3;
-  font-size: 8px;
+  border-right: 1px solid rgb(0 110 190 / 28%);
+  background: var(--map-facility-btn-bg);
+  color: #a8b8cc;
+  font-family: var(--font-body);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.dynamic-tabs button:last-child {
+  border-right: none;
 }
 
 .dynamic-tabs button.active {
-  background: rgb(43 166 221 / 16%);
-  color: #c9efff;
+  color: var(--color-text-strong);
+  font-weight: 500;
+  background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
 }
 
 .dynamic-list {
   flex: 1;
   min-height: 0;
-  margin-top: 7px;
   overflow: auto;
 }
 
 .dynamic-list article {
   display: grid;
-  grid-template-columns: 31px 7px 1fr;
-  gap: 6px;
-  padding: 7px 0;
+  grid-template-columns: 42px 8px minmax(0, 1fr);
+  gap: 8px;
+  padding: 0 0 8px;
 }
 
 .dynamic-list time {
-  color: #5faed0;
-  font-size: 8px;
+  color: #8fa8c4;
+  font-size: 12px;
 }
 
 .dynamic-list article > i {
   position: relative;
-  width: 6px;
-  height: 6px;
-  margin-top: 2px;
+  width: 7px;
+  height: 7px;
+  margin-top: 5px;
   border-radius: 50%;
   background: var(--color-success);
   box-shadow: 0 0 6px var(--color-success);
@@ -1069,10 +1111,10 @@ function openPointVideo(point: RiskPoint) {
 .dynamic-list article > i::after {
   content: '';
   position: absolute;
-  left: 2.5px;
-  top: 9px;
+  left: 3px;
+  top: 10px;
   width: 1px;
-  height: calc(100% + 25px);
+  height: calc(100% + 12px);
   background: rgb(83 148 181 / 16%);
 }
 
@@ -1090,6 +1132,16 @@ function openPointVideo(point: RiskPoint) {
   box-shadow: 0 0 6px var(--red);
 }
 
+/* 条目内容框与标准页 dynamics-card__body 同皮肤 */
+.dynamic-list article > div {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid rgb(0 110 190 / 32%);
+  border-radius: var(--radius-sm);
+  background: rgb(0 18 40 / 72%);
+  box-shadow: inset 0 0 12px rgb(0 80 160 / 6%);
+}
+
 .dynamic-list header {
   display: flex;
   align-items: center;
@@ -1097,16 +1149,18 @@ function openPointVideo(point: RiskPoint) {
 }
 
 .dynamic-list header span {
-  padding: 2px 4px;
-  border-radius: 3px;
-  background: rgb(51 167 215 / 10%);
-  color: #62c8ef;
-  font-size: 7px;
+  flex-shrink: 0;
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+  background: rgb(0 121 204 / 22%);
+  color: #7cdbff;
+  font-size: 11px;
 }
 
 .dynamic-list header strong {
   overflow: hidden;
-  font-size: 9px;
+  font-size: 13px;
+  font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1115,21 +1169,16 @@ function openPointVideo(point: RiskPoint) {
   display: -webkit-box;
   overflow: hidden;
   margin: 4px 0 0;
-  color: #7893a8;
-  font-size: 8px;
-  line-height: 1.5;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.55;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
 
 @media (width <= 2100px) {
-  .sense-left,
-  .sense-right {
-    width: 372px;
-  }
-
   .sense-workspace {
-    padding-inline: 20px;
+    padding-inline: 20px 39px;
   }
 
   .event-state small {
