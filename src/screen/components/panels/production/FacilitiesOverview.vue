@@ -64,18 +64,25 @@ function openFacility(facilityId: number) {
 }
 
 .overview-grid {
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(3, 70px);
+  grid-auto-rows: 1fr;
   gap: 12px;
-  align-content: start;
+  align-content: stretch;
 }
 
 .overview-grid__btn {
+  height: 100%;
   border: none;
   background: transparent;
   padding: 0;
   cursor: pointer;
+}
+
+.overview-grid__btn :deep(.overview-item) {
+  height: 100%;
 }
 
 .overview-grid__btn:hover :deep(.overview-item) {
