@@ -148,7 +148,7 @@ export interface paths {
     };
     /**
      * 应急指挥指令分组列表
-     * @description 返回固定/临时指令分组（一键通知/一键调度/临时通知/临时调度），可按 tab 过滤。
+     * @description 返回固定/临时指令分组（一键通知/一键调度/临时通知/临时调度），可按 tab 过滤。数据为两路同源合并：fac_emergency_cmd 模板 + fac_emergency_command_record 留痕（管理端下发的自由编码指令追加为「下发指令」分组，命中模板 id 的覆写最新状态）。
      */
     get: operations['getEmergencyCommandGroups'];
     put?: never;

@@ -7,9 +7,24 @@
     "x-contract": "B3",
     "description": "应急力量 / 结案 / 值班值守 / 应急通讯录 / 安全知识接口（代码真实契约）。契约源：src/services/emergency.ts、closedCases.ts、duty.ts、emergencyPhone.ts、knowledge.ts。"
   },
-  "servers": [{ "url": "/api/v1", "description": "默认 baseURL（VITE_API_BASE 可覆盖）" }],
-  "security": [{ "bearerAuth": [], "replaySign": [] }],
-  "tags": [{ "name": "emergency", "description": "应急资源" }],
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "默认 baseURL（VITE_API_BASE 可覆盖）"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": [],
+      "replaySign": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "emergency",
+      "description": "应急资源"
+    }
+  ],
   "paths": {
     "/emergency/strength": {
       "get": {
@@ -17,7 +32,11 @@
         "operationId": "getEmergencyStrength",
         "summary": "应急力量统计",
         "description": "按维度统计应急资源数量。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=EmergencyStrength）",
@@ -25,10 +44,16 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
-                      "properties": { "data": { "$ref": "#/components/schemas/EmergencyStrength" } }
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EmergencyStrength"
+                        }
+                      }
                     }
                   ]
                 },
@@ -37,15 +62,25 @@
                   "message": "ok",
                   "data": {
                     "resources": [
-                      { "kind": "应急专家", "count": 47, "icon": "UserFilled" },
-                      { "kind": "应急物资", "count": 3510, "icon": "Box" }
+                      {
+                        "kind": "应急专家",
+                        "count": 47,
+                        "icon": "UserFilled"
+                      },
+                      {
+                        "kind": "应急物资",
+                        "count": 3510,
+                        "icon": "Box"
+                      }
                     ]
                   }
                 }
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -55,7 +90,11 @@
         "operationId": "getEmergencyAssistStats",
         "summary": "应急辅助信息统计",
         "description": "返回 4 项应急辅助 KPI：应急预案 / 现场处置卡 / 应急联络人 / 可用消防水源。数据源 V39 fac_emergency_assist_stat 参考表。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=EmergencyAssistStatSummary）",
@@ -63,11 +102,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/EmergencyAssistStatSummary" }
+                        "data": {
+                          "$ref": "#/components/schemas/EmergencyAssistStatSummary"
+                        }
                       }
                     }
                   ]
@@ -77,17 +120,39 @@
                   "message": "ok",
                   "data": {
                     "items": [
-                      { "label": "应急预案", "value": 15, "unit": "套", "tone": "blue" },
-                      { "label": "现场处置卡", "value": 32, "unit": "张", "tone": "cyan" },
-                      { "label": "应急联络人", "value": 18, "unit": "人", "tone": "green" },
-                      { "label": "可用消防水源", "value": 306, "unit": "处", "tone": "orange" }
+                      {
+                        "label": "应急预案",
+                        "value": 15,
+                        "unit": "套",
+                        "tone": "blue"
+                      },
+                      {
+                        "label": "现场处置卡",
+                        "value": 32,
+                        "unit": "张",
+                        "tone": "cyan"
+                      },
+                      {
+                        "label": "应急联络人",
+                        "value": 18,
+                        "unit": "人",
+                        "tone": "green"
+                      },
+                      {
+                        "label": "可用消防水源",
+                        "value": 306,
+                        "unit": "处",
+                        "tone": "orange"
+                      }
                     ]
                   }
                 }
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -97,7 +162,11 @@
         "operationId": "getClosedCases",
         "summary": "近期已结案列表",
         "description": "返回近期已闭环处置的应急事件列表，供复盘检索。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=ClosedCaseList）",
@@ -105,10 +174,16 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
-                      "properties": { "data": { "$ref": "#/components/schemas/ClosedCaseList" } }
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/ClosedCaseList"
+                        }
+                      }
                     }
                   ]
                 },
@@ -130,7 +205,9 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -140,7 +217,11 @@
         "operationId": "getDutyRoster",
         "summary": "应急值班值守表",
         "description": "返回当前应急值班值守排班表，含部门切换与成员信息。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=DutyRoster）",
@@ -148,10 +229,16 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
-                      "properties": { "data": { "$ref": "#/components/schemas/DutyRoster" } }
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/DutyRoster"
+                        }
+                      }
                     }
                   ]
                 },
@@ -176,7 +263,9 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -186,7 +275,11 @@
         "operationId": "getEmergencyPhones",
         "summary": "应急电话通讯录",
         "description": "返回消防/医疗/公安等应急联络电话通讯录。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=EmergencyPhoneBook）",
@@ -194,11 +287,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/EmergencyPhoneBook" }
+                        "data": {
+                          "$ref": "#/components/schemas/EmergencyPhoneBook"
+                        }
                       }
                     }
                   ]
@@ -208,15 +305,27 @@
                   "message": "ok",
                   "data": {
                     "entries": [
-                      { "id": "ph1", "name": "消防报警", "number": "119", "category": "消防" },
-                      { "id": "ph2", "name": "医疗急救", "number": "120", "category": "医疗" }
+                      {
+                        "id": "ph1",
+                        "name": "消防报警",
+                        "number": "119",
+                        "category": "消防"
+                      },
+                      {
+                        "id": "ph2",
+                        "name": "医疗急救",
+                        "number": "120",
+                        "category": "医疗"
+                      }
                     ]
                   }
                 }
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -226,7 +335,11 @@
         "operationId": "getEmergencyKnowledge",
         "summary": "应急生产安全知识",
         "description": "返回应急生产安全知识点列表，支持按分类检索。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=KnowledgeList）",
@@ -234,10 +347,16 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
-                      "properties": { "data": { "$ref": "#/components/schemas/KnowledgeList" } }
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/KnowledgeList"
+                        }
+                      }
                     }
                   ]
                 },
@@ -246,14 +365,21 @@
                   "message": "ok",
                   "data": {
                     "items": [
-                      { "id": "k1", "title": "岗位应急处置卡", "count": 158, "icon": "Document" }
+                      {
+                        "id": "k1",
+                        "title": "岗位应急处置卡",
+                        "count": 158,
+                        "icon": "Document"
+                      }
                     ]
                   }
                 }
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -263,7 +389,11 @@
         "operationId": "getDispatchPersonnel",
         "summary": "应急派单人员名册",
         "description": "返回应急指挥可指派的人员名册，供告警详情「派单人员」下拉使用。数据来自 fac_dispatch_personnel 参考表，按 sort_no 升序，仅返回启用人员。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=DispatchPersonnel[]）",
@@ -271,13 +401,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/DispatchPersonnel" }
+                          "items": {
+                            "$ref": "#/components/schemas/DispatchPersonnel"
+                          }
                         }
                       }
                     }
@@ -306,7 +440,9 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -315,15 +451,20 @@
         "tags": ["emergency"],
         "operationId": "getEmergencyCommandGroups",
         "summary": "应急指挥指令分组列表",
-        "description": "返回固定/临时指令分组（一键通知/一键调度/临时通知/临时调度），可按 tab 过滤。",
+        "description": "返回固定/临时指令分组（一键通知/一键调度/临时通知/临时调度），可按 tab 过滤。数据为两路同源合并：fac_emergency_cmd 模板 + fac_emergency_command_record 留痕（管理端下发的自由编码指令追加为「下发指令」分组，命中模板 id 的覆写最新状态）。",
         "parameters": [
-          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          },
           {
             "name": "tab",
             "in": "query",
             "required": false,
             "description": "指令分类：fixed=固定指令，temp=临时指令；缺省返回全部",
-            "schema": { "type": "string", "enum": ["fixed", "temp"] }
+            "schema": {
+              "type": "string",
+              "enum": ["fixed", "temp"]
+            }
           }
         ],
         "responses": {
@@ -333,13 +474,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/EmergencyCommandGroup" }
+                          "items": {
+                            "$ref": "#/components/schemas/EmergencyCommandGroup"
+                          }
                         }
                       }
                     }
@@ -368,7 +513,9 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -379,13 +526,17 @@
         "summary": "应急指挥指令行动详情",
         "description": "返回单条指令的派发渠道/对象/执行日志等富文本详情。",
         "parameters": [
-          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          },
           {
             "name": "commandId",
             "in": "path",
             "required": true,
             "description": "指令 ID（如 n1/d1/t2）",
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -395,11 +546,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/CommandActionDetail" }
+                        "data": {
+                          "$ref": "#/components/schemas/CommandActionDetail"
+                        }
                       }
                     }
                   ]
@@ -426,7 +581,12 @@
                       }
                     ],
                     "dutyRecipients": [
-                      { "id": "dy1", "role": "值班领导", "name": "杨恒朋", "phone": "13792536966" }
+                      {
+                        "id": "dy1",
+                        "role": "值班领导",
+                        "name": "杨恒朋",
+                        "phone": "13792536966"
+                      }
                     ],
                     "dynamics": [
                       {
@@ -443,7 +603,9 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -457,7 +619,9 @@
             "description": "节点联动配置列表",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/NodePhaseConfigList" },
+                "schema": {
+                  "$ref": "#/components/schemas/NodePhaseConfigList"
+                },
                 "example": {
                   "code": 0,
                   "message": "ok",
@@ -477,14 +641,18 @@
                       },
                       "rightPanelHiddenTabs": [],
                       "leftPanelHiddenPanels": [],
-                      "duty": { "autoRoster": true }
+                      "duty": {
+                        "autoRoster": true
+                      }
                     }
                   ]
                 }
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       },
       "put": {
@@ -495,7 +663,9 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/NodePhaseConfigList" }
+              "schema": {
+                "$ref": "#/components/schemas/NodePhaseConfigList"
+              }
             }
           }
         },
@@ -504,7 +674,9 @@
             "description": "保存后的节点联动配置列表",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/NodePhaseConfigList" },
+                "schema": {
+                  "$ref": "#/components/schemas/NodePhaseConfigList"
+                },
                 "example": {
                   "code": 0,
                   "message": "ok",
@@ -519,15 +691,21 @@
                       },
                       "rightPanelHiddenTabs": ["dynamics"],
                       "leftPanelHiddenPanels": ["info"],
-                      "duty": { "autoRoster": true }
+                      "duty": {
+                        "autoRoster": true
+                      }
                     }
                   ]
                 }
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
-          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
         }
       }
     },
@@ -541,7 +719,9 @@
             "description": "流程全景聚合",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/EmergencyProcessPanorama" },
+                "schema": {
+                  "$ref": "#/components/schemas/EmergencyProcessPanorama"
+                },
                 "example": {
                   "code": 0,
                   "message": "ok",
@@ -555,7 +735,13 @@
                         "tone": "blue"
                       }
                     ],
-                    "responseModes": [{ "value": "team", "label": "一、班组处置", "stageId": 1 }],
+                    "responseModes": [
+                      {
+                        "value": "team",
+                        "label": "一、班组处置",
+                        "stageId": 1
+                      }
+                    ],
                     "stages": [
                       {
                         "id": 1,
@@ -575,7 +761,11 @@
                           }
                         ],
                         "criteriaChecklist": [
-                          { "id": "cri-1-1", "label": "确定事故点位与介质", "checked": true }
+                          {
+                            "id": "cri-1-1",
+                            "label": "确定事故点位与介质",
+                            "checked": true
+                          }
                         ],
                         "subStages": [],
                         "escalationRule": {
@@ -596,7 +786,9 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -610,7 +802,9 @@
             "description": "节点处置指引聚合",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/EmergencyProcessGuidance" },
+                "schema": {
+                  "$ref": "#/components/schemas/EmergencyProcessGuidance"
+                },
                 "example": {
                   "code": 0,
                   "message": "ok",
@@ -655,7 +849,9 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -665,7 +861,11 @@
         "operationId": "listEmergencyCommandRecords",
         "summary": "应急指令下发与状态推进记录列表",
         "description": "返回应急指令下发与状态推进的业务留痕列表（按 id 倒序，最多 200 条）。仅记录系统内部指令流转，不代表任何物理设备动作。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=指令记录列表）",
@@ -673,13 +873,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/EmergencyCommandRecordView" }
+                          "items": {
+                            "$ref": "#/components/schemas/EmergencyCommandRecordView"
+                          }
                         }
                       }
                     }
@@ -707,8 +911,12 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
-          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
         }
       },
       "post": {
@@ -720,7 +928,9 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/EmergencyCommandRecordWriteRequest" },
+              "schema": {
+                "$ref": "#/components/schemas/EmergencyCommandRecordWriteRequest"
+              },
               "example": {
                 "commandCode": "w1",
                 "commandName": "发布防台防汛预警",
@@ -740,11 +950,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/EmergencyCommandRecordView" }
+                        "data": {
+                          "$ref": "#/components/schemas/EmergencyCommandRecordView"
+                        }
                       }
                     }
                   ]
@@ -769,9 +983,15 @@
               }
             }
           },
-          "400": { "$ref": "./_shared.json#/components/responses/BadRequest" },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
-          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+          "400": {
+            "$ref": "./_shared.json#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
         }
       }
     },
@@ -781,7 +1001,11 @@
         "operationId": "listDutySignIns",
         "summary": "应急值班签到记录列表",
         "description": "返回应急值班签到 / 签退记录（按 id 倒序，最多 200 条）。值班排班本体（/emergency/duty）仍是只读参考配置，签到动作落独立的 fac_duty_sign_in 表。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=签到记录列表）",
@@ -789,13 +1013,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/DutySignInView" }
+                          "items": {
+                            "$ref": "#/components/schemas/DutySignInView"
+                          }
                         }
                       }
                     }
@@ -822,8 +1050,12 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
-          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
         }
       },
       "post": {
@@ -835,7 +1067,9 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/DutySignInWriteRequest" },
+              "schema": {
+                "$ref": "#/components/schemas/DutySignInWriteRequest"
+              },
               "example": {
                 "dutyDate": "2026-09-13",
                 "shiftName": "白班",
@@ -854,11 +1088,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/DutySignInView" }
+                        "data": {
+                          "$ref": "#/components/schemas/DutySignInView"
+                        }
                       }
                     }
                   ]
@@ -882,9 +1120,15 @@
               }
             }
           },
-          "400": { "$ref": "./_shared.json#/components/responses/BadRequest" },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
-          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+          "400": {
+            "$ref": "./_shared.json#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
         }
       }
     }
@@ -896,7 +1140,9 @@
         "properties": {
           "resources": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/EmergencyResource" },
+            "items": {
+              "$ref": "#/components/schemas/EmergencyResource"
+            },
             "description": "按维度统计的应急资源"
           }
         }
@@ -919,7 +1165,11 @@
             "description": "资源类别",
             "example": "应急专家"
           },
-          "count": { "type": "integer", "description": "数量", "example": 47 },
+          "count": {
+            "type": "integer",
+            "description": "数量",
+            "example": 47
+          },
           "icon": {
             "type": "string",
             "description": "图标名（Element Plus icon 名）",
@@ -932,7 +1182,9 @@
         "properties": {
           "cases": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ClosedCase" },
+            "items": {
+              "$ref": "#/components/schemas/ClosedCase"
+            },
             "description": "已结案事件列表"
           }
         }
@@ -940,15 +1192,28 @@
       "ClosedCase": {
         "type": "object",
         "properties": {
-          "caseId": { "type": "string", "description": "结案 ID", "example": "C-2026-081" },
-          "title": { "type": "string", "description": "事件标题" },
-          "location": { "type": "string", "description": "事发位置" },
+          "caseId": {
+            "type": "string",
+            "description": "结案 ID",
+            "example": "C-2026-081"
+          },
+          "title": {
+            "type": "string",
+            "description": "事件标题"
+          },
+          "location": {
+            "type": "string",
+            "description": "事发位置"
+          },
           "closedAt": {
             "type": "string",
             "format": "date-time",
             "description": "结案时间（ISO8601）"
           },
-          "handler": { "type": "string", "description": "处置人" }
+          "handler": {
+            "type": "string",
+            "description": "处置人"
+          }
         }
       },
       "DutyRoster": {
@@ -956,13 +1221,19 @@
         "properties": {
           "departments": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "description": "可切换的部门列表（含「全部」）"
           },
-          "shift": { "$ref": "#/components/schemas/DutyShift" },
+          "shift": {
+            "$ref": "#/components/schemas/DutyShift"
+          },
           "members": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/DutyMember" },
+            "items": {
+              "$ref": "#/components/schemas/DutyMember"
+            },
             "description": "值班成员列表"
           }
         }
@@ -970,22 +1241,52 @@
       "DutyMember": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "description": "成员唯一 ID", "example": "d1" },
-          "name": { "type": "string", "description": "姓名", "example": "杨恒明" },
-          "phone": { "type": "string", "description": "联系电话", "example": "13792536966" },
-          "role": { "$ref": "#/components/schemas/DutyRole" },
-          "department": { "type": "string", "description": "所属部门", "example": "全部" },
-          "shift": { "$ref": "#/components/schemas/DutyShift" }
+          "id": {
+            "type": "string",
+            "description": "成员唯一 ID",
+            "example": "d1"
+          },
+          "name": {
+            "type": "string",
+            "description": "姓名",
+            "example": "杨恒明"
+          },
+          "phone": {
+            "type": "string",
+            "description": "联系电话",
+            "example": "13792536966"
+          },
+          "role": {
+            "$ref": "#/components/schemas/DutyRole"
+          },
+          "department": {
+            "type": "string",
+            "description": "所属部门",
+            "example": "全部"
+          },
+          "shift": {
+            "$ref": "#/components/schemas/DutyShift"
+          }
         }
       },
-      "DutyRole": { "type": "string", "enum": ["值班领导", "值班员"], "example": "值班领导" },
-      "DutyShift": { "type": "string", "enum": ["白班", "夜班"], "example": "白班" },
+      "DutyRole": {
+        "type": "string",
+        "enum": ["值班领导", "值班员"],
+        "example": "值班领导"
+      },
+      "DutyShift": {
+        "type": "string",
+        "enum": ["白班", "夜班"],
+        "example": "白班"
+      },
       "EmergencyPhoneBook": {
         "type": "object",
         "properties": {
           "entries": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/EmergencyPhone" },
+            "items": {
+              "$ref": "#/components/schemas/EmergencyPhone"
+            },
             "description": "通讯录条目列表"
           }
         }
@@ -993,9 +1294,21 @@
       "EmergencyPhone": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "description": "通讯录条目 ID", "example": "ph1" },
-          "name": { "type": "string", "description": "名称/单位", "example": "消防报警" },
-          "number": { "type": "string", "description": "联系电话", "example": "119" },
+          "id": {
+            "type": "string",
+            "description": "通讯录条目 ID",
+            "example": "ph1"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称/单位",
+            "example": "消防报警"
+          },
+          "number": {
+            "type": "string",
+            "description": "联系电话",
+            "example": "119"
+          },
           "category": {
             "type": "string",
             "description": "分类",
@@ -1009,7 +1322,9 @@
         "properties": {
           "items": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/KnowledgeItem" },
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeItem"
+            },
             "description": "知识条目列表"
           }
         }
@@ -1017,9 +1332,21 @@
       "KnowledgeItem": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "description": "知识条目 ID", "example": "k1" },
-          "title": { "type": "string", "description": "标题", "example": "岗位应急处置卡" },
-          "count": { "type": "integer", "description": "知识条目数", "example": 158 },
+          "id": {
+            "type": "string",
+            "description": "知识条目 ID",
+            "example": "k1"
+          },
+          "title": {
+            "type": "string",
+            "description": "标题",
+            "example": "岗位应急处置卡"
+          },
+          "count": {
+            "type": "integer",
+            "description": "知识条目数",
+            "example": 158
+          },
           "icon": {
             "type": "string",
             "description": "图标名（Element Plus icon 名）",
@@ -1031,7 +1358,11 @@
         "type": "object",
         "description": "应急派单人员项（告警详情「派单人员」下拉）",
         "properties": {
-          "id": { "type": "integer", "description": "人员 ID", "example": 1 },
+          "id": {
+            "type": "integer",
+            "description": "人员 ID",
+            "example": 1
+          },
           "name": {
             "type": "string",
             "description": "姓名（不脱敏，派单需可辨识）",
@@ -1047,7 +1378,11 @@
             "description": "所属部门",
             "example": "公司总值班室"
           },
-          "phone": { "type": "string", "description": "联系电话", "example": "137-9253-6966" }
+          "phone": {
+            "type": "string",
+            "description": "联系电话",
+            "example": "137-9253-6966"
+          }
         }
       },
       "EmergencyCommandGroup": {
@@ -1059,10 +1394,16 @@
             "description": "分组 ID（notify/dispatch/temp-notify/temp-dispatch）",
             "example": "notify"
           },
-          "label": { "type": "string", "description": "分组名称", "example": "一键通知" },
+          "label": {
+            "type": "string",
+            "description": "分组名称",
+            "example": "一键通知"
+          },
           "items": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/EmergencyCommandInstruction" },
+            "items": {
+              "$ref": "#/components/schemas/EmergencyCommandInstruction"
+            },
             "description": "分组内指令卡片列表"
           }
         }
@@ -1071,14 +1412,22 @@
         "type": "object",
         "description": "应急指挥单条指令卡片",
         "properties": {
-          "id": { "type": "string", "description": "指令 ID", "example": "n1" },
+          "id": {
+            "type": "string",
+            "description": "指令 ID",
+            "example": "n1"
+          },
           "type": {
             "type": "string",
             "description": "指令类型",
             "enum": ["通知", "任务"],
             "example": "通知"
           },
-          "name": { "type": "string", "description": "指令名称", "example": "通知值班人员" },
+          "name": {
+            "type": "string",
+            "description": "指令名称",
+            "example": "通知值班人员"
+          },
           "location": {
             "type": "string",
             "description": "作用位置",
@@ -1095,15 +1444,27 @@
             "description": "操作按钮文案（如「一键派发」），无则为空",
             "example": "一键派发"
           },
-          "done": { "type": "boolean", "description": "是否已处置完毕", "example": false }
+          "done": {
+            "type": "boolean",
+            "description": "是否已处置完毕",
+            "example": false
+          }
         }
       },
       "CommandActionDetail": {
         "type": "object",
         "description": "应急指挥指令行动详情",
         "properties": {
-          "id": { "type": "string", "description": "指令 ID", "example": "n1" },
-          "name": { "type": "string", "description": "指令名称", "example": "通知值班人员" },
+          "id": {
+            "type": "string",
+            "description": "指令 ID",
+            "example": "n1"
+          },
+          "name": {
+            "type": "string",
+            "description": "指令名称",
+            "example": "通知值班人员"
+          },
           "type": {
             "type": "string",
             "description": "指令类型",
@@ -1112,7 +1473,10 @@
           },
           "notifyChannels": {
             "type": "array",
-            "items": { "type": "string", "enum": ["app", "sms", "voice"] },
+            "items": {
+              "type": "string",
+              "enum": ["app", "sms", "voice"]
+            },
             "description": "通知渠道"
           },
           "status": {
@@ -1121,13 +1485,20 @@
             "enum": ["待处置", "已处置", "待派发"],
             "example": "待处置"
           },
-          "dispatchMode": { "type": "string", "description": "派发方式", "example": "自动派发" },
+          "dispatchMode": {
+            "type": "string",
+            "description": "派发方式",
+            "example": "自动派发"
+          },
           "location": {
             "type": "string",
             "description": "作用位置",
             "example": "中海壳牌石油化工有限公司"
           },
-          "description": { "type": "string", "description": "指令描述/背景" },
+          "description": {
+            "type": "string",
+            "description": "指令描述/背景"
+          },
           "attachment": {
             "type": "string",
             "description": "附件说明，无则为「—」",
@@ -1135,17 +1506,23 @@
           },
           "addressBookRecipients": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/CommandActionRecipient" },
+            "items": {
+              "$ref": "#/components/schemas/CommandActionRecipient"
+            },
             "description": "通讯录派发对象"
           },
           "dutyRecipients": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/CommandActionRecipient" },
+            "items": {
+              "$ref": "#/components/schemas/CommandActionRecipient"
+            },
             "description": "值班人员派发对象"
           },
           "dynamics": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/CommandActionDynamicEntry" },
+            "items": {
+              "$ref": "#/components/schemas/CommandActionDynamicEntry"
+            },
             "description": "指令执行日志"
           }
         }
@@ -1154,25 +1531,53 @@
         "type": "object",
         "description": "指令派发对象",
         "properties": {
-          "id": { "type": "string", "description": "对象 ID", "example": "ab1" },
-          "role": { "type": "string", "description": "角色/单位", "example": "公司总值班室" },
-          "name": { "type": "string", "description": "姓名", "example": "宋文帅" },
-          "phone": { "type": "string", "description": "联系电话", "example": "13792536966" }
+          "id": {
+            "type": "string",
+            "description": "对象 ID",
+            "example": "ab1"
+          },
+          "role": {
+            "type": "string",
+            "description": "角色/单位",
+            "example": "公司总值班室"
+          },
+          "name": {
+            "type": "string",
+            "description": "姓名",
+            "example": "宋文帅"
+          },
+          "phone": {
+            "type": "string",
+            "description": "联系电话",
+            "example": "13792536966"
+          }
         }
       },
       "CommandActionDynamicEntry": {
         "type": "object",
         "description": "指令执行日志条目",
         "properties": {
-          "id": { "type": "string", "description": "日志 ID", "example": "n1-1" },
-          "time": { "type": "string", "description": "时间", "example": "2026-04-27 14:56:10" },
+          "id": {
+            "type": "string",
+            "description": "日志 ID",
+            "example": "n1-1"
+          },
+          "time": {
+            "type": "string",
+            "description": "时间",
+            "example": "2026-04-27 14:56:10"
+          },
           "type": {
             "type": "string",
             "description": "环节类型",
             "enum": ["系统", "派发", "签收", "执行", "现场反馈", "异常", "完成"],
             "example": "系统"
           },
-          "operator": { "type": "string", "description": "操作人", "example": "应急指挥平台" },
+          "operator": {
+            "type": "string",
+            "description": "操作人",
+            "example": "应急指挥平台"
+          },
           "result": {
             "type": "string",
             "description": "结果",
@@ -1191,7 +1596,9 @@
           },
           "media": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/CommandActionMedia" },
+            "items": {
+              "$ref": "#/components/schemas/CommandActionMedia"
+            },
             "description": "回传媒体（图片/视频/语音）"
           }
         }
@@ -1200,14 +1607,22 @@
         "type": "object",
         "description": "指令回传媒体",
         "properties": {
-          "id": { "type": "string", "description": "媒体 ID", "example": "n1-image" },
+          "id": {
+            "type": "string",
+            "description": "媒体 ID",
+            "example": "n1-image"
+          },
           "type": {
             "type": "string",
             "description": "媒体类型",
             "enum": ["image", "video", "audio"],
             "example": "image"
           },
-          "name": { "type": "string", "description": "媒体名称", "example": "装置区警戒隔离现场" },
+          "name": {
+            "type": "string",
+            "description": "媒体名称",
+            "example": "装置区警戒隔离现场"
+          },
           "src": {
             "type": "string",
             "description": "媒体地址（受保护端点需带鉴权），无则为空",
@@ -1243,7 +1658,10 @@
           "customCenter": {
             "type": "array",
             "description": "自定义镜头中心 [lon, lat]；未配置为 null",
-            "items": { "type": "number", "example": 110.9265 }
+            "items": {
+              "type": "number",
+              "example": 110.9265
+            }
           },
           "bufferRadiusMeters": {
             "type": "integer",
@@ -1272,25 +1690,41 @@
             "description": "节点 id（alarmJudgement/1min/3min/5min/plantArea/companyLevel/govLevel/handling/archive）",
             "example": "alarmJudgement"
           },
-          "nodeName": { "type": "string", "description": "节点名称", "example": "1. 接警研判" },
-          "mapCamera": { "$ref": "#/components/schemas/NodePhaseMapCamera" },
+          "nodeName": {
+            "type": "string",
+            "description": "节点名称",
+            "example": "1. 接警研判"
+          },
+          "mapCamera": {
+            "$ref": "#/components/schemas/NodePhaseMapCamera"
+          },
           "rightPanelHiddenTabs": {
             "type": "array",
             "description": "右侧面板隐藏页签（duty/auxiliary/dynamics 的子集）",
-            "items": { "type": "string", "example": "dynamics" }
+            "items": {
+              "type": "string",
+              "example": "dynamics"
+            }
           },
           "leftPanelHiddenPanels": {
             "type": "array",
             "description": "左侧面板隐藏面板（incident/plan/info 的子集）",
-            "items": { "type": "string", "example": "info" }
+            "items": {
+              "type": "string",
+              "example": "info"
+            }
           },
-          "duty": { "$ref": "#/components/schemas/NodePhaseDuty" }
+          "duty": {
+            "$ref": "#/components/schemas/NodePhaseDuty"
+          }
         }
       },
       "NodePhaseConfigList": {
         "type": "array",
         "description": "节点联动配置列表",
-        "items": { "$ref": "#/components/schemas/NodePhaseConfig" }
+        "items": {
+          "$ref": "#/components/schemas/NodePhaseConfig"
+        }
       },
       "EmergencyPhase": {
         "type": "object",
@@ -1301,9 +1735,21 @@
             "description": "阶段编码（phase-team / phase-plant / phase-company / phase-gov / phase-close）",
             "example": "phase-team"
           },
-          "name": { "type": "string", "description": "阶段名称", "example": "班组处置" },
-          "start": { "type": "integer", "description": "起始节点号（含）", "example": 1 },
-          "end": { "type": "integer", "description": "结束节点号（含）", "example": 4 },
+          "name": {
+            "type": "string",
+            "description": "阶段名称",
+            "example": "班组处置"
+          },
+          "start": {
+            "type": "integer",
+            "description": "起始节点号（含）",
+            "example": 1
+          },
+          "end": {
+            "type": "integer",
+            "description": "结束节点号（含）",
+            "example": 4
+          },
           "tone": {
             "type": "string",
             "description": "阶段配色（blue/cyan/amber/red/green）",
@@ -1320,21 +1766,37 @@
             "description": "模式编码（team/plant/company/government）",
             "example": "team"
           },
-          "label": { "type": "string", "description": "模式名称", "example": "一、班组处置" },
-          "stageId": { "type": "integer", "description": "该模式对应起始节点号", "example": 1 }
+          "label": {
+            "type": "string",
+            "description": "模式名称",
+            "example": "一、班组处置"
+          },
+          "stageId": {
+            "type": "integer",
+            "description": "该模式对应起始节点号",
+            "example": 1
+          }
         }
       },
       "ProcessAction": {
         "type": "object",
         "description": "流程节点处置动作项",
         "properties": {
-          "id": { "type": "string", "description": "动作 id", "example": "act-1-1" },
+          "id": {
+            "type": "string",
+            "description": "动作 id",
+            "example": "act-1-1"
+          },
           "label": {
             "type": "string",
             "description": "动作文案",
             "example": "按三要素向运行部调度核实报告"
           },
-          "done": { "type": "boolean", "description": "是否已完成", "example": true },
+          "done": {
+            "type": "boolean",
+            "description": "是否已完成",
+            "example": true
+          },
           "type": {
             "type": "string",
             "description": "动作强调色：primary / danger / warning；无则不着色",
@@ -1347,19 +1809,47 @@
         "type": "object",
         "description": "节点完成判据项",
         "properties": {
-          "id": { "type": "string", "description": "判据 id", "example": "cri-1-1" },
-          "label": { "type": "string", "description": "判据文案", "example": "确定事故点位与介质" },
-          "checked": { "type": "boolean", "description": "是否已勾选", "example": true }
+          "id": {
+            "type": "string",
+            "description": "判据 id",
+            "example": "cri-1-1"
+          },
+          "label": {
+            "type": "string",
+            "description": "判据文案",
+            "example": "确定事故点位与介质"
+          },
+          "checked": {
+            "type": "boolean",
+            "description": "是否已勾选",
+            "example": true
+          }
         }
       },
       "SubStageItem": {
         "type": "object",
         "description": "节点子阶段项",
         "properties": {
-          "id": { "type": "string", "description": "子阶段 id", "example": "sub-5-1" },
-          "code": { "type": "string", "description": "子阶段编码", "example": "5.1" },
-          "name": { "type": "string", "description": "子阶段名称", "example": "装置区警戒隔离" },
-          "shortName": { "type": "string", "description": "子阶段简称", "example": "警戒隔离" },
+          "id": {
+            "type": "string",
+            "description": "子阶段 id",
+            "example": "sub-5-1"
+          },
+          "code": {
+            "type": "string",
+            "description": "子阶段编码",
+            "example": "5.1"
+          },
+          "name": {
+            "type": "string",
+            "description": "子阶段名称",
+            "example": "装置区警戒隔离"
+          },
+          "shortName": {
+            "type": "string",
+            "description": "子阶段简称",
+            "example": "警戒隔离"
+          },
           "description": {
             "type": "string",
             "description": "子阶段说明",
@@ -1371,13 +1861,21 @@
         "type": "object",
         "description": "升级规则现场概况",
         "properties": {
-          "location": { "type": "string", "description": "事发位置", "example": "加氢裂化装置区" },
+          "location": {
+            "type": "string",
+            "description": "事发位置",
+            "example": "加氢裂化装置区"
+          },
           "substance": {
             "type": "string",
             "description": "涉及介质",
             "example": "加氢裂化重油 / 硫化氢"
           },
-          "casualty": { "type": "string", "description": "伤员情况", "example": "0人受伤" },
+          "casualty": {
+            "type": "string",
+            "description": "伤员情况",
+            "example": "0人受伤"
+          },
           "currentStatus": {
             "type": "string",
             "description": "当前处置状态",
@@ -1404,15 +1902,25 @@
             "description": "升级接收方角色",
             "example": "上一级应急指挥部"
           },
-          "details": { "$ref": "#/components/schemas/StageEscalationDetails" }
+          "details": {
+            "$ref": "#/components/schemas/StageEscalationDetails"
+          }
         }
       },
       "ProcessStage": {
         "type": "object",
         "description": "应急流程节点",
         "properties": {
-          "id": { "type": "integer", "description": "节点号（1-15）", "example": 1 },
-          "name": { "type": "string", "description": "节点名称", "example": "接警研判" },
+          "id": {
+            "type": "integer",
+            "description": "节点号（1-15）",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "节点名称",
+            "example": "接警研判"
+          },
           "shortName": {
             "type": "string",
             "description": "节点简称（流程条用）",
@@ -1428,7 +1936,11 @@
             "description": "牵头岗位",
             "example": "巡检员 / 内操员"
           },
-          "commandLevel": { "type": "string", "description": "指挥层级", "example": "班组处置" },
+          "commandLevel": {
+            "type": "string",
+            "description": "指挥层级",
+            "example": "班组处置"
+          },
           "description": {
             "type": "string",
             "description": "节点说明",
@@ -1437,24 +1949,35 @@
           "previousContext": {
             "type": "array",
             "description": "前置态势（上一节点以来的关键时间线）",
-            "items": { "type": "string", "example": "10:00:00 - 厂区 GDS 检测到气体异常" }
+            "items": {
+              "type": "string",
+              "example": "10:00:00 - 厂区 GDS 检测到气体异常"
+            }
           },
           "currentActions": {
             "type": "array",
             "description": "当前处置动作清单",
-            "items": { "$ref": "#/components/schemas/ProcessAction" }
+            "items": {
+              "$ref": "#/components/schemas/ProcessAction"
+            }
           },
           "criteriaChecklist": {
             "type": "array",
             "description": "完成判据清单",
-            "items": { "$ref": "#/components/schemas/CriteriaChecklistItem" }
+            "items": {
+              "$ref": "#/components/schemas/CriteriaChecklistItem"
+            }
           },
           "subStages": {
             "type": "array",
             "description": "子阶段清单（装置区等节点使用）",
-            "items": { "$ref": "#/components/schemas/SubStageItem" }
+            "items": {
+              "$ref": "#/components/schemas/SubStageItem"
+            }
           },
-          "escalationRule": { "$ref": "#/components/schemas/StageEscalationRule" }
+          "escalationRule": {
+            "$ref": "#/components/schemas/StageEscalationRule"
+          }
         }
       },
       "EmergencyProcessPanorama": {
@@ -1464,17 +1987,23 @@
           "phases": {
             "type": "array",
             "description": "应急阶段（5 个，按起始节点升序）",
-            "items": { "$ref": "#/components/schemas/EmergencyPhase" }
+            "items": {
+              "$ref": "#/components/schemas/EmergencyPhase"
+            }
           },
           "responseModes": {
             "type": "array",
             "description": "响应模式选项（4 个）",
-            "items": { "$ref": "#/components/schemas/ResponseModeOption" }
+            "items": {
+              "$ref": "#/components/schemas/ResponseModeOption"
+            }
           },
           "stages": {
             "type": "array",
             "description": "流程节点（15 个，按节点号升序）",
-            "items": { "$ref": "#/components/schemas/ProcessStage" }
+            "items": {
+              "$ref": "#/components/schemas/ProcessStage"
+            }
           }
         }
       },
@@ -1482,7 +2011,11 @@
         "type": "object",
         "description": "指引上报链路步骤",
         "properties": {
-          "step": { "type": "integer", "description": "步骤序号", "example": 1 },
+          "step": {
+            "type": "integer",
+            "description": "步骤序号",
+            "example": 1
+          },
           "fromRole": {
             "type": "string",
             "description": "上报方（角色·姓名）",
@@ -1519,13 +2052,28 @@
             "description": "岗位职责标题",
             "example": "DCS 中控室内操控制员"
           },
-          "personName": { "type": "string", "description": "值班人姓名", "example": "张建国" },
-          "avatarIcon": { "type": "string", "description": "头像图标", "example": "🧑‍💻" },
-          "phone": { "type": "string", "description": "联系电话", "example": "139-0668-2233" },
+          "personName": {
+            "type": "string",
+            "description": "值班人姓名",
+            "example": "张建国"
+          },
+          "avatarIcon": {
+            "type": "string",
+            "description": "头像图标",
+            "example": "🧑‍💻"
+          },
+          "phone": {
+            "type": "string",
+            "description": "联系电话",
+            "example": "139-0668-2233"
+          },
           "tasks": {
             "type": "array",
             "description": "该岗位本节点任务清单",
-            "items": { "type": "string", "example": "密切监视 DCS 趋势图并核对关键参数" }
+            "items": {
+              "type": "string",
+              "example": "密切监视 DCS 趋势图并核对关键参数"
+            }
           }
         }
       },
@@ -1533,7 +2081,11 @@
         "type": "object",
         "description": "节点处置指引",
         "properties": {
-          "nodeId": { "type": "string", "description": "节点 id", "example": "1" },
+          "nodeId": {
+            "type": "string",
+            "description": "节点 id",
+            "example": "1"
+          },
           "nodeName": {
             "type": "string",
             "description": "节点名称",
@@ -1542,12 +2094,16 @@
           "reportingChain": {
             "type": "array",
             "description": "上报链路",
-            "items": { "$ref": "#/components/schemas/NodeGuidanceReportingStep" }
+            "items": {
+              "$ref": "#/components/schemas/NodeGuidanceReportingStep"
+            }
           },
           "roleTasks": {
             "type": "array",
             "description": "岗位任务分工",
-            "items": { "$ref": "#/components/schemas/NodeGuidanceRoleTask" }
+            "items": {
+              "$ref": "#/components/schemas/NodeGuidanceRoleTask"
+            }
           },
           "generalNotice": {
             "type": "string",
@@ -1560,7 +2116,11 @@
         "type": "object",
         "description": "应急指引实时值班表",
         "properties": {
-          "shiftGroup": { "type": "string", "description": "值班班组", "example": "乙班（白班）" },
+          "shiftGroup": {
+            "type": "string",
+            "description": "值班班组",
+            "example": "乙班（白班）"
+          },
           "supervisor": {
             "type": "string",
             "description": "班组长（含岗位）",
@@ -1597,11 +2157,15 @@
         "type": "object",
         "description": "应急流程节点指引聚合（值班表 + 各节点指引）",
         "properties": {
-          "dutyRoster": { "$ref": "#/components/schemas/GuidanceDutyRoster" },
+          "dutyRoster": {
+            "$ref": "#/components/schemas/GuidanceDutyRoster"
+          },
           "guidances": {
             "type": "array",
             "description": "节点处置指引（按节点号升序）",
-            "items": { "$ref": "#/components/schemas/NodeGuidance" }
+            "items": {
+              "$ref": "#/components/schemas/NodeGuidance"
+            }
           }
         }
       },
@@ -1609,8 +2173,16 @@
         "type": "object",
         "description": "应急辅助信息统计项",
         "properties": {
-          "label": { "type": "string", "description": "统计项标签", "example": "应急预案" },
-          "value": { "type": "integer", "description": "数值", "example": 15 },
+          "label": {
+            "type": "string",
+            "description": "统计项标签",
+            "example": "应急预案"
+          },
+          "value": {
+            "type": "integer",
+            "description": "数值",
+            "example": 15
+          },
           "unit": {
             "type": "string",
             "description": "单位：套 / 张 / 人 / 处",
@@ -1630,7 +2202,9 @@
         "properties": {
           "items": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/EmergencyAssistStat" },
+            "items": {
+              "$ref": "#/components/schemas/EmergencyAssistStat"
+            },
             "description": "4 项应急辅助 KPI"
           }
         }
@@ -1681,7 +2255,11 @@
         "type": "object",
         "description": "应急指令记录视图（落库后的完整行，含服务端填充的 prevStatus / operator / 时间戳）",
         "properties": {
-          "id": { "type": "integer", "description": "记录 id", "example": 1 },
+          "id": {
+            "type": "integer",
+            "description": "记录 id",
+            "example": 1
+          },
           "commandCode": {
             "type": "string",
             "description": "指令编码",
@@ -1702,8 +2280,16 @@
             "description": "推进前状态（首次下发为空）",
             "example": "待执行"
           },
-          "currStatus": { "type": "string", "description": "推进后状态", "example": "执行中" },
-          "dispatchMode": { "type": "string", "description": "下发方式", "example": "系统下发" },
+          "currStatus": {
+            "type": "string",
+            "description": "推进后状态",
+            "example": "执行中"
+          },
+          "dispatchMode": {
+            "type": "string",
+            "description": "下发方式",
+            "example": "系统下发"
+          },
           "target": {
             "type": "string",
             "description": "下发对象（岗位 / 人员 / 组织）",
@@ -1714,7 +2300,11 @@
             "description": "备注说明",
             "example": "要求停止露天高处及吊装作业"
           },
-          "operator": { "type": "string", "description": "操作人账号", "example": "admin" },
+          "operator": {
+            "type": "string",
+            "description": "操作人账号",
+            "example": "admin"
+          },
           "createdAt": {
             "type": "string",
             "description": "记录创建时间（ISO 本地时间，无时区）",
@@ -1742,20 +2332,32 @@
             "description": "值班部门",
             "example": "应急指挥中心"
           },
-          "personName": { "type": "string", "description": "值班人员姓名", "example": "杨恒朋" },
+          "personName": {
+            "type": "string",
+            "description": "值班人员姓名",
+            "example": "杨恒朋"
+          },
           "signAction": {
             "type": "string",
             "description": "签到动作：SIGN_IN 签到 / SIGN_OUT 签退",
             "example": "SIGN_IN"
           },
-          "remark": { "type": "string", "description": "备注说明", "example": "" }
+          "remark": {
+            "type": "string",
+            "description": "备注说明",
+            "example": ""
+          }
         }
       },
       "DutySignInView": {
         "type": "object",
         "description": "值班签到记录视图（落库后的完整行，含服务端填充的 signTime / operator）",
         "properties": {
-          "id": { "type": "integer", "description": "记录 id", "example": 1 },
+          "id": {
+            "type": "integer",
+            "description": "记录 id",
+            "example": 1
+          },
           "dutyDate": {
             "type": "string",
             "description": "值班日期 YYYY-MM-DD",
@@ -1766,8 +2368,16 @@
             "description": "班次（白班 / 夜班）",
             "example": "白班"
           },
-          "department": { "type": "string", "description": "值班部门", "example": "应急指挥中心" },
-          "personName": { "type": "string", "description": "值班人员姓名", "example": "杨恒朋" },
+          "department": {
+            "type": "string",
+            "description": "值班部门",
+            "example": "应急指挥中心"
+          },
+          "personName": {
+            "type": "string",
+            "description": "值班人员姓名",
+            "example": "杨恒朋"
+          },
           "signAction": {
             "type": "string",
             "description": "签到动作：SIGN_IN 签到 / SIGN_OUT 签退",
@@ -1778,8 +2388,16 @@
             "description": "签到时间 YYYY-MM-DD HH:mm:ss（请求为空时由服务端按当前时间填充）",
             "example": "2026-09-13 08:00:00"
           },
-          "remark": { "type": "string", "description": "备注说明", "example": "" },
-          "operator": { "type": "string", "description": "操作人账号", "example": "admin" },
+          "remark": {
+            "type": "string",
+            "description": "备注说明",
+            "example": ""
+          },
+          "operator": {
+            "type": "string",
+            "description": "操作人账号",
+            "example": "admin"
+          },
           "createdAt": {
             "type": "string",
             "description": "记录创建时间（ISO 本地时间，无时区）",
