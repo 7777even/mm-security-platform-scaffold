@@ -180,7 +180,9 @@ const shellDrawerActive = computed(() => productionDeviceDrawerActive.value);
  * 0.9 段时其内容刚好完整容纳（实测 clientHeight === scrollHeight），故让出高度。
  */
 .sidebar--left {
-  width: 338px;
+  /* 与其余大屏页签同宽（消防/治安/电视/应急指挥侧栏均 414–419px）：
+     原写死 338px（--layout-aside-w-narrow）是全大屏唯一一例，视觉上左右不对称、面板比别页窄一圈。 */
+  width: var(--sidebar-width);
   grid-template-rows:
     minmax(0, 1.15fr)
     minmax(0, 1.25fr)
@@ -195,7 +197,7 @@ const shellDrawerActive = computed(() => productionDeviceDrawerActive.value);
  * → 右栏底部留空、与左栏不齐。改用设计稿原始比例（582+43 / 285+43）作 fr 权重填满整列。
  */
 .sidebar--right {
-  width: 419px;
+  width: var(--sidebar-width);
   grid-template-rows: minmax(0, 592fr) minmax(0, 295fr);
   gap: 10px;
 }

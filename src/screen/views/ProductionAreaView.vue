@@ -145,7 +145,9 @@ onMounted(() => {
   left: 18px;
   top: 96px;
   bottom: 18px;
-  width: 338px;
+
+  /* 与其余大屏页签侧栏同宽（原 338px 窄侧栏是全大屏唯一一例） */
+  width: var(--sidebar-width);
   z-index: var(--z-chrome);
   pointer-events: auto;
 }
