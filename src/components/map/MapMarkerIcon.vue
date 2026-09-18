@@ -9,7 +9,14 @@ export type MapMarkerIconName =
   | 'sensor-pressure'
   | 'sensor-temperature'
   | 'sensor-liquid'
-  | 'sensor-other';
+  | 'sensor-other'
+  // 消防态势点位（原先走 public/icons/fire-situation/*.svg + <img> 白刷，与别页图标族不同源，收编至此）
+  | 'fire'
+  | 'alarm'
+  | 'confined-space'
+  | 'crane'
+  | 'ladder'
+  | 'helmet';
 
 defineProps<{
   name: MapMarkerIconName;
@@ -182,6 +189,109 @@ defineProps<{
         stroke-width="1.2"
         stroke-linecap="round"
         opacity="0.65"
+      />
+    </g>
+
+    <!-- 火灾/事件：火焰（外轮廓 + 内焰缺口） -->
+    <g v-else-if="name === 'fire'">
+      <path
+        d="M12 3.6c2.9 3.6 5 5.7 5 8.9a5 5 0 0 1-10 0c0-1.7.7-3.2 1.8-4.5.3 1.1 1 1.9 1.8 2.4.2-2.6.6-4.6 1.4-6.8z"
+        stroke="currentColor"
+        stroke-width="1.4"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+      />
+    </g>
+
+    <!-- 报警：警铃 -->
+    <g v-else-if="name === 'alarm'">
+      <path
+        d="M6.4 16.8c.9-1 1.2-2 1.2-3.3v-2.4a4.4 4.4 0 0 1 8.8 0v2.4c0 1.3.3 2.3 1.2 3.3z"
+        stroke="currentColor"
+        stroke-width="1.4"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M10.2 19.6a1.9 1.9 0 0 0 3.6 0"
+        stroke="currentColor"
+        stroke-width="1.4"
+        stroke-linecap="round"
+      />
+      <path
+        d="M12 4.6V3.4"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linecap="round"
+        opacity="0.7"
+      />
+    </g>
+
+    <!-- 受限空间作业：罐体 + 人孔 -->
+    <g v-else-if="name === 'confined-space'">
+      <rect
+        x="4.6"
+        y="5.4"
+        width="14.8"
+        height="13.2"
+        rx="2"
+        stroke="currentColor"
+        stroke-width="1.4"
+      />
+      <circle cx="12" cy="11.2" r="3.1" stroke="currentColor" stroke-width="1.4" />
+      <path
+        d="M12 14.3v3.6"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linecap="round"
+        opacity="0.65"
+      />
+    </g>
+
+    <!-- 吊装作业：塔架 + 吊物 -->
+    <g v-else-if="name === 'crane'">
+      <path
+        d="M4.8 20.4V4.9M4.8 5h14.4M16.9 5v3.9"
+        stroke="currentColor"
+        stroke-width="1.4"
+        stroke-linecap="round"
+      />
+      <path
+        d="M14.6 12.6h4.6v3.3h-4.6z"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linejoin="round"
+      />
+    </g>
+
+    <!-- 高处作业：梯子 -->
+    <g v-else-if="name === 'ladder'">
+      <path
+        d="M8.4 3.6v16.8M15.6 3.6v16.8"
+        stroke="currentColor"
+        stroke-width="1.4"
+        stroke-linecap="round"
+      />
+      <path
+        d="M8.4 8.2h7.2M8.4 12h7.2M8.4 15.8h7.2"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linecap="round"
+      />
+    </g>
+
+    <!-- 安全帽：防护作业 -->
+    <g v-else-if="name === 'helmet'">
+      <path
+        d="M4.4 16.4v-.9a7.6 7.6 0 0 1 15.2 0v.9z"
+        stroke="currentColor"
+        stroke-width="1.4"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M9.6 9.1V7.9a2.4 2.4 0 0 1 4.8 0v1.2"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linecap="round"
       />
     </g>
 
