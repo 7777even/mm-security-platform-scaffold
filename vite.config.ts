@@ -253,6 +253,17 @@ export default defineConfig({
     // host: true 监听 0.0.0.0（IPv4/IPv6），避免 Windows 下 localhost 解析到 ::1 而拒连
     host: true,
     headers: { 'Content-Security-Policy': csp },
+    // RainViewer 元数据同源反代（全球雷达为可选外源，见 services/weather/rainViewerApi.ts）：
+    // 浏览器侧恒发同源请求，规避跨域——原直连 https://api.rainviewer.com 在受限网络下响应缺
+    // CORS 头即报 "blocked by CORS policy"，且生产 CSP connect-src 仅 'self' wss: 必拦。
+    // 生产由 nginx 同路径反代（见 deploy/nginx.conf 的 location /rainviewer-api/）。
+    proxy: {
+      '/rainviewer-api': {
+        target: 'https://api.rainviewer.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/rainviewer-api/, ''),
+      },
+    },
   },
   build: {
     // es2020：cesium 1.144 依赖链（lerc）含 BigInt 字面量；Chromium 86（信创下限）原生支持 BigInt

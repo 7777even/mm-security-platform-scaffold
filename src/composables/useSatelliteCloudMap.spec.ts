@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, type Mock } from 'vitest';
-import type { RainViewerFrame } from '@/services/weather/rainViewerApi';
+import { RAINVIEWER_API_URL, type RainViewerFrame } from '@/services/weather/rainViewerApi';
 import {
   RADAR_COVERAGE_HINT,
   RADAR_MATCH_WINDOW_SECONDS,
@@ -17,12 +17,14 @@ function radar(ms: number, path: string): RainViewerFrame {
 
 /**
  * 桩 RainViewer 天气地图接口（工程当前唯一外源拉取）。
+ * 按服务导出的 `RAINVIEWER_API_URL` 常量匹配（而非硬编码域名）——该 URL 现为同源代理路径
+ * `/rainviewer-api/...`（规避浏览器跨域，见 rainViewerApi.ts），按常量匹配可跟踪其变更。
  * getFrames 支持可变，便于同一用例在加载后切换帧集合并发起刷新。
  * 其余 URL（已弃用的 JMA 等历史外源）一律静默返回空，避免测试耦合旧实现。
  */
 function stubRainViewer(getFrames: () => RainViewerFrame[] = () => []): Mock {
   const mock = vi.fn(async (url: unknown) => {
-    if (String(url).includes('rainviewer.com')) {
+    if (String(url).includes(RAINVIEWER_API_URL)) {
       return {
         ok: true,
         status: 200,
