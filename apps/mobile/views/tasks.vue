@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import { fetchTasks } from '@/services/task';
 import { isOfflineNoBackend, notifyBackendOffline } from '@/services/backendFallback';
+import MobileHeader from '../components/MobileHeader.vue';
 
 // 任务列表：单列卡片流参考实现（docs/UI规范-移动端.md §5 模板）
 // 数据源：后端 /api/v1/tasks（处置任务），经 fetchTasks 拉取，取代原内联演示数组。
@@ -57,6 +58,7 @@ onMounted(load);
 
 <template>
   <div class="mb-page">
+    <MobileHeader variant="back" title="任务中心" back-to="/home" />
     <p v-if="loading" class="mb-loading">加载中…</p>
 
     <div v-else-if="tasks.length" class="mb-stack">
