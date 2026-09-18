@@ -146,6 +146,20 @@ function openEmergencyCreate() {
   void router.push({ name: 'emergency', query: { create: 'event' } });
 }
 
+/**
+ * 进入该报警对应的事故应急救援大屏（/fire/rescue?eventId=）。
+ * 入口挂在报警「事件」自身：仅当报警已关联救援事件（rescueEventId）时展示，
+ * 与 FireAlarmListDialog 的「处置调度」同源同参（源路由名经 createSubappRouter 委托主壳）。
+ */
+function openRescueBoard() {
+  const item = detail.value;
+  if (!item?.rescueEventId) return;
+  void router.push({
+    name: 'fireAccidentRescue',
+    query: { eventId: String(item.rescueEventId) },
+  });
+}
+
 watch(
   [alarmDetailOpen, activeAlarmDetail, alarmDetailFocus],
   async ([isOpen, , focus]) => {
@@ -510,6 +524,14 @@ function trendX(item: AlarmDetailItem, index: number): number {
             </button>
             <button type="button" class="alarm-detail__link" @click="openEmergencyCreate">
               一键应急
+            </button>
+            <button
+              v-if="detail.rescueEventId"
+              type="button"
+              class="alarm-detail__link"
+              @click="openRescueBoard"
+            >
+              进入事故应急救援
             </button>
             <button type="button" class="alarm-detail__link" @click="reflyAlarmTarget">
               地图定位
