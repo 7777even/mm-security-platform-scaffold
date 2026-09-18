@@ -7,6 +7,7 @@ import MapMarkerIcon from '@/components/map/MapMarkerIcon.vue';
 import { productionSprites } from '@/utils/productionSpriteConfig';
 import { productionMapControls } from '@/services/productionMapConfig';
 import { designImg } from '@/utils/designAssets';
+import { addressableImageSrc, cssColorOr } from '@/utils/imageUrl';
 import { fetchProductionPersonnel, statusTone, type PersonnelMarker } from '@/services/production';
 import { useMapControls } from '../../lib/composables/useMapControls';
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
@@ -30,20 +31,30 @@ const { filterByPlantArea } = usePlantArea();
 
 // 人员定位标记来自真实后端（/production/personnel）；markerOuter/markerInner 为前端装饰环，
 // 后端契约 PersonnelMarker 不承载，故在此用 designImg 补回，保证视觉与历史一致。
-// 后端契约 PersonnelMarker 的图片字段为 string | null；模板 :src 要求 string，
-// 故在此统一兜底为空串（null → 不渲染图片，属可接受的暴露式降级）。
+// 契约字段形态（见 V13 迁移注释 + openapi example）：
+//   popupBg / markerDot / markerLine = 颜色串（如 #0b2a4a / #3ec6ff）→ 按 CSS 着色，不作 <img src>；
+//   markerIcon = 裸文件名（person_cluster.png，前端不可寻址）→ 地址化判定失败时回退内置 SVG 人形图标。
+// 直接把颜色串/裸文件名绑到 :src 会请求站根 404，页面呈现裂图 + 弹窗无背景（历史 bug）。
 type DecoratedPersonnelMarker = Omit<
   PersonnelMarker,
   'markerIcon' | 'popupBg' | 'markerDot' | 'markerLine'
 > & {
+  /** 可寻址图片 URL；空串 = 使用内置 SVG 人形图标 */
   markerIcon: string;
-  popupBg: string;
-  markerDot: string;
-  markerLine: string;
+  /** 可寻址弹窗背景图 URL；空串 = 使用 popupBgColor 纯色面板 */
+  popupBgUrl: string;
+  /** 契约颜色串弹窗背景（popupBg 非法/缺失时回退默认深蓝） */
+  popupBgColor: string;
+  markerDotColor: string;
+  markerLineColor: string;
   markerOuter: string;
   markerInner: string;
 };
 const personnelMarkers = ref<PersonnelMarker[]>([]);
+
+/** 契约颜色串缺省值（与后端种子一致） */
+const PERSONNEL_POPUP_BG_FALLBACK = '#0b2a4a';
+const PERSONNEL_DOT_FALLBACK = '#3ec6ff';
 
 onMounted(async () => {
   try {
@@ -56,10 +67,11 @@ onMounted(async () => {
 const visiblePersonnelMarkers = computed<DecoratedPersonnelMarker[]>(() =>
   filterByPlantArea(personnelMarkers.value).map((marker) => ({
     ...marker,
-    markerIcon: marker.markerIcon ?? '',
-    popupBg: marker.popupBg ?? '',
-    markerDot: marker.markerDot ?? '',
-    markerLine: marker.markerLine ?? '',
+    markerIcon: addressableImageSrc(marker.markerIcon),
+    popupBgUrl: addressableImageSrc(marker.popupBg),
+    popupBgColor: cssColorOr(marker.popupBg, PERSONNEL_POPUP_BG_FALLBACK),
+    markerDotColor: cssColorOr(marker.markerDot, PERSONNEL_DOT_FALLBACK),
+    markerLineColor: cssColorOr(marker.markerLine, PERSONNEL_DOT_FALLBACK),
     markerOuter: designImg('圆形_41.webp', 'production') ?? '',
     markerInner: designImg('圆形_42.webp', 'production') ?? '',
   })),
@@ -203,16 +215,35 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
       <div class="personnel-marker__body">
         <img class="personnel-marker__outer" :src="marker.markerOuter" alt="" />
         <img class="personnel-marker__inner" :src="marker.markerInner" alt="" />
-        <img class="personnel-marker__icon" :src="marker.markerIcon" alt="" />
+        <!-- markerIcon 契约为裸文件名（前端不可寻址）：URL 化失败时回退内置 SVG 人形图标 -->
+        <img
+          v-if="marker.markerIcon"
+          class="personnel-marker__icon"
+          :src="marker.markerIcon"
+          alt=""
+        />
+        <MapMarkerIcon v-else name="person" class="personnel-marker__icon-svg" />
         <div class="personnel-marker__line-wrap">
-          <img class="personnel-marker__line" :src="marker.markerLine" alt="" />
-          <img class="personnel-marker__dot" :src="marker.markerDot" alt="" />
+          <!-- 契约：markerLine/markerDot 为颜色串 → CSS 着色 -->
+          <span class="personnel-marker__line" :style="{ background: marker.markerLineColor }" />
+          <span class="personnel-marker__dot" :style="{ background: marker.markerDotColor }" />
         </div>
       </div>
       <div class="personnel-marker__popup">
-        <img class="personnel-marker__popup-bg" :src="marker.popupBg" alt="" />
+        <img
+          v-if="marker.popupBgUrl"
+          class="personnel-marker__popup-bg"
+          :src="marker.popupBgUrl"
+          alt=""
+        />
+        <!-- 契约：popupBg 为颜色串 → 纯色面板 + 描边（统一弹窗样式，替代历史破图） -->
+        <div
+          v-else
+          class="personnel-marker__popup-panel"
+          :style="{ background: marker.popupBgColor }"
+        />
         <div class="personnel-marker__popup-text">
-          <div>位置：{{ marker.location }}</div>
+          <div class="personnel-marker__location">位置：{{ marker.location }}</div>
           <div class="personnel-marker__count">
             <span>人员：</span>
             <span class="personnel-marker__count-value">{{ marker.count }}人</span>
@@ -378,6 +409,16 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
   width: 18px;
 }
 
+/* markerIcon 无可寻址 URL 时的兜底：内置 SVG 人形图标（与 device-marker 同视觉语言） */
+.personnel-marker__icon-svg {
+  position: absolute;
+  left: 14px;
+  top: 13px;
+  width: 16px;
+  height: 16px;
+  color: rgb(255 255 255 / 92%);
+}
+
 .personnel-marker__line-wrap {
   position: absolute;
   left: 21px;
@@ -386,7 +427,9 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
   height: 22px;
 }
 
+/* 契约颜色串着色：引线/端点由 span + inline background 承担 */
 .personnel-marker__line {
+  display: block;
   width: 1px;
   height: 20px;
   margin-left: 1px;
@@ -397,6 +440,8 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
   bottom: 0;
   left: 0;
   width: 3px;
+  height: 3px;
+  border-radius: 50%;
 }
 
 .personnel-marker__popup {
@@ -414,12 +459,28 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
   height: 100%;
 }
 
+/* popupBg 为颜色串（契约默认）时的统一弹窗面板：深蓝底 + 青色描边，与设计稿弹窗观感一致 */
+.personnel-marker__popup-panel {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(62 198 255 / 45%);
+  border-radius: 2px;
+  box-shadow: 0 2px 10px rgb(0 10 25 / 45%);
+}
+
 .personnel-marker__popup-text {
   position: relative;
   padding: 11px;
   font-size: 12px;
   color: var(--map-popup-text-blue);
   line-height: 1.4;
+}
+
+/* 长地点名截断，防溢出压线（弹窗高度 67px 固定） */
+.personnel-marker__location {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .personnel-marker__count {

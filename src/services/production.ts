@@ -205,7 +205,8 @@ const DEV_ALARMS: ProductionAlarmItem[] = [
     description: 'A装置区域发现人员跌倒。',
     status: '未处置',
     iconIndex: 0,
-    thumb: 'person_fall.webp',
+    // 裸文件名前端不可寻址（会 404 裂图）；无真实抓拍资源时置 null 走设计稿兜底图
+    thumb: null,
   },
 ];
 

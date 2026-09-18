@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { ProductionAlarmItem } from '@/services/production';
 import ClipImage from '@/components/common/ClipImage.vue';
 import { User, Warning, UserFilled } from '@element-plus/icons-vue';
 import OneKeyBroadcastDialog from '../panels/production/OneKeyBroadcastDialog.vue';
 import { alarmThumbClips } from '@/utils/productionClipConfig';
+import { addressableImageSrc } from '@/utils/imageUrl';
 import { showToast } from '../../lib/composables/useToast';
 import { productionAlarmToDetail } from '../../lib/data/alarmDetailMock';
 import { useAlarmDetailPanel } from '../../lib/composables/useAlarmDetailPanel';
@@ -17,6 +18,10 @@ const props = defineProps<{
 const router = useRouter();
 const { openAlarmDetail } = useAlarmDetailPanel();
 const broadcastOpen = ref(false);
+
+// 后端种子 thumb 为裸文件名（如 person_fall.png，前端不可寻址 → /person_fall.png 404 裂图）。
+// 仅接受可寻址 URL；否则直接走下方 ClipImage 设计稿兜底，不发无效请求。
+const thumbSrc = computed(() => addressableImageSrc(props.alarm.thumb));
 
 /* 与 productionAlarms.iconIndex 一一对应：
    0 人员跌倒 → User / 1 违规进入 → Warning / 2 人员聚集 → UserFilled / 3 有毒气体超标 → Warning */
@@ -67,8 +72,8 @@ function openControl() {
 
     <div class="alarm-card__thumb" @click.stop="openDetail">
       <img
-        v-if="alarm.thumb"
-        :src="alarm.thumb"
+        v-if="thumbSrc"
+        :src="thumbSrc"
         alt="告警图片"
         @error="($event.target as HTMLImageElement).style.display = 'none'"
       />
