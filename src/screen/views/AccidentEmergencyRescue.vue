@@ -220,10 +220,6 @@ const displayIncidentStatus = computed<'processing' | 'pending' | 'done'>(() => 
   return responseStarted.value ? 'processing' : 'pending';
 });
 
-const headerStartedAt = computed(() =>
-  responseStarted.value ? responseStartedAt.value : undefined,
-);
-
 async function flyToIncident() {
   const { longitude, latitude } = incident.value;
   await flyToSharedAccidentRescueIncident(longitude, latitude);
@@ -611,7 +607,7 @@ onUnmounted(() => {
         :theme="pageTheme"
         :event-id="incident.eventId"
         :incident-title="incident.title"
-        :started-at="headerStartedAt"
+        :started-at="incident.startedAt"
         :ended-at="incident.endedAt"
       />
 

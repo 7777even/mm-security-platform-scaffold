@@ -5,6 +5,7 @@ import { fetchDutyRoster, type DutyMember } from '@/services/duty';
 import { UserFilled } from '@element-plus/icons-vue';
 import { createDutySignIn } from '@/services/businessWrite';
 import { pushGlobalToast } from '@/services/globalToast';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { useScreenPermission } from '../../../lib/composables/useScreenPermission';
 import { useScreenIdentity } from '../../../lib/composables/useScreenIdentity';
 
@@ -48,14 +49,17 @@ const emit = defineEmits<{ 'update:collapsed': [value: boolean] }>();
 
 // 真实值班值守：/emergency/duty（DutyMember 含真实 shift，按白班/夜班过滤）
 const realDutyMembers = ref<DutyMember[] | null>(null);
-onMounted(async () => {
+async function load(): Promise<void> {
   try {
     const roster = await fetchDutyRoster();
     realDutyMembers.value = roster.members ?? [];
   } catch {
     realDutyMembers.value = null;
   }
-});
+}
+onMounted(load);
+// 值班签到（emergency.duty 域）实时联动：管理端/移动端签到后本面板自动刷新（R2 闭环补齐）
+useDomainAutoRefresh('emergency.duty', load, { immediate: false });
 
 const shift = ref<'day' | 'night'>('day');
 
