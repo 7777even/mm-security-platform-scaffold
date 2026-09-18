@@ -3,7 +3,7 @@ import { onMounted, ref, watch } from 'vue';
 import SpriteImage from '../common/SpriteImage.vue';
 import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
-import MapMarkerIcon from '@/components/map/MapMarkerIcon.vue';
+import MapPointMarker, { type MapPointTone } from '@/components/map/MapPointMarker.vue';
 import SecurityToolbarIcon from './SecurityToolbarIcon.vue';
 import { securityAssets, tvAssets } from '@/utils/designAssets';
 import { securitySprites } from '../../utils/securitySpriteConfig';
@@ -207,17 +207,26 @@ onMounted(async () => {
   }
 });
 
-function alarmLevelClass(level?: number): string {
-  if (level === 1) return 'realtime-marker--lv1';
-  if (level === 2) return 'realtime-marker--lv2';
-  if (level === 3) return 'realtime-marker--lv3';
-  return 'realtime-marker--lv0';
+/** 报警分级 → 公共点位色调（与告警卡分级同源：一/二/三级 = 红/橙/黄） */
+function alarmLevelTone(level?: number): MapPointTone {
+  if (level === 1) return 'danger';
+  if (level === 2) return 'alarm-2';
+  if (level === 3) return 'alarm-3';
+  return 'normal';
 }
 
-function deviceStatusClass(status?: string): string {
-  if (status === 'FAULT') return 'realtime-marker--fault';
-  if (status === 'OFFLINE') return 'realtime-marker--offline';
-  return 'realtime-marker--ok';
+/** 设备状态码 → 公共点位色调 */
+function deviceStatusTone(status?: string): MapPointTone {
+  if (status === 'FAULT') return 'warning';
+  if (status === 'OFFLINE') return 'offline';
+  return 'normal';
+}
+
+/** 巡更点状态 → 公共点位色调 */
+function patrolTone(status: string): MapPointTone {
+  if (status === '离线') return 'offline';
+  if (status === '故障') return 'warning';
+  return 'normal';
 }
 
 const alarmMarkerTargets = () => {
@@ -274,26 +283,19 @@ const { styleFor: deviceStyleFor } = useWorldMarkerScreenPositions(deviceMarkerT
       </div>
     </div>
 
-    <button
+    <MapPointMarker
       v-for="point in patrolLinkageOpen ? patrolLinkagePoints : []"
       :key="`patrol-${point.id}`"
-      type="button"
-      class="patrol-marker"
-      :class="`patrol-marker--${point.status}`"
       :style="patrolStyleFor(`patrol-${point.id}`)"
+      icon="patrol"
+      :tone="patrolTone(point.status)"
+      :status="point.status"
+      :name="point.name"
       :title="point.name"
-      @click="selectPatrolPoint(point)"
-    >
-      <span class="patrol-marker__label">
-        <span class="patrol-marker__status">{{ point.status }}</span>
-        <span class="patrol-marker__name">{{ point.name }}</span>
-      </span>
-      <span class="patrol-marker__pin" aria-hidden="true">
-        <MapMarkerIcon name="patrol" />
-      </span>
-      <span class="patrol-marker__stem" aria-hidden="true" />
-      <span class="patrol-marker__breath" aria-hidden="true" />
-    </button>
+      :aria-label="`${point.name} ${point.status}`"
+      interactive
+      @activate="selectPatrolPoint(point)"
+    />
 
     <div class="map-controls">
       <MapLayerPanel />
@@ -401,32 +403,28 @@ const { styleFor: deviceStyleFor } = useWorldMarkerScreenPositions(deviceMarkerT
     </button>
 
     <!-- 真实后端报警点位落图（/map/alarms） -->
-    <button
+    <MapPointMarker
       v-for="p in alarmPoints"
       :key="`real-alarm-${p.id}`"
-      type="button"
-      class="realtime-marker"
-      :class="alarmLevelClass(p.level)"
       :style="alarmStyleFor(`real-alarm-${p.id}`)"
+      layout="pulse"
+      icon="sensor-gas"
+      :tone="alarmLevelTone(p.level)"
       :title="p.name"
-    >
-      <span class="realtime-marker__pin"><MapMarkerIcon name="sensor-gas" /></span>
-      <span class="realtime-marker__breath" aria-hidden="true" />
-    </button>
+      :aria-label="p.name"
+    />
 
     <!-- 真实后端设备点位落图（/map/devices） -->
-    <button
+    <MapPointMarker
       v-for="p in devicePoints"
       :key="`real-device-${p.id}`"
-      type="button"
-      class="realtime-marker realtime-marker--device"
-      :class="deviceStatusClass(p.status)"
       :style="deviceStyleFor(`real-device-${p.id}`)"
+      layout="pulse"
+      icon="device"
+      :tone="deviceStatusTone(p.status)"
       :title="p.name"
-    >
-      <span class="realtime-marker__pin"><MapMarkerIcon name="device" /></span>
-      <span class="realtime-marker__breath" aria-hidden="true" />
-    </button>
+      :aria-label="p.name"
+    />
   </div>
 </template>
 
@@ -839,212 +837,6 @@ const { styleFor: deviceStyleFor } = useWorldMarkerScreenPositions(deviceMarkerT
 }
 
 @keyframes cam-breath {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) scale(0.9);
-    opacity: 0.75;
-  }
-
-  50% {
-    transform: translate(-50%, -50%) scale(1.25);
-    opacity: 1;
-  }
-}
-
-.patrol-marker {
-  position: absolute;
-  z-index: var(--z-marker);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transform: translate(-50%, -100%);
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  pointer-events: auto;
-}
-
-.patrol-marker__label {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin-bottom: 4px;
-  padding: 2px 6px;
-  border-radius: 2px;
-  background: var(--map-device-label-bg);
-  border: 1px solid rgb(0 140 220 / 28%);
-  color: var(--color-text-muted);
-  font-size: 11px;
-  white-space: nowrap;
-  font-family: var(--font-body);
-}
-
-.patrol-marker__status {
-  flex-shrink: 0;
-  padding: 0 4px;
-  border-radius: 2px;
-  font-size: 10px;
-  line-height: 15px;
-  font-weight: 700;
-  color: var(--map-marker-ink);
-  background: var(--map-marker-cyan);
-}
-
-.patrol-marker__name {
-  white-space: nowrap;
-}
-
-.patrol-marker__pin {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid rgb(255 255 255 / 90%);
-  background: var(--map-marker-cyan);
-  box-shadow: 0 0 10px rgb(55 207 255 / 45%);
-}
-
-.patrol-marker__pin :deep(.map-marker-icon) {
-  width: 14px;
-  height: 14px;
-  color: var(--map-marker-ink);
-}
-
-.patrol-marker__stem {
-  width: 2px;
-  height: 14px;
-  margin-top: -1px;
-  background: linear-gradient(180deg, rgb(55 207 255 / 85%), rgb(55 207 255 / 0%));
-}
-
-.patrol-marker__breath {
-  width: 7px;
-  height: 7px;
-  margin-top: -2px;
-  border-radius: 50%;
-  background: rgb(55 207 255 / 95%);
-  animation: patrol-breath 1.9s ease-in-out infinite;
-}
-
-.patrol-marker--离线 .patrol-marker__pin,
-.patrol-marker--离线 .patrol-marker__breath {
-  background: var(--map-device-offline);
-  box-shadow: none;
-}
-
-.patrol-marker--离线 .patrol-marker__status {
-  background: var(--map-device-offline);
-}
-
-.patrol-marker--故障 .patrol-marker__pin,
-.patrol-marker--故障 .patrol-marker__breath {
-  background: var(--color-warning);
-  box-shadow: 0 0 10px rgb(240 180 41 / 40%);
-}
-
-.patrol-marker--故障 .patrol-marker__status {
-  background: var(--color-warning);
-}
-
-@keyframes patrol-breath {
-  0%,
-  100% {
-    transform: scale(0.9);
-    opacity: 0.75;
-  }
-
-  50% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-}
-
-.realtime-marker {
-  position: absolute;
-  z-index: var(--z-marker);
-  width: 26px;
-  height: 26px;
-  border: none;
-  padding: 0;
-  background: transparent;
-  cursor: pointer;
-  pointer-events: auto;
-  transform: translate(-50%, -50%);
-}
-
-.realtime-marker__pin {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 2px solid rgb(255 255 255 / 90%);
-  color: rgb(255 255 255 / 96%);
-  background: var(--map-marker-cyan);
-  box-shadow: 0 0 10px rgb(55 207 255 / 45%);
-}
-
-.realtime-marker__pin :deep(.map-marker-icon) {
-  width: 15px;
-  height: 15px;
-}
-
-.realtime-marker__breath {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 8px;
-  height: 8px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: rgb(55 207 255 / 95%);
-  box-shadow: 0 0 10px rgb(55 207 255 / 45%);
-  animation: realtime-breath 1.9s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.realtime-marker--lv1 .realtime-marker__pin,
-.realtime-marker--lv1 .realtime-marker__breath {
-  background: var(--color-danger);
-  box-shadow: 0 0 10px rgb(255 90 90 / 45%);
-}
-
-.realtime-marker--lv2 .realtime-marker__pin,
-.realtime-marker--lv2 .realtime-marker__breath {
-  background: var(--color-alarm-2, #ff9f43);
-  box-shadow: 0 0 10px rgb(255 159 67 / 45%);
-}
-
-.realtime-marker--lv3 .realtime-marker__pin,
-.realtime-marker--lv3 .realtime-marker__breath {
-  background: #ffd93b;
-  box-shadow: 0 0 10px rgb(255 217 59 / 45%);
-}
-
-.realtime-marker--device.realtime-marker--ok .realtime-marker__pin,
-.realtime-marker--device.realtime-marker--ok .realtime-marker__breath {
-  background: var(--map-marker-cyan);
-  box-shadow: 0 0 10px rgb(55 207 255 / 45%);
-}
-
-.realtime-marker--fault .realtime-marker__pin,
-.realtime-marker--fault .realtime-marker__breath {
-  background: var(--color-warning);
-  box-shadow: 0 0 10px rgb(240 180 41 / 40%);
-}
-
-.realtime-marker--offline .realtime-marker__pin,
-.realtime-marker--offline .realtime-marker__breath {
-  background: var(--map-device-offline, #8aa4c4);
-  box-shadow: none;
-  filter: grayscale(0.4);
-}
-
-@keyframes realtime-breath {
   0%,
   100% {
     transform: translate(-50%, -50%) scale(0.9);

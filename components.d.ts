@@ -40,6 +40,7 @@ declare module 'vue' {
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTree: typeof import('element-plus/es')['ElTree']
     MapMarkerIcon: typeof import('./src/components/map/MapMarkerIcon.vue')['default']
+    MapPointMarker: typeof import('./src/components/map/MapPointMarker.vue')['default']
     PanelCard: typeof import('./src/components/common/PanelCard.vue')['default']
     PkgIcon: typeof import('./src/components/common/PkgIcon.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

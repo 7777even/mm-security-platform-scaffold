@@ -4,11 +4,12 @@ import SpriteImage from '../common/SpriteImage.vue';
 import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
 import MapMarkerIcon from '@/components/map/MapMarkerIcon.vue';
+import MapPointMarker, { type MapPointTone } from '@/components/map/MapPointMarker.vue';
 import { productionSprites } from '@/utils/productionSpriteConfig';
 import { productionMapControls } from '@/services/productionMapConfig';
 import { designImg } from '@/utils/designAssets';
 import { addressableImageSrc, cssColorOr } from '@/utils/imageUrl';
-import { fetchProductionPersonnel, statusTone, type PersonnelMarker } from '@/services/production';
+import { fetchProductionPersonnel, type PersonnelMarker } from '@/services/production';
 import { useMapControls } from '../../lib/composables/useMapControls';
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
@@ -114,10 +115,11 @@ const { styleFor: commStyleFor } = useWorldMarkerScreenPositions(commMarkerTarge
   scaleWithZoom: false,
 });
 
-function commTone(status: string) {
+/** 设备/通讯状态 → 公共点位色调（色调 token 收口在 MapPointMarker） */
+function deviceTone(status: string): MapPointTone {
   if (status === '离线') return 'offline';
-  if (status === '故障') return 'fault';
-  return 'ok';
+  if (status === '故障') return 'warning';
+  return 'normal';
 }
 
 watch(
@@ -180,11 +182,12 @@ onMounted(async () => {
   }
 });
 
-function alarmLevelClass(level?: number): string {
-  if (level === 1) return 'realtime-marker--lv1';
-  if (level === 2) return 'realtime-marker--lv2';
-  if (level === 3) return 'realtime-marker--lv3';
-  return 'realtime-marker--lv0';
+/** 报警分级 → 公共点位色调（与告警卡分级同源：一/二/三级 = 红/橙/黄） */
+function alarmLevelTone(level?: number): MapPointTone {
+  if (level === 1) return 'danger';
+  if (level === 2) return 'alarm-2';
+  if (level === 3) return 'alarm-3';
+  return 'normal';
 }
 
 const alarmMarkerTargets = () => {
@@ -252,43 +255,27 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
       </div>
     </div>
 
-    <div
+    <MapPointMarker
       v-for="item in productionDeviceDrawerActive ? productionDevicePagedItems : []"
       :key="`device-${item.id}`"
-      class="device-marker"
-      :class="`device-marker--${statusTone(item.status)}`"
       :style="deviceStyleFor(`device-${item.id}`)"
+      icon="device"
+      :tone="deviceTone(item.status)"
+      :status="item.status"
+      :name="item.name"
       :title="item.name"
-    >
-      <span class="device-marker__label">
-        <span class="device-marker__status">{{ item.status }}</span>
-        <span class="device-marker__name">{{ item.name }}</span>
-      </span>
-      <span class="device-marker__pin" aria-hidden="true">
-        <MapMarkerIcon name="device" />
-      </span>
-      <span class="device-marker__stem" aria-hidden="true" />
-      <span class="device-marker__breath" aria-hidden="true" />
-    </div>
+    />
 
-    <div
+    <MapPointMarker
       v-for="item in communicationDrawerOpen ? allDevices : []"
       :key="`comm-${item.id}`"
-      class="device-marker"
-      :class="`device-marker--${commTone(item.status)}`"
       :style="commStyleFor(`comm-${item.id}`)"
+      icon="device"
+      :tone="deviceTone(item.status)"
+      :status="item.status"
+      :name="item.name"
       :title="item.name"
-    >
-      <span class="device-marker__label">
-        <span class="device-marker__status">{{ item.status }}</span>
-        <span class="device-marker__name">{{ item.name }}</span>
-      </span>
-      <span class="device-marker__pin" aria-hidden="true">
-        <MapMarkerIcon name="device" />
-      </span>
-      <span class="device-marker__stem" aria-hidden="true" />
-      <span class="device-marker__breath" aria-hidden="true" />
-    </div>
+    />
 
     <div
       class="map-controls"
@@ -310,18 +297,16 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
     </div>
 
     <!-- 真实后端报警点位落图（/map/alarms） -->
-    <button
+    <MapPointMarker
       v-for="p in alarmPoints"
       :key="`real-alarm-${p.id}`"
-      type="button"
-      class="realtime-marker"
-      :class="alarmLevelClass(p.level)"
       :style="alarmStyleFor(`real-alarm-${p.id}`)"
+      layout="pulse"
+      icon="sensor-gas"
+      :tone="alarmLevelTone(p.level)"
       :title="p.name"
-    >
-      <span class="realtime-marker__pin"><MapMarkerIcon name="sensor-gas" /></span>
-      <span class="realtime-marker__breath" aria-hidden="true" />
-    </button>
+      :aria-label="p.name"
+    />
   </div>
 </template>
 
@@ -409,7 +394,7 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
   width: 18px;
 }
 
-/* markerIcon 无可寻址 URL 时的兜底：内置 SVG 人形图标（与 device-marker 同视觉语言） */
+/* markerIcon 无可寻址 URL 时的兜底：内置 SVG 人形图标（与公共点位组件 MapPointMarker 针内图标同语言） */
 .personnel-marker__icon-svg {
   position: absolute;
   left: 14px;
@@ -493,131 +478,6 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
   color: var(--map-personnel-count);
 }
 
-.device-marker {
-  position: absolute;
-  z-index: var(--z-marker);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transform: translate(-50%, -100%);
-  pointer-events: none;
-}
-
-.device-marker__label {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin-bottom: 4px;
-  max-width: 140px;
-  padding: 2px 6px;
-  border-radius: 2px;
-  background: var(--map-device-label-bg);
-  border: 1px solid rgb(0 140 220 / 28%);
-  color: var(--color-text-muted);
-  font-size: 11px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.device-marker__status {
-  flex-shrink: 0;
-  padding: 0 4px;
-  border-radius: 2px;
-  font-size: 10px;
-  line-height: 15px;
-  font-weight: 700;
-  color: var(--map-marker-ink);
-  background: var(--map-marker-cyan);
-}
-
-.device-marker__name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.device-marker__pin {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 2px solid rgb(255 255 255 / 90%);
-  background: var(--map-marker-cyan);
-  box-shadow: 0 0 10px rgb(55 207 255 / 45%);
-}
-
-.device-marker__pin :deep(.map-marker-icon) {
-  width: 15px;
-  height: 15px;
-  color: var(--map-marker-ink);
-}
-
-.device-marker__stem {
-  width: 2px;
-  height: 18px;
-  margin-top: -1px;
-  background: linear-gradient(
-    180deg,
-    rgb(55 207 255 / 85%),
-    rgb(55 207 255 / 22%),
-    rgb(55 207 255 / 0%)
-  );
-}
-
-.device-marker__breath {
-  width: 8px;
-  height: 8px;
-  margin-top: -2px;
-  border-radius: 50%;
-  background: rgb(55 207 255 / 95%);
-  box-shadow: 0 0 10px rgb(55 207 255 / 45%);
-  animation: device-breath 1.9s ease-in-out infinite;
-}
-
-.device-marker--offline .device-marker__pin,
-.device-marker--offline .device-marker__breath {
-  background: var(--map-device-offline);
-  box-shadow: none;
-  filter: grayscale(0.4);
-}
-
-.device-marker--offline .device-marker__status {
-  background: var(--map-device-offline);
-}
-
-.device-marker--offline .device-marker__stem {
-  background: linear-gradient(180deg, rgb(138 164 196 / 70%), rgb(138 164 196 / 0%));
-}
-
-.device-marker--fault .device-marker__pin,
-.device-marker--fault .device-marker__breath {
-  background: var(--color-warning);
-  box-shadow: 0 0 10px rgb(240 180 41 / 40%);
-}
-
-.device-marker--fault .device-marker__status {
-  background: var(--color-warning);
-}
-
-.device-marker--fault .device-marker__stem {
-  background: linear-gradient(180deg, rgb(240 180 41 / 90%), rgb(240 180 41 / 0%));
-}
-
-@keyframes device-breath {
-  0%,
-  100% {
-    transform: scale(0.9);
-    opacity: 0.75;
-  }
-
-  50% {
-    transform: scale(1.15);
-    opacity: 1;
-  }
-}
-
 .map-controls {
   position: absolute;
   right: 465px;
@@ -653,81 +513,5 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
 .map-control-btn:hover {
   opacity: 1;
   filter: brightness(1.12);
-}
-
-.realtime-marker {
-  position: absolute;
-  z-index: var(--z-marker);
-  width: 26px;
-  height: 26px;
-  border: none;
-  padding: 0;
-  background: transparent;
-  cursor: pointer;
-  pointer-events: auto;
-  transform: translate(-50%, -50%);
-}
-
-.realtime-marker__pin {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 2px solid rgb(255 255 255 / 90%);
-  color: rgb(255 255 255 / 96%);
-  background: var(--map-marker-cyan);
-  box-shadow: 0 0 10px rgb(55 207 255 / 45%);
-}
-
-.realtime-marker__pin :deep(.map-marker-icon) {
-  width: 15px;
-  height: 15px;
-}
-
-.realtime-marker__breath {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 8px;
-  height: 8px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: rgb(55 207 255 / 95%);
-  box-shadow: 0 0 10px rgb(55 207 255 / 45%);
-  animation: realtime-breath 1.9s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.realtime-marker--lv1 .realtime-marker__pin,
-.realtime-marker--lv1 .realtime-marker__breath {
-  background: var(--color-danger);
-  box-shadow: 0 0 10px rgb(255 90 90 / 45%);
-}
-
-.realtime-marker--lv2 .realtime-marker__pin,
-.realtime-marker--lv2 .realtime-marker__breath {
-  background: var(--color-alarm-2, #ff9f43);
-  box-shadow: 0 0 10px rgb(255 159 67 / 45%);
-}
-
-.realtime-marker--lv3 .realtime-marker__pin,
-.realtime-marker--lv3 .realtime-marker__breath {
-  background: #ffd93b;
-  box-shadow: 0 0 10px rgb(255 217 59 / 45%);
-}
-
-@keyframes realtime-breath {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) scale(0.9);
-    opacity: 0.75;
-  }
-
-  50% {
-    transform: translate(-50%, -50%) scale(1.25);
-    opacity: 1;
-  }
 }
 </style>
