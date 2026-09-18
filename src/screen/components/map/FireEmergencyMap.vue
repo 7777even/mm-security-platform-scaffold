@@ -2,6 +2,7 @@
 import SpriteImage from '../common/SpriteImage.vue';
 import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
+import MapPointMarker from '@/components/map/MapPointMarker.vue';
 import { fireEmergencySprites } from '@/utils/fireEmergencySpriteConfig';
 import { fireEmergencyMapControls } from '../../lib/data/fireEmergencyMock';
 import type { EmergencyEventItem } from '../../lib/data/fireEmergencyMock';
@@ -53,12 +54,13 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
   <div class="fire-emergency-map">
     <div class="fire-emergency-map__depth" />
 
-    <div
+    <MapPointMarker
       v-for="event in fireEmergencyPagedEvents"
       :key="event.id"
-      class="alarm-marker"
-      :class="{ 'alarm-marker--active': isSelected(event.id) }"
       :style="markerStyleFor(String(event.id))"
+      :class="{ 'alarm-marker--active': isSelected(event.id) }"
+      layout="none"
+      :tone="event.kind === 'drill' ? 'warning' : 'danger'"
     >
       <div class="alarm-marker__anchor">
         <div
@@ -108,7 +110,7 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
           </button>
         </div>
       </div>
-    </div>
+    </MapPointMarker>
 
     <div class="map-controls">
       <MapLayerPanel />
@@ -164,16 +166,10 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
     );
 }
 
-.alarm-marker {
-  position: absolute;
-  z-index: var(--z-marker);
-  pointer-events: none;
-  transition: filter 0.2s ease;
-}
-
 .alarm-marker--active {
   z-index: var(--z-marker);
   filter: brightness(1.15);
+  transition: filter 0.2s ease;
 }
 
 .alarm-marker__anchor {

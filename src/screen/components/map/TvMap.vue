@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import SpriteImage from '../common/SpriteImage.vue';
 import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
+import MapPointMarker from '@/components/map/MapPointMarker.vue';
 import { tvAssets } from '@/utils/designAssets';
 import { tvSprites } from '@/utils/tvSpriteConfig';
 import { tvAlarmMarker, tvMapControls } from '../../lib/data/tvMock';
@@ -122,7 +123,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
       <span class="video-map-point__stem" />
     </button>
 
-    <div class="alarm-marker" :style="alarmAnchorStyle">
+    <MapPointMarker :style="alarmAnchorStyle" tone="danger">
       <div class="alarm-marker__body">
         <img class="alarm-marker__shadow2" :src="tvAssets.alarmMarker.shadow2" alt="" />
         <img class="alarm-marker__shadow1" :src="tvAssets.alarmMarker.shadow1" alt="" />
@@ -146,7 +147,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
           </div>
         </div>
       </div>
-    </div>
+    </MapPointMarker>
 
     <div class="map-controls">
       <MapLayerPanel />
@@ -326,13 +327,6 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
   height: 3px;
   display: block;
   object-fit: contain;
-}
-
-.alarm-marker {
-  position: absolute;
-  z-index: var(--z-marker);
-  transform: translate(-50%, -100%);
-  pointer-events: none;
 }
 
 .alarm-marker__body {

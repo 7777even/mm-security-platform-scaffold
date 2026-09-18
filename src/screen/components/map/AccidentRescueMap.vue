@@ -3,6 +3,7 @@ import { computed, onMounted, watch, nextTick, ref, unref, type Ref } from 'vue'
 import SpriteImage from '../common/SpriteImage.vue';
 import MapLayerPanel from '../common/MapLayerPanel.vue';
 import MapCleanModeButton from './MapCleanModeButton.vue';
+import MapPointMarker from '@/components/map/MapPointMarker.vue';
 import { accidentRescueAssets, fireEmergencyAssets } from '@/utils/designAssets';
 import { accidentRescueSprites } from '@/utils/accidentRescueSpriteConfig';
 import {
@@ -211,24 +212,24 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
     </svg>
 
     <!-- 起点 -->
-    <div
-      v-if="!isEventCommand"
-      class="accident-rescue-map__gate gate-marker"
-      :style="markerStyleFor('gate')"
-    >
-      <div class="gate-marker__card">
-        <img class="gate-marker__card-bg" :src="accidentRescueAssets.gateLabelBg" alt="" />
-        <div class="gate-marker__name">{{ accidentRescueMapMarkers.gate.label }}</div>
-        <div class="gate-marker__start">
-          <span class="gate-marker__flow-icon" aria-hidden="true" />
-          <span class="gate-marker__start-label">{{ accidentRescueMapMarkers.gate.subLabel }}</span>
+    <MapPointMarker v-if="!isEventCommand" :style="markerStyleFor('gate')" layout="none">
+      <div class="accident-rescue-map__gate gate-marker">
+        <div class="gate-marker__card">
+          <img class="gate-marker__card-bg" :src="accidentRescueAssets.gateLabelBg" alt="" />
+          <div class="gate-marker__name">{{ accidentRescueMapMarkers.gate.label }}</div>
+          <div class="gate-marker__start">
+            <span class="gate-marker__flow-icon" aria-hidden="true" />
+            <span class="gate-marker__start-label">{{
+              accidentRescueMapMarkers.gate.subLabel
+            }}</span>
+          </div>
+        </div>
+        <div class="gate-marker__pin" aria-hidden="true">
+          <span class="gate-marker__pin-outer" />
+          <span class="gate-marker__pin-inner" />
         </div>
       </div>
-      <div class="gate-marker__pin" aria-hidden="true">
-        <span class="gate-marker__pin-outer" />
-        <span class="gate-marker__pin-inner" />
-      </div>
-    </div>
+    </MapPointMarker>
 
     <!-- 终点：事件标记 -->
     <div class="emergency-pin-marker" :style="markerStyleFor('fire')">

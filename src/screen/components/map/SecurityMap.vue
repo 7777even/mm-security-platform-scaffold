@@ -260,28 +260,30 @@ const { styleFor: deviceStyleFor } = useWorldMarkerScreenPositions(deviceMarkerT
   <div class="security-map">
     <div class="security-map__depth" />
 
-    <div
+    <MapPointMarker
       v-for="gate in securityGates"
       :key="gate.name"
-      class="gate-marker"
       :style="styleFor(gate.name)"
+      layout="none"
     >
-      <div class="gate-marker__card">
-        <img class="gate-marker__card-bg" :src="securityAssets.gateLabelBg" alt="" />
-        <div class="gate-marker__name">{{ gate.name }}</div>
-        <div class="gate-marker__flow">
-          <img class="gate-marker__flow-icon" :src="securityAssets.gateFlowIcon" alt="" />
-          <span class="gate-marker__flow-label">出入流量</span>
-          <span class="gate-marker__flow-value">{{ gate.flow }}</span>
+      <div class="gate-marker">
+        <div class="gate-marker__card">
+          <img class="gate-marker__card-bg" :src="securityAssets.gateLabelBg" alt="" />
+          <div class="gate-marker__name">{{ gate.name }}</div>
+          <div class="gate-marker__flow">
+            <img class="gate-marker__flow-icon" :src="securityAssets.gateFlowIcon" alt="" />
+            <span class="gate-marker__flow-label">出入流量</span>
+            <span class="gate-marker__flow-value">{{ gate.flow }}</span>
+          </div>
+        </div>
+        <div class="gate-marker__pin">
+          <span class="gate-marker__ripple gate-marker__ripple--1" aria-hidden="true" />
+          <span class="gate-marker__ripple gate-marker__ripple--2" aria-hidden="true" />
+          <img class="gate-marker__pin-outer" :src="securityAssets.gateMarkerOuter" alt="" />
+          <img class="gate-marker__pin-inner" :src="securityAssets.gateMarkerInner" alt="" />
         </div>
       </div>
-      <div class="gate-marker__pin">
-        <span class="gate-marker__ripple gate-marker__ripple--1" aria-hidden="true" />
-        <span class="gate-marker__ripple gate-marker__ripple--2" aria-hidden="true" />
-        <img class="gate-marker__pin-outer" :src="securityAssets.gateMarkerOuter" alt="" />
-        <img class="gate-marker__pin-inner" :src="securityAssets.gateMarkerInner" alt="" />
-      </div>
-    </div>
+    </MapPointMarker>
 
     <MapPointMarker
       v-for="point in patrolLinkageOpen ? patrolLinkagePoints : []"
@@ -338,69 +340,81 @@ const { styleFor: deviceStyleFor } = useWorldMarkerScreenPositions(deviceMarkerT
       </button>
     </nav>
 
-    <button
+    <MapPointMarker
       v-for="cam in patrolCameraDrawerActive ? patrolCameraPagedItems : []"
       :key="`cam-${cam.id}`"
-      type="button"
-      class="camera-marker"
-      :class="{
-        'camera-marker--offline': cam.status === '离线',
-        'camera-marker--fault': cam.status === '故障',
-      }"
       :style="cameraStyleFor(String(cam.id))"
-      :title="cam.name"
-      :aria-label="`${cam.name} ${cam.status}`"
-      @click="handleCameraMarkerClick(cam.id)"
+      layout="none"
     >
-      <img class="camera-marker__outer" :src="tvAssets.cameraMarkers[0].outer" alt="" />
-      <img class="camera-marker__icon" :src="tvAssets.cameraMarkers[0].icon" alt="" />
-      <span class="camera-marker__stem" aria-hidden="true" />
-      <span class="camera-marker__breath" aria-hidden="true" />
-    </button>
+      <button
+        type="button"
+        class="camera-marker"
+        :class="{
+          'camera-marker--offline': cam.status === '离线',
+          'camera-marker--fault': cam.status === '故障',
+        }"
+        :title="cam.name"
+        :aria-label="`${cam.name} ${cam.status}`"
+        @click="handleCameraMarkerClick(cam.id)"
+      >
+        <img class="camera-marker__outer" :src="tvAssets.cameraMarkers[0].outer" alt="" />
+        <img class="camera-marker__icon" :src="tvAssets.cameraMarkers[0].icon" alt="" />
+        <span class="camera-marker__stem" aria-hidden="true" />
+        <span class="camera-marker__breath" aria-hidden="true" />
+      </button>
+    </MapPointMarker>
 
-    <button
+    <MapPointMarker
       v-for="item in bollardDrawerActive ? bollardPagedItems : []"
       :key="`bollard-${item.id}`"
-      type="button"
-      class="camera-marker camera-marker--bollard"
-      :class="{
-        'camera-marker--offline': item.status === '离线',
-        'camera-marker--fault': item.status === '故障',
-      }"
       :style="bollardStyleFor(String(item.id))"
-      :title="item.name"
-      :aria-label="`${item.name} ${item.status}`"
-      @click="handleBollardMarkerClick(item.id)"
+      layout="none"
     >
-      <img class="camera-marker__outer" :src="tvAssets.cameraMarkers[0].outer" alt="" />
-      <span class="camera-marker__svg" aria-hidden="true">
-        <SecurityToolbarIcon name="bollard" />
-      </span>
-      <span class="camera-marker__stem" aria-hidden="true" />
-      <span class="camera-marker__breath" aria-hidden="true" />
-    </button>
+      <button
+        type="button"
+        class="camera-marker camera-marker--bollard"
+        :class="{
+          'camera-marker--offline': item.status === '离线',
+          'camera-marker--fault': item.status === '故障',
+        }"
+        :title="item.name"
+        :aria-label="`${item.name} ${item.status}`"
+        @click="handleBollardMarkerClick(item.id)"
+      >
+        <img class="camera-marker__outer" :src="tvAssets.cameraMarkers[0].outer" alt="" />
+        <span class="camera-marker__svg" aria-hidden="true">
+          <SecurityToolbarIcon name="bollard" />
+        </span>
+        <span class="camera-marker__stem" aria-hidden="true" />
+        <span class="camera-marker__breath" aria-hidden="true" />
+      </button>
+    </MapPointMarker>
 
-    <button
+    <MapPointMarker
       v-for="item in gateControlDrawerActive ? gateControlPagedItems : []"
       :key="`gate-${item.id}`"
-      type="button"
-      class="camera-marker camera-marker--gate"
-      :class="{
-        'camera-marker--offline': item.status === '离线',
-        'camera-marker--fault': item.status === '故障',
-      }"
       :style="gateControlStyleFor(String(item.id))"
-      :title="item.name"
-      :aria-label="`${item.name} ${item.status}`"
-      @click="handleGateControlMarkerClick(item.id)"
+      layout="none"
     >
-      <img class="camera-marker__outer" :src="tvAssets.cameraMarkers[0].outer" alt="" />
-      <span class="camera-marker__svg" aria-hidden="true">
-        <SecurityToolbarIcon name="gate" />
-      </span>
-      <span class="camera-marker__stem" aria-hidden="true" />
-      <span class="camera-marker__breath" aria-hidden="true" />
-    </button>
+      <button
+        type="button"
+        class="camera-marker camera-marker--gate"
+        :class="{
+          'camera-marker--offline': item.status === '离线',
+          'camera-marker--fault': item.status === '故障',
+        }"
+        :title="item.name"
+        :aria-label="`${item.name} ${item.status}`"
+        @click="handleGateControlMarkerClick(item.id)"
+      >
+        <img class="camera-marker__outer" :src="tvAssets.cameraMarkers[0].outer" alt="" />
+        <span class="camera-marker__svg" aria-hidden="true">
+          <SecurityToolbarIcon name="gate" />
+        </span>
+        <span class="camera-marker__stem" aria-hidden="true" />
+        <span class="camera-marker__breath" aria-hidden="true" />
+      </button>
+    </MapPointMarker>
 
     <!-- 真实后端报警点位落图（/map/alarms） -->
     <MapPointMarker

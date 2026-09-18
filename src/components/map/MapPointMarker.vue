@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, useSlots } from 'vue';
 import MapMarkerIcon, { type MapMarkerIconName } from '@/components/map/MapMarkerIcon.vue';
 
 /**
@@ -35,7 +35,14 @@ const props = withDefaults(
     sub?: string;
     /** 是否允许渲染标签条（无 status/name/sub 时自动不渲染） */
     showLabel?: boolean;
-    layout?: 'column' | 'pulse';
+    /**
+     * 布局：
+     * - `column`（默认）：标签条/针/引线/呼吸点纵向排列，根节点 `translate(-50%, -100%)`（针尖落点）；
+     * - `pulse`：仅圆针 + 中心呼吸环，`translate(-50%, -50%)`（密集点位）；
+     * - `none`：根节点不施加 transform，仅提供 `position:absolute` + 调用方 `:style` 的 left/top，
+     *   由 `#default` 插槽内的自定义内容自行负责定位（用于收编既有切图驱动点位，保留其原定位/transform）。
+     */
+    layout?: 'column' | 'pulse' | 'none';
     tone?: MapPointTone;
     /** 针直径 / 图标尺寸 / 引线高度 / 呼吸点直径（px） */
     pinSize?: number;
@@ -77,6 +84,10 @@ const props = withDefaults(
 
 const emit = defineEmits<{ activate: [] }>();
 
+const slots = useSlots();
+/** 调用方提供整段自定义内容（#default）时，根节点仅做定位容器，不再渲染内置标签条/圆针/引线/呼吸点 */
+const hasBodySlot = computed(() => Boolean(slots.default));
+
 const hasLabel = computed(
   () => props.showLabel && Boolean(props.status || props.name || props.sub),
 );
@@ -101,7 +112,12 @@ function onClick() {
     :class="[
       `map-point-marker--${layout}`,
       `map-point-marker--${tone}`,
-      { 'is-interactive': interactive, 'is-active': active, 'has-tooltip': Boolean(title) },
+      {
+        'is-interactive': interactive,
+        'is-active': active,
+        'has-tooltip': Boolean(title),
+        'has-body-slot': hasBodySlot,
+      },
     ]"
     :type="interactive ? 'button' : undefined"
     :title="title"
@@ -109,17 +125,20 @@ function onClick() {
     :style="vars"
     @click="onClick"
   >
-    <span v-if="hasLabel" class="map-point-marker__label">
-      <span v-if="status" class="map-point-marker__status">{{ status }}</span>
-      <span class="map-point-marker__name">{{ name }}</span>
-      <span v-if="sub" class="map-point-marker__sub">{{ sub }}</span>
-    </span>
-    <span class="map-point-marker__pin" aria-hidden="true">
-      <MapMarkerIcon v-if="icon" :name="icon" />
-      <template v-else>{{ pinText }}</template>
-    </span>
-    <span v-if="layout === 'column'" class="map-point-marker__stem" aria-hidden="true" />
-    <span v-if="breath" class="map-point-marker__breath" aria-hidden="true" />
+    <slot v-if="hasBodySlot" />
+    <template v-else>
+      <span v-if="hasLabel" class="map-point-marker__label">
+        <span v-if="status" class="map-point-marker__status">{{ status }}</span>
+        <span class="map-point-marker__name">{{ name }}</span>
+        <span v-if="sub" class="map-point-marker__sub">{{ sub }}</span>
+      </span>
+      <span class="map-point-marker__pin" aria-hidden="true">
+        <MapMarkerIcon v-if="icon" :name="icon" />
+        <template v-else>{{ pinText }}</template>
+      </span>
+      <span v-if="layout === 'column'" class="map-point-marker__stem" aria-hidden="true" />
+      <span v-if="breath" class="map-point-marker__breath" aria-hidden="true" />
+    </template>
   </component>
 </template>
 
@@ -134,14 +153,22 @@ function onClick() {
 
   position: absolute;
   z-index: var(--z-marker);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   padding: 0;
   border: none;
   background: transparent;
   font-family: var(--font-body);
   pointer-events: none;
+}
+
+/* 内置标注语言（标签条/圆针/引线/呼吸点）纵向居中；收编既有切图点位时（#default 插槽）根节点退化为定位容器 */
+.map-point-marker:not(.has-body-slot) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.map-point-marker.has-body-slot {
+  display: block;
 }
 
 .map-point-marker--warning {
@@ -164,7 +191,7 @@ function onClick() {
   --marker: var(--map-device-offline);
 }
 
-/* 锚点：column = 针尖落点（-100%）/ pulse = 圆心落点（-50%） */
+/* 锚点：column = 针尖落点（-100%）/ pulse = 圆心落点（-50%）/ none = 不施加 transform（由 #default 插槽内容自行定位） */
 .map-point-marker--column {
   transform: translate(-50%, -100%);
 }
@@ -174,6 +201,10 @@ function onClick() {
   width: var(--marker-pin-size);
   height: var(--marker-pin-size);
   transform: translate(-50%, -50%);
+}
+
+.map-point-marker--none {
+  transform: none;
 }
 
 .map-point-marker.is-interactive {
