@@ -74,7 +74,8 @@ onUnmounted(() => {
 }
 
 .sidebar--left-emergency {
-  width: 414px;
+  /* 与其余大屏页签侧栏同宽（原 414px 为历史遗留差异） */
+  width: var(--sidebar-width);
   height: 897px;
   max-height: calc(100% - 5px);
   grid-template-rows: minmax(0, 1.7fr) minmax(0, 1fr);
