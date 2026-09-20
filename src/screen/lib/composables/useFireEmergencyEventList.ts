@@ -376,16 +376,15 @@ function upsertEventIntoGroup(
 export async function createFireEmergencyEventFromForm(
   payload: EmergencyEventCreatePayload,
 ): Promise<EmergencyEventItem> {
-  // 以表单所选「事件类型」为准，反推 kind / eventCategory（供路由跳转与后端落库）。
-  const { kind, eventCategory } = deriveKindCategory(payload.eventType);
+  // 以表单所选「事件类型」为准，反推 kind / eventCategory / groupCode / groupLabel
+  //（供路由跳转、前端分组与后端落库）。groupCode/groupLabel 来自 EMERGENCY_EVENT_TYPE_DEFS 登记表，
+  // 与种子分组同码（phone/tank/facility/video/extreme-weather）时并入同一侧栏分组展示。
+  const { kind, eventCategory, groupCode, groupLabel } = deriveKindCategory(payload.eventType);
   const isDrill = kind === 'drill';
   const isWeather = !isDrill && eventCategory === 'extremeWeather';
   const mapPos = defaultMapPercentForNewEvent();
   const world = stagePercentStringToWorldPosition(mapPos.left, mapPos.top);
 
-  // 分组按事件类型归类（去掉「手动新增」字面标签，改由事件类型驱动）。
-  const groupId = `manual-${payload.eventType}`;
-  const groupLabel = payload.eventType;
   const groupsState = fireEmergencyEventGroupsState;
 
   const buildEvent = (id: number): EmergencyEventItem => ({
@@ -422,6 +421,8 @@ export async function createFireEmergencyEventFromForm(
       scene: 'FIRE',
       kind,
       eventCategory,
+      groupCode,
+      groupLabel,
       title: payload.name || (isDrill ? '新增演练' : '新增事件'),
       location: locationFromPayload(payload),
       description: composeEventDescription(payload),
@@ -444,7 +445,7 @@ export async function createFireEmergencyEventFromForm(
     };
     const created = await createEmergencyEvent(req);
     const event = buildEvent(created.id);
-    upsertEventIntoGroup(groupsState, groupId, groupLabel, event);
+    upsertEventIntoGroup(groupsState, groupCode, groupLabel, event);
     setFireEmergencyListTab(isDrill ? 'drill' : 'event');
     fireEmergencyCurrentPage.value = 1;
     selectFireEmergencyEvent(created.id);
@@ -454,8 +455,8 @@ export async function createFireEmergencyEventFromForm(
     logger.warn('[fire-emergency] 后端落库失败，回落本地草稿', err);
     const id = nextFireEmergencyEventId();
     const event = buildEvent(id);
-    upsertEventIntoGroup(groupsState, groupId, groupLabel, event);
-    saveFireEmergencyDraft(event, groupId);
+    upsertEventIntoGroup(groupsState, groupCode, groupLabel, event);
+    saveFireEmergencyDraft(event, groupCode);
     setFireEmergencyListTab(isDrill ? 'drill' : 'event');
     fireEmergencyCurrentPage.value = 1;
     selectFireEmergencyEvent(id);
