@@ -52,14 +52,12 @@ function goBack() {
 <template>
   <MapPageShell min-width="1920px" class="comm-view">
     <template #map>
-      <ProductionMap />
+      <ProductionMap style="--map-controls-right: 18px" />
     </template>
 
     <template #floating>
-      <button type="button" class="comm-view__back" @click="goBack">返回生产应急</button>
-
       <aside class="comm-view__drawer comm-view__drawer--left">
-        <CommunicationDeviceListPanel />
+        <CommunicationDeviceListPanel @back="goBack" />
       </aside>
 
       <aside v-if="selectedDevice" class="comm-view__drawer comm-view__drawer--right">
@@ -94,42 +92,14 @@ function goBack() {
 
 <style scoped>
 /*
- * 返回按钮与 ProductionAreaView 的返回钮同一套视觉（36 高 / 2px 圆角 / 同配色），
- * 且同样落位左栏面板左下角的下方（面板底 132 = 84 + 36 + 12 间距）——
- * 原左上角位置会被左栏面板（z-overlay）盖住，等于不可见。
- */
-.comm-view__back {
-  position: absolute;
-  left: 18px;
-  bottom: 84px;
-  z-index: var(--z-chrome);
-  height: 36px;
-  padding: 0 18px;
-  border: 1px solid rgb(0 150 230 / 45%);
-  border-radius: 2px;
-  background: var(--map-facility-btn-bg);
-  color: #e8f4ff;
-  font-size: 14px;
-  font-family: var(--font-body);
-  cursor: pointer;
-  pointer-events: auto;
-}
-
-.comm-view__back:hover {
-  color: var(--color-text-strong);
-  border-color: rgb(0 180 255 / 55%);
-}
-
-/*
  * 与 /production/area/:id 详情页（ProductionAreaView）同一套侧栏几何：
- * 左右栏 left/right 18px、top 96px、宽 var(--sidebar-width)（原 520/420 写死宽度
- * 是全大屏仅剩的偏离例）；底部统一让出「返回按钮带(48px) + 操作条(72px)」，
- * 返回钮同样落位面板左下角下方，与 area 页同一模式。
+ * 左右栏 left/right 18px、top 96px、宽 var(--sidebar-width)。
+ * 底部让出操作条（62px + 12px 间隙），返回钮已统一进左侧列表 PanelCard header-extra。
  */
 .comm-view__drawer {
   position: absolute;
   top: 96px;
-  height: calc(100% - 96px - 132px);
+  height: calc(100% - 96px - 84px);
   pointer-events: auto;
   z-index: var(--z-overlay);
 }

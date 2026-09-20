@@ -17,6 +17,10 @@ const tabOptions: { key: CommunicationTab; label: string }[] = [
   { key: 'intercom', label: '对讲' },
 ];
 
+const emit = defineEmits<{
+  back: [];
+}>();
+
 const totalCount = computed(() => allDevices.value.length);
 
 function statusTone(status: string) {
@@ -33,6 +37,10 @@ function statusTone(status: string) {
         <h3 class="comm-list__heading">通讯设备</h3>
         <span class="comm-list__count">共 {{ totalCount }} 个</span>
       </div>
+    </template>
+
+    <template #header-extra>
+      <button type="button" class="comm-list__back" @click="emit('back')">返回</button>
     </template>
 
     <div class="comm-list">
@@ -101,6 +109,23 @@ function statusTone(status: string) {
 .comm-list__count {
   font-size: 13px;
   color: var(--map-device-offline);
+}
+
+.comm-list__back {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid rgb(0 150 230 / 45%);
+  border-radius: 2px;
+  background: var(--map-facility-btn-bg);
+  color: #e8f4ff;
+  font-size: 12px;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.comm-list__back:hover {
+  color: var(--color-text-strong);
+  border-color: rgb(0 180 255 / 55%);
 }
 
 .comm-list {

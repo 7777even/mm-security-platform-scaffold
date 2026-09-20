@@ -9,7 +9,6 @@ import {
 } from '@/services/production';
 import {
   applyProductionDeviceSearch,
-  closeProductionDeviceList,
   goToProductionDevicePage,
   productionDeviceCategory,
   productionDeviceCurrentPage,
@@ -26,6 +25,10 @@ import {
 
 const title = computed(() => resolveDeviceCategoryTitle(productionDeviceCategory.value));
 
+const emit = defineEmits<{
+  back: [];
+}>();
+
 function statusClass(status: ProductionDeviceStatus) {
   return `device-table__status--${statusTone(status)}`;
 }
@@ -41,90 +44,90 @@ function statusClass(status: ProductionDeviceStatus) {
     </template>
 
     <template #header-extra>
-      <button type="button" class="device-list__back" @click="closeProductionDeviceList">
-        返回
-      </button>
+      <button type="button" class="device-list__back" @click="emit('back')">返回</button>
     </template>
 
     <div class="device-list">
-      <div class="device-list__filters">
-        <input
-          v-model="productionDeviceNameFilter"
-          class="device-list__input"
-          type="text"
-          placeholder="名称"
-        />
-        <select v-model="productionDeviceTypeFilter" class="device-list__select">
-          <option v-for="opt in productionDeviceTypeOptions" :key="opt" :value="opt">
-            {{ opt }}
-          </option>
-        </select>
-        <select v-model="productionDeviceStatusFilter" class="device-list__select">
-          <option v-for="opt in productionDeviceStatusOptions" :key="opt" :value="opt">
-            {{ opt }}
-          </option>
-        </select>
-        <button type="button" class="device-list__btn" @click="applyProductionDeviceSearch">
-          检索
-        </button>
-        <button
-          type="button"
-          class="device-list__btn device-list__btn--ghost"
-          @click="resetProductionDeviceSearch"
-        >
-          重置
-        </button>
-      </div>
-
-      <div class="device-table">
-        <div class="device-table__head">
-          <span>设备名称</span>
-          <span>类型</span>
-          <span>所属区域</span>
-          <span>状态</span>
+      <div class="device-list__scroll">
+        <div class="device-list__filters">
+          <input
+            v-model="productionDeviceNameFilter"
+            class="device-list__input"
+            type="text"
+            placeholder="名称"
+          />
+          <select v-model="productionDeviceTypeFilter" class="device-list__select">
+            <option v-for="opt in productionDeviceTypeOptions" :key="opt" :value="opt">
+              {{ opt }}
+            </option>
+          </select>
+          <select v-model="productionDeviceStatusFilter" class="device-list__select">
+            <option v-for="opt in productionDeviceStatusOptions" :key="opt" :value="opt">
+              {{ opt }}
+            </option>
+          </select>
+          <button type="button" class="device-list__btn" @click="applyProductionDeviceSearch">
+            检索
+          </button>
+          <button
+            type="button"
+            class="device-list__btn device-list__btn--ghost"
+            @click="resetProductionDeviceSearch"
+          >
+            重置
+          </button>
         </div>
 
-        <div v-for="item in productionDevicePagedItems" :key="item.id" class="device-table__row">
-          <span class="device-table__name" :title="item.name">{{ item.name }}</span>
-          <span class="device-table__type" :title="item.type">{{ item.type }}</span>
-          <span>{{ item.area }}</span>
-          <span class="device-table__status" :class="statusClass(item.status)">{{
-            item.status
-          }}</span>
+        <div class="device-table">
+          <div class="device-table__head">
+            <span>设备名称</span>
+            <span>类型</span>
+            <span>所属区域</span>
+            <span>状态</span>
+          </div>
+
+          <div v-for="item in productionDevicePagedItems" :key="item.id" class="device-table__row">
+            <span class="device-table__name" :title="item.name">{{ item.name }}</span>
+            <span class="device-table__type" :title="item.type">{{ item.type }}</span>
+            <span>{{ item.area }}</span>
+            <span class="device-table__status" :class="statusClass(item.status)">{{
+              item.status
+            }}</span>
+          </div>
+
+          <div v-if="!productionDevicePagedItems.length" class="device-table__empty">
+            暂无匹配数据
+          </div>
         </div>
 
-        <div v-if="!productionDevicePagedItems.length" class="device-table__empty">
-          暂无匹配数据
+        <div class="device-list__pagination">
+          <button
+            type="button"
+            class="page-btn"
+            :disabled="productionDeviceCurrentPage <= 1"
+            @click="goToProductionDevicePage(productionDeviceCurrentPage - 1)"
+          >
+            ‹
+          </button>
+          <button
+            v-for="page in productionDeviceVisiblePages"
+            :key="page"
+            type="button"
+            class="page-btn"
+            :class="{ 'page-btn--active': productionDeviceCurrentPage === page }"
+            @click="goToProductionDevicePage(page)"
+          >
+            {{ page }}
+          </button>
+          <button
+            type="button"
+            class="page-btn"
+            :disabled="productionDeviceCurrentPage >= productionDeviceTotalPages"
+            @click="goToProductionDevicePage(productionDeviceCurrentPage + 1)"
+          >
+            ›
+          </button>
         </div>
-      </div>
-
-      <div class="device-list__pagination">
-        <button
-          type="button"
-          class="page-btn"
-          :disabled="productionDeviceCurrentPage <= 1"
-          @click="goToProductionDevicePage(productionDeviceCurrentPage - 1)"
-        >
-          ‹
-        </button>
-        <button
-          v-for="page in productionDeviceVisiblePages"
-          :key="page"
-          type="button"
-          class="page-btn"
-          :class="{ 'page-btn--active': productionDeviceCurrentPage === page }"
-          @click="goToProductionDevicePage(page)"
-        >
-          {{ page }}
-        </button>
-        <button
-          type="button"
-          class="page-btn"
-          :disabled="productionDeviceCurrentPage >= productionDeviceTotalPages"
-          @click="goToProductionDevicePage(productionDeviceCurrentPage + 1)"
-        >
-          ›
-        </button>
       </div>
     </div>
   </PanelCard>
@@ -157,13 +160,18 @@ function statusClass(status: ProductionDeviceStatus) {
 .device-list__back {
   height: 26px;
   padding: 0 10px;
-  border: 1px solid rgb(0 130 210 / 35%);
+  border: 1px solid rgb(0 150 230 / 45%);
   border-radius: 2px;
-  background: rgb(0 28 58 / 65%);
-  color: #c8d8ec;
+  background: var(--map-facility-btn-bg);
+  color: #e8f4ff;
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
+}
+
+.device-list__back:hover {
+  color: var(--color-text-strong);
+  border-color: rgb(0 180 255 / 55%);
 }
 
 .device-list {
@@ -171,6 +179,14 @@ function statusClass(status: ProductionDeviceStatus) {
   flex-direction: column;
   height: 100%;
   min-height: 0;
+}
+
+.device-list__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 

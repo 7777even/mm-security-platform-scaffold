@@ -299,10 +299,7 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
       :title="item.name"
     />
 
-    <div
-      class="map-controls"
-      :class="{ 'map-controls--drawer': productionDeviceDrawerActive || selectedDevice }"
-    >
+    <div class="map-controls" :class="{ 'map-controls--drawer': selectedDevice }">
       <MapLayerPanel />
       <button
         v-for="(ctrl, index) in productionMapControls"
@@ -338,6 +335,10 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+
+  /* 默认避让 /production 主页的右侧面板（宽 ~465px）；
+     在 /production/communication 等无右侧面板的页面可通过内联样式覆盖为 18px。 */
+  --map-controls-right: 465px;
 }
 
 .production-map__depth {
@@ -377,7 +378,7 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
 
 .map-controls {
   position: absolute;
-  right: 465px;
+  right: var(--map-controls-right);
   top: 123px;
   display: flex;
   flex-direction: column;
@@ -389,10 +390,10 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
 }
 
 /* 右侧抽屉打开时，把工具栏推到抽屉左侧之外，避免被 z-overlay 层盖住。
-   生产应急抽屉宽 520px（right:18px），通讯详情抽屉宽 var(--sidebar-width)；
-   取 560px 可同时避开两者，并留 ~22px 间隙。 */
+   右侧抽屉统一为 var(--sidebar-width) 宽、right:18px 定位；
+   工具栏紧贴抽屉左边缘，留 12px 间隙。 */
 .map-controls--drawer {
-  right: 560px;
+  right: calc(var(--sidebar-width) + 18px + 12px);
 }
 
 .map-control-btn {

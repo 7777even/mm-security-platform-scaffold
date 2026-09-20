@@ -13,7 +13,10 @@ import StatsOverviewBar from '../components/panels/production/StatsOverviewBar.v
 import ProductionDeviceListPanel from '../components/panels/production/ProductionDeviceListPanel.vue';
 import ProductionDeviceLedgerPanel from '../components/panels/production/ProductionDeviceLedgerPanel.vue';
 import ProductionWorkstationPanel from '../components/panels/production/ProductionWorkstationPanel.vue';
-import { productionDeviceDrawerActive } from '../lib/composables/useProductionDeviceListView';
+import {
+  closeProductionDeviceList,
+  productionDeviceDrawerActive,
+} from '../lib/composables/useProductionDeviceListView';
 import { useAlarmDetailPanel } from '../lib/composables/useAlarmDetailPanel';
 
 const { alarmDetailOpen } = useAlarmDetailPanel();
@@ -54,13 +57,13 @@ const shellDrawerActive = computed(() => productionDeviceDrawerActive.value);
     <template #floating>
       <AlarmDetailPanel />
       <div v-if="drawerLayerMounted" class="production-drawer-layer">
-        <Transition name="drawer-right" appear @after-leave="handleDeviceDrawerAfterLeave">
+        <Transition name="drawer-left" appear @after-leave="handleDeviceDrawerAfterLeave">
           <aside
             v-if="productionDeviceDrawerActive"
             key="production-device-list"
-            class="production-drawer production-drawer--right"
+            class="production-drawer production-drawer--left"
           >
-            <ProductionDeviceListPanel />
+            <ProductionDeviceListPanel @back="closeProductionDeviceList" />
           </aside>
         </Transition>
       </div>
@@ -101,36 +104,31 @@ const shellDrawerActive = computed(() => productionDeviceDrawerActive.value);
 .production-drawer {
   position: absolute;
   top: 112px;
-  width: 520px;
-  height: calc(100% - 112px - 154px);
+  width: var(--sidebar-width);
+  height: calc(100% - 112px - 66px);
+  margin-bottom: 18px;
   pointer-events: auto;
 }
 
-.production-drawer--right {
-  right: 18px;
+.production-drawer--left {
+  left: 18px;
 }
 
-.drawer-right-enter-active,
-.drawer-right-leave-active {
+.drawer-left-enter-active,
+.drawer-left-leave-active {
   transition:
     transform 0.26s ease,
     opacity 0.26s ease;
 }
 
-.drawer-right-enter-from,
-.drawer-right-leave-to {
-  transform: translateX(24px);
+.drawer-left-enter-from,
+.drawer-left-leave-to {
+  transform: translateX(-24px);
   opacity: 0;
 }
 
 .production-shell--drawer-active .sidebar--primary-left {
   transform: translateX(-110%);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.production-shell--drawer-active .sidebar--primary-right {
-  transform: translateX(110%);
   opacity: 0;
   pointer-events: none;
 }
