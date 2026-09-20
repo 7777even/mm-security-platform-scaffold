@@ -12,7 +12,11 @@ export interface paths {
      */
     get: operations['listEmergencyEvents'];
     put?: never;
-    post?: never;
+    /**
+     * 新增应急事件
+     * @description 创建一个新的应急事件（消防 / 先期处置）。后端同事务写入 fac_emergency_event 与 fac_accident_incident（is_default=false），使「去处置」可定位到该事件。返回后端生成的真实事件 id。
+     */
+    post: operations['createEmergencyEvent'];
     delete?: never;
     options?: never;
     head?: never;
@@ -232,6 +236,110 @@ export interface components {
        */
       measures?: string;
     };
+    /** @description 新增应急事件入参（对齐后端 dto.EmergencyEventCreateRequest） */
+    EmergencyEventCreateRequest: {
+      /**
+       * @description 事件场景：FIRE 消防应急 / PRELIMINARY 先期处置
+       * @example FIRE
+       * @enum {string}
+       */
+      scene: 'FIRE' | 'PRELIMINARY';
+      /**
+       * @description 事件类型：event 真实事件 / drill 演练
+       * @example event
+       * @enum {string}
+       */
+      kind: 'event' | 'drill';
+      /**
+       * @description 事件分类：default 默认 / extremeWeather 极端天气
+       * @example default
+       * @enum {string}
+       */
+      eventCategory: 'default' | 'extremeWeather';
+      /**
+       * @description 事件标题
+       * @example 催化裂化装置新增泄漏
+       */
+      title: string;
+      /**
+       * @description 事件位置（装置/区域）
+       * @example 炼油一部 1#催化装置
+       */
+      location: string;
+      /**
+       * @description 事件描述（含上报人/电话/伤亡数等无法单独映射的信息，由前端并入）
+       * @example 现场人员上报，联系电话 138xxxx，暂无伤亡。
+       */
+      description: string;
+      /**
+       * @description 事件发生时间，格式 yyyy-MM-dd HH:mm:ss
+       * @example 2026-09-20 14:00:00
+       */
+      eventTime: string;
+      /**
+       * @description 所属区域编码（可选，缺省 refinery）
+       * @example refinery
+       * @enum {string}
+       */
+      areaCode?: 'refinery' | 'chemical' | 'port';
+      /**
+       * @description 危险源等级（可选）
+       * @example 重大
+       */
+      hazardSourceLevel?: string;
+      /**
+       * @description 地图撒点左偏移（百分比，如 48.3%）
+       * @example 48.3%
+       */
+      leftPercent: string;
+      /**
+       * @description 地图撒点上偏移（百分比，如 36.1%）
+       * @example 36.1%
+       */
+      topPercent: string;
+      /**
+       * Format: double
+       * @description 经度
+       * @example 110.123456
+       */
+      longitude: number;
+      /**
+       * Format: double
+       * @description 纬度
+       * @example 21.654321
+       */
+      latitude: number;
+      /**
+       * @description 极端天气类型（eventCategory=extremeWeather 时填）
+       * @example 大风
+       */
+      weatherType?: string;
+      /**
+       * @description 预警等级（极端天气时填）
+       * @example 橙色
+       */
+      warningLevel?: string;
+      /**
+       * @description 影响区域（极端天气时填）
+       * @example 厂区东部
+       */
+      affectedArea?: string;
+      /**
+       * @description 监测时段（极端天气时填）
+       * @example 2026-09-20 08:00 ~ 12:00
+       */
+      monitoringPeriod?: string;
+      /**
+       * @description 数据来源（极端天气时填）
+       * @example 气象站自动监测
+       */
+      weatherSource?: string;
+      /**
+       * @description 应对措施（极端天气时填）
+       * @example 加固高空设施，暂停吊装作业
+       */
+      measures?: string;
+    };
     /** @description 疏散人员进度列表 */
     EvacuationPeople: components['schemas']['EvacuationPerson'][];
     /** @description 疏散人员进度项 */
@@ -374,6 +482,72 @@ export interface operations {
            *     }
            */
           'application/json': components['schemas']['EmergencyEventGroups'];
+        };
+      };
+    };
+  };
+  createEmergencyEvent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "scene": "FIRE",
+         *       "kind": "event",
+         *       "eventCategory": "default",
+         *       "title": "催化裂化装置新增泄漏",
+         *       "location": "炼油一部 1#催化装置",
+         *       "description": "现场人员上报，联系电话 138xxxx，暂无伤亡。",
+         *       "eventTime": "2026-09-20 14:00:00",
+         *       "areaCode": "refinery",
+         *       "hazardSourceLevel": "重大",
+         *       "leftPercent": "48.3%",
+         *       "topPercent": "36.1%",
+         *       "longitude": 110.123456,
+         *       "latitude": 21.654321
+         *     }
+         */
+        'application/json': components['schemas']['EmergencyEventCreateRequest'];
+      };
+    };
+    responses: {
+      /** @description 创建成功，返回新增事件项 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 18,
+           *         "areaCode": "refinery",
+           *         "title": "催化裂化装置新增泄漏",
+           *         "location": "炼油一部 1#催化装置",
+           *         "description": "现场人员上报，联系电话 138xxxx，暂无伤亡。",
+           *         "time": "2026-09-20 14:00:00",
+           *         "reported": false,
+           *         "status": "pending",
+           *         "statusLabel": "未处置",
+           *         "left": "48.3%",
+           *         "top": "36.1%",
+           *         "longitude": 110.123456,
+           *         "latitude": 21.654321,
+           *         "kind": "event",
+           *         "eventCategory": "default",
+           *         "hazardSourceLevel": "重大",
+           *         "endedAt": null
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['EmergencyEventItem'];
         };
       };
     };
