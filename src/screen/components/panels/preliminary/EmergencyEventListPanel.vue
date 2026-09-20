@@ -92,15 +92,22 @@ function closeCreateModal() {
   clearCreateParamIntent();
 }
 
-function handleCreateSubmit(payload: EmergencyEventCreatePayload) {
+async function handleCreateSubmit(payload: EmergencyEventCreatePayload) {
   if (!isFireEmergency.value) return;
-  const createdEvent = createFireEmergencyEventFromForm(payload);
-  // 带 ?create=event 进入（跨页 intent）时用 replace 直达处置页：把 /emergency?create=event
-  // 这条历史记录整体换成处置页，后退不会重放参数再次弹窗；且避免「先清参数再 push」
-  // 两次导航在 shell 侧竞争丢失目标页（见 useAccidentRescueNavigation.goToEventDispose 注释）。
+  // 先占位：避免异步落库期间弹窗 close 抢先清掉 ?create 参数（导致回列表而非跳转处置页）。
   const viaIntent = shellRoute.query.value.create === 'event';
   createSubmitInFlight = true;
-  goToEventDispose(createdEvent, viaIntent ? 'replace' : 'push');
+  // 后端为主：createFireEmergencyEventFromForm 先 POST 落库拿真实 id；弱网/离线时内部回落本地草稿。
+  const createdEvent = await createFireEmergencyEventFromForm(payload);
+  if (!viaIntent) {
+    // 手动新增：留在应急事件 / 演练列表。事件已写入 store 并选中、切到对应 tab、回到第 1 页，
+    // 用户直接在列表看到刚建的事件（此前会误跳处置页，因事件仅在前端内存、后端无记录而显示空态）。
+    createSubmitInFlight = false;
+    return;
+  }
+  // 跨页 intent（FireMonitoring 等带 ?create=event 进入）：提交后直达处置页，把该历史记录
+  // 整体换成处置页，后退不会重放参数再次弹窗（见 useAccidentRescueNavigation.goToEventDispose 注释）。
+  goToEventDispose(createdEvent, 'replace');
 }
 
 const isFireEmergency = computed(() => props.module === 'fireEmergency');

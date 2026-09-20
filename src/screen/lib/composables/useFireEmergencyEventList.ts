@@ -1,6 +1,8 @@
 import { computed, ref, watch } from 'vue';
 import {
   fetchEmergencyEvents,
+  createEmergencyEvent,
+  type EmergencyEventCreateRequest,
   type EmergencyEventGroup,
   type EmergencyEventItem,
 } from '@/services/emergencyEvent';
@@ -9,6 +11,7 @@ import {
   backendUnavailableWarn,
   resolveOfflineFetch,
 } from '@/services/backendFallback';
+import { logger } from '@/utils/logger';
 // 仅「离线演示」（VITE_USE_DEV_MOCK=true）回落用；live/offline 均不使用。
 import { fireEmergencyDrillEventGroups, fireEmergencyEventGroups } from '../data/fireEmergencyMock';
 import { selectFireEmergencyEvent } from './useFireEmergencyEventSelection';
@@ -23,6 +26,12 @@ import {
 } from './usePreliminaryEventList';
 import { stagePercentStringToWorldPosition } from '@/utils/mapDesignGeo';
 import { usePlantArea } from './usePlantArea';
+import {
+  saveFireEmergencyDraft,
+  loadFireEmergencyDraft,
+  listFireEmergencyDrafts,
+  draftGroupLabel,
+} from './fireEmergencyLocalDraft';
 
 const { filterByPlantArea } = usePlantArea();
 
@@ -121,6 +130,7 @@ async function loadFireEmergencyEvents(): Promise<void> {
   );
   if (fb.mode !== 'live') {
     applyFireEmergencyGroups(fb.value.events, fb.value.drills);
+    hydrateLocalDrafts();
     fireEmergencyEventsLoading.value = false;
     return;
   }
@@ -134,6 +144,7 @@ async function loadFireEmergencyEvents(): Promise<void> {
     }
     const { events, drills } = splitGroupsByKind(groups);
     applyFireEmergencyGroups(events, drills);
+    hydrateLocalDrafts();
   } catch (err) {
     fireEmergencyEventsError.value = err;
     backendUnavailableWarn('emergencyEvent', '/emergency-events');
@@ -328,17 +339,66 @@ function locationFromPayload(payload: EmergencyEventCreatePayload) {
   return parts.length ? parts.join('-') : '厂区待标注';
 }
 
-export function createFireEmergencyEventFromForm(payload: EmergencyEventCreatePayload) {
+/** 将表单中无法单独映射到后端的字段（事件类型细分 / 上报人 / 电话 / 伤亡数）并入 description。 */
+function composeEventDescription(payload: EmergencyEventCreatePayload): string {
+  const parts: string[] = [];
+  if (payload.eventType) parts.push(`事件类型：${payload.eventType}`);
+  if (payload.reporter) parts.push(`上报人：${payload.reporter}`);
+  if (payload.phone) parts.push(`联系电话：${payload.phone}`);
+  const casualty = [
+    payload.deathCount ? `死亡${payload.deathCount}` : '',
+    payload.seriousInjuryCount ? `重伤${payload.seriousInjuryCount}` : '',
+    payload.minorInjuryCount ? `轻伤${payload.minorInjuryCount}` : '',
+  ]
+    .filter(Boolean)
+    .join('，');
+  if (casualty) parts.push(`伤亡情况：${casualty}`);
+  if (payload.description) parts.push(payload.description);
+  return parts.length ? parts.join('；') : '暂无描述';
+}
+
+function upsertEventIntoGroup(
+  groupsState: typeof fireEmergencyEventGroupsState,
+  groupId: string,
+  groupLabel: string,
+  event: EmergencyEventItem,
+): void {
+  const groups = groupsState.value;
+  const existing = groups.find((group) => group.id === groupId);
+  if (existing) {
+    existing.events.push(event);
+  } else {
+    groupsState.value = [{ id: groupId, label: groupLabel, events: [event] }, ...groups];
+  }
+}
+
+/**
+ * 新增应急事件。后端为主：先 POST /emergency-events 落库并拿回真实 id，使「去处置」可按 event_id
+ * 定位到本事件（后端已同事务写入 fac_accident_incident，is_default=false，不再回退默认事件）。
+ *
+ * 成功后【不】写 sessionStorage 草稿——救援子应用（fm-rescue）在本地内存/草稿里找不到该事件时，
+ * 会自然回落到后端 /accident/rescue-incident 聚合，从而拿到完整处置数据，而非前端的精简草稿。
+ *
+ * 弱网/离线兜底：后端不可达时回落本地草稿（sessionStorage 跨子应用 + 跨刷新共享），
+ * 保证「新增事件」在处置页仍可被前端闭环展示（buildIncidentFromLocalEvent 走本地分支）。
+ */
+export async function createFireEmergencyEventFromForm(
+  payload: EmergencyEventCreatePayload,
+): Promise<EmergencyEventItem> {
   const isDrill = payload.kind === 'drill';
+  const isWeather = !isDrill && payload.eventCategory === 'extremeWeather';
   const mapPos = defaultMapPercentForNewEvent();
   const world = stagePercentStringToWorldPosition(mapPos.left, mapPos.top);
-  const id = nextFireEmergencyEventId();
 
-  const event: EmergencyEventItem = {
+  const groupId = isDrill ? 'manual-drill' : isWeather ? 'manual-weather' : 'manual-event';
+  const groupLabel = isDrill ? '手动新增演练' : isWeather ? '极端天气' : '手动新增';
+  const groupsState = isDrill ? fireEmergencyDrillEventGroupsState : fireEmergencyEventGroupsState;
+
+  const buildEvent = (id: number): EmergencyEventItem => ({
     id,
     title: payload.name || (isDrill ? '新增演练' : '新增事件'),
     location: locationFromPayload(payload),
-    description: payload.description,
+    description: composeEventDescription(payload),
     time: formatDisplayTime(payload.occurTime),
     reported: false,
     status: 'pending',
@@ -361,25 +421,107 @@ export function createFireEmergencyEventFromForm(payload: EmergencyEventCreatePa
           }
         : undefined,
     hazardSourceLevel: isDrill ? undefined : payload.level,
-  };
+  });
 
-  const isWeather = !isDrill && payload.eventCategory === 'extremeWeather';
-  const groupId = isDrill ? 'manual-drill' : isWeather ? 'manual-weather' : 'manual-event';
-  const groupLabel = isDrill ? '手动新增演练' : isWeather ? '极端天气' : '手动新增';
-  const groupsState = isDrill ? fireEmergencyDrillEventGroupsState : fireEmergencyEventGroupsState;
-
-  const groups = groupsState.value;
-  const existing = groups.find((group) => group.id === groupId);
-  if (existing) {
-    existing.events.push(event);
-  } else {
-    groupsState.value = [{ id: groupId, label: groupLabel, events: [event] }, ...groups];
+  try {
+    const req: EmergencyEventCreateRequest = {
+      scene: 'FIRE',
+      kind: payload.kind,
+      eventCategory: payload.kind === 'event' ? payload.eventCategory : 'default',
+      title: payload.name || (isDrill ? '新增演练' : '新增事件'),
+      location: locationFromPayload(payload),
+      description: composeEventDescription(payload),
+      eventTime: formatDisplayTime(payload.occurTime),
+      hazardSourceLevel: isDrill ? undefined : payload.level,
+      leftPercent: mapPos.left,
+      topPercent: mapPos.top,
+      longitude: world.longitude,
+      latitude: world.latitude,
+      ...(isWeather
+        ? {
+            weatherType: payload.weatherType,
+            warningLevel: payload.warningLevel,
+            affectedArea: payload.affectedArea,
+            monitoringPeriod: payload.monitoringPeriod,
+            weatherSource: payload.source,
+            measures: payload.measures,
+          }
+        : {}),
+    };
+    const created = await createEmergencyEvent(req);
+    const event = buildEvent(created.id);
+    upsertEventIntoGroup(groupsState, groupId, groupLabel, event);
+    setFireEmergencyListTab(payload.kind);
+    fireEmergencyCurrentPage.value = 1;
+    selectFireEmergencyEvent(created.id);
+    return event;
+  } catch (err) {
+    // 弱网/离线兜底：后端不可达时回落本地草稿。
+    logger.warn('[fire-emergency] 后端落库失败，回落本地草稿', err);
+    const id = nextFireEmergencyEventId();
+    const event = buildEvent(id);
+    upsertEventIntoGroup(groupsState, groupId, groupLabel, event);
+    saveFireEmergencyDraft(event, groupId);
+    setFireEmergencyListTab(payload.kind);
+    fireEmergencyCurrentPage.value = 1;
+    selectFireEmergencyEvent(id);
+    return event;
   }
+}
 
-  setFireEmergencyListTab(payload.kind);
-  fireEmergencyCurrentPage.value = 1;
-  selectFireEmergencyEvent(id);
-  return event;
+/** 按 id 在前端内存事件库（含手动新建的本地草稿）中查找事件。
+ * isLocalDraft 标记该事件是否来自「手动新增」组（groupId 以 manual- 开头），
+ * 即尚未落库、后端按 id 拉取不到的事件；处置页据此决定走前端内存展示而非调后端。 */
+export interface FireEmergencyEventLookup {
+  event: EmergencyEventItem;
+  isLocalDraft: boolean;
+}
+
+export function getFireEmergencyEventById(id: number): FireEmergencyEventLookup | undefined {
+  // 1) 同子应用内存中命中本地草稿（最快路径）
+  for (const group of fireEmergencyAllEventGroups.value) {
+    const found = group.events.find((e) => e.id === id);
+    if (found && group.id.startsWith('manual-')) {
+      return { event: found, isLocalDraft: true };
+    }
+  }
+  // 2) 跨子应用草稿（sessionStorage 共享，覆盖刷新 / 子应用边界）：
+  //    手动新增事件仅存前端，且与后端事件可能 id 撞车，必须优先于后端事件命中，
+  //    否则会显示成后端里同 id 的别人的事件。
+  const draft = loadFireEmergencyDraft(id);
+  if (draft) {
+    return { event: draft.event, isLocalDraft: true };
+  }
+  // 3) 内存中的后端真实事件（非本地草稿）
+  for (const group of fireEmergencyAllEventGroups.value) {
+    const found = group.events.find((e) => e.id === id);
+    if (found) {
+      return { event: found, isLocalDraft: false };
+    }
+  }
+  return undefined;
+}
+
+/** 将 sessionStorage 中的本地草稿合并回列表状态，使刷新后列表仍展示手动新增事件。
+ * 仅在 loadFireEmergencyEvents 用后端数据填充状态后调用，不覆盖后端事件。 */
+function hydrateLocalDrafts(): void {
+  const drafts = listFireEmergencyDrafts();
+  if (!drafts.length) return;
+  const groups = [...fireEmergencyEventGroupsState.value];
+  const index = new Map(groups.map((g) => [g.id, g]));
+  for (const { groupId, event } of drafts) {
+    const group = index.get(groupId);
+    if (group) {
+      if (!group.events.some((e) => e.id === event.id)) {
+        group.events.push(event);
+      }
+    } else {
+      const ng = { id: groupId, label: draftGroupLabel(groupId), events: [event] };
+      groups.unshift(ng);
+      index.set(groupId, ng);
+    }
+  }
+  fireEmergencyEventGroupsState.value = groups;
 }
 
 watch(fireEmergencyListTab, () => {

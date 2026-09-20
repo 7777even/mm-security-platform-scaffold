@@ -38,7 +38,10 @@ import {
   fetchAccidentIncident,
   type AccidentRescuePayload,
   type EmergencyDispatchResource,
+  type IncidentDetailField,
 } from '@/services/accidentRescue';
+import type { EmergencyEventItem } from '@/services/emergencyEvent';
+import { getFireEmergencyEventById } from '../lib/composables/useFireEmergencyEventList';
 import { getSharedMap } from '../lib/composables/sharedCesiumBridge';
 import {
   buildEvacuationRouteFromGeoJson,
@@ -117,7 +120,52 @@ async function loadIncident(): Promise<void> {
     }
     // 未连后端且未开演示：走 service，由其显式报错并返回空态
   }
+  // 前端内存中的「手动新增」事件尚未落库，后端按 id 拉取不到；优先命中本地事件直接展示，
+  // 否则会表现为「跳到了别的事件 / 空态」。仅对本地草稿做此短路，后端真实事件仍走后端聚合。
+  if (eid != null) {
+    const local = getFireEmergencyEventById(eid);
+    if (local?.isLocalDraft) {
+      incident.value = buildIncidentFromLocalEvent(local.event);
+      return;
+    }
+  }
   incident.value = await fetchAccidentIncident(eid);
+}
+
+/** 将前端内存中的手动新建事件适配为处置页聚合结构，使其无需落库即可在处置页展示。
+ * 仅承载列表已有字段（标题/地点/描述/级别/时间/气象），调度资源、值班、辅助统计等留空。 */
+function buildIncidentFromLocalEvent(ev: EmergencyEventItem): AccidentRescuePayload {
+  const isWeather = ev.kind === 'event' && ev.eventCategory === 'extremeWeather';
+  const detailFields: IncidentDetailField[] = [
+    { label: '事件描述', value: ev.description || '' },
+    { label: '事件级别', value: ev.hazardSourceLevel || '' },
+    { label: '事发时间', value: ev.time || '' },
+  ];
+  if (isWeather && ev.weatherMeta) {
+    detailFields.push(
+      { label: '天气类型', value: ev.weatherMeta.weatherType },
+      { label: '预警等级', value: ev.weatherMeta.warningLevel },
+      { label: '影响范围', value: ev.weatherMeta.affectedArea },
+      { label: '监测时段', value: ev.weatherMeta.monitoringPeriod },
+    );
+  }
+  return {
+    eventId: ev.id,
+    title: ev.title,
+    location: ev.location,
+    longitude: ev.longitude ?? 0,
+    latitude: ev.latitude ?? 0,
+    hazardSourceLevel: ev.hazardSourceLevel,
+    mapStatus: '',
+    status: (ev.status as AccidentRescuePayload['status']) ?? 'pending',
+    reported: ev.reported ?? false,
+    facilityName: ev.location,
+    detailFields,
+    dispatchResources: [],
+    dutyPersons: [],
+    auxiliaryStats: [],
+    dynamics: [{ id: ev.id, time: ev.time, title: ev.title, command: ev.description }],
+  };
 }
 
 onMounted(loadIncident);

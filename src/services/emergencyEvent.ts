@@ -1,4 +1,5 @@
 import { request } from '@/services/http';
+import type { EmergencyEvent } from '@/types/generated';
 
 // 消防应急 / 先期处置事件列表接口（fm-fire-emergency / fm-preliminary），对齐 docs/api/emergency-event.openapi.json。
 // 取代 emergencyEventGroups / preliminaryMock / evacuationPeopleMock 硬编码数据。
@@ -53,6 +54,22 @@ export interface EvacuationPerson {
 }
 
 export type EmergencyEventScene = 'FIRE' | 'PRELIMINARY';
+
+/** 新增应急事件入参（对齐后端 dto.EmergencyEventCreateRequest，由契约生成）。 */
+export type EmergencyEventCreateRequest =
+  EmergencyEvent.components['schemas']['EmergencyEventCreateRequest'];
+
+/** 新增应急事件（仅登录态）。后端同事务写入 fac_emergency_event 与 fac_accident_incident（is_default=false），
+ * 返回后端生成的真实事件 id，供「去处置」按 event_id 定位（不再回退默认事件）。 */
+export async function createEmergencyEvent(
+  payload: EmergencyEventCreateRequest,
+): Promise<EmergencyEventItem> {
+  return request<EmergencyEventItem>({
+    url: '/emergency-events',
+    method: 'POST',
+    data: payload,
+  });
+}
 
 /** 应急事件分组列表：scene=FIRE 仅消防、scene=PRELIMINARY 仅先期处置，缺省返回全部（FIRE 在前）。 */
 export async function fetchEmergencyEvents(
