@@ -152,23 +152,25 @@ export interface ProductionDeviceQuery {
   size?: number;
 }
 
-// —— 开发期自包含 mock（纯静态演示）：与 V13 种子保持一致，便于无后端时对照 UI ——
+// —— 开发期自包含 mock（纯静态演示）：与后端 overview 派生口径保持一致，便于无后端时对照 UI ——
+// 设施计数 = 同名装置区指标值（与 ProductionService.overview() 同源；厂区无同名指标记 0）
 const DEV_FACILITIES: OverviewGridItem[] = [
-  { id: 1, name: '厂区', count: 596, image: 'image_0001.webp' },
-  { id: 2, name: '生产装置', count: 596, image: 'image_0008.webp' },
-  { id: 3, name: '仓库', count: 596, image: 'image_0006.webp' },
-  { id: 4, name: '重大危险源', count: 596, image: 'image_0012.webp' },
-  { id: 5, name: '储罐', count: 596, image: 'image_0007.webp' },
+  { id: 1, name: '厂区', count: 0, image: 'image_0001.webp' },
+  { id: 2, name: '生产装置', count: 567, image: 'image_0008.webp' },
+  { id: 3, name: '仓库', count: 559, image: 'image_0006.webp' },
+  { id: 4, name: '重大危险源', count: 588, image: 'image_0012.webp' },
+  { id: 5, name: '储罐', count: 606, image: 'image_0007.webp' },
 ];
 
+// 设备分类计数 = fac_production_device 明细按 category 聚合（35 台 ÷ 7 类 = 5）
 const DEV_DEVICE_CATEGORIES: OverviewGridItem[] = [
-  { id: 1, name: '卡口/通道', count: 596, image: 'image_0002.webp' },
-  { id: 2, name: '监测点', count: 596, image: 'image_0009.webp' },
-  { id: 3, name: '人员定位', count: 596, image: 'image_0003.webp' },
-  { id: 4, name: '消防设施', count: 596, image: 'image_0010.webp' },
-  { id: 5, name: '通风设备', count: 596, image: 'image_0004.webp' },
-  { id: 6, name: '广播', count: 596, image: 'image_0011.webp' },
-  { id: 7, name: '电话', count: 596, image: 'image_0005.webp' },
+  { id: 1, name: '卡口/通道', count: 5, image: 'image_0002.webp' },
+  { id: 2, name: '监测点', count: 5, image: 'image_0009.webp' },
+  { id: 3, name: '人员定位', count: 5, image: 'image_0003.webp' },
+  { id: 4, name: '消防设施', count: 5, image: 'image_0010.webp' },
+  { id: 5, name: '通风设备', count: 5, image: 'image_0004.webp' },
+  { id: 6, name: '广播', count: 5, image: 'image_0011.webp' },
+  { id: 7, name: '电话', count: 5, image: 'image_0005.webp' },
 ];
 
 const DEV_STATS: StatOverviewItem[] = [
