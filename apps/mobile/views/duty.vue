@@ -3,8 +3,10 @@ import { computed, onMounted, ref } from 'vue';
 import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
+import { ElMessage } from 'element-plus';
+import { useAuthStore } from '@/stores/auth';
 import { fetchDutyRoster, type DutyMember } from '@/services/duty';
-import { fetchDutySignIns, type DutySignInView } from '@/services/businessWrite';
+import { fetchDutySignIns, createDutySignIn, type DutySignInView } from '@/services/businessWrite';
 
 /**
  * 今日值班（docs/UI规范-移动端.md §5）
@@ -12,16 +14,19 @@ import { fetchDutySignIns, type DutySignInView } from '@/services/businessWrite'
  * 数据源：后端 /api/v1/emergency/duty（应急值班值守），经 fetchDutyRoster 拉取。
  * 取消原 data/mock.ts 静态数据；未连后端由 service 内部走空态 + 全局离线告警（不回灌假数据）。
  * 月历为纯前端几何（保留），值班名单改为真实成员。
+ * ⚠️ 月历/「今日」取真实系统时间——此前为静态原型遗留的 2026-08 写死数据，
+ * 导致 9 月访问仍显示「8月21日」（2026-09-20 走查发现）。
  *
  * 「签到记录」区块读 /api/v1/emergency/duty-sign-ins（fac_duty_sign_in）——
  * 与管理端「值班签到」写侧同一张表；值班花名册（/emergency/duty）与签到留痕是两张表，
  * 此前他端看不到签到动作，本区块用于打通该写侧联动。
  */
-const YEAR = 2026;
-const MONTH = 8;
-const DAYS_IN_MONTH = 31;
-const TODAY = 21;
-const DUTY_DAYS = [18, 22];
+/** 真实系统时间驱动月历（此前写死 2026-08 / 21 日，9 月访问显示错乱）。 */
+const now = new Date();
+const YEAR = now.getFullYear();
+const MONTH = now.getMonth() + 1;
+const DAYS_IN_MONTH = new Date(YEAR, MONTH, 0).getDate();
+const TODAY = now.getDate();
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -45,6 +50,44 @@ const loading = ref(false);
 const list = ref<DutyRow[]>([]);
 /** 最近签到记录（他端写、本端读）。 */
 const signIns = ref<DutySignInView[]>([]);
+
+const auth = useAuthStore();
+const signingIn = ref(false);
+
+/** 今日日期（YYYY-MM-DD），作为签到的 dutyDate。 */
+function todayStr(): string {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/** 按当前时段推导班次（早班/中班/夜班），缺省留空由后端兜底。 */
+function currentShift(): string {
+  const h = new Date().getHours();
+  return h < 12 ? '早班' : h < 18 ? '中班' : '夜班';
+}
+
+/** 移动端值班签到：落一条 SIGN_IN 留痕（与管理端/大屏同表，三端实时回显）。 */
+async function signIn(): Promise<void> {
+  if (signingIn.value) return;
+  signingIn.value = true;
+  try {
+    await createDutySignIn({
+      dutyDate: todayStr(),
+      shiftName: currentShift(),
+      department: '',
+      personName: auth.realName || auth.username || '移动端用户',
+      signAction: 'SIGN_IN',
+      remark: '移动端签到',
+    });
+    ElMessage.success('签到成功');
+    await load();
+  } catch (err) {
+    ElMessage.error((err as Error)?.message || '签到失败');
+  } finally {
+    signingIn.value = false;
+  }
+}
 
 function toRow(m: DutyMember): DutyRow {
   return {
@@ -82,6 +125,21 @@ useDomainAutoRefresh('emergency.duty', load, { immediate: false });
     <MobileHeader variant="back" title="今日值班" back-to="/home" />
 
     <div class="mb-stack">
+      <div class="mb-card duty__signin">
+        <div class="mb-card__title"><span>值班签到</span></div>
+        <div class="duty__signactions">
+          <button
+            type="button"
+            class="mb-btn-primary mb-btn-sm"
+            :disabled="signingIn"
+            @click="signIn"
+          >
+            <Icon name="check" size="var(--mb-ico-xs)" />
+            我要签到
+          </button>
+        </div>
+      </div>
+
       <div class="mb-card">
         <div class="mb-calendar__head">{{ YEAR }}年{{ MONTH }}月</div>
         <div class="mb-calendar__grid duty__week">
@@ -93,7 +151,7 @@ useDomainAutoRefresh('emergency.duty', load, { immediate: false });
             v-for="d in days"
             :key="d"
             class="mb-cell"
-            :class="{ 'mb-cell--today': d === TODAY, 'mb-cell--duty': DUTY_DAYS.includes(d) }"
+            :class="{ 'mb-cell--today': d === TODAY }"
           >
             {{ d }}
           </span>
@@ -149,6 +207,12 @@ useDomainAutoRefresh('emergency.duty', load, { immediate: false });
   margin-bottom: var(--space-xs);
   font-weight: 600;
   color: var(--mb-muted);
+}
+
+.duty__signactions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
 }
 
 .duty__sec {

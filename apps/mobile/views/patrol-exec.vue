@@ -3,8 +3,14 @@ import { computed, onMounted, ref } from 'vue';
 import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
+import { ElMessage } from 'element-plus';
+import { useAuthStore } from '@/stores/auth';
 import { fetchFirePatrols, type FirePatrolRecord } from '@/services/fireMonitoring';
-import { fetchPatrolExecutions, type PatrolExecutionView } from '@/services/businessWrite';
+import {
+  fetchPatrolExecutions,
+  createPatrolExecution,
+  type PatrolExecutionView,
+} from '@/services/businessWrite';
 
 /**
  * 防火巡查执行（docs/UI规范-移动端.md §5）
@@ -105,6 +111,96 @@ function pick(code: string, opt: Option) {
   answers.value[code] = opt;
 }
 
+const auth = useAuthStore();
+const submitting = ref(false);
+const reporting = ref(false);
+const eventText = ref('');
+
+/** 今日日期（YYYY-MM-DD），写操作缺省巡更日期时使用。 */
+function todayStr(): string {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/** 写操作公共字段：巡更日期/班次/巡查人取自当前巡查任务，巡查人缺省取当前登录用户实名。 */
+function patrolBase() {
+  return {
+    patrolDate: patrol.value?.patrolDate ?? todayStr(),
+    shiftName: patrol.value?.shift,
+    dutyPerson: auth.realName || patrol.value?.dutyPerson || auth.username || '移动端用户',
+    location: patrol.value?.locations?.filter(Boolean).join('、') || '' || undefined,
+  };
+}
+
+/** 巡查打卡：落一条 NORMAL 执行留痕（与管理端/大屏同表，三端实时回显）。 */
+async function clockIn(): Promise<void> {
+  if (!patrol.value || submitting.value) return;
+  submitting.value = true;
+  try {
+    await createPatrolExecution({
+      ...patrolBase(),
+      execResult: 'NORMAL',
+      finding: '移动端巡查打卡',
+    });
+    clocked.value = true;
+    ElMessage.success('巡查打卡成功');
+    await load();
+  } catch (err) {
+    ElMessage.error((err as Error)?.message || '巡查打卡失败');
+  } finally {
+    submitting.value = false;
+  }
+}
+
+/** 上报事件：以异常结果落一条执行留痕，finding 取用户输入。 */
+async function reportEvent(): Promise<void> {
+  if (!patrol.value || submitting.value) return;
+  const text = eventText.value.trim();
+  if (!text) {
+    ElMessage.warning('请填写事件描述');
+    return;
+  }
+  submitting.value = true;
+  try {
+    await createPatrolExecution({ ...patrolBase(), execResult: 'ABNORMAL', finding: text });
+    ElMessage.success('事件已上报');
+    eventText.value = '';
+    reporting.value = false;
+    await load();
+  } catch (err) {
+    ElMessage.error((err as Error)?.message || '上报失败');
+  } finally {
+    submitting.value = false;
+  }
+}
+
+/** 提交巡查记录：汇总检查项结果（异常项计入 finding），落一条执行留痕。 */
+async function submitPatrol(): Promise<void> {
+  if (!patrol.value || submitting.value) return;
+  const hasAbnormal = abnormalCount.value > 0;
+  const abnormalItems = groups.value
+    .flatMap((g) => g.items)
+    .filter((i) => answers.value[i.code] === '异常')
+    .map((i) => `${i.code} ${i.name}`);
+  const finding = hasAbnormal ? `异常项：${abnormalItems.join('；')}` : '';
+  submitting.value = true;
+  try {
+    await createPatrolExecution({
+      ...patrolBase(),
+      patrolCount: String(total.value),
+      execResult: hasAbnormal ? 'ABNORMAL' : 'NORMAL',
+      finding,
+    });
+    ElMessage.success('巡查记录已提交');
+    await load();
+  } catch (err) {
+    ElMessage.error((err as Error)?.message || '提交失败');
+  } finally {
+    submitting.value = false;
+  }
+}
+
 onMounted(load);
 
 // 三端实时刷新：任一端上报巡更，本页执行留痕自动刷新（realtime-channel spec）
@@ -151,15 +247,42 @@ useDomainAutoRefresh('fire.patrol', load, { immediate: false });
             v-if="!clocked"
             type="button"
             class="mb-btn-primary mb-btn-sm"
-            @click="clocked = true"
+            :disabled="submitting"
+            @click="clockIn"
           >
             <Icon name="check" size="var(--mb-ico-xs)" />
             签到打卡
           </button>
-          <button type="button" class="mb-btn-ghost mb-btn-sm">
+          <button
+            type="button"
+            class="mb-btn-ghost mb-btn-sm"
+            :disabled="submitting"
+            @click="reporting = true"
+          >
             <Icon name="camera" size="var(--mb-ico-xs)" />
             上报事件
           </button>
+        </div>
+        <div v-if="reporting" class="patrol-exec__report">
+          <textarea
+            v-model="eventText"
+            class="patrol-exec__textarea"
+            rows="3"
+            placeholder="描述异常事件…"
+          />
+          <div class="patrol-exec__actions">
+            <button
+              type="button"
+              class="mb-btn-primary mb-btn-sm"
+              :disabled="submitting"
+              @click="reportEvent"
+            >
+              提交上报
+            </button>
+            <button type="button" class="mb-btn-ghost mb-btn-sm" @click="reporting = false">
+              取消
+            </button>
+          </div>
         </div>
       </div>
 
@@ -208,7 +331,12 @@ useDomainAutoRefresh('fire.patrol', load, { immediate: false });
     </div>
 
     <div v-if="loaded && patrol" class="mb-safe-bar">
-      <button type="button" class="mb-btn-primary mb-btn-block">
+      <button
+        type="button"
+        class="mb-btn-primary mb-btn-block"
+        :disabled="submitting"
+        @click="submitPatrol"
+      >
         {{ abnormalCount > 0 ? `提交巡查记录（异常 ${abnormalCount} 项）` : '提交巡查记录' }}
       </button>
     </div>
@@ -231,6 +359,23 @@ useDomainAutoRefresh('fire.patrol', load, { immediate: false });
   flex-direction: column;
   gap: var(--space-sm);
   margin-top: var(--space-md);
+}
+
+.patrol-exec__report {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.patrol-exec__textarea {
+  width: 100%;
+  border: 1px solid var(--mb-border, #d8dee6);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-sm);
+  font-size: var(--mb-fz-form-label);
+  color: var(--text-title-mobile);
+  resize: vertical;
 }
 
 .patrol-exec__gtitle {
