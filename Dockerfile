@@ -7,9 +7,10 @@
 # 运行：
 #   docker run --rm -p 8080:80 mm-security-frontend
 #
-# 注意：API 基址与 WS 地址在【构建期】由 .env.production 决定
-#   （VITE_API_BASE / VITE_ALARM_WS_URL）。跨域/网关场景可在运行前改这两个变量后重新构建，
-#   或由 nginx 反代 /api/ 与 /ws/ 屏蔽差异（见 deploy/nginx.conf）。
+# 注意：API 基址在【构建期】由 .env.production 的 VITE_API_BASE 决定；
+#   WS 地址**不**配环境变量（前端统一用相对地址 /ws/alarm），由 nginx 反代 /api/ 与 /ws/ 到后端
+#   （见 deploy/nginx.conf；dev / e2e 由 vite.config.ts 的 server.proxy 承担同一职责）。
+#   跨域/网关场景按需改 VITE_API_BASE 后重新构建，WS 侧无需改动。
 # =============================================================================
 
 # ---------- 阶段 1：构建 ----------

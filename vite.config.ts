@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import { loadEnv, mergeConfig } from 'vite';
 import type { Plugin } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import Components from 'unplugin-vue-components/vite';
@@ -178,7 +179,26 @@ function appsHtmlFallback(): Plugin {
   };
 }
 
-export default defineConfig({
+// dev/e2e 反代目标（后端源）：优先显式 VITE_BACKEND_ORIGIN，其次由 VITE_API_BASE 去掉路径段推导
+// （dev → http://localhost:8787，e2e → http://localhost:8899），兜底 8787。
+// 生产构建不涉及此值：生产由 nginx 同源反代 /api/ 与 /ws/（见 deploy/nginx.conf）。
+function resolveBackendOrigin(env: Record<string, string>): string {
+  const explicit = env.VITE_BACKEND_ORIGIN;
+  if (explicit) return explicit.replace(/\/+$/, '');
+  const apiBase = env.VITE_API_BASE;
+  if (apiBase) {
+    try {
+      return new URL(apiBase).origin;
+    } catch {
+      // 相对形式（如 /api/v1）无 origin 可取 → 落到兜底
+    }
+  }
+  return 'http://localhost:8787';
+}
+
+// 基座配置：仍经 defineConfig 包裹以保留上下文类型推断（rewrite / manualChunks 等回调参数依赖它），
+// 由文件末尾的 defineConfig(函数) 按 mode 叠加 WS 反代后导出。
+const baseConfig = defineConfig({
   // 依赖缓存移到系统临时目录（项目外），规避本环境 safe-delete 对工作区大目录批量删除的拦截，
   // 避免 vite 优化/清理依赖缓存时抛异常导致 dev server 崩溃
   cacheDir: join(tmpdir(), 'mm-safety-vite-cache'),
@@ -367,4 +387,40 @@ export default defineConfig({
       },
     },
   },
+});
+
+// 以函数形式交付配置：为按当前 mode 读取 .env.*（VITE_API_BASE / VITE_BACKEND_ORIGIN），
+// 推导 dev·e2e 的实时 WS 反代目标（dev=8787、e2e=8899），避免把反代目标写死。
+// 用 mergeConfig 做深合并（而非对象展开）：server.proxy 下已存在的 /rainviewer-api 得以保留，
+// 且不触碰基座配置的类型推断。
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, fileURLToPath(new URL('.', import.meta.url)), 'VITE_');
+  const backendOrigin = resolveBackendOrigin(env);
+  return mergeConfig(baseConfig, {
+    server: {
+      proxy: {
+        // 实时告警 WS 同源反代（对齐生产 nginx 的 `location /ws/`）：前端统一使用相对地址
+        // `/ws/alarm`（realtime.ts 的 DEFAULT_URL 兜底），dev 下由此代理把升级请求转发到后端。
+        //
+        // ⚠️ 为什么必须加（2026-09-20 排障）：wujie 子应用是 `npm run build:subapps` 预打的 IIFE
+        //   包，构建期会把 `import.meta.env.VITE_ALARM_WS_URL` 静态替换为字面量 —— build-subapps.mjs
+        //   不传 mode（默认 production），只读 .env.production，其中没有 VITE_ALARM_WS_URL，
+        //   于是 12 个子应用包内一律是 `DEFAULT_URL = "/ws/alarm"`
+        //   （见 subapps/*/dist/subapp.iife.js）。该相对地址在大屏 dev（5173）解析为
+        //   ws://localhost:5173/ws/alarm → 落在 dev server 的 SPA 兜底 HTML 上，握手永不完成
+        //   → 控制台 `WebSocket connection to 'ws://localhost:5173/ws/alarm?token=...' failed`。
+        //   子应用产物无法靠 .env.development 修正（环境变量已在构建期内联），唯有 dev server
+        //   自身具备 /ws 反代，才能让「相对地址」在 dev 也通；该形态与生产同源部署完全一致，
+        //   故前端各处统一走相对地址（见 .env.development 注释）。
+        //   HMR 不受影响：Vite 自身 upgrade 监听只在 `sec-websocket-protocol: vite-hmr` 且路径为
+        //   `/` 时接管（见 vite/dist 的 hmrServerWsListener），本代理 context 为 /ws，
+        //   经 httpServer 'upgrade' 事件转发；已实测 HMR 101 正常、无 token 握手经代理仍 401。
+        '/ws': {
+          target: backendOrigin,
+          ws: true,
+          changeOrigin: true,
+        },
+      },
+    },
+  });
 });
