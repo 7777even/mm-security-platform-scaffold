@@ -9,4 +9,4 @@
 - [x] 按 scope 提交推送前端（契约 + screen）
 - [x] 重建子应用产物（`SUBAPP=fm-emergency` / `SUBAPP=fm-rescue`）
 - [x] 实链路冒烟（`SERVER__PORT=8899`：新建事件后「去处置」按 `event_id` 命中）
-- [ ] 归档（回填 `openspec/specs/` 并 `git mv` 到 `openspec/archive/<YYYY-MM-DD>-emergency-event-create`）
+- [x] 归档（回填 `openspec/specs/screen-data-wiring/spec.md` 并 `git mv` 到 `openspec/archive/2026-09-20-emergency-event-create`）

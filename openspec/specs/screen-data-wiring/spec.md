@@ -42,3 +42,21 @@
 
 - **WHEN** 推进大屏数据接入
 - **THEN** P0 取后端桩已就绪的消防报警/事故应急/极端天气三模块作样板；P1 安全防恐/重大危险源（store 打底）；P2 生产/工业电视/生产通信（需新建 service）；P3 演练（子应用侧为主，低优先）。
+
+### Requirement: 大屏新增应急事件落库
+
+大屏应急指挥页新增事件 / 演练 / 极端天气时，前端须先调用 `POST /api/v1/emergency-events` 落库，并以返回的真实 `id` 展示与跳转；后端不可达时须回落 `sessionStorage` 草稿以保证前端可展示。
+
+- 成功落库后**不得**再写 `sessionStorage` 草稿（否则救援子应用 fm-rescue 的 `getFireEmergencyEventById` 命中精简草稿而短路，拿不到后端 `/accident/rescue-incident` 完整聚合）；草稿仅作失败兜底。
+- 不可映射到后端列的字段（上报人 / 电话 / 伤亡数 / 事件类型细分）由前端并入 `description`。
+
+#### Scenario: 后端可达时落库并跳转
+
+- **WHEN** 用户提交新增事件表单且后端可达
+- **THEN** 前端以返回的真实 `id` 将事件加入列表并选中
+- **AND** 带 `?create=event` 进入时以该真实 `id` 跳转处置页，处置页按 `event_id` 命中该事件（非默认事件）
+
+#### Scenario: 后端不可达时回落本地草稿
+
+- **WHEN** `POST /emergency-events` 失败（弱网 / 离线）
+- **THEN** 前端回落 `sessionStorage` 草稿 + 本地自增 id，事件仍在列表与处置页可展示（不中断用户操作）
