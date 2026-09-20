@@ -150,7 +150,9 @@ describe('radarCoverageLabel: 覆盖窗标注', () => {
 
 describe('useSatelliteCloudMap: 气象时次自动刷新（真实时钟滑动）', () => {
   it('时间推进超过一个步长时末帧前移，且停留在末帧时 frameIndex 跟随', async () => {
-    vi.useFakeTimers();
+    // 钉死假时钟起点为 15 分钟栅格对齐时刻（NOW 即 UTC 整点），消除 floorTo15Min
+    // 因真实墙钟起点随机落在栅格内而偶发跨 2 格（末帧前进 30 分钟）的抖动。
+    vi.useFakeTimers({ now: NOW });
     stubRainViewer();
 
     const m = useSatelliteCloudMap();
