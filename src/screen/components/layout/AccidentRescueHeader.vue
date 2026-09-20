@@ -47,13 +47,8 @@ function updateClock() {
 }
 
 function goBack() {
-  const eventType =
-    props.theme === 'drill'
-      ? '演练事件'
-      : props.theme === 'weather'
-        ? '极端天气事件'
-        : '突发应急事件';
-  goToEmergencyList(eventType, props.eventId);
+  const kind = props.theme === 'drill' ? 'drill' : 'event';
+  goToEmergencyList(kind, props.eventId);
 }
 
 function toggleUserMenu() {

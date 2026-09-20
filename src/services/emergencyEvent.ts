@@ -18,10 +18,10 @@ export const EMERGENCY_EVENT_TYPE_OPTIONS = [
 ] as const;
 export type EmergencyEventType = (typeof EMERGENCY_EVENT_TYPE_OPTIONS)[number];
 
-/** 业务大类 ↔ 事件类型的映射（新增弹窗顶部单选用「大类」，下拉用具体事件类型）。 */
+/** 业务大类 ↔ 事件类型的映射（新增弹窗顶部单选用「大类」，下拉用具体事件类型）。
+ * 极端天气事件归在「应急事件」大类下，不再作为独立业务大类。 */
 export const EMERGENCY_EVENT_TYPE_BY_BUSINESS = {
-  event: ['突发应急事件', '预警事件'] as const,
-  weather: ['极端天气事件'] as const,
+  event: ['突发应急事件', '预警事件', '极端天气事件'] as const,
   drill: ['演练事件'] as const,
 };
 

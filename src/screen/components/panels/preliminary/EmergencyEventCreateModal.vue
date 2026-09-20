@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import type { EmergencyEventCreatePayload } from '../../../lib/composables/useFireEmergencyEventList';
 import {
   deriveKindCategory,
-  deriveBusinessType,
   EMERGENCY_EVENT_TYPE_BY_BUSINESS,
   type EmergencyEventBusinessType,
 } from '@/services/emergencyEvent';
 
 const props = defineProps<{
   open: boolean;
-  eventType: string;
+  businessType: EmergencyEventBusinessType;
 }>();
 
 const emit = defineEmits<{
@@ -69,13 +68,13 @@ function createDefaultForm(eventType: string): EmergencyEventCreatePayload {
   };
 }
 
-const form = reactive<EmergencyEventCreatePayload>(createDefaultForm('突发应急事件'));
-
-const businessType = computed<EmergencyEventBusinessType>(() => deriveBusinessType(form.eventType));
+const selectedBusiness = ref<EmergencyEventBusinessType>(props.businessType);
 
 const eventTypeOptions = computed<readonly string[]>(
-  () => EMERGENCY_EVENT_TYPE_BY_BUSINESS[businessType.value],
+  () => EMERGENCY_EVENT_TYPE_BY_BUSINESS[selectedBusiness.value],
 );
+
+const form = reactive<EmergencyEventCreatePayload>(createDefaultForm(eventTypeOptions.value[0]));
 
 const dialogTitle = computed(() => {
   const titles: Record<string, string> = {
@@ -90,8 +89,8 @@ const dialogTitle = computed(() => {
 const isWeather = computed(() => form.kind === 'event' && form.eventCategory === 'extremeWeather');
 
 function selectBusinessType(type: EmergencyEventBusinessType) {
-  const defaultEventType = EMERGENCY_EVENT_TYPE_BY_BUSINESS[type][0];
-  resetForm(defaultEventType);
+  selectedBusiness.value = type;
+  resetForm(EMERGENCY_EVENT_TYPE_BY_BUSINESS[type][0]);
 }
 
 function resetForm(eventType: string) {
@@ -108,18 +107,13 @@ watch(
   },
 );
 
+// 弹窗打开时按传入的业务大类（应急事件 / 应急演练）重置表单。
 watch(
-  () => props.open,
-  (visible) => {
-    if (!visible) return;
-    resetForm(props.eventType);
-  },
-);
-
-watch(
-  () => props.eventType,
-  (et) => {
-    if (props.open) resetForm(et);
+  () => [props.open, props.businessType] as const,
+  ([open]) => {
+    if (!open) return;
+    selectedBusiness.value = props.businessType;
+    resetForm(EMERGENCY_EVENT_TYPE_BY_BUSINESS[props.businessType][0]);
   },
 );
 
@@ -153,7 +147,7 @@ function onFilePick() {
             <div class="eem-kind-row" aria-label="业务事件类型">
               <label class="eem-radio">
                 <input
-                  :checked="businessType === 'event'"
+                  :checked="selectedBusiness === 'event'"
                   type="radio"
                   @change="selectBusinessType('event')"
                 />
@@ -161,15 +155,7 @@ function onFilePick() {
               </label>
               <label class="eem-radio">
                 <input
-                  :checked="businessType === 'weather'"
-                  type="radio"
-                  @change="selectBusinessType('weather')"
-                />
-                <span>极端天气事件</span>
-              </label>
-              <label class="eem-radio">
-                <input
-                  :checked="businessType === 'drill'"
+                  :checked="selectedBusiness === 'drill'"
                   type="radio"
                   @change="selectBusinessType('drill')"
                 />

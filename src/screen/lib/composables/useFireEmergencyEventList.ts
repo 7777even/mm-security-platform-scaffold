@@ -4,11 +4,11 @@ import {
   createEmergencyEvent,
   deriveEventType,
   deriveKindCategory,
-  EMERGENCY_EVENT_TYPE_OPTIONS,
   type EmergencyEventCreateRequest,
   type EmergencyEventGroup,
   type EmergencyEventItem,
 } from '@/services/emergencyEvent';
+import type { FireEmergencyListTab } from './useFireEmergencyListTab';
 import {
   REASON_CONTRACT_MISMATCH,
   backendUnavailableWarn,
@@ -94,30 +94,6 @@ export const fireEmergencyAllEventGroups = computed<EmergencyEventGroup[]>(
   () => fireEmergencyEventGroupsState.value,
 );
 
-export interface FireEmergencyEventTabInfo {
-  type: string;
-  count: number;
-}
-
-/**
- * 侧栏分类 Tab：以「事件类型」聚合当前事件，并始终保留已知类型选项（即使暂无数据也可新增）。
- * 顺序：已知类型优先，随后追加数据中出现但不在已知列表里的类型。
- */
-export const emergencyEventTabs = computed<FireEmergencyEventTabInfo[]>(() => {
-  const counts = new Map<string, number>();
-  for (const group of fireEmergencyAllEventGroups.value) {
-    for (const event of filterByPlantArea(group.events)) {
-      const type = eventTypeOf(event);
-      counts.set(type, (counts.get(type) ?? 0) + 1);
-    }
-  }
-  const types: string[] = [...EMERGENCY_EVENT_TYPE_OPTIONS];
-  for (const type of counts.keys()) {
-    if (!types.includes(type)) types.push(type);
-  }
-  return types.map((type) => ({ type, count: counts.get(type) ?? 0 }));
-});
-
 export const fireEmergencyEventsLoading = ref(false);
 export const fireEmergencyEventsError = ref<unknown>(null);
 
@@ -172,7 +148,7 @@ export const fireEmergencyCurrentPage = ref(1);
 export const fireEmergencyPageSize = ref(5);
 
 interface FireEmergencyListRestoreSnapshot {
-  eventType: string;
+  kind: FireEmergencyListTab;
   page: number;
   eventId?: number;
 }
@@ -180,16 +156,12 @@ interface FireEmergencyListRestoreSnapshot {
 /** 进入详情前记录列表 tab / 分页 / 事件，供返回时恢复 */
 const fireEmergencyListRestoreSnapshot = ref<FireEmergencyListRestoreSnapshot | null>(null);
 
-function eventTypeOf(event: EmergencyEventItem): string {
-  return event.eventType ?? deriveEventType(event.kind, event.eventCategory);
-}
-
 /** 列表区域高度变化后待恢复的分页 */
 export const fireEmergencyPendingListPage = ref<number | null>(null);
 
 export function rememberFireEmergencyListForReturn(event: EmergencyEventItem) {
   fireEmergencyListRestoreSnapshot.value = {
-    eventType: eventTypeOf(event),
+    kind: (event.kind ?? 'event') as FireEmergencyListTab,
     page: fireEmergencyCurrentPage.value,
     eventId: event.id,
   };
@@ -222,12 +194,12 @@ export function resetFireEmergencyEventList() {
 }
 
 const typeFilteredGroups = computed(() => {
-  const tab = fireEmergencyListTab.value;
+  const isDrillTab = fireEmergencyListTab.value === 'drill';
   return fireEmergencyAllEventGroups.value
     .map((group) => ({
       ...group,
       events: filterByPlantArea(group.events).filter(
-        (event) => (event.eventType ?? deriveEventType(event.kind, event.eventCategory)) === tab,
+        (event) => (event.kind ?? 'event') === (isDrillTab ? 'drill' : 'event'),
       ),
     }))
     .filter((group) => group.events.length > 0);
@@ -473,7 +445,7 @@ export async function createFireEmergencyEventFromForm(
     const created = await createEmergencyEvent(req);
     const event = buildEvent(created.id);
     upsertEventIntoGroup(groupsState, groupId, groupLabel, event);
-    setFireEmergencyListTab(payload.eventType);
+    setFireEmergencyListTab(isDrill ? 'drill' : 'event');
     fireEmergencyCurrentPage.value = 1;
     selectFireEmergencyEvent(created.id);
     return event;
@@ -484,7 +456,7 @@ export async function createFireEmergencyEventFromForm(
     const event = buildEvent(id);
     upsertEventIntoGroup(groupsState, groupId, groupLabel, event);
     saveFireEmergencyDraft(event, groupId);
-    setFireEmergencyListTab(payload.eventType);
+    setFireEmergencyListTab(isDrill ? 'drill' : 'event');
     fireEmergencyCurrentPage.value = 1;
     selectFireEmergencyEvent(id);
     return event;
@@ -575,14 +547,14 @@ export function resetFireEmergencySearch() {
 }
 
 /** 从详情页返回时恢复应急指挥列表 tab、分页与选中项 */
-export function restoreFireEmergencyListView(eventType: string, eventId?: number) {
-  setFireEmergencyListTab(eventType);
+export function restoreFireEmergencyListView(kind: FireEmergencyListTab, eventId?: number) {
+  setFireEmergencyListTab(kind);
 
   const snapshot = fireEmergencyListRestoreSnapshot.value;
   let targetPage = 1;
   let targetEventId: number | null = null;
 
-  if (snapshot && snapshot.eventType === eventType) {
+  if (snapshot && snapshot.kind === kind) {
     targetPage = Math.max(1, snapshot.page);
     targetEventId = snapshot.eventId ?? null;
     fireEmergencyListRestoreSnapshot.value = null;
@@ -590,7 +562,7 @@ export function restoreFireEmergencyListView(eventType: string, eventId?: number
     const events = sortEventsByTimeDesc(
       fireEmergencyAllEventGroups.value
         .flatMap((group) => group.events)
-        .filter((event) => eventTypeOf(event) === eventType),
+        .filter((event) => (event.kind ?? 'event') === kind),
     );
     const index = events.findIndex((event) => event.id === eventId);
 

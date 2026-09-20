@@ -5,6 +5,7 @@ import {
   restoreFireEmergencyListView,
   rememberFireEmergencyListForReturn,
 } from './useFireEmergencyEventList';
+import type { FireEmergencyListTab } from './useFireEmergencyListTab';
 
 export type EventDisposeNavMode = 'push' | 'replace';
 
@@ -57,8 +58,8 @@ export function useAccidentRescueNavigation() {
     goToAccidentRescue(event.id, mode);
   }
 
-  function goToEmergencyList(eventType: string, eventId?: number) {
-    restoreFireEmergencyListView(eventType, eventId);
+  function goToEmergencyList(kind: FireEmergencyListTab, eventId?: number) {
+    restoreFireEmergencyListView(kind, eventId);
     router.push({ name: 'emergency' });
   }
 
