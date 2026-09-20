@@ -7,6 +7,6 @@
 - [x] `npm run type-check` 通过
 - [x] `validate-api-contracts.mjs` 契约四铁律通过（32 域）
 - [x] 按 scope 提交推送前端（契约 + screen）
-- [ ] 重建子应用产物（`SUBAPP=fm-emergency` / `SUBAPP=fm-rescue`）
-- [ ] 实链路冒烟（`SERVER__PORT=8899`：新建事件后「去处置」按 `event_id` 命中）
+- [x] 重建子应用产物（`SUBAPP=fm-emergency` / `SUBAPP=fm-rescue`）
+- [x] 实链路冒烟（`SERVER__PORT=8899`：新建事件后「去处置」按 `event_id` 命中）
 - [ ] 归档（回填 `openspec/specs/` 并 `git mv` 到 `openspec/archive/<YYYY-MM-DD>-emergency-event-create`）
