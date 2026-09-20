@@ -228,24 +228,25 @@ onUnmounted(() => {
     :show-more="false"
     :hide-icon="showEventTabs"
   >
-    <template v-if="showEventTabs" #header-extra>
-      <button type="button" class="event-list-add-btn" @click="openCreateModal">
-        新增{{ activeListTab }}
-      </button>
-    </template>
     <template v-if="showEventTabs" #title>
-      <div class="event-list-tabs" :class="`event-list-tabs--${tabModifier(activeListTab)}`">
-        <button
-          v-for="tab in eventTypeTabs"
-          :key="tab.type"
-          type="button"
-          class="event-list-tabs__btn"
-          :class="{ 'event-list-tabs__btn--active': activeListTab === tab.type }"
-          @click="setFireEmergencyListTab(tab.type)"
-        >
-          {{ tab.type }}
-          <span class="event-list-tabs__count">{{ tab.count }}</span>
-        </button>
+      <div
+        class="event-list-tabs-bar"
+        :class="`event-list-tabs-bar--${tabModifier(activeListTab)}`"
+      >
+        <div class="event-list-tabs">
+          <button
+            v-for="tab in eventTypeTabs"
+            :key="tab.type"
+            type="button"
+            class="event-list-tabs__btn"
+            :class="{ 'event-list-tabs__btn--active': activeListTab === tab.type }"
+            @click="setFireEmergencyListTab(tab.type)"
+          >
+            {{ tab.type }}
+            <span class="event-list-tabs__count">{{ tab.count }}</span>
+          </button>
+        </div>
+        <button type="button" class="event-list-add-btn" @click="openCreateModal">+ 新增</button>
       </div>
     </template>
     <div
@@ -410,12 +411,22 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.event-list-tabs-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
 .event-list-tabs {
   position: relative;
   display: flex;
   align-items: center;
   gap: 0;
-  flex: none;
+  flex: 1;
+  min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -426,7 +437,7 @@ onUnmounted(() => {
 
 .event-list-tabs__count {
   margin-left: 4px;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1;
   opacity: 0.72;
   font-variant-numeric: tabular-nums;
@@ -434,12 +445,12 @@ onUnmounted(() => {
 
 .event-list-tabs__btn {
   height: 28px;
-  padding: 0 14px;
+  padding: 0 10px;
   border: 1px solid rgb(0 120 200 / 35%);
   border-radius: 0;
   background: rgb(0 25 55 / 55%);
   color: #a8b8cc;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -468,29 +479,30 @@ onUnmounted(() => {
   border-color: rgb(0 160 240 / 55%);
 }
 
-.event-list-tabs--drill .event-list-tabs__btn--active {
+.event-list-tabs-bar--drill .event-list-tabs__btn--active {
   background: linear-gradient(180deg, rgb(210 145 45 / 92%), rgb(160 105 25 / 92%));
   border-color: rgb(236 166 65 / 60%);
 }
 
-.event-list-tabs--weather .event-list-tabs__btn--active {
+.event-list-tabs-bar--weather .event-list-tabs__btn--active {
   background: linear-gradient(180deg, rgb(34 195 255 / 92%), rgb(22 140 205 / 92%));
   border-color: rgb(64 210 255 / 60%);
 }
 
-.event-list-tabs--warning .event-list-tabs__btn--active {
+.event-list-tabs-bar--warning .event-list-tabs__btn--active {
   background: linear-gradient(180deg, rgb(240 169 59 / 92%), rgb(200 125 20 / 92%));
   border-color: rgb(245 190 90 / 60%);
 }
 
 .event-list-add-btn {
+  flex-shrink: 0;
   height: 28px;
-  padding: 0 14px;
+  padding: 0 10px;
   border-radius: 2px;
   border: 1px solid rgb(0 150 230 / 50%);
   background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
   color: var(--color-text-strong);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
