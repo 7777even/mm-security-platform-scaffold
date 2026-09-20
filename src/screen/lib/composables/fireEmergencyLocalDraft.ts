@@ -73,7 +73,12 @@ export function listFireEmergencyDrafts(): FireEmergencyLocalDraft[] {
 }
 
 export function draftGroupLabel(groupId: string): string {
-  if (groupId === 'manual-drill') return '手动新增演练';
-  if (groupId === 'manual-weather') return '极端天气';
-  return '手动新增';
+  // 兼容旧格式（manual-drill / manual-event / manual-weather），新格式为 manual-${eventType}。
+  const legacy: Record<string, string> = {
+    'manual-drill': '演练事件',
+    'manual-event': '突发应急事件',
+    'manual-weather': '极端天气事件',
+  };
+  if (legacy[groupId]) return legacy[groupId];
+  return groupId.startsWith('manual-') ? groupId.slice('manual-'.length) : groupId;
 }

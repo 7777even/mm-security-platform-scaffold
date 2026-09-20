@@ -47,8 +47,13 @@ function updateClock() {
 }
 
 function goBack() {
-  const kind = props.theme === 'drill' ? 'drill' : props.theme === 'weather' ? 'event' : 'event';
-  goToEmergencyList(kind, props.eventId);
+  const eventType =
+    props.theme === 'drill'
+      ? '演练事件'
+      : props.theme === 'weather'
+        ? '极端天气事件'
+        : '突发应急事件';
+  goToEmergencyList(eventType, props.eventId);
 }
 
 function toggleUserMenu() {

@@ -4,7 +4,6 @@ import { accidentRescueFlyTarget } from './sharedCesiumBridge';
 import {
   restoreFireEmergencyListView,
   rememberFireEmergencyListForReturn,
-  type EmergencyEventCreateKind,
 } from './useFireEmergencyEventList';
 
 export type EventDisposeNavMode = 'push' | 'replace';
@@ -58,8 +57,8 @@ export function useAccidentRescueNavigation() {
     goToAccidentRescue(event.id, mode);
   }
 
-  function goToEmergencyList(kind: EmergencyEventCreateKind, eventId?: number) {
-    restoreFireEmergencyListView(kind, eventId);
+  function goToEmergencyList(eventType: string, eventId?: number) {
+    restoreFireEmergencyListView(eventType, eventId);
     router.push({ name: 'emergency' });
   }
 

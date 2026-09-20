@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue';
-import type {
-  EmergencyEventCreateKind,
-  EmergencyEventCreatePayload,
-} from '../../../lib/composables/useFireEmergencyEventList';
+import type { EmergencyEventCreatePayload } from '../../../lib/composables/useFireEmergencyEventList';
+import { deriveKindCategory } from '@/services/emergencyEvent';
 
 const props = defineProps<{
   open: boolean;
-  kind: EmergencyEventCreateKind;
+  eventType: string;
 }>();
 
 const emit = defineEmits<{
@@ -20,18 +18,25 @@ function formatDatetimeLocal(date: Date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-function createDefaultForm(kind: EmergencyEventCreateKind): EmergencyEventCreatePayload {
+function createDefaultForm(eventType: string): EmergencyEventCreatePayload {
+  const { kind, eventCategory } = deriveKindCategory(eventType);
   const isDrill = kind === 'drill';
   return {
     kind,
-    eventCategory: 'default',
-    name: isDrill ? '储罐区消防演练' : '东厂区突发应急事件',
+    eventCategory,
+    name: isDrill
+      ? '储罐区消防演练'
+      : eventType === '极端天气事件'
+        ? '台风暴雨防台防汛应急事件'
+        : '东厂区突发应急事件',
     level: '一级',
     occurTime: formatDatetimeLocal(new Date()),
-    eventType: isDrill ? '演练事件' : '突发应急事件',
+    eventType,
     description: isDrill
       ? '按计划开展联合应急演练，检验响应流程与协同处置能力。'
-      : '现场发现异常情况，需立即核实并启动应急处置流程。',
+      : eventType === '极端天气事件'
+        ? '受台风外围云系影响，厂区预计出现暴雨及阵风，启动重点易涝点巡查与排涝准备。'
+        : '现场发现异常情况，需立即核实并启动应急处置流程。',
     device: 'A装置',
     chemical: '原油',
     source: '手动新增',
@@ -41,7 +46,10 @@ function createDefaultForm(kind: EmergencyEventCreateKind): EmergencyEventCreate
     deathCount: '0',
     seriousInjuryCount: '0',
     minorInjuryCount: '0',
-    measures: '已通知现场值班人员核实情况，并做好初期隔离准备。',
+    measures:
+      eventType === '极端天气事件'
+        ? '已通知各单位落实防台防汛措施，重点易涝点加强巡查，排涝设备进入热备状态。'
+        : '已通知现场值班人员核实情况，并做好初期隔离准备。',
     weatherType: '台风暴雨',
     warningLevel: '橙色预警',
     affectedArea: '炼油区',
@@ -49,7 +57,7 @@ function createDefaultForm(kind: EmergencyEventCreateKind): EmergencyEventCreate
   };
 }
 
-const form = reactive<EmergencyEventCreatePayload>(createDefaultForm('event'));
+const form = reactive<EmergencyEventCreatePayload>(createDefaultForm('突发应急事件'));
 
 const dialogTitle = computed(() =>
   form.kind === 'drill'
@@ -62,37 +70,37 @@ const dialogTitle = computed(() =>
 const isWeather = computed(() => form.kind === 'event' && form.eventCategory === 'extremeWeather');
 
 function selectBusinessType(type: 'event' | 'weather' | 'drill') {
-  if (type === 'drill') {
-    resetForm('drill');
-  } else {
-    resetForm('event');
-    form.eventCategory = type === 'weather' ? 'extremeWeather' : 'default';
-    if (type === 'weather') {
-      form.name = '台风暴雨防台防汛应急事件';
-      form.eventType = '极端天气事件';
-      form.description =
-        '受台风外围云系影响，厂区预计出现暴雨及阵风，启动重点易涝点巡查与排涝准备。';
-      form.measures = '已通知各单位落实防台防汛措施，重点易涝点加强巡查，排涝设备进入热备状态。';
-    }
-  }
+  const eventType =
+    type === 'drill' ? '演练事件' : type === 'weather' ? '极端天气事件' : '突发应急事件';
+  resetForm(eventType);
 }
 
-function resetForm(kind: EmergencyEventCreateKind) {
-  Object.assign(form, createDefaultForm(kind));
+function resetForm(eventType: string) {
+  Object.assign(form, createDefaultForm(eventType));
 }
+
+// 事件类型变更时同步派生 kind / eventCategory，保证「去处置」路由与后端落库语义正确。
+watch(
+  () => form.eventType,
+  (et) => {
+    const { kind, eventCategory } = deriveKindCategory(et);
+    form.kind = kind;
+    form.eventCategory = eventCategory;
+  },
+);
 
 watch(
   () => props.open,
   (visible) => {
     if (!visible) return;
-    resetForm(props.kind);
+    resetForm(props.eventType);
   },
 );
 
 watch(
-  () => props.kind,
-  (kind) => {
-    if (props.open) resetForm(kind);
+  () => props.eventType,
+  (et) => {
+    if (props.open) resetForm(et);
   },
 );
 
@@ -126,19 +134,23 @@ function onFilePick() {
             <div class="eem-kind-row" aria-label="业务事件类型">
               <label class="eem-radio">
                 <input
-                  :checked="form.kind === 'event' && form.eventCategory === 'default'"
+                  :checked="form.eventType === '突发应急事件'"
                   type="radio"
                   @change="selectBusinessType('event')"
                 />
                 <span>应急事件</span>
               </label>
               <label class="eem-radio">
-                <input :checked="isWeather" type="radio" @change="selectBusinessType('weather')" />
+                <input
+                  :checked="form.eventType === '极端天气事件'"
+                  type="radio"
+                  @change="selectBusinessType('weather')"
+                />
                 <span>极端天气事件</span>
               </label>
               <label class="eem-radio">
                 <input
-                  :checked="form.kind === 'drill'"
+                  :checked="form.eventType === '演练事件'"
                   type="radio"
                   @change="selectBusinessType('drill')"
                 />

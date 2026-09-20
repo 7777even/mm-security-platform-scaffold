@@ -9,6 +9,38 @@ export type EmergencyEventStatus = 'processing' | 'pending' | 'done';
 export type EmergencyEventKind = 'event' | 'drill';
 export type EmergencyEventCategory = 'default' | 'extremeWeather';
 
+/** 前端「事件类型」可选项（对应新增应急事件表单的「事件类型」字段）。 */
+export const EMERGENCY_EVENT_TYPE_OPTIONS = [
+  '突发应急事件',
+  '演练事件',
+  '预警事件',
+  '极端天气事件',
+] as const;
+export type EmergencyEventType = (typeof EMERGENCY_EVENT_TYPE_OPTIONS)[number];
+
+/**
+ * 后端未持久化 eventType，按 kind / eventCategory 推导前端展示用事件类型（兜底）。
+ * 表单新增事件则直接携带用户所选的 eventType。
+ */
+export function deriveEventType(
+  kind?: EmergencyEventKind,
+  eventCategory?: EmergencyEventCategory,
+): string {
+  if (kind === 'drill') return '演练事件';
+  if (eventCategory === 'extremeWeather') return '极端天气事件';
+  return '突发应急事件';
+}
+
+/** 由前端事件类型反推 kind / eventCategory，供路由跳转与后端落库使用。 */
+export function deriveKindCategory(eventType: string): {
+  kind: EmergencyEventKind;
+  eventCategory: EmergencyEventCategory;
+} {
+  if (eventType === '演练事件') return { kind: 'drill', eventCategory: 'default' };
+  if (eventType === '极端天气事件') return { kind: 'event', eventCategory: 'extremeWeather' };
+  return { kind: 'event', eventCategory: 'default' };
+}
+
 export interface EmergencyEventWeatherMeta {
   weatherType: string;
   warningLevel: string;
@@ -34,6 +66,8 @@ export interface EmergencyEventItem {
   latitude: number;
   kind?: EmergencyEventKind;
   eventCategory?: EmergencyEventCategory;
+  /** 前端展示用事件类型（新增应急事件表单「事件类型」字段）；后端未返回时由 kind/category 推导。 */
+  eventType?: string;
   hazardSourceLevel?: string;
   endedAt?: string | null;
   weatherMeta?: EmergencyEventWeatherMeta;

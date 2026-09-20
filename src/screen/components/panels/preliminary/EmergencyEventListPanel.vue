@@ -36,6 +36,7 @@ import {
   setFireEmergencyPageSize,
   createFireEmergencyEventFromForm,
   applyPendingFireEmergencyListPage,
+  emergencyEventTabs,
   type EmergencyEventCreatePayload,
 } from '../../../lib/composables/useFireEmergencyEventList';
 import type { DesignModule } from '@/utils/designAssets';
@@ -44,6 +45,7 @@ import { useShellRoute } from '../../../lib/composables/useShellRoute';
 import {
   fireEmergencyListTab,
   setFireEmergencyListTab,
+  DEFAULT_FIRE_EMERGENCY_TAB,
 } from '../../../lib/composables/useFireEmergencyListTab';
 import type { EmergencyEventItem } from '../../../lib/data/preliminaryMock';
 import EmergencyEventCreateModal from './EmergencyEventCreateModal.vue';
@@ -58,12 +60,21 @@ const props = withDefaults(
 );
 
 const activeListTab = fireEmergencyListTab;
+const eventTypeTabs = emergencyEventTabs;
 const createModalOpen = ref(false);
 const router = useRouter();
 const shellRoute = useShellRoute();
 // 提交即触发导航（可能 replace），随后弹窗内部会补发一次 close；此时不能再做参数清理，
 // 否则会发出第二次 replace 覆盖刚发起的跳转（两次导航在 shell 侧竞争，目标页会丢失）。
 let createSubmitInFlight = false;
+
+/** 事件类型 → 视觉修饰符（用于 Tab / 列表配色，与既有 event/drill/weather/warning 主题一致）。 */
+function tabModifier(type: string): 'event' | 'drill' | 'weather' | 'warning' {
+  if (type === '演练事件') return 'drill';
+  if (type === '极端天气事件') return 'weather';
+  if (type === '预警事件') return 'warning';
+  return 'event';
+}
 
 function openCreateModal() {
   createModalOpen.value = true;
@@ -167,7 +178,9 @@ const FIRE_EVENT_LIST_ICON = '/images/shicon.png';
 const FIRE_DRILL_LIST_ICON = '/images/yaicon.png';
 
 function eventCardIconSrc(event: EmergencyEventItem) {
-  return (event.kind ?? 'event') === 'drill' ? FIRE_DRILL_LIST_ICON : FIRE_EVENT_LIST_ICON;
+  return (event.eventType ?? '突发应急事件') === '演练事件'
+    ? FIRE_DRILL_LIST_ICON
+    : FIRE_EVENT_LIST_ICON;
 }
 
 const itemsRef = ref<HTMLElement | null>(null);
@@ -187,7 +200,7 @@ function updatePageSize() {
 
 onMounted(() => {
   if (isFireEmergency.value && shellRoute.query.value.create === 'event') {
-    setFireEmergencyListTab('event');
+    setFireEmergencyListTab(DEFAULT_FIRE_EMERGENCY_TAB);
     openCreateModal();
     // 刻意不在此刻清理 ?create=event：主壳 AppLayout 的 <RouterView :key="route.fullPath">
     // 会让任何 shell query 变化重建 WujieHost → wujie 实例重 boot，刚打开的弹窗随之销毁
@@ -217,30 +230,28 @@ onUnmounted(() => {
   >
     <template v-if="showEventTabs" #header-extra>
       <button type="button" class="event-list-add-btn" @click="openCreateModal">
-        {{ activeListTab === 'event' ? '新增事件' : '新增演练' }}
+        新增{{ activeListTab }}
       </button>
     </template>
     <template v-if="showEventTabs" #title>
-      <div class="event-list-tabs" :class="`event-list-tabs--${activeListTab}`">
+      <div class="event-list-tabs" :class="`event-list-tabs--${tabModifier(activeListTab)}`">
         <button
+          v-for="tab in eventTypeTabs"
+          :key="tab.type"
           type="button"
           class="event-list-tabs__btn"
-          :class="{ 'event-list-tabs__btn--active': activeListTab === 'event' }"
-          @click="setFireEmergencyListTab('event')"
+          :class="{ 'event-list-tabs__btn--active': activeListTab === tab.type }"
+          @click="setFireEmergencyListTab(tab.type)"
         >
-          应急事件
-        </button>
-        <button
-          type="button"
-          class="event-list-tabs__btn"
-          :class="{ 'event-list-tabs__btn--active': activeListTab === 'drill' }"
-          @click="setFireEmergencyListTab('drill')"
-        >
-          应急演练
+          {{ tab.type }}
+          <span class="event-list-tabs__count">{{ tab.count }}</span>
         </button>
       </div>
     </template>
-    <div class="event-list" :class="showEventTabs ? `event-list--${activeListTab}` : undefined">
+    <div
+      class="event-list"
+      :class="showEventTabs ? `event-list--${tabModifier(activeListTab)}` : undefined"
+    >
       <div class="event-list__toolbar">
         <input
           v-model="keyword"
@@ -391,7 +402,7 @@ onUnmounted(() => {
     <EmergencyEventCreateModal
       v-if="showEventTabs"
       :open="createModalOpen"
-      :kind="activeListTab"
+      :event-type="activeListTab"
       @close="closeCreateModal"
       @submit="handleCreateSubmit"
     />
@@ -405,6 +416,20 @@ onUnmounted(() => {
   align-items: center;
   gap: 0;
   flex: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.event-list-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.event-list-tabs__count {
+  margin-left: 4px;
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0.72;
+  font-variant-numeric: tabular-nums;
 }
 
 .event-list-tabs__btn {
@@ -446,6 +471,16 @@ onUnmounted(() => {
 .event-list-tabs--drill .event-list-tabs__btn--active {
   background: linear-gradient(180deg, rgb(210 145 45 / 92%), rgb(160 105 25 / 92%));
   border-color: rgb(236 166 65 / 60%);
+}
+
+.event-list-tabs--weather .event-list-tabs__btn--active {
+  background: linear-gradient(180deg, rgb(34 195 255 / 92%), rgb(22 140 205 / 92%));
+  border-color: rgb(64 210 255 / 60%);
+}
+
+.event-list-tabs--warning .event-list-tabs__btn--active {
+  background: linear-gradient(180deg, rgb(240 169 59 / 92%), rgb(200 125 20 / 92%));
+  border-color: rgb(245 190 90 / 60%);
 }
 
 .event-list-add-btn {
@@ -518,6 +553,50 @@ onUnmounted(() => {
   --elist-tag-done-color: #b8a890;
   --elist-tag-done-bg: rgb(42 36 28 / 72%);
   --elist-tag-done-border: rgb(140 125 100 / 50%);
+}
+
+.event-list--weather {
+  --elist-accent: #40d2ff;
+  --elist-accent-soft: rgb(34 195 255 / 55%);
+  --elist-border: rgb(34 150 215 / 40%);
+  --elist-border-strong: rgb(34 195 255 / 48%);
+  --elist-btn-primary: linear-gradient(180deg, rgb(34 180 235 / 90%), rgb(22 130 190 / 90%));
+  --elist-btn-primary-border: rgb(34 195 255 / 55%);
+  --elist-page-active: linear-gradient(180deg, rgb(34 195 255 / 92%), rgb(22 140 205 / 92%));
+  --elist-page-active-border: rgb(64 210 255 / 60%);
+  --elist-card-border-left: rgb(34 195 255 / 85%);
+  --elist-group-title: #40d2ff;
+  --elist-action-bg: linear-gradient(180deg, rgb(34 195 255 / 92%), rgb(22 140 205 / 92%));
+  --elist-action-border: rgb(34 195 255 / 55%);
+  --elist-action-view-bg: rgb(10 36 52 / 72%);
+  --elist-action-view-border: rgb(34 195 255 / 42%);
+  --elist-card-hover-bg: rgb(10 36 52 / 88%);
+  --elist-tag-processing-bg: rgb(14 70 92 / 42%);
+  --elist-tag-done-color: #9ad0e0;
+  --elist-tag-done-bg: rgb(20 44 56 / 72%);
+  --elist-tag-done-border: rgb(80 130 150 / 50%);
+}
+
+.event-list--warning {
+  --elist-accent: #f0a93b;
+  --elist-accent-soft: rgb(240 169 59 / 55%);
+  --elist-border: rgb(200 130 30 / 40%);
+  --elist-border-strong: rgb(240 169 59 / 48%);
+  --elist-btn-primary: linear-gradient(180deg, rgb(230 160 45 / 90%), rgb(190 120 20 / 90%));
+  --elist-btn-primary-border: rgb(245 190 90 / 55%);
+  --elist-page-active: linear-gradient(180deg, rgb(240 169 59 / 92%), rgb(200 125 20 / 92%));
+  --elist-page-active-border: rgb(245 190 90 / 60%);
+  --elist-card-border-left: rgb(240 169 59 / 85%);
+  --elist-group-title: #f0a93b;
+  --elist-action-bg: linear-gradient(180deg, rgb(240 169 59 / 92%), rgb(200 125 20 / 92%));
+  --elist-action-border: rgb(245 190 90 / 55%);
+  --elist-action-view-bg: rgb(52 40 10 / 72%);
+  --elist-action-view-border: rgb(245 190 90 / 42%);
+  --elist-card-hover-bg: rgb(52 40 10 / 88%);
+  --elist-tag-processing-bg: rgb(92 68 14 / 42%);
+  --elist-tag-done-color: #d8c090;
+  --elist-tag-done-bg: rgb(46 38 24 / 72%);
+  --elist-tag-done-border: rgb(150 130 80 / 50%);
 }
 
 .event-list__toolbar {
