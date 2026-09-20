@@ -89,24 +89,26 @@ onMounted(() => {
       :hide-message-bar="false"
     >
       <div class="production-area">
-        <ProductionAreaTopBar
-          class="production-area__top"
-          :zones="zones"
-          :active-zone-id="activeZoneId"
-          :metrics="metrics"
-          @update:active-zone-id="activeZoneId = $event"
-        />
+        <div class="production-area__main">
+          <ProductionAreaTopBar
+            class="production-area__top"
+            :zones="zones"
+            :active-zone-id="activeZoneId"
+            :metrics="metrics"
+            @update:active-zone-id="activeZoneId = $event"
+          />
 
-        <aside class="production-area__left">
-          <ProductionAreaFacilityListPanel :metrics="metrics" />
-        </aside>
+          <aside class="production-area__left">
+            <ProductionAreaFacilityListPanel :metrics="metrics" />
+          </aside>
+        </div>
 
         <aside class="production-area__right">
           <ProductionAreaPersonnelPanel :total="personnelTotal" :slices="personnelSlices" />
           <ProductionAreaAlarmPanel :alarms="alarms" />
         </aside>
 
-        <button type="button" class="production-area__back" @click="goBack">返回</button>
+        <button type="button" class="production-area__back" @click="goBack">返回生产应急</button>
       </div>
     </DashboardLayout>
   </MapPageShell>
@@ -118,11 +120,16 @@ onMounted(() => {
   min-height: 0;
 }
 
+/*
+ * 文档流布局（替代原「全部 absolute + 手算 top/bottom」方案）：
+ * 左列 = 顶部区域条（区域选择 + 指标卡）在上、设备分类面板在下，天然不会重叠——
+ * 指标卡无论渲染 2 行还是隐式第 3 行，面板顶始终跟随顶条实际高度。
+ * 右列（人员/报警）仍从顶部起，与顶条并排。地图由 MapPageShell 垫底。
+ */
 .production-area {
   position: relative;
   display: flex;
-  justify-content: flex-end;
-  align-items: stretch;
+  gap: 18px;
   flex: 1;
   width: 100%;
   height: 100%;
@@ -132,22 +139,29 @@ onMounted(() => {
   padding: 14px 18px 24px;
 }
 
+.production-area__main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .production-area__top {
-  position: absolute;
-  left: 18px;
-  right: 455px;
-  top: 14px;
+  position: relative;
   z-index: var(--z-chrome);
+  flex-shrink: 0;
 }
 
 .production-area__left {
-  position: absolute;
-  left: 18px;
-  top: 96px;
-  bottom: 18px;
-
-  /* 与其余大屏页签侧栏同宽（原 338px 窄侧栏是全大屏唯一一例） */
+  /* 宽度与其余大屏页签侧栏一致 */
   width: var(--sidebar-width);
+
+  /* 底部让位给「返回」按钮（bottom 18 + 高 36 + 12 间距） */
+  margin-bottom: 48px;
+  flex: 1;
+  min-height: 0;
   z-index: var(--z-chrome);
   pointer-events: auto;
 }

@@ -207,17 +207,6 @@ const maintenanceRows = computed(() => [
   flex-direction: column;
   gap: 4px;
   padding-right: 2px;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(0 160 255 / 45%) rgb(0 25 55 / 50%);
-}
-
-.brigade-detail__content::-webkit-scrollbar {
-  width: 4px;
-}
-
-.brigade-detail__content::-webkit-scrollbar-thumb {
-  background: rgb(0 140 220 / 35%);
-  border-radius: 2px;
 }
 
 .detail-section__title {
@@ -255,17 +244,6 @@ const maintenanceRows = computed(() => [
   width: 100%;
   overflow-x: auto;
   flex-shrink: 0;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(0 160 255 / 45%) rgb(0 25 55 / 50%);
-}
-
-.crew-table-wrap::-webkit-scrollbar {
-  height: 4px;
-}
-
-.crew-table-wrap::-webkit-scrollbar-thumb {
-  background: rgb(0 140 220 / 35%);
-  border-radius: 2px;
 }
 
 .crew-table {

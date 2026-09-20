@@ -182,10 +182,10 @@ onMounted(async () => {
 .ledger__select {
   height: 30px;
   padding: 0 8px;
-  border: 1px solid rgb(0 120 200 / 30%);
+  border: 1px solid var(--c-0-120-200-30);
   border-radius: 2px;
-  background: rgb(0 22 48 / 70%);
-  color: #c8d8ec;
+  background: var(--c-0-22-48-70);
+  color: var(--c-c8d8ec);
   font-size: 12px;
   font-family: var(--font-body);
   outline: none;
@@ -193,16 +193,16 @@ onMounted(async () => {
 }
 
 .ledger__input::placeholder {
-  color: #6a829e;
+  color: var(--c-6a829e);
 }
 
 .ledger__btn {
   height: 30px;
   padding: 0 10px;
-  border: 1px solid rgb(0 160 255 / 45%);
+  border: 1px solid var(--c-0-160-255-45);
   border-radius: 2px;
-  background: rgb(0 90 160 / 55%);
-  color: #e8f4ff;
+  background: var(--c-0-90-160-55);
+  color: var(--c-e8f4ff);
   font-size: 12px;
   font-family: var(--font-body);
   cursor: pointer;
@@ -229,8 +229,6 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(0 160 255 / 45%) rgb(0 25 55 / 50%);
 }
 
 .ledger__head,
@@ -248,17 +246,17 @@ onMounted(async () => {
   flex-shrink: 0;
   font-size: 12px;
   color: var(--map-device-offline);
-  background: rgb(0 40 78 / 45%);
-  border: 1px solid rgb(0 120 200 / 20%);
+  background: var(--c-0-40-78-45);
+  border: 1px solid var(--c-0-120-200-20);
   border-radius: 2px;
 }
 
 .ledger__row {
   min-height: 38px;
-  border: 1px solid rgb(0 100 180 / 16%);
+  border: 1px solid var(--c-0-100-180-16);
   border-radius: 2px;
-  background: rgb(0 24 50 / 40%);
-  color: #e8f2fc;
+  background: var(--c-0-24-50-40);
+  color: var(--c-e8f2fc);
   font-size: 12px;
 }
 
@@ -309,7 +307,7 @@ onMounted(async () => {
 
 .page-btn--active {
   color: var(--color-text-strong);
-  border-color: rgb(0 180 255 / 55%);
-  background: rgb(0 90 160 / 50%);
+  border-color: var(--c-0-180-255-55);
+  background: var(--c-0-90-160-50);
 }
 </style>

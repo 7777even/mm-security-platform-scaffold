@@ -64,8 +64,6 @@ const sorted = computed(() => [...props.metrics]);
   display: flex;
   flex-direction: column;
   gap: 4px;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(0 160 255 / 45%) rgb(0 25 55 / 50%);
 }
 
 .area-facility__row {

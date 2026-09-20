@@ -142,15 +142,14 @@ function statusTone(status: string) {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(0 160 255 / 45%) rgb(0 25 55 / 50%);
 }
 
+/* 行高/内边距与 ProductionAreaFacilityListPanel 的数据行一致（34px / 0 10px） */
 .comm-list__group-title {
   height: 30px;
   display: flex;
   align-items: center;
-  padding: 0 8px;
+  padding: 0 10px;
   border: 1px solid rgb(0 120 200 / 20%);
   border-radius: 2px;
   background: rgb(0 40 78 / 45%);
@@ -163,8 +162,8 @@ function statusTone(status: string) {
   grid-template-columns: 1.4fr 0.8fr 0.6fr auto;
   gap: 6px;
   align-items: center;
-  min-height: 40px;
-  padding: 0 8px;
+  min-height: 34px;
+  padding: 0 10px;
   border: 1px solid rgb(0 100 180 / 16%);
   border-radius: 2px;
   background: rgb(0 24 50 / 40%);

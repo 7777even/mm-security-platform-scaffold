@@ -365,21 +365,5 @@ function onUploadClick() {
   min-height: 0;
   overflow-y: auto;
   padding-right: 4px;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(0 160 255 / 45%) rgb(0 25 55 / 50%);
-}
-
-.search-panel__list::-webkit-scrollbar {
-  width: 4px;
-}
-
-.search-panel__list::-webkit-scrollbar-track {
-  background: rgb(0 25 55 / 50%);
-  border-radius: 2px;
-}
-
-.search-panel__list::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgb(0 180 255 / 55%), rgb(0 120 200 / 45%));
-  border-radius: 2px;
 }
 </style>

@@ -98,8 +98,6 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(0 160 255 / 45%) rgb(0 25 55 / 50%);
 }
 
 .cc__item {
@@ -107,16 +105,16 @@ onMounted(async () => {
   align-items: stretch;
   gap: 8px;
   padding: 7px 9px 7px 0;
-  border: 1px solid rgb(0 100 180 / 16%);
+  border: 1px solid var(--c-0-100-180-16);
   border-radius: 2px;
-  background: rgb(0 24 50 / 42%);
+  background: var(--c-0-24-50-42);
 }
 
 .cc__bar {
   width: 3px;
   flex-shrink: 0;
   border-radius: 2px;
-  background: linear-gradient(180deg, rgb(0 190 255 / 90%), rgb(0 120 200 / 60%));
+  background: linear-gradient(180deg, var(--c-0-190-255-90), var(--c-0-120-200-60));
 }
 
 .cc__main {
@@ -146,7 +144,7 @@ onMounted(async () => {
   flex: 1;
   min-width: 0;
   font-size: 13px;
-  color: #eaf3fc;
+  color: var(--c-eaf3fc);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -157,7 +155,7 @@ onMounted(async () => {
   flex-wrap: wrap;
   gap: 4px 12px;
   font-size: 11.5px;
-  color: #8fabca;
+  color: var(--c-8fabca);
 }
 
 .cc__meta-cell {

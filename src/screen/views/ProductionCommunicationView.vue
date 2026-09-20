@@ -93,18 +93,23 @@ function goBack() {
 </template>
 
 <style scoped>
+/*
+ * 返回按钮与 ProductionAreaView 的返回钮同一套视觉（36 高 / 2px 圆角 / 同配色），
+ * 且同样落位左栏面板左下角的下方（面板底 132 = 84 + 36 + 12 间距）——
+ * 原左上角位置会被左栏面板（z-overlay）盖住，等于不可见。
+ */
 .comm-view__back {
   position: absolute;
-  left: 19px;
-  top: calc(var(--header-height) + 16px);
+  left: 18px;
+  bottom: 84px;
   z-index: var(--z-chrome);
-  height: 34px;
-  padding: 0 14px;
-  border: 1px solid rgb(0 120 200 / 35%);
-  border-radius: 4px;
-  background: rgb(0 35 75 / 82%);
-  color: #cfe4ff;
-  font-size: 13px;
+  height: 36px;
+  padding: 0 18px;
+  border: 1px solid rgb(0 150 230 / 45%);
+  border-radius: 2px;
+  background: var(--map-facility-btn-bg);
+  color: #e8f4ff;
+  font-size: 14px;
   font-family: var(--font-body);
   cursor: pointer;
   pointer-events: auto;
@@ -115,22 +120,28 @@ function goBack() {
   border-color: rgb(0 180 255 / 55%);
 }
 
+/*
+ * 与 /production/area/:id 详情页（ProductionAreaView）同一套侧栏几何：
+ * 左右栏 left/right 18px、top 96px、宽 var(--sidebar-width)（原 520/420 写死宽度
+ * 是全大屏仅剩的偏离例）；底部统一让出「返回按钮带(48px) + 操作条(72px)」，
+ * 返回钮同样落位面板左下角下方，与 area 页同一模式。
+ */
 .comm-view__drawer {
   position: absolute;
-  top: 112px;
-  height: calc(100% - 112px - 154px);
+  top: 96px;
+  height: calc(100% - 96px - 132px);
   pointer-events: auto;
   z-index: var(--z-overlay);
 }
 
 .comm-view__drawer--left {
   left: 18px;
-  width: 520px;
+  width: var(--sidebar-width);
 }
 
 .comm-view__drawer--right {
   right: 18px;
-  width: 420px;
+  width: var(--sidebar-width);
 }
 
 .comm-view__drawer :deep(.panel-card) {

@@ -89,7 +89,7 @@ function openDevice(item: OverviewGridItemType) {
 }
 
 .overview-grid__btn:hover :deep(.overview-item) {
-  border-color: rgb(0 180 255 / 50%);
-  background: rgb(0 35 70 / 55%);
+  border-color: var(--c-0-180-255-50);
+  background: var(--c-0-35-70-55);
 }
 </style>

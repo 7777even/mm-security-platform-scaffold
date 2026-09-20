@@ -101,8 +101,6 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(0 160 255 / 45%) rgb(0 25 55 / 50%);
 }
 
 .ws__group-head {

@@ -276,16 +276,18 @@ function callPersonnel(area: FireAreaSummary) {
 .fire-status {
   flex-shrink: 0;
   padding: 14px 14px 12px;
-  border: 1px solid rgb(63 221 183 / 50%);
+  border: 1px solid var(--c-63-221-183-50);
   border-radius: 5px;
-  background: linear-gradient(115deg, rgb(24 112 98 / 30%), rgb(0 53 78 / 25%)), rgb(0 25 48 / 70%);
-  box-shadow: inset 0 0 18px rgb(39 214 172 / 8%);
+  background:
+    linear-gradient(115deg, var(--c-24-112-98-30), var(--c-0-53-78-25)), var(--c-0-25-48-70);
+  box-shadow: inset 0 0 18px var(--c-39-214-172-8);
 }
 
 .fire-status--alarm {
-  border-color: rgb(255 91 91 / 58%);
-  background: linear-gradient(115deg, rgb(122 30 38 / 32%), rgb(0 53 78 / 20%)), rgb(0 25 48 / 74%);
-  box-shadow: inset 0 0 18px rgb(255 73 73 / 9%);
+  border-color: var(--c-255-91-91-58);
+  background:
+    linear-gradient(115deg, var(--c-122-30-38-32), var(--c-0-53-78-20)), var(--c-0-25-48-74);
+  box-shadow: inset 0 0 18px var(--c-255-73-73-9);
 }
 
 .fire-status__head {
@@ -302,18 +304,18 @@ function callPersonnel(area: FireAreaSummary) {
   flex-shrink: 0;
   border: 1px solid var(--color-success);
   border-radius: 50%;
-  background: rgb(25 129 103 / 44%);
+  background: var(--c-25-129-103-44);
   color: var(--color-success);
   font-size: 22px;
   font-weight: 700;
-  box-shadow: 0 0 12px rgb(55 231 183 / 22%);
+  box-shadow: 0 0 12px var(--c-55-231-183-22);
 }
 
 .fire-status--alarm .fire-status__icon {
   border-color: var(--color-danger);
-  background: rgb(180 43 53 / 50%);
+  background: var(--c-180-43-53-50);
   color: var(--color-text-strong);
-  box-shadow: 0 0 13px rgb(255 78 88 / 36%);
+  box-shadow: 0 0 13px var(--c-255-78-88-36);
 }
 
 .fire-status__heading {
@@ -331,23 +333,23 @@ function callPersonnel(area: FireAreaSummary) {
 .fire-status__heading span {
   display: block;
   margin-top: 4px;
-  color: #87a9c2;
+  color: var(--c-87a9c2);
   font-size: 12px;
 }
 
 .fire-status__badge {
   flex-shrink: 0;
   padding: 5px 9px;
-  border: 1px solid rgb(60 230 184 / 45%);
+  border: 1px solid var(--c-60-230-184-45);
   border-radius: 14px;
-  background: rgb(22 132 102 / 25%);
+  background: var(--c-22-132-102-25);
   color: var(--color-success);
   font-size: 12px;
 }
 
 .fire-status__badge--alarm {
-  border-color: rgb(255 101 109 / 55%);
-  background: rgb(181 42 53 / 30%);
+  border-color: var(--c-255-101-109-55);
+  background: var(--c-181-42-53-30);
   color: var(--color-danger);
 }
 
@@ -358,28 +360,28 @@ function callPersonnel(area: FireAreaSummary) {
   gap: 9px;
   margin-top: 11px;
   padding-top: 9px;
-  border-top: 1px solid rgb(111 194 226 / 16%);
+  border-top: 1px solid var(--c-111-194-226-16);
 }
 
 .fire-status__demo > span {
-  color: #6f91aa;
+  color: var(--c-6f91aa);
   font-size: 10px;
 }
 
 .demo-switch {
   height: 26px;
   padding: 0 10px;
-  border: 1px solid rgb(36 174 230 / 35%);
+  border: 1px solid var(--c-36-174-230-35);
   border-radius: 3px;
-  background: rgb(0 64 99 / 34%);
-  color: #4dd2ff;
+  background: var(--c-0-64-99-34);
+  color: var(--c-4dd2ff);
   font: 11px var(--font-body);
   cursor: pointer;
 }
 
 .demo-switch:hover {
-  border-color: rgb(55 207 255 / 72%);
-  background: rgb(0 90 132 / 42%);
+  border-color: var(--c-55-207-255-72);
+  background: var(--c-0-90-132-42);
 }
 
 .fire-risk__section {
@@ -418,7 +420,7 @@ function callPersonnel(area: FireAreaSummary) {
 }
 
 .section-heading strong {
-  color: #e8f4ff;
+  color: var(--c-e8f4ff);
   font-size: 15px;
 }
 
@@ -426,7 +428,7 @@ function callPersonnel(area: FireAreaSummary) {
 .section-heading button {
   border: 0;
   background: transparent;
-  color: #7da2bd;
+  color: var(--c-7da2bd);
   font: 12px var(--font-body);
 }
 
@@ -435,7 +437,7 @@ function callPersonnel(area: FireAreaSummary) {
 }
 
 .section-heading button:hover {
-  color: #3dcaff;
+  color: var(--c-3dcaff);
 }
 
 .section-heading__pulse,
@@ -444,7 +446,7 @@ function callPersonnel(area: FireAreaSummary) {
   height: 8px;
   border-radius: 50%;
   background: var(--color-danger);
-  box-shadow: 0 0 10px rgb(255 71 82 / 80%);
+  box-shadow: 0 0 10px var(--c-255-71-82-80);
 }
 
 .section-heading__pulse {
@@ -453,7 +455,7 @@ function callPersonnel(area: FireAreaSummary) {
 
 .section-heading__dot {
   background: var(--color-success);
-  box-shadow: 0 0 8px rgb(75 229 181 / 55%);
+  box-shadow: 0 0 8px var(--c-75-229-181-55);
 }
 
 .alarm-list,
@@ -462,8 +464,6 @@ function callPersonnel(area: FireAreaSummary) {
   min-height: 0;
   overflow-y: auto;
   padding-right: 3px;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(0 160 255 / 45%) rgb(0 25 55 / 45%);
 }
 
 .alarm-list,
@@ -482,15 +482,15 @@ function callPersonnel(area: FireAreaSummary) {
   margin-bottom: 8px;
   padding: 0 8px;
   box-sizing: border-box;
-  border: 1px solid rgb(0 138 210 / 34%);
+  border: 1px solid var(--c-0-138-210-34);
   border-radius: 3px;
-  background: rgb(0 25 52 / 68%);
-  color: #38c8ff;
+  background: var(--c-0-25-52-68);
+  color: var(--c-38c8ff);
 }
 
 .area-search:focus-within {
-  border-color: rgb(37 198 255 / 75%);
-  box-shadow: inset 0 0 10px rgb(0 148 220 / 8%);
+  border-color: var(--c-37-198-255-75);
+  box-shadow: inset 0 0 10px var(--c-0-148-220-8);
 }
 
 .area-search > span {
@@ -507,12 +507,12 @@ function callPersonnel(area: FireAreaSummary) {
   border: 0;
   outline: 0;
   background: transparent;
-  color: #e8f4ff;
+  color: var(--c-e8f4ff);
   font: 12px var(--font-body);
 }
 
 .area-search input::placeholder {
-  color: #6f91aa;
+  color: var(--c-6f91aa);
 }
 
 .area-search input::-webkit-search-cancel-button {
@@ -525,8 +525,8 @@ function callPersonnel(area: FireAreaSummary) {
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: rgb(75 135 168 / 20%);
-  color: #9bc6dd;
+  background: var(--c-75-135-168-20);
+  color: var(--c-9bc6dd);
   font-size: 16px;
   line-height: 20px;
   cursor: pointer;
@@ -537,36 +537,22 @@ function callPersonnel(area: FireAreaSummary) {
   padding-bottom: 4px;
 }
 
-.area-list::-webkit-scrollbar {
-  width: 5px;
-}
-
-.area-list::-webkit-scrollbar-track {
-  background: rgb(0 25 55 / 45%);
-  border-radius: 3px;
-}
-
-.area-list::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgb(0 190 255 / 58%), rgb(0 105 180 / 46%));
-  border-radius: 3px;
-}
-
 .area-empty {
   display: grid;
   min-height: 110px;
   place-items: center;
-  border: 1px dashed rgb(0 135 205 / 28%);
+  border: 1px dashed var(--c-0-135-205-28);
   border-radius: 4px;
-  color: #789ab2;
+  color: var(--c-789ab2);
   font-size: 12px;
 }
 
 .area-card {
   flex-shrink: 0;
   padding: 11px 12px 10px;
-  border: 1px solid rgb(0 140 220 / 28%);
+  border: 1px solid var(--c-0-140-220-28);
   border-radius: 4px;
-  background: linear-gradient(180deg, rgb(0 42 78 / 66%), rgb(0 27 55 / 60%));
+  background: linear-gradient(180deg, var(--c-0-42-78-66), var(--c-0-27-55-60));
   cursor: pointer;
   transition:
     border-color 0.2s ease,
@@ -576,13 +562,13 @@ function callPersonnel(area: FireAreaSummary) {
 
 .area-card:hover,
 .area-card--selected {
-  border-color: rgb(24 202 255 / 68%);
-  background: linear-gradient(180deg, rgb(0 62 103 / 75%), rgb(0 35 67 / 68%));
+  border-color: var(--c-24-202-255-68);
+  background: linear-gradient(180deg, var(--c-0-62-103-75), var(--c-0-35-67-68));
   transform: translateY(-1px);
 }
 
 .area-card--attention {
-  border-color: rgb(255 184 70 / 38%);
+  border-color: var(--c-255-184-70-38);
 }
 
 .area-card__head,
@@ -624,12 +610,12 @@ function callPersonnel(area: FireAreaSummary) {
   height: 7px;
   border-radius: 50%;
   background: var(--color-success);
-  box-shadow: 0 0 7px rgb(75 228 180 / 55%);
+  box-shadow: 0 0 7px var(--c-75-228-180-55);
 }
 
 .area-card--attention .area-card__dot {
   background: var(--color-warning);
-  box-shadow: 0 0 7px rgb(255 192 82 / 55%);
+  box-shadow: 0 0 7px var(--c-255-192-82-55);
 }
 
 .area-card__stats {
@@ -642,22 +628,22 @@ function callPersonnel(area: FireAreaSummary) {
 .area-card__stats button {
   min-width: 0;
   padding: 7px 8px;
-  border: 1px solid rgb(0 126 195 / 16%);
+  border: 1px solid var(--c-0-126-195-16);
   border-radius: 3px;
-  background: rgb(0 24 50 / 48%);
+  background: var(--c-0-24-50-48);
   color: inherit;
   text-align: left;
   cursor: pointer;
 }
 
 .area-card__stats button:hover {
-  border-color: rgb(28 195 255 / 45%);
-  background: rgb(0 70 111 / 38%);
+  border-color: var(--c-28-195-255-45);
+  background: var(--c-0-70-111-38);
 }
 
 .area-card__stats span {
   display: block;
-  color: #7f9fb9;
+  color: var(--c-7f9fb9);
   font-size: 10px;
   white-space: nowrap;
 }
@@ -665,13 +651,13 @@ function callPersonnel(area: FireAreaSummary) {
 .area-card__stats b {
   display: inline-block;
   margin-top: 3px;
-  color: #31d2ff;
+  color: var(--c-31d2ff);
   font-size: 19px;
 }
 
 .area-card__stats em {
   margin-left: 4px;
-  color: #8faec4;
+  color: var(--c-8faec4);
   font-size: 10px;
   font-style: normal;
 }
@@ -685,22 +671,22 @@ function callPersonnel(area: FireAreaSummary) {
 
 .area-action {
   height: 29px;
-  border: 1px solid rgb(52 137 176 / 72%);
+  border: 1px solid var(--c-52-137-176-72);
   border-radius: 3px;
-  background: rgb(16 61 83 / 75%);
-  color: #dceeff;
+  background: var(--c-16-61-83-75);
+  color: var(--c-dceeff);
   font: 12px var(--font-body);
   cursor: pointer;
 }
 
 .area-action:hover {
-  border-color: rgb(62 211 255 / 85%);
-  background: rgb(16 87 118 / 85%);
+  border-color: var(--c-62-211-255-85);
+  background: var(--c-16-87-118-85);
 }
 
 .area-action--primary {
-  border-color: rgb(20 207 255 / 88%);
-  background: rgb(0 103 150 / 72%);
+  border-color: var(--c-20-207-255-88);
+  background: var(--c-0-103-150-72);
 }
 
 @keyframes alarm-pulse {

@@ -181,6 +181,9 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   grid-template-rows: repeat(2, 54px);
+
+  /* 指标超 12 项时隐式行也保持 54px，避免末行被压扁 */
+  grid-auto-rows: 54px;
   gap: 8px;
 }
 

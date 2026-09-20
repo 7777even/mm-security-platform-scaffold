@@ -161,15 +161,6 @@ const emit = defineEmits<{
   overflow: auto;
 }
 
-.panel-card__content::-webkit-scrollbar {
-  width: 4px;
-}
-
-.panel-card__content::-webkit-scrollbar-thumb {
-  background: rgb(0 140 220 / 30%);
-  border-radius: 2px;
-}
-
 .panel-card__bottom {
   position: absolute;
   left: 0;
