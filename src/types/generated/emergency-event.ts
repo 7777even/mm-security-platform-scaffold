@@ -257,6 +257,16 @@ export interface components {
        */
       eventCategory: 'default' | 'extremeWeather';
       /**
+       * @description 落库分组编码（可选，缺省按 kind/eventCategory 推导 manual-*）；与种子分组同码（phone/tank/facility/video/extreme-weather）时并入同一侧栏分组
+       * @example phone
+       */
+      groupCode?: string;
+      /**
+       * @description 落库分组标签（可选，缺省取 groupCode）；作为大屏侧栏分组标题
+       * @example 消防电话报警
+       */
+      groupLabel?: string;
+      /**
        * @description 事件标题
        * @example 催化裂化装置新增泄漏
        */
@@ -500,6 +510,8 @@ export interface operations {
          *       "scene": "FIRE",
          *       "kind": "event",
          *       "eventCategory": "default",
+         *       "groupCode": "phone",
+         *       "groupLabel": "消防电话报警",
          *       "title": "催化裂化装置新增泄漏",
          *       "location": "炼油一部 1#催化装置",
          *       "description": "现场人员上报，联系电话 138xxxx，暂无伤亡。",
