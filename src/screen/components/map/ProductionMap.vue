@@ -18,6 +18,7 @@ import {
 import {
   allDevices,
   communicationDrawerOpen,
+  selectedDevice,
   selectedDeviceId,
 } from '../../lib/composables/useCommunicationDevices';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
@@ -300,7 +301,7 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
 
     <div
       class="map-controls"
-      :class="{ 'map-controls--drawer': productionDeviceDrawerActive || communicationDrawerOpen }"
+      :class="{ 'map-controls--drawer': productionDeviceDrawerActive || selectedDevice }"
     >
       <MapLayerPanel />
       <button
@@ -387,8 +388,11 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
   transition: right 0.26s ease;
 }
 
+/* 右侧抽屉打开时，把工具栏推到抽屉左侧之外，避免被 z-overlay 层盖住。
+   生产应急抽屉宽 520px（right:18px），通讯详情抽屉宽 var(--sidebar-width)；
+   取 560px 可同时避开两者，并留 ~22px 间隙。 */
 .map-controls--drawer {
-  right: 16px;
+  right: 560px;
 }
 
 .map-control-btn {
