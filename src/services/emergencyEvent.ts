@@ -18,6 +18,23 @@ export const EMERGENCY_EVENT_TYPE_OPTIONS = [
 ] as const;
 export type EmergencyEventType = (typeof EMERGENCY_EVENT_TYPE_OPTIONS)[number];
 
+/** 业务大类 ↔ 事件类型的映射（新增弹窗顶部单选用「大类」，下拉用具体事件类型）。 */
+export const EMERGENCY_EVENT_TYPE_BY_BUSINESS = {
+  event: ['突发应急事件', '预警事件'] as const,
+  weather: ['极端天气事件'] as const,
+  drill: ['演练事件'] as const,
+};
+
+export type EmergencyEventBusinessType = keyof typeof EMERGENCY_EVENT_TYPE_BY_BUSINESS;
+
+/** 由具体事件类型反推业务大类。 */
+export function deriveBusinessType(eventType: string): EmergencyEventBusinessType {
+  for (const [biz, types] of Object.entries(EMERGENCY_EVENT_TYPE_BY_BUSINESS)) {
+    if ((types as readonly string[]).includes(eventType)) return biz as EmergencyEventBusinessType;
+  }
+  return 'event';
+}
+
 /**
  * 后端未持久化 eventType，按 kind / eventCategory 推导前端展示用事件类型（兜底）。
  * 表单新增事件则直接携带用户所选的 eventType。

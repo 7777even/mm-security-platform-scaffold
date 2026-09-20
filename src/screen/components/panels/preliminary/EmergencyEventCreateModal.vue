@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue';
 import type { EmergencyEventCreatePayload } from '../../../lib/composables/useFireEmergencyEventList';
-import { deriveKindCategory } from '@/services/emergencyEvent';
+import {
+  deriveKindCategory,
+  deriveBusinessType,
+  EMERGENCY_EVENT_TYPE_BY_BUSINESS,
+  type EmergencyEventBusinessType,
+} from '@/services/emergencyEvent';
 
 const props = defineProps<{
   open: boolean;
@@ -21,22 +26,30 @@ function formatDatetimeLocal(date: Date) {
 function createDefaultForm(eventType: string): EmergencyEventCreatePayload {
   const { kind, eventCategory } = deriveKindCategory(eventType);
   const isDrill = kind === 'drill';
-  return {
-    kind,
-    eventCategory,
-    name: isDrill
+  const isWeather = eventCategory === 'extremeWeather';
+  const defaultName =
+    eventType === '演练事件'
       ? '储罐区消防演练'
       : eventType === '极端天气事件'
         ? '台风暴雨防台防汛应急事件'
-        : '东厂区突发应急事件',
+        : eventType === '预警事件'
+          ? '东厂区预警事件'
+          : '东厂区突发应急事件';
+  const defaultDescription = isDrill
+    ? '按计划开展联合应急演练，检验响应流程与协同处置能力。'
+    : isWeather
+      ? '受台风外围云系影响，厂区预计出现暴雨及阵风，启动重点易涝点巡查与排涝准备。'
+      : eventType === '预警事件'
+        ? '监测到潜在异常征兆，提前发布预警并启动跟踪核查与响应准备。'
+        : '现场发现异常情况，需立即核实并启动应急处置流程。';
+  return {
+    kind,
+    eventCategory,
+    name: defaultName,
     level: '一级',
     occurTime: formatDatetimeLocal(new Date()),
     eventType,
-    description: isDrill
-      ? '按计划开展联合应急演练，检验响应流程与协同处置能力。'
-      : eventType === '极端天气事件'
-        ? '受台风外围云系影响，厂区预计出现暴雨及阵风，启动重点易涝点巡查与排涝准备。'
-        : '现场发现异常情况，需立即核实并启动应急处置流程。',
+    description: defaultDescription,
     device: 'A装置',
     chemical: '原油',
     source: '手动新增',
@@ -46,10 +59,9 @@ function createDefaultForm(eventType: string): EmergencyEventCreatePayload {
     deathCount: '0',
     seriousInjuryCount: '0',
     minorInjuryCount: '0',
-    measures:
-      eventType === '极端天气事件'
-        ? '已通知各单位落实防台防汛措施，重点易涝点加强巡查，排涝设备进入热备状态。'
-        : '已通知现场值班人员核实情况，并做好初期隔离准备。',
+    measures: isWeather
+      ? '已通知各单位落实防台防汛措施，重点易涝点加强巡查，排涝设备进入热备状态。'
+      : '已通知现场值班人员核实情况，并做好初期隔离准备。',
     weatherType: '台风暴雨',
     warningLevel: '橙色预警',
     affectedArea: '炼油区',
@@ -59,20 +71,27 @@ function createDefaultForm(eventType: string): EmergencyEventCreatePayload {
 
 const form = reactive<EmergencyEventCreatePayload>(createDefaultForm('突发应急事件'));
 
-const dialogTitle = computed(() =>
-  form.kind === 'drill'
-    ? '新增演练'
-    : form.eventCategory === 'extremeWeather'
-      ? '新增极端天气事件'
-      : '新增应急事件',
+const businessType = computed<EmergencyEventBusinessType>(() => deriveBusinessType(form.eventType));
+
+const eventTypeOptions = computed<readonly string[]>(
+  () => EMERGENCY_EVENT_TYPE_BY_BUSINESS[businessType.value],
 );
+
+const dialogTitle = computed(() => {
+  const titles: Record<string, string> = {
+    演练事件: '新增演练',
+    极端天气事件: '新增极端天气事件',
+    预警事件: '新增预警事件',
+    突发应急事件: '新增应急事件',
+  };
+  return titles[form.eventType] ?? '新增应急事件';
+});
 
 const isWeather = computed(() => form.kind === 'event' && form.eventCategory === 'extremeWeather');
 
-function selectBusinessType(type: 'event' | 'weather' | 'drill') {
-  const eventType =
-    type === 'drill' ? '演练事件' : type === 'weather' ? '极端天气事件' : '突发应急事件';
-  resetForm(eventType);
+function selectBusinessType(type: EmergencyEventBusinessType) {
+  const defaultEventType = EMERGENCY_EVENT_TYPE_BY_BUSINESS[type][0];
+  resetForm(defaultEventType);
 }
 
 function resetForm(eventType: string) {
@@ -134,7 +153,7 @@ function onFilePick() {
             <div class="eem-kind-row" aria-label="业务事件类型">
               <label class="eem-radio">
                 <input
-                  :checked="form.eventType === '突发应急事件'"
+                  :checked="businessType === 'event'"
                   type="radio"
                   @change="selectBusinessType('event')"
                 />
@@ -142,7 +161,7 @@ function onFilePick() {
               </label>
               <label class="eem-radio">
                 <input
-                  :checked="form.eventType === '极端天气事件'"
+                  :checked="businessType === 'weather'"
                   type="radio"
                   @change="selectBusinessType('weather')"
                 />
@@ -150,7 +169,7 @@ function onFilePick() {
               </label>
               <label class="eem-radio">
                 <input
-                  :checked="form.eventType === '演练事件'"
+                  :checked="businessType === 'drill'"
                   type="radio"
                   @change="selectBusinessType('drill')"
                 />
@@ -231,10 +250,9 @@ function onFilePick() {
               <label class="eem-field">
                 <span class="eem-label">事件类型</span>
                 <select v-model="form.eventType" class="eem-select">
-                  <option>突发应急事件</option>
-                  <option>演练事件</option>
-                  <option>预警事件</option>
-                  <option>极端天气事件</option>
+                  <option v-for="option in eventTypeOptions" :key="option" :value="option">
+                    {{ option }}
+                  </option>
                 </select>
               </label>
             </div>
