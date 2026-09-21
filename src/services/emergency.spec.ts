@@ -27,13 +27,13 @@ describe('fetchEmergencyStrength', () => {
       '应急专家',
       '应急物资',
       '救援队伍',
-      '装备车辆',
+      '救援装备',
       '应急场所',
       '医疗机构',
       '应急车辆',
       '消防设施',
     ]);
-    expect(res.resources[0]!.count).toBe(47);
+    expect(res.resources[0]!.count).toBe(52);
   });
 
   it('未连后端且未开演示时显式报错并返回空态（不回落 fixture）', async () => {
