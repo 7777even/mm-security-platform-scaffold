@@ -23,6 +23,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/emergency-events/{id}/report': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 事件预警（报送）
+     * @description 标记应急事件已预警（reported=true），并同步关联事故救援事件（fac_accident_incident）的 reported 标志。仅置标志，不改动其他字段；事件不存在返回 404。返回更新后的事件项。
+     */
+    post: operations['reportEmergencyEvent'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/emergency-events/evacuation-people': {
     parameters: {
       query?: never;
@@ -556,6 +576,41 @@ export interface operations {
            *         "eventCategory": "default",
            *         "hazardSourceLevel": "重大",
            *         "endedAt": null
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['EmergencyEventItem'];
+        };
+      };
+    };
+  };
+  reportEmergencyEvent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description 报送成功，返回更新后的事件项 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 26,
+           *         "title": "东厂区突发应急事件",
+           *         "reported": true,
+           *         "status": "pending",
+           *         "statusLabel": "未处置"
            *       }
            *     }
            */
