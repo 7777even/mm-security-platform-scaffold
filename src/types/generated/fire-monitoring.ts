@@ -434,25 +434,25 @@ export interface operations {
            *       "data": [
            *         {
            *           "label": "消防队伍",
-           *           "value": 10,
+           *           "value": 8,
            *           "unit": "支",
            *           "iconType": "squad"
            *         },
            *         {
            *           "label": "救援人员",
-           *           "value": 398,
+           *           "value": 52,
            *           "unit": "人",
            *           "iconType": "person"
            *         },
            *         {
            *           "label": "救援装备",
-           *           "value": 123,
+           *           "value": 35,
            *           "unit": "套",
            *           "iconType": "equipment"
            *         },
            *         {
            *           "label": "救援车辆",
-           *           "value": 83,
+           *           "value": 12,
            *           "unit": "台",
            *           "iconType": "vehicle"
            *         }
