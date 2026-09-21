@@ -233,6 +233,7 @@ function patrolTone(status: string): MapPointTone {
 }
 
 // 向共享搜索索引注册「本页已渲染点位」（巡更/摄像头/防撞柱/门禁/报警/设备，仅含展开抽屉内的点）
+// activate = 与点击该标记一致，打开对应详情（巡更→视频联动；摄像头→视频；防撞柱/门禁→详情弹窗）
 useMapPageSearch((): SearchableMapMarker[] => {
   const out: SearchableMapMarker[] = [];
   if (patrolLinkageOpen.value) {
@@ -244,6 +245,7 @@ useMapPageSearch((): SearchableMapMarker[] => {
           type: '巡更点',
           longitude: p.camera.longitude,
           latitude: p.camera.latitude,
+          activate: () => selectPatrolPoint(p),
         });
       }
     }
@@ -257,6 +259,7 @@ useMapPageSearch((): SearchableMapMarker[] => {
           type: '摄像头',
           longitude: cam.longitude,
           latitude: cam.latitude,
+          activate: () => handleCameraMarkerClick(cam.id),
         });
       }
     }
@@ -270,6 +273,7 @@ useMapPageSearch((): SearchableMapMarker[] => {
           type: '防撞柱',
           longitude: item.longitude,
           latitude: item.latitude,
+          activate: () => handleBollardMarkerClick(item.id),
         });
       }
     }
@@ -283,6 +287,7 @@ useMapPageSearch((): SearchableMapMarker[] => {
           type: '门禁',
           longitude: item.longitude,
           latitude: item.latitude,
+          activate: () => handleGateControlMarkerClick(item.id),
         });
       }
     }

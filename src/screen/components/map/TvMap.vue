@@ -97,6 +97,7 @@ function onVideoLabelClick(payload: { id: string; label: string }) {
 }
 
 // 向共享搜索索引注册「本页已渲染点位」（视频点 + 告警点）
+// 视频点 activate = 与点击点位一致打开视频详情；告警点为常显信息块，无 activate
 useMapPageSearch((): SearchableMapMarker[] => {
   const out: SearchableMapMarker[] = [];
   for (const p of visibleVideoMapPoints.value) {
@@ -107,6 +108,7 @@ useMapPageSearch((): SearchableMapMarker[] => {
         type: '视频点',
         longitude: p.longitude,
         latitude: p.latitude,
+        activate: () => onVideoLabelClick({ id: p.id, label: p.label }),
       });
     }
   }

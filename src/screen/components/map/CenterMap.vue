@@ -75,6 +75,8 @@ function openSituationDetail(item: FireSituationMarkerItem) {
 const fireSituationMarkers = ref<FireSituationMarkerItem[]>([]);
 
 // 向共享搜索索引注册「本页已渲染点位」（消防态势 + 中心报警点）
+// 消防态势 activate = 与点击标记一致（openSituationDetail：按 kind 跳转/开专题/开告警详情）；
+// 中心报警点为合成坐标（无业务 id），仅飞镜头
 useMapPageSearch((): SearchableMapMarker[] => [
   ...fireSituationMarkers.value
     .filter((m) => Number.isFinite(m.longitude) && Number.isFinite(m.latitude))
@@ -84,6 +86,7 @@ useMapPageSearch((): SearchableMapMarker[] => [
       type: '消防态势',
       longitude: m.longitude,
       latitude: m.latitude,
+      activate: () => openSituationDetail(m),
     })),
   {
     id: 'center-alarm',

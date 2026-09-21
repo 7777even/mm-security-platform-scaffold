@@ -31,6 +31,7 @@ const { isActive } = useMapControlActive();
 const { goToEventDispose } = useAccidentRescueNavigation();
 
 // 向共享搜索索引注册「本页已渲染点位」（应急事件）
+// activate = 与点击事件标记一致：选中并弹出该事件的信息浮层（v-show="isSelected(id)"）
 useMapPageSearch((): SearchableMapMarker[] =>
   fireEmergencyPagedEvents.value
     .filter((e) => Number.isFinite(e.longitude) && Number.isFinite(e.latitude))
@@ -40,6 +41,7 @@ useMapPageSearch((): SearchableMapMarker[] =>
       type: '应急事件',
       longitude: e.longitude,
       latitude: e.latitude,
+      activate: () => selectFireEmergencyEvent(e.id),
     })),
 );
 

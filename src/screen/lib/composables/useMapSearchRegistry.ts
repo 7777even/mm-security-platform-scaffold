@@ -11,6 +11,12 @@ export interface SearchableMapMarker {
   longitude: number;
   latitude: number;
   height?: number;
+  /**
+   * 选中后除「飞向该点」外还要执行的动作——**与该点位被点击时完全一致**的打开逻辑
+   * （打开详情弹窗 / 抽屉选中 / 视频详情等）。各页在注册时用闭包带上真实业务对象，
+   * 无需从 id 反解前缀。无信息层可开的点位类型可不传，此时选中仅飞镜头。
+   */
+  activate?: () => void;
 }
 
 /**
@@ -55,6 +61,7 @@ export function useMapSearch() {
 
   function select(marker: SearchableMapMarker): void {
     closeMapSearchPanel();
+    // 飞向该点（异步，不 await：视层弹窗锚点随相机逐帧重算，会自己跟过去）
     void getSharedMap()?.flyToWorldPositions?.({
       positions: [
         {
@@ -67,6 +74,8 @@ export function useMapSearch() {
       pitchDeg: -45,
       rangeMultiplier: 1.6,
     });
+    // 与该点位「被点击」一致的信息展示（打开详情弹窗 / 抽屉选中）；无则仅飞镜头
+    marker.activate?.();
   }
 
   return {

@@ -20,6 +20,7 @@ import {
 import {
   allDevices,
   communicationDrawerOpen,
+  selectCommunicationDevice,
   selectedDevice,
   selectedDeviceId,
 } from '../../lib/composables/useCommunicationDevices';
@@ -263,6 +264,7 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
 });
 
 // 向共享搜索索引注册「本页已渲染点位」（人员/设备/通讯设备/报警，仅含当前展开抽屉内的点）
+// 通讯设备 activate = 选中该设备（抽屉已展开，由既有 watch 定位+展示详情）；人员/设备/报警 无信息弹窗，仅飞镜头
 useMapPageSearch((): SearchableMapMarker[] => {
   const out: SearchableMapMarker[] = [];
   for (const m of visiblePersonnelMarkers.value) {
@@ -298,6 +300,8 @@ useMapPageSearch((): SearchableMapMarker[] => {
           type: '通讯设备',
           longitude: item.longitude,
           latitude: item.latitude,
+          // 与点击通讯设备点位一致：选中该设备（抽屉已展开，选中后由既有 watch 定位并展示详情）
+          activate: () => selectCommunicationDevice(item.id),
         });
       }
     }
