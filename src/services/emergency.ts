@@ -10,13 +10,13 @@ export type EmergencyResourceKind =
   | '应急专家'
   | '应急物资'
   | '救援队伍'
-  | '装备车辆'
+  | '救援装备'
   | '应急场所'
   | '医疗机构'
   | '应急车辆'
   | '消防设施';
 
-/** 应急力量明细预览项（仅应急专家/物资/车辆/救援队伍 4 类有值）。 */
+/** 应急力量明细项（除应急物资为统计口径外，其余类别均有值；后端全量返回，前端按 20/页分页）。 */
 export interface StrengthItem {
   name: string;
   meta?: string | null;
@@ -26,7 +26,7 @@ export interface EmergencyResource {
   kind: EmergencyResourceKind;
   count: number;
   icon: string;
-  /** 真实明细预览，取各台账前 20 条；无明细源类别为 null/缺省。 */
+  /** 真实明细（全量），前端按 20/页分页；统计口径类别（应急物资）为 null/缺省。 */
   items?: StrengthItem[] | null;
 }
 
@@ -37,14 +37,14 @@ export interface EmergencyStrength {
 // 开发期自包含 mock：8 个核心应急力量维度（2 列 × 4 行网格）
 const DEV_FIXTURE: EmergencyStrength = {
   resources: [
-    { kind: '应急专家', count: 47, icon: 'UserFilled' },
+    { kind: '应急专家', count: 52, icon: 'UserFilled' },
     { kind: '应急物资', count: 3510, icon: 'Box' },
-    { kind: '救援队伍', count: 10, icon: 'Avatar' },
-    { kind: '装备车辆', count: 55, icon: 'Tools' },
-    { kind: '应急场所', count: 52, icon: 'OfficeBuilding' },
-    { kind: '医疗机构', count: 80, icon: 'FirstAidKit' },
-    { kind: '应急车辆', count: 33, icon: 'Van' },
-    { kind: '消防设施', count: 11, icon: 'Warning' },
+    { kind: '救援队伍', count: 8, icon: 'Avatar' },
+    { kind: '救援装备', count: 35, icon: 'Tools' },
+    { kind: '应急场所', count: 6, icon: 'OfficeBuilding' },
+    { kind: '医疗机构', count: 3, icon: 'FirstAidKit' },
+    { kind: '应急车辆', count: 12, icon: 'Van' },
+    { kind: '消防设施', count: 42, icon: 'Warning' },
   ],
 };
 

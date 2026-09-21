@@ -4,6 +4,7 @@ import { rescueEquipmentViewActive } from './useRescueEquipmentView';
 import { rescuePersonnelViewActive } from './useRescuePersonnelView';
 import { rescueVehicleViewActive } from './useRescueVehicleView';
 import { specialOperationViewActive } from './useSpecialOperationView';
+import { rescueStrengthViewActive } from './useRescueStrengthView';
 
 export const rescueDrawerActive = computed(
   () =>
@@ -11,5 +12,6 @@ export const rescueDrawerActive = computed(
     rescueEquipmentViewActive.value ||
     rescuePersonnelViewActive.value ||
     rescueVehicleViewActive.value ||
-    specialOperationViewActive.value,
+    specialOperationViewActive.value ||
+    rescueStrengthViewActive.value,
 );

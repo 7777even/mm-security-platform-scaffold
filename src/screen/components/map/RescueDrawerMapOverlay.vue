@@ -38,6 +38,14 @@ import {
   selectSpecialOperation,
   selectedSpecialOperationId,
 } from '../../lib/composables/useSpecialOperationView';
+import {
+  rescueStrengthViewActive,
+  rescueStrengthCategory,
+  rescueStrengthCurrentPage,
+  rescueStrengthPagedItems,
+  selectRescueStrength,
+  selectedRescueStrengthIndex,
+} from '../../lib/composables/useRescueStrengthView';
 import { coordsForPagedSpread } from '../../lib/data/rescueMapCoords';
 
 interface RescueMapMarker {
@@ -148,6 +156,22 @@ const markers = computed<RescueMapMarker[]>(() => {
     });
   }
 
+  if (rescueStrengthViewActive.value) {
+    const page = rescueStrengthCurrentPage.value;
+    const paged = rescueStrengthPagedItems.value;
+    return paged.map(({ item, index }, pos) => {
+      const { longitude, latitude } = coordsForPagedSpread(pos, paged.length, page, index);
+      return {
+        mapKey: `strength-${rescueStrengthCategory.value}-${index}`,
+        id: index,
+        label: item.name,
+        meta: item.meta ?? undefined,
+        longitude,
+        latitude,
+      };
+    });
+  }
+
   return [];
 });
 
@@ -157,6 +181,7 @@ const selectedId = computed(() => {
   if (rescuePersonnelViewActive.value) return selectedRescuePersonnelId.value;
   if (rescueVehicleViewActive.value) return selectedRescueVehicleId.value;
   if (specialOperationViewActive.value) return selectedSpecialOperationId.value;
+  if (rescueStrengthViewActive.value) return selectedRescueStrengthIndex.value;
   return null;
 });
 
@@ -166,7 +191,8 @@ const clickable = computed(
     rescueEquipmentViewActive.value ||
     rescuePersonnelViewActive.value ||
     rescueVehicleViewActive.value ||
-    specialOperationViewActive.value,
+    specialOperationViewActive.value ||
+    rescueStrengthViewActive.value,
 );
 
 const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(() => {
@@ -198,6 +224,9 @@ function handleSelect(id: number) {
   }
   if (specialOperationViewActive.value) {
     selectSpecialOperation(id);
+  }
+  if (rescueStrengthViewActive.value) {
+    selectRescueStrength(id);
   }
 }
 </script>

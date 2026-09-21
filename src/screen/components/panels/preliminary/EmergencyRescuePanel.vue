@@ -10,8 +10,11 @@ import {
   FirstAidKit,
   Warning,
 } from '@element-plus/icons-vue';
-import { fetchEmergencyStrength, type EmergencyResource } from '@/services/emergency';
-import InfoDetailDialog from '../../common/InfoDetailDialog.vue';
+import {
+  fetchEmergencyStrength,
+  type EmergencyResource,
+  type StrengthItem,
+} from '@/services/emergency';
 import type { DesignModule } from '@/utils/designAssets';
 
 interface RescueStat {
@@ -36,32 +39,17 @@ const stats = computed<RescueStat[]>(() =>
   resources.value.map((r, i) => ({ label: r.kind, value: r.count, iconIndex: i })),
 );
 
-// 点击应急力量统计卡弹详情（与系统「更多=弹对话框」先例一致）；
-// 明细来自后端 items（应急专家/物资/车辆/救援队伍 4 类有真实台账项，其余类别为统计口径）。
-const selected = ref<EmergencyResource | null>(null);
-const detailOpen = ref(false);
+// 点击应急力量统计卡 → 通知父视图打开救援资源浮层（与消防报警模块「救援力量」卡片一致）。
+// 8 类全部走浮层：救援队伍/救援装备/应急车辆 由父视图映射到专属救援资源浮层，
+// 其余 5 类（应急专家/应急物资/应急场所/医疗机构/消防设施）由父视图打开通用 strength 浮层。
+const emit = defineEmits<{
+  'open-rescue-force': [payload: { label: string; items: StrengthItem[] | null }];
+}>();
 
 function openStat(stat: RescueStat) {
-  selected.value = resources.value.find((r) => r.kind === stat.label) ?? null;
-  detailOpen.value = true;
+  const resource = resources.value.find((r) => r.kind === stat.label) ?? null;
+  emit('open-rescue-force', { label: stat.label, items: resource?.items ?? null });
 }
-
-const statFields = computed(() => {
-  const r = selected.value;
-  if (!r) return [];
-  const fields = [
-    { label: '资源类别', value: r.kind },
-    { label: '资源数量', value: `${r.count} 项` },
-  ];
-  if (!r.items || r.items.length === 0) {
-    fields.push({ label: '明细', value: '该类别为统计口径，暂无逐项明细台账。' });
-  }
-  return fields;
-});
-
-const statItems = computed(() =>
-  (selected.value?.items ?? []).map((it) => ({ primary: it.name, secondary: it.meta ?? null })),
-);
 
 onMounted(async () => {
   try {
@@ -73,12 +61,12 @@ onMounted(async () => {
 });
 
 /* 与后端 sys_emergency_strength 种子顺序一一对应；iconIndex 0..7
-   应急专家 / 应急物资 / 救援队伍 / 装备车辆 / 应急场所 / 医疗机构 / 应急车辆 / 消防设施 */
+   应急专家 / 应急物资 / 救援队伍 / 救援装备 / 应急场所 / 医疗机构 / 应急车辆 / 消防设施 */
 const RESCUE_ICONS = [UserFilled, Box, Avatar, Van, OfficeBuilding, FirstAidKit, Van, Warning];
 </script>
 
 <template>
-  <PreliminarySidePanel title="应急力量救援" variant="rescue" :module="module">
+  <PreliminarySidePanel title="应急救援力量" variant="rescue" :module="module">
     <div class="rescue-grid">
       <div
         v-for="stat in stats"
@@ -97,14 +85,6 @@ const RESCUE_ICONS = [UserFilled, Box, Avatar, Van, OfficeBuilding, FirstAidKit,
         </div>
       </div>
     </div>
-
-    <InfoDetailDialog
-      :open="detailOpen"
-      title="应急力量详情"
-      :fields="statFields"
-      :items="statItems"
-      @close="detailOpen = false"
-    />
   </PreliminarySidePanel>
 </template>
 
