@@ -11,6 +11,8 @@ export interface KnowledgeItem {
   title: string;
   count: number;
   icon: string;
+  /** 知识分类说明（真实可编辑文案，后端 sys_knowledge_item.description）。 */
+  description?: string | null;
 }
 
 export interface KnowledgeList {

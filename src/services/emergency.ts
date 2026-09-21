@@ -16,10 +16,18 @@ export type EmergencyResourceKind =
   | '应急车辆'
   | '消防设施';
 
+/** 应急力量明细预览项（仅应急专家/物资/车辆/救援队伍 4 类有值）。 */
+export interface StrengthItem {
+  name: string;
+  meta?: string | null;
+}
+
 export interface EmergencyResource {
   kind: EmergencyResourceKind;
   count: number;
   icon: string;
+  /** 真实明细预览，取各台账前 20 条；无明细源类别为 null/缺省。 */
+  items?: StrengthItem[] | null;
 }
 
 export interface EmergencyStrength {
