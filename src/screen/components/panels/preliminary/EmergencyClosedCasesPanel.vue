@@ -2,12 +2,34 @@
 import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import { fetchClosedCases, type ClosedCase } from '@/services/closedCases';
+import InfoDetailDialog from '../../common/InfoDetailDialog.vue';
 
 const loading = ref(true);
 const failed = ref(false);
 const cases = ref<ClosedCase[]>([]);
 
 const total = computed(() => cases.value.length);
+
+// 点击列表项弹详情（与系统「更多=弹对话框」先例一致；近期结案无独立承接页）
+const selectedCase = ref<ClosedCase | null>(null);
+const detailOpen = ref(false);
+
+function openCase(item: ClosedCase) {
+  selectedCase.value = item;
+  detailOpen.value = true;
+}
+
+const caseFields = computed(() =>
+  selectedCase.value
+    ? [
+        { label: '案件编号', value: selectedCase.value.caseId },
+        { label: '标题', value: selectedCase.value.title },
+        { label: '事发地点', value: selectedCase.value.location || '--' },
+        { label: '结案时间', value: formatClosedAt(selectedCase.value.closedAt) },
+        { label: '处置人', value: selectedCase.value.handler || '--' },
+      ]
+    : [],
+);
 
 function formatClosedAt(iso: string): string {
   if (!iso) return '--';
@@ -43,7 +65,14 @@ onMounted(async () => {
       <div v-else-if="!total" class="cc__state">暂无结案记录</div>
 
       <ul v-else class="cc__list">
-        <li v-for="item in cases" :key="item.caseId" class="cc__item">
+        <li
+          v-for="item in cases"
+          :key="item.caseId"
+          class="cc__item"
+          role="button"
+          tabindex="0"
+          @click="openCase(item)"
+        >
           <span class="cc__bar" aria-hidden="true"></span>
           <div class="cc__main">
             <div class="cc__title-row">
@@ -59,6 +88,13 @@ onMounted(async () => {
         </li>
       </ul>
     </div>
+
+    <InfoDetailDialog
+      :open="detailOpen"
+      title="结案详情"
+      :fields="caseFields"
+      @close="detailOpen = false"
+    />
   </PanelCard>
 </template>
 
@@ -108,6 +144,15 @@ onMounted(async () => {
   border: 1px solid var(--c-0-100-180-16);
   border-radius: 2px;
   background: var(--c-0-24-50-42);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.cc__item:hover {
+  background: rgb(0 38 74 / 55%);
+  border-color: rgb(0 150 230 / 42%);
 }
 
 .cc__bar {

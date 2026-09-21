@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
 import { Document, WarningFilled, Guide } from '@element-plus/icons-vue';
 import { fetchEmergencyKnowledge } from '@/services/knowledge';
+import InfoDetailDialog from '../../common/InfoDetailDialog.vue';
 import type { DesignModule } from '@/utils/designAssets';
 
 interface KnowledgePanelItem {
@@ -24,6 +25,25 @@ withDefaults(
 // 单一数据源：无论 preliminary / fireEmergency 模块，统一走 /emergency/knowledge
 // （services/knowledge.ts 内置无后端时的演示 fixture 与非法响应空态，见 backendFallback.ts）
 const items = ref<KnowledgePanelItem[]>([]);
+
+// 点击安全知识卡弹详情（与系统「更多=弹对话框」先例一致；知识仅聚合数，弹窗展示主题/条目/说明）
+const selectedItem = ref<KnowledgePanelItem | null>(null);
+const detailOpen = ref(false);
+
+function openItem(item: KnowledgePanelItem) {
+  selectedItem.value = item;
+  detailOpen.value = true;
+}
+
+const itemFields = computed(() =>
+  selectedItem.value
+    ? [
+        { label: '知识主题', value: selectedItem.value.line1 },
+        { label: '知识条目', value: `${selectedItem.value.count} 条` },
+        { label: '说明', value: '该主题应急生产安全知识条目汇总。' },
+      ]
+    : [],
+);
 
 onMounted(async () => {
   try {
@@ -68,7 +88,14 @@ const KNOWLEDGE_ICONS = [Document, WarningFilled, Guide];
   <PreliminarySidePanel title="应急生产安全知识" variant="knowledge" :module="module">
     <div class="knowledge-grid">
       <div v-for="(row, rowIndex) in knowledgeRows" :key="rowIndex" class="knowledge-row">
-        <div v-for="item in row" :key="item.key" class="knowledge-card">
+        <div
+          v-for="item in row"
+          :key="item.key"
+          class="knowledge-card"
+          role="button"
+          tabindex="0"
+          @click="openItem(item)"
+        >
           <span class="knowledge-card__icon" aria-hidden="true">
             <component :is="KNOWLEDGE_ICONS[item.iconIndex % KNOWLEDGE_ICONS.length]" />
           </span>
@@ -87,6 +114,13 @@ const KNOWLEDGE_ICONS = [Document, WarningFilled, Guide];
         </div>
       </div>
     </div>
+
+    <InfoDetailDialog
+      :open="detailOpen"
+      title="应急生产安全知识"
+      :fields="itemFields"
+      @close="detailOpen = false"
+    />
   </PreliminarySidePanel>
 </template>
 
@@ -116,6 +150,15 @@ const KNOWLEDGE_ICONS = [Document, WarningFilled, Guide];
   min-width: 0;
   padding: 0 6px;
   box-sizing: border-box;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.knowledge-card:hover {
+  background: rgb(0 38 74 / 55%);
+  border-radius: 2px;
 }
 
 .knowledge-card + .knowledge-card {

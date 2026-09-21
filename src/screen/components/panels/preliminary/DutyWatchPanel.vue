@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
 import { UserFilled } from '@element-plus/icons-vue';
 import { fetchDutyRoster } from '@/services/duty';
+import InfoDetailDialog from '../../common/InfoDetailDialog.vue';
 import type { DesignModule } from '@/utils/designAssets';
 
 interface DutyWatchPerson {
@@ -48,6 +49,27 @@ const persons = computed<DutyWatchPerson[]>(() => {
   });
 });
 
+// 点击值班人员卡弹详情（与系统「更多=弹对话框」先例一致；值班无独立承接页）
+const selectedPerson = ref<DutyWatchPerson | null>(null);
+const detailOpen = ref(false);
+
+function openPerson(person: DutyWatchPerson) {
+  selectedPerson.value = person;
+  detailOpen.value = true;
+}
+
+const personFields = computed(() =>
+  selectedPerson.value
+    ? [
+        { label: '姓名', value: selectedPerson.value.name },
+        { label: '角色', value: selectedPerson.value.role },
+        { label: '电话', value: selectedPerson.value.phone },
+        { label: '部门', value: selectedPerson.value.department || '--' },
+        { label: '班次', value: selectedPerson.value.shift === 'night' ? '夜班' : '白班' },
+      ]
+    : [],
+);
+
 onMounted(async () => {
   try {
     const roster = await fetchDutyRoster();
@@ -82,7 +104,14 @@ onMounted(async () => {
       </div>
 
       <div class="duty-watch__list">
-        <div v-for="person in persons" :key="person.id" class="duty-card">
+        <div
+          v-for="person in persons"
+          :key="person.id"
+          class="duty-card"
+          role="button"
+          tabindex="0"
+          @click="openPerson(person)"
+        >
           <div class="duty-card__avatar" aria-hidden="true">
             <span class="duty-card__avatar-icon">
               <UserFilled />
@@ -117,6 +146,13 @@ onMounted(async () => {
         </button>
       </div>
     </div>
+
+    <InfoDetailDialog
+      :open="detailOpen"
+      title="值班人员详情"
+      :fields="personFields"
+      @close="detailOpen = false"
+    />
   </PreliminarySidePanel>
 </template>
 
@@ -177,6 +213,15 @@ onMounted(async () => {
   background: rgb(0 18 40 / 55%);
   border: 1px solid rgb(0 110 190 / 32%);
   border-radius: 2px;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.duty-card:hover {
+  background: rgb(0 38 74 / 55%);
+  border-color: rgb(0 150 230 / 42%);
 }
 
 .duty-card__avatar {
