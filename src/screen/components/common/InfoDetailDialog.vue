@@ -7,10 +7,17 @@ export interface DetailField {
   value: string;
 }
 
+export interface DetailListItem {
+  primary: string;
+  secondary?: string | null;
+}
+
 defineProps<{
   open: boolean;
   title?: string;
   fields: DetailField[];
+  /** 可选：真实明细列表（如应急力量各类别台账前若干项），渲染在字段区下方。 */
+  items?: DetailListItem[];
 }>();
 
 const emit = defineEmits<{
@@ -51,7 +58,23 @@ function closeDialog() {
                 <dd class="info-detail__value">{{ field.value || '--' }}</dd>
               </div>
             </dl>
-            <p v-else class="info-detail__empty">暂无可展示的明细</p>
+
+            <ul v-if="items && items.length" class="info-detail__items">
+              <li
+                v-for="(item, i) in items"
+                :key="`${item.primary}-${i}`"
+                class="info-detail__item"
+              >
+                <span class="info-detail__item-name">{{ item.primary }}</span>
+                <span v-if="item.secondary" class="info-detail__item-meta">{{
+                  item.secondary
+                }}</span>
+              </li>
+            </ul>
+
+            <p v-if="!fields.length && !(items && items.length)" class="info-detail__empty">
+              暂无可展示的明细
+            </p>
           </div>
         </section>
       </div>
@@ -153,6 +176,42 @@ function closeDialog() {
   line-height: 1.6;
   color: var(--color-text-strong);
   word-break: break-all;
+}
+
+.info-detail__items {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.info-detail__item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 6px;
+  border-bottom: 1px solid var(--list-divider, rgb(0 110 190 / 14%));
+}
+
+.info-detail__item:last-child {
+  border-bottom: none;
+}
+
+.info-detail__item-name {
+  font-size: 14px;
+  color: var(--color-text-strong);
+}
+
+.info-detail__item-meta {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--color-text-muted, #9aadc4);
+  text-align: right;
 }
 
 .info-detail__empty {

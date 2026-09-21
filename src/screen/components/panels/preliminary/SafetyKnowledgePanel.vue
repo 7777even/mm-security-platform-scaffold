@@ -12,6 +12,8 @@ interface KnowledgePanelItem {
   line2: string;
   count: number;
   countTone: string;
+  /** 知识分类说明（后端 sys_knowledge_item.description）。 */
+  description?: string | null;
 }
 
 // module 仅用于面板配色/切图变体（PreliminarySidePanel），数据不再按模块分流
@@ -40,7 +42,7 @@ const itemFields = computed(() =>
     ? [
         { label: '知识主题', value: selectedItem.value.line1 },
         { label: '知识条目', value: `${selectedItem.value.count} 条` },
-        { label: '说明', value: '该主题应急生产安全知识条目汇总。' },
+        { label: '说明', value: selectedItem.value.description ?? '该主题暂无分类说明。' },
       ]
     : [],
 );
@@ -54,6 +56,7 @@ onMounted(async () => {
       line2: '知识条目',
       count: it.count,
       countTone: i % 2 === 0 ? 'lime' : 'cyan',
+      description: it.description ?? null,
     }));
   } catch {
     // 保留空，模板回退无卡片

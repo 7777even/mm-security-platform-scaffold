@@ -10,7 +10,7 @@ import {
   FirstAidKit,
   Warning,
 } from '@element-plus/icons-vue';
-import { fetchEmergencyStrength } from '@/services/emergency';
+import { fetchEmergencyStrength, type EmergencyResource } from '@/services/emergency';
 import InfoDetailDialog from '../../common/InfoDetailDialog.vue';
 import type { DesignModule } from '@/utils/designAssets';
 
@@ -30,49 +30,43 @@ withDefaults(
 
 // 单一数据源：无论 preliminary / fireEmergency 模块，统一走 /emergency/strength
 // （services/emergency.ts 内置无后端时的演示 fixture 与非法响应空态，见 backendFallback.ts）
-const stats = ref<RescueStat[]>([]);
+const resources = ref<EmergencyResource[]>([]);
 
-// 点击应急力量统计卡弹详情（与系统「更多=弹对话框」先例一致；后端仅返回聚合数，弹窗展示类别/数量/说明）
-const RESCUE_DESC: Record<string, string> = {
-  应急专家: '可调动的应急专家人数，由应急资源台账实时聚合。',
-  应急物资: '库存应急物资总数，由应急资源台账实时聚合。',
-  救援队伍: '在册救援队伍数量，由应急资源台账实时聚合。',
-  装备车辆: '应急装备车辆数量，由应急资源台账实时聚合。',
-  应急场所: '应急避难/集结点位数量，由应急资源台账实时聚合。',
-  医疗机构: '协作医疗机构数量，由应急资源台账实时聚合。',
-  应急车辆: '应急保障车辆数量，由应急资源台账实时聚合。',
-  消防设施: '消防设施点位数量，由应急资源台账实时聚合。',
-};
+const stats = computed<RescueStat[]>(() =>
+  resources.value.map((r, i) => ({ label: r.kind, value: r.count, iconIndex: i })),
+);
 
-const selectedStat = ref<RescueStat | null>(null);
+// 点击应急力量统计卡弹详情（与系统「更多=弹对话框」先例一致）；
+// 明细来自后端 items（应急专家/物资/车辆/救援队伍 4 类有真实台账项，其余类别为统计口径）。
+const selected = ref<EmergencyResource | null>(null);
 const detailOpen = ref(false);
 
 function openStat(stat: RescueStat) {
-  selectedStat.value = stat;
+  selected.value = resources.value.find((r) => r.kind === stat.label) ?? null;
   detailOpen.value = true;
 }
 
-const statFields = computed(() =>
-  selectedStat.value
-    ? [
-        { label: '资源类别', value: selectedStat.value.label },
-        { label: '资源数量', value: `${selectedStat.value.value} 项` },
-        {
-          label: '说明',
-          value: RESCUE_DESC[selectedStat.value.label] ?? '该维度应急资源实时汇总。',
-        },
-      ]
-    : [],
+const statFields = computed(() => {
+  const r = selected.value;
+  if (!r) return [];
+  const fields = [
+    { label: '资源类别', value: r.kind },
+    { label: '资源数量', value: `${r.count} 项` },
+  ];
+  if (!r.items || r.items.length === 0) {
+    fields.push({ label: '明细', value: '该类别为统计口径，暂无逐项明细台账。' });
+  }
+  return fields;
+});
+
+const statItems = computed(() =>
+  (selected.value?.items ?? []).map((it) => ({ primary: it.name, secondary: it.meta ?? null })),
 );
 
 onMounted(async () => {
   try {
     const strength = await fetchEmergencyStrength();
-    stats.value = strength.resources.map((r, i) => ({
-      label: r.kind,
-      value: r.count,
-      iconIndex: i,
-    }));
+    resources.value = strength.resources;
   } catch {
     // 保留空，模板回退无卡片
   }
@@ -108,6 +102,7 @@ const RESCUE_ICONS = [UserFilled, Box, Avatar, Van, OfficeBuilding, FirstAidKit,
       :open="detailOpen"
       title="应急力量详情"
       :fields="statFields"
+      :items="statItems"
       @close="detailOpen = false"
     />
   </PreliminarySidePanel>
