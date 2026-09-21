@@ -78,3 +78,21 @@
 
 - **WHEN** `POST /emergency-events/{id}/report` 失败（弱网 / 离线）
 - **THEN** 前端经 `backendUnavailableWarn` 暴露告警，刷新后以聚合 `reported` 为准
+
+### Requirement: 事故救援处置页启动应急响应持久化
+
+处置页（fm-rescue）点击「启动应急响应」时，前端须调用 `POST /api/v1/emergency-events/{id}/start-response` 将事件状态推进为「处置中」并刷新聚合；刷新 / 深链后按钮仍呈「响应已启动」、事件状态呈「处置中」。
+
+- 不得仅停留在前端局部状态：`responseStarted` 须由聚合 `status`（`processing` / 中文「处置中」）派生，叠加本地乐观覆盖。
+- **演练模式（`isDrillMode`）为仿真本地流程，SHALL NOT 调用写端点**（避免演练事件 id 误写真实应急事件）；`report` 同理。
+
+#### Scenario: 处置页启动后状态保持
+
+- **WHEN** 用户在处置页点击「启动应急响应」，且后端可达
+- **THEN** 前端调用 `POST /emergency-events/{id}/start-response` 并刷新 `/accident/rescue-incident`
+- **AND** 按钮呈「响应已启动」、事件状态呈「处置中」，刷新页面后仍保持
+
+#### Scenario: 演练模式不落库
+
+- **WHEN** 在演练详情页（`isDrillMode`）点击「启动演练响应」
+- **THEN** 仅置本地状态，**不**调用 `POST /emergency-events/{id}/start-response`
