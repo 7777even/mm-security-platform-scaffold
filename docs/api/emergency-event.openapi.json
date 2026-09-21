@@ -187,6 +187,49 @@
         }
       }
     },
+    "/emergency-events/{id}/start-response": {
+      "post": {
+        "summary": "启动应急响应",
+        "description": "将应急事件状态推进为「处置中」（fac_emergency_event.status=processing、status_label=处置中），并同步关联事故救援事件（fac_accident_incident 的 status_name=processing、map_status=处置中）。事件不存在返回 404。返回更新后的事件项。",
+        "tags": ["emergency-event"],
+        "operationId": "startEmergencyResponse",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "description": "应急事件 id",
+              "example": 26
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "启动成功，返回更新后的事件项",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmergencyEventItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 26,
+                    "title": "东厂区突发应急事件",
+                    "reported": true,
+                    "status": "processing",
+                    "statusLabel": "处置中"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/emergency-events/evacuation-people": {
       "get": {
         "summary": "疏散人员进度列表",

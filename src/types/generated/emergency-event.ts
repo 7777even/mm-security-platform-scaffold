@@ -43,6 +43,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/emergency-events/{id}/start-response': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 启动应急响应
+     * @description 将应急事件状态推进为「处置中」（fac_emergency_event.status=processing、status_label=处置中），并同步关联事故救援事件（fac_accident_incident 的 status_name=processing、map_status=处置中）。事件不存在返回 404。返回更新后的事件项。
+     */
+    post: operations['startEmergencyResponse'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/emergency-events/evacuation-people': {
     parameters: {
       query?: never;
@@ -611,6 +631,41 @@ export interface operations {
            *         "reported": true,
            *         "status": "pending",
            *         "statusLabel": "未处置"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['EmergencyEventItem'];
+        };
+      };
+    };
+  };
+  startEmergencyResponse: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description 启动成功，返回更新后的事件项 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 26,
+           *         "title": "东厂区突发应急事件",
+           *         "reported": true,
+           *         "status": "processing",
+           *         "statusLabel": "处置中"
            *       }
            *     }
            */
