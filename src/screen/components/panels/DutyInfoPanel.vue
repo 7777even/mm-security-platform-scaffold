@@ -26,17 +26,37 @@ import {
 import { closeSpecialOperationView } from '../../lib/composables/useSpecialOperationView';
 
 const shift = ref<'day' | 'night'>('day');
+// 部门筛选：选项来自后端 duty.departments，默认「全部」
+const department = ref<string>('全部');
+const departments = ref<string[]>(['全部']);
 const { filterByPlantArea, scaleAreaCount } = usePlantArea();
+
+/** 兼容后端可能返回的 shift 写法（白班/夜班/day/night 等） */
+function normalizeShift(raw?: string): 'day' | 'night' {
+  const s = (raw ?? '白班').trim().toLowerCase();
+  if (s === 'day' || s === '白班' || s === '日班' || s === '白') return 'day';
+  if (s === 'night' || s === '夜班' || s === '晚班' || s === '黑') return 'night';
+  return 'day';
+}
+
 // 值班人员：直连真后端 /emergency/duty。service 在未配置 VITE_API_BASE 时回落 DEV fixture（纯演示），
 // 后端就绪但失败/为空时返回空集合——此处保持空态，绝不回填本地 mock 冒充真实数据。
-// 厂区过滤沿用既有 filterByPlantArea。
-const realDutyPersons = ref<DutyPerson[]>([]);
+// 厂区过滤沿用既有 filterByPlantArea；部门 + 班次按后端真实字段过滤。
+type DutyPersonScoped = DutyPerson & { department?: string; shift?: string };
+const realDutyPersons = ref<DutyPersonScoped[]>([]);
 const dutySource = computed(() => realDutyPersons.value);
-const scopedDutyPersons = computed(() => filterByPlantArea(dutySource.value));
-const visibleDutyPersons = computed(() => {
-  const leader = dutySource.value.find((person) => person.role === '值班领导');
+const dutyFiltered = computed(() =>
+  dutySource.value.filter(
+    (person) =>
+      normalizeShift(person.shift) === shift.value &&
+      (department.value === '全部' || person.department === department.value),
+  ),
+);
+const scopedDutyPersons = computed(() => filterByPlantArea(dutyFiltered.value));
+const visibleDutyPersons = computed<DutyPersonScoped[]>(() => {
+  const leader = dutyFiltered.value.find((person) => person.role === '值班领导');
   const staff = scopedDutyPersons.value.find((person) => person.role !== '值班领导');
-  return [leader, staff].filter((person): person is DutyPerson => Boolean(person));
+  return [leader, staff].filter((person): person is DutyPersonScoped => Boolean(person));
 });
 
 // 消防救援力量统计：直连真后端 /fire/rescue-forces。
@@ -51,7 +71,15 @@ onMounted(async () => {
       name: m.name,
       phone: m.phone,
       role: m.role,
+      department: m.department,
+      shift: m.shift,
     }));
+    const deptList =
+      Array.isArray(roster.departments) && roster.departments.length > 0
+        ? roster.departments.filter((d) => d && d !== '全部')
+        : [];
+    departments.value = ['全部', ...deptList];
+    if (!departments.value.includes(department.value)) department.value = '全部';
   } catch {
     // 真实接口异常时保持空态，不回落本地 mock（避免假数据冒充后端）
   }
@@ -82,10 +110,8 @@ function handleStatClick(label: string) {
     <div class="duty-controls">
       <div class="duty-header__dept">
         <span class="duty-header__dept-label">部门</span>
-        <select class="duty-header__select">
-          <option>全部</option>
-          <option>消防支队</option>
-          <option>安全保卫部</option>
+        <select v-model="department" class="duty-header__select">
+          <option v-for="dep in departments" :key="dep" :value="dep">{{ dep }}</option>
         </select>
       </div>
       <div class="duty-shift">
@@ -228,9 +254,10 @@ function handleStatClick(label: string) {
 .duty-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: 1fr;
+
+  /* 与 /emergency、事故救援值班面板统一：行高固定 58px + 顶对齐，不随人数拉伸 */
+  grid-auto-rows: 58px;
   gap: 8px;
-  height: 72px;
   min-height: 0;
   align-content: start;
 }
@@ -280,14 +307,14 @@ function handleStatClick(label: string) {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 6px 10px;
   background: linear-gradient(180deg, rgb(0 34 66 / 55%), rgb(0 20 42 / 42%));
   border: 1px solid var(--stat-card-border);
   border-radius: 2px;
   box-shadow: inset 0 0 10px rgb(0 170 255 / 8%);
   box-sizing: border-box;
   overflow: hidden;
-  min-height: 64px;
+  min-height: 58px;
 }
 
 .duty-card__icon-wrap {

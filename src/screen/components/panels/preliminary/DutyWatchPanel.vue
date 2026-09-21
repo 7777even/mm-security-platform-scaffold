@@ -10,6 +10,7 @@ interface DutyWatchPerson {
   name: string;
   role: string;
   phone: string;
+  department?: string;
   shift?: string;
 }
 
@@ -22,6 +23,9 @@ withDefaults(
 );
 
 const shift = ref<'day' | 'night'>('day');
+// 部门筛选：选项来自后端 duty.departments，默认「全部」
+const department = ref<string>('全部');
+const departments = ref<string[]>(['全部']);
 
 /** 兼容后端可能返回的 shift 写法（白班/夜班/day/night 等） */
 function normalizeShift(raw?: string): 'day' | 'night' {
@@ -36,17 +40,29 @@ function normalizeShift(raw?: string): 'day' | 'night' {
 const allPersons = ref<DutyWatchPerson[]>([]);
 const persons = computed<DutyWatchPerson[]>(() => {
   const target = shift.value;
-  return allPersons.value.filter((p) => normalizeShift(p.shift) === target);
+  const dep = department.value;
+  return allPersons.value.filter((p) => {
+    if (normalizeShift(p.shift) !== target) return false;
+    if (dep && dep !== '全部' && p.department !== dep) return false;
+    return true;
+  });
 });
 
 onMounted(async () => {
   try {
     const roster = await fetchDutyRoster();
+    const deptList =
+      Array.isArray(roster.departments) && roster.departments.length > 0
+        ? roster.departments.filter((d) => d && d !== '全部')
+        : [];
+    departments.value = ['全部', ...deptList];
+    if (!departments.value.includes(department.value)) department.value = '全部';
     allPersons.value = roster.members.map((m) => ({
       id: m.id,
       name: m.name,
       role: m.role,
       phone: m.phone,
+      department: m.department,
       shift: m.shift,
     }));
   } catch {
@@ -60,10 +76,8 @@ onMounted(async () => {
     <div class="duty-watch">
       <div class="duty-watch__filter">
         <span class="duty-watch__filter-label">部门：</span>
-        <select class="duty-watch__select">
-          <option>全部</option>
-          <option>应急指挥部</option>
-          <option>安全保卫部</option>
+        <select v-model="department" class="duty-watch__select">
+          <option v-for="dep in departments" :key="dep" :value="dep">{{ dep }}</option>
         </select>
       </div>
 
@@ -145,7 +159,10 @@ onMounted(async () => {
 .duty-watch__list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-auto-rows: minmax(58px, 1fr);
+
+  /* 行高固定 58px + 顶对齐：部门过滤后只剩少量人员时卡片不被 1fr 纵向撑大 */
+  grid-auto-rows: 58px;
+  align-content: start;
   gap: 6px 8px;
   min-height: 0;
   overflow-y: auto;

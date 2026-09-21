@@ -47,12 +47,21 @@ withDefaults(
 
 const emit = defineEmits<{ 'update:collapsed': [value: boolean] }>();
 
-// 真实值班值守：/emergency/duty（DutyMember 含真实 shift，按白班/夜班过滤）
+// 真实值班值守：/emergency/duty（DutyMember 含真实 shift / department，按白班/夜班 + 部门过滤）
 const realDutyMembers = ref<DutyMember[] | null>(null);
+// 部门筛选：选项来自后端 duty.departments，默认「全部」
+const department = ref<string>('全部');
+const departments = ref<string[]>(['全部']);
 async function load(): Promise<void> {
   try {
     const roster = await fetchDutyRoster();
     realDutyMembers.value = roster.members ?? [];
+    const deptList =
+      Array.isArray(roster.departments) && roster.departments.length > 0
+        ? roster.departments.filter((d) => d && d !== '全部')
+        : [];
+    departments.value = ['全部', ...deptList];
+    if (!departments.value.includes(department.value)) department.value = '全部';
   } catch {
     realDutyMembers.value = null;
   }
@@ -73,6 +82,14 @@ function normalizeShift(raw?: string): 'day' | 'night' {
 
 // 真实值班值守优先；后端不可用（含纯静态演示未配置 VITE_API_BASE）时回落空数组，绝不冒充真实数据
 const persons = computed<DutyMember[]>(() => realDutyMembers.value ?? []);
+// 列表按班次 + 部门双过滤（与 /emergency 值班值守面板同口径）
+const visiblePersons = computed(() =>
+  persons.value.filter(
+    (person) =>
+      normalizeShift(person.shift) === shift.value &&
+      (department.value === '全部' || person.department === department.value),
+  ),
+);
 const activePersons = computed(() =>
   persons.value
     .filter((person) => normalizeShift(person.shift) === shift.value)
@@ -123,13 +140,13 @@ const leader = computed(
       <template v-else>
         <div class="duty-watch__filter">
           <span class="duty-watch__filter-label">部门：</span>
-          <select class="duty-watch__select">
-            <option>全部</option>
+          <select v-model="department" class="duty-watch__select">
+            <option v-for="dep in departments" :key="dep" :value="dep">{{ dep }}</option>
           </select>
         </div>
 
         <div class="duty-watch__list">
-          <div v-for="person in persons" :key="person.id" class="duty-card">
+          <div v-for="person in visiblePersons" :key="person.id" class="duty-card">
             <div class="duty-card__avatar" aria-hidden="true">
               <span class="duty-card__avatar-icon">
                 <UserFilled />
@@ -251,7 +268,10 @@ const leader = computed(
 .duty-watch__list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-auto-rows: minmax(58px, 1fr);
+
+  /* 行高固定 58px + 顶对齐：部门过滤后只剩少量人员时卡片不被 1fr 纵向撑大 */
+  grid-auto-rows: 58px;
+  align-content: start;
   gap: 6px 8px;
   min-height: 0;
   overflow-y: auto;
