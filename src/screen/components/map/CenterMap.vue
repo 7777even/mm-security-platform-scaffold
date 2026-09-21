@@ -5,7 +5,9 @@ import MapCleanModeButton from './MapCleanModeButton.vue';
 import FireSituationMarker from './FireSituationMarker.vue';
 import { sprites } from '../../utils/spriteConfig';
 import { fireAlarmMarker, mapControls } from '../../lib/data/mock';
-import { useMapControls } from '../../lib/composables/useMapControls';
+import { useMapControls, useMapControlActive } from '../../lib/composables/useMapControls';
+import { useMapPageSearch } from '../../lib/composables/useMapPageSearch';
+import type { SearchableMapMarker } from '../../lib/composables/useMapSearchRegistry';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
 import { findScreenAlarm, refreshScreenAlarms } from '../../lib/composables/useScreenAlarmFeed';
 import { rescueDrawerActive } from '../../lib/composables/useRescueDrawerActive';
@@ -25,6 +27,7 @@ import {
 } from '../../lib/composables/useSpecialOperationView';
 
 const { onMapControl } = useMapControls();
+const { isActive } = useMapControlActive();
 const { alarmDetailOpen, openAlarmDetail } = useAlarmDetailPanel();
 const { selectedPlantArea } = usePlantArea();
 const router = useRouter();
@@ -70,6 +73,27 @@ function openSituationDetail(item: FireSituationMarkerItem) {
 }
 
 const fireSituationMarkers = ref<FireSituationMarkerItem[]>([]);
+
+// 向共享搜索索引注册「本页已渲染点位」（消防态势 + 中心报警点）
+useMapPageSearch((): SearchableMapMarker[] => [
+  ...fireSituationMarkers.value
+    .filter((m) => Number.isFinite(m.longitude) && Number.isFinite(m.latitude))
+    .map((m) => ({
+      id: `fs-${m.id}`,
+      name: m.title,
+      type: '消防态势',
+      longitude: m.longitude,
+      latitude: m.latitude,
+    })),
+  {
+    id: 'center-alarm',
+    name: fireAlarmMarker.location,
+    type: '报警',
+    longitude: alarmTarget.value.longitude,
+    latitude: alarmTarget.value.latitude,
+  },
+]);
+
 onMounted(() => {
   void refreshScreenAlarms();
   void fetchFireSituationMarkers()
@@ -117,6 +141,7 @@ onMounted(() => {
         :key="ctrl.key"
         type="button"
         class="map-control-btn"
+        :class="{ 'map-control-btn--active': isActive(ctrl.key) }"
         :title="ctrl.label"
         :aria-label="ctrl.label"
         @click="onMapControl(ctrl.key)"
@@ -194,6 +219,11 @@ onMounted(() => {
 .map-control-btn:hover {
   opacity: 1;
   filter: brightness(1.12);
+}
+
+.map-control-btn--active {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px var(--color-accent)) brightness(1.2);
 }
 
 .fire-situation-layer {

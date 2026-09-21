@@ -10,7 +10,9 @@ import {
   accidentRescueMapControls,
   accidentRescueMapMarkers,
 } from '../../lib/data/accidentRescueMock';
-import { useMapControls } from '../../lib/composables/useMapControls';
+import { useMapControls, useMapControlActive } from '../../lib/composables/useMapControls';
+import { useMapPageSearch } from '../../lib/composables/useMapPageSearch';
+import type { SearchableMapMarker } from '../../lib/composables/useMapSearchRegistry';
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import { useAccidentRescueRoute } from '../../lib/composables/useAccidentRescueRoute';
 import { accidentRescueRouteWaypoints } from '../../lib/data/accidentRescueMock';
@@ -74,7 +76,36 @@ const emit = defineEmits<{
 }>();
 
 const { onMapControl } = useMapControls();
+const { isActive } = useMapControlActive();
 const showVehiclePopup = ref(true);
+
+// 向共享搜索索引注册「本页已渲染点位」（事件点 + 厂区出入口）
+useMapPageSearch((): SearchableMapMarker[] => {
+  const out: SearchableMapMarker[] = [];
+  if (
+    Number.isFinite(fireMarkerCoords.value.longitude) &&
+    Number.isFinite(fireMarkerCoords.value.latitude)
+  ) {
+    out.push({
+      id: 'ar-fire',
+      name: props.incidentTitle || (props.markerKind === 'drill' ? '应急演练' : '应急事件'),
+      type: '事件',
+      longitude: fireMarkerCoords.value.longitude,
+      latitude: fireMarkerCoords.value.latitude,
+    });
+  }
+  const gate = accidentRescueMapMarkers.gate;
+  if (Number.isFinite(gate.longitude) && Number.isFinite(gate.latitude)) {
+    out.push({
+      id: 'ar-gate',
+      name: gate.label,
+      type: '厂区出入口',
+      longitude: gate.longitude,
+      latitude: gate.latitude,
+    });
+  }
+  return out;
+});
 const routeGradientId = 'accident-rescue-route-gradient';
 
 function overlayHeight() {
@@ -318,6 +349,7 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
           :key="ctrl.key"
           type="button"
           class="map-control-btn"
+          :class="{ 'map-control-btn--active': isActive(ctrl.key) }"
           :title="ctrl.label"
           :aria-label="ctrl.label"
           @click="handleMapControl(ctrl.key)"
@@ -882,5 +914,9 @@ watch(() => [props.incidentLongitude, props.incidentLatitude] as const, schedule
   background: transparent;
   cursor: pointer;
   line-height: 0;
+}
+
+.map-control-btn--active {
+  filter: drop-shadow(0 0 6px var(--color-accent)) brightness(1.2);
 }
 </style>

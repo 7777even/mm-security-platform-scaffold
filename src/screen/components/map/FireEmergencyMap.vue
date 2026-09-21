@@ -6,7 +6,9 @@ import MapPointMarker from '@/components/map/MapPointMarker.vue';
 import { fireEmergencySprites } from '@/utils/fireEmergencySpriteConfig';
 import { fireEmergencyMapControls } from '../../lib/data/fireEmergencyMock';
 import type { EmergencyEventItem } from '../../lib/data/fireEmergencyMock';
-import { useMapControls } from '../../lib/composables/useMapControls';
+import { useMapControls, useMapControlActive } from '../../lib/composables/useMapControls';
+import { useMapPageSearch } from '../../lib/composables/useMapPageSearch';
+import type { SearchableMapMarker } from '../../lib/composables/useMapSearchRegistry';
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
 import {
@@ -25,7 +27,21 @@ function markerIconFor(event: EmergencyEventItem) {
 }
 
 const { onMapControl } = useMapControls();
+const { isActive } = useMapControlActive();
 const { goToEventDispose } = useAccidentRescueNavigation();
+
+// 向共享搜索索引注册「本页已渲染点位」（应急事件）
+useMapPageSearch((): SearchableMapMarker[] =>
+  fireEmergencyPagedEvents.value
+    .filter((e) => Number.isFinite(e.longitude) && Number.isFinite(e.latitude))
+    .map((e) => ({
+      id: `fe-${e.id}`,
+      name: e.title,
+      type: '应急事件',
+      longitude: e.longitude,
+      latitude: e.latitude,
+    })),
+);
 
 const { styleFor: markerStyleFor } = useWorldMarkerScreenPositions(
   () => {
@@ -119,6 +135,7 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
         :key="ctrl.key"
         type="button"
         class="map-control-btn"
+        :class="{ 'map-control-btn--active': isActive(ctrl.key) }"
         :title="ctrl.label"
         :aria-label="ctrl.label"
         @click="onMapControl(ctrl.key)"
@@ -390,5 +407,10 @@ function handleDispose(event: EmergencyEventItem, e: MouseEvent) {
 .map-control-btn:hover {
   opacity: 1;
   filter: brightness(1.12);
+}
+
+.map-control-btn--active {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px var(--color-accent)) brightness(1.2);
 }
 </style>

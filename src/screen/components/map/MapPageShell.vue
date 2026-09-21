@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useMapCleanMode } from '../../lib/composables/useMapCleanMode';
+import { plantAreaSelectorVisible } from '../../lib/composables/useMapControls';
 import PlantAreaSelector from './PlantAreaSelector.vue';
+import MapSearchPanel from './MapSearchPanel.vue';
 
 withDefaults(
   defineProps<{
@@ -24,7 +26,8 @@ const { cleanMode } = useMapCleanMode();
     <div v-if="$slots.floating" class="map-page-shell__floating">
       <slot name="floating" />
     </div>
-    <PlantAreaSelector />
+    <PlantAreaSelector v-if="plantAreaSelectorVisible" />
+    <MapSearchPanel />
     <div class="map-page-shell__ui">
       <slot />
     </div>

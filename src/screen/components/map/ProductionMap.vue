@@ -7,7 +7,9 @@ import MapPointMarker, { type MapPointTone } from '@/components/map/MapPointMark
 import { productionSprites } from '@/utils/productionSpriteConfig';
 import { productionMapControls } from '@/services/productionMapConfig';
 import { fetchProductionPersonnel, type PersonnelMarker } from '@/services/production';
-import { useMapControls } from '../../lib/composables/useMapControls';
+import { useMapControls, useMapControlActive } from '../../lib/composables/useMapControls';
+import { useMapPageSearch } from '../../lib/composables/useMapPageSearch';
+import type { SearchableMapMarker } from '../../lib/composables/useMapSearchRegistry';
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
 import {
@@ -31,6 +33,7 @@ import {
 import { fetchAlarmPoints, type MapPoint } from '@/services/map';
 
 const { onMapControl } = useMapControls();
+const { isActive } = useMapControlActive();
 const { filterByPlantArea } = usePlantArea();
 
 // 人员定位标记来自真实后端（/production/personnel）。统一复用公共点位组件 MapPointMarker，
@@ -258,6 +261,60 @@ const alarmMarkerTargets = () => {
 const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTargets, {
   scaleWithZoom: false,
 });
+
+// 向共享搜索索引注册「本页已渲染点位」（人员/设备/通讯设备/报警，仅含当前展开抽屉内的点）
+useMapPageSearch((): SearchableMapMarker[] => {
+  const out: SearchableMapMarker[] = [];
+  for (const m of visiblePersonnelMarkers.value) {
+    if (Number.isFinite(m.longitude) && Number.isFinite(m.latitude)) {
+      out.push({
+        id: `p-${m.id}`,
+        name: m.location,
+        type: '人员',
+        longitude: m.longitude,
+        latitude: m.latitude,
+      });
+    }
+  }
+  if (productionDeviceDrawerActive.value) {
+    for (const item of productionDevicePagedItems.value) {
+      if (Number.isFinite(item.longitude) && Number.isFinite(item.latitude)) {
+        out.push({
+          id: `device-${item.id}`,
+          name: item.name,
+          type: '设备',
+          longitude: item.longitude,
+          latitude: item.latitude,
+        });
+      }
+    }
+  }
+  if (communicationDrawerOpen.value) {
+    for (const item of allDevices.value) {
+      if (Number.isFinite(item.longitude) && Number.isFinite(item.latitude)) {
+        out.push({
+          id: `comm-${item.id}`,
+          name: item.name,
+          type: '通讯设备',
+          longitude: item.longitude,
+          latitude: item.latitude,
+        });
+      }
+    }
+  }
+  for (const p of alarmPoints.value) {
+    if (Number.isFinite(p.lng) && Number.isFinite(p.lat)) {
+      out.push({
+        id: `real-alarm-${p.id}`,
+        name: p.name,
+        type: '报警',
+        longitude: p.lng,
+        latitude: p.lat,
+      });
+    }
+  }
+  return out;
+});
 </script>
 
 <template>
@@ -306,6 +363,7 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
         :key="ctrl.key"
         type="button"
         class="map-control-btn"
+        :class="{ 'map-control-btn--active': isActive(ctrl.key) }"
         :title="ctrl.label"
         :aria-label="ctrl.label"
         @click="onMapControl(ctrl.key)"
@@ -414,5 +472,10 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
 .map-control-btn:hover {
   opacity: 1;
   filter: brightness(1.12);
+}
+
+.map-control-btn--active {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px var(--color-accent)) brightness(1.2);
 }
 </style>

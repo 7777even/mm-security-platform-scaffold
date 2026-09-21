@@ -11,7 +11,9 @@ import { tvAlarmMarker, tvMapControls } from '../../lib/data/tvMock';
 import { fetchTvMapPoints, type TvMapPoint } from '@/services/tv';
 import { fetchAlarmPoints } from '@/services/map';
 import { backendUnavailableWarn } from '@/services/backendFallback';
-import { useMapControls } from '../../lib/composables/useMapControls';
+import { useMapControls, useMapControlActive } from '../../lib/composables/useMapControls';
+import { useMapPageSearch } from '../../lib/composables/useMapPageSearch';
+import type { SearchableMapMarker } from '../../lib/composables/useMapSearchRegistry';
 import {
   useCesiumScreenAnchor,
   useWorldMarkerScreenPositions,
@@ -20,6 +22,7 @@ import { openTvVideoDetail } from '../../lib/composables/useTvVideoDetail';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
 
 const { onMapControl } = useMapControls();
+const { isActive } = useMapControlActive();
 const router = useRouter();
 
 function openVideoWall() {
@@ -93,6 +96,32 @@ function onVideoLabelClick(payload: { id: string; label: string }) {
   openTvVideoDetail(payload);
 }
 
+// 向共享搜索索引注册「本页已渲染点位」（视频点 + 告警点）
+useMapPageSearch((): SearchableMapMarker[] => {
+  const out: SearchableMapMarker[] = [];
+  for (const p of visibleVideoMapPoints.value) {
+    if (Number.isFinite(p.longitude) && Number.isFinite(p.latitude)) {
+      out.push({
+        id: `tv-${p.id}`,
+        name: p.label,
+        type: '视频点',
+        longitude: p.longitude,
+        latitude: p.latitude,
+      });
+    }
+  }
+  if (Number.isFinite(alarmMarker.value.longitude) && Number.isFinite(alarmMarker.value.latitude)) {
+    out.push({
+      id: 'tv-alarm',
+      name: alarmMarker.value.location,
+      type: '报警',
+      longitude: alarmMarker.value.longitude,
+      latitude: alarmMarker.value.latitude,
+    });
+  }
+  return out;
+});
+
 const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
   const map = getSharedMap();
   const height = map?.getBoundaryModelTopHeight?.() ?? 66.25;
@@ -156,6 +185,7 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
         :key="ctrl.key"
         type="button"
         class="map-control-btn"
+        :class="{ 'map-control-btn--active': isActive(ctrl.key) }"
         :title="ctrl.label"
         :aria-label="ctrl.label"
         @click="onMapControl(ctrl.key)"
@@ -478,6 +508,11 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
 .map-control-btn:hover {
   opacity: 1;
   filter: brightness(1.12);
+}
+
+.map-control-btn--active {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px var(--color-accent)) brightness(1.2);
 }
 
 .video-wall-trigger {

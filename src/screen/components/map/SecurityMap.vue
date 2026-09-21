@@ -14,7 +14,9 @@ import {
   securityMapToolbarItems,
 } from '@/services/security';
 import { fetchAlarmPoints, fetchDevicePoints, type MapPoint } from '@/services/map';
-import { useMapControls } from '../../lib/composables/useMapControls';
+import { useMapControls, useMapControlActive } from '../../lib/composables/useMapControls';
+import { useMapPageSearch } from '../../lib/composables/useMapPageSearch';
+import type { SearchableMapMarker } from '../../lib/composables/useMapSearchRegistry';
 import { useBoundaryGateScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import {
   onToolbarAction,
@@ -47,6 +49,7 @@ import {
 import { openGateControlDetail } from '../../lib/composables/useGateControlDetailDialog';
 
 const { onMapControl } = useMapControls();
+const { isActive } = useMapControlActive();
 const { styleFor } = useBoundaryGateScreenPositions(securityGates, securityBoundaryEdgeFallback);
 
 const patrolMarkerTargets = () => {
@@ -229,6 +232,86 @@ function patrolTone(status: string): MapPointTone {
   return 'normal';
 }
 
+// 向共享搜索索引注册「本页已渲染点位」（巡更/摄像头/防撞柱/门禁/报警/设备，仅含展开抽屉内的点）
+useMapPageSearch((): SearchableMapMarker[] => {
+  const out: SearchableMapMarker[] = [];
+  if (patrolLinkageOpen.value) {
+    for (const p of patrolLinkagePoints.value) {
+      if (Number.isFinite(p.camera.longitude) && Number.isFinite(p.camera.latitude)) {
+        out.push({
+          id: `patrol-${p.id}`,
+          name: p.camera.name ?? `巡更点${p.id}`,
+          type: '巡更点',
+          longitude: p.camera.longitude,
+          latitude: p.camera.latitude,
+        });
+      }
+    }
+  }
+  if (patrolCameraDrawerActive.value) {
+    for (const cam of patrolCameraPagedItems.value) {
+      if (Number.isFinite(cam.longitude) && Number.isFinite(cam.latitude)) {
+        out.push({
+          id: `cam-${cam.id}`,
+          name: cam.name ?? `摄像头${cam.id}`,
+          type: '摄像头',
+          longitude: cam.longitude,
+          latitude: cam.latitude,
+        });
+      }
+    }
+  }
+  if (bollardDrawerActive.value) {
+    for (const item of bollardPagedItems.value) {
+      if (Number.isFinite(item.longitude) && Number.isFinite(item.latitude)) {
+        out.push({
+          id: `bollard-${item.id}`,
+          name: item.name ?? `防撞柱${item.id}`,
+          type: '防撞柱',
+          longitude: item.longitude,
+          latitude: item.latitude,
+        });
+      }
+    }
+  }
+  if (gateControlDrawerActive.value) {
+    for (const item of gateControlPagedItems.value) {
+      if (Number.isFinite(item.longitude) && Number.isFinite(item.latitude)) {
+        out.push({
+          id: `gate-${item.id}`,
+          name: item.name ?? `门禁${item.id}`,
+          type: '门禁',
+          longitude: item.longitude,
+          latitude: item.latitude,
+        });
+      }
+    }
+  }
+  for (const p of alarmPoints.value) {
+    if (Number.isFinite(p.lng) && Number.isFinite(p.lat)) {
+      out.push({
+        id: `sec-alarm-${p.id}`,
+        name: p.name,
+        type: '报警',
+        longitude: p.lng,
+        latitude: p.lat,
+      });
+    }
+  }
+  for (const d of devicePoints.value) {
+    if (Number.isFinite(d.lng) && Number.isFinite(d.lat)) {
+      out.push({
+        id: `sec-device-${d.id}`,
+        name: d.name,
+        type: '设备',
+        longitude: d.lng,
+        latitude: d.lat,
+      });
+    }
+  }
+  return out;
+});
+
 const alarmMarkerTargets = () => {
   const height = getSharedMap()?.getBoundaryModelTopHeight?.() ?? 72;
   return alarmPoints.value.map((p) => ({
@@ -306,6 +389,7 @@ const { styleFor: deviceStyleFor } = useWorldMarkerScreenPositions(deviceMarkerT
         :key="ctrl.key"
         type="button"
         class="map-control-btn"
+        :class="{ 'map-control-btn--active': isActive(ctrl.key) }"
         :title="ctrl.label"
         :aria-label="ctrl.label"
         @click="onMapControl(ctrl.key)"
@@ -636,6 +720,11 @@ const { styleFor: deviceStyleFor } = useWorldMarkerScreenPositions(deviceMarkerT
 .map-control-btn:hover {
   opacity: 1;
   filter: brightness(1.12);
+}
+
+.map-control-btn--active {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px var(--color-accent)) brightness(1.2);
 }
 
 .security-map__toolbar {

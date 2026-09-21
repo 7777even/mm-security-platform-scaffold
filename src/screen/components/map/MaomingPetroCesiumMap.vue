@@ -6171,6 +6171,133 @@ async function setPlantAreaSelection(code, options = {}) {
   viewer.scene.requestRender();
 }
 
+// —— 报警+设备密度热力图层（工具栏「热力模式」）——
+// 自绘 canvas：按点位权重累加灰度强度，再映射为蓝→红热力色带，作为贴地 Primitive 的 Image 材质。
+let heatmapPrimitive: Cesium.Primitive | null = null;
+
+function heatColorStops(t) {
+  const stops = [
+    [0.0, [0, 60, 180]],
+    [0.25, [0, 180, 220]],
+    [0.5, [0, 200, 90]],
+    [0.75, [255, 210, 0]],
+    [1.0, [255, 40, 20]],
+  ];
+  let lo = stops[0];
+  let hi = stops[stops.length - 1];
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (t >= stops[i][0] && t <= stops[i + 1][0]) {
+      lo = stops[i];
+      hi = stops[i + 1];
+      break;
+    }
+  }
+  const span = hi[0] - lo[0] || 1;
+  const k = (t - lo[0]) / span;
+  return [
+    Math.round(lo[1][0] + (hi[1][0] - lo[1][0]) * k),
+    Math.round(lo[1][1] + (hi[1][1] - lo[1][1]) * k),
+    Math.round(lo[1][2] + (hi[1][2] - lo[1][2]) * k),
+  ];
+}
+
+function buildHeatmapCanvas(points, bounds) {
+  const size = 360;
+  const intensity = document.createElement('canvas');
+  intensity.width = size;
+  intensity.height = size;
+  const ictx = intensity.getContext('2d');
+  ictx.fillStyle = '#000';
+  ictx.fillRect(0, 0, size, size);
+
+  const { minLng, minLat, maxLng, maxLat } = bounds;
+  const spanLng = maxLng - minLng || 1e-6;
+  const spanLat = maxLat - minLat || 1e-6;
+  const radius = size * 0.13;
+
+  ictx.globalCompositeOperation = 'lighter';
+  for (const p of points) {
+    const x = ((p.longitude - minLng) / spanLng) * size;
+    const y = ((maxLat - p.latitude) / spanLat) * size; // 北在上，与 Cesium rectangle ST 对齐（v=1 在北）
+    const r = radius * (0.55 + 0.9 * (p.weight ?? 0.5));
+    const a = Math.min(1, 0.22 + (p.weight ?? 0.5) * 0.8);
+    const g = ictx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, `rgba(255,255,255,${a})`);
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ictx.fillStyle = g;
+    ictx.beginPath();
+    ictx.arc(x, y, r, 0, Math.PI * 2);
+    ictx.fill();
+  }
+
+  const out = document.createElement('canvas');
+  out.width = size;
+  out.height = size;
+  const octx = out.getContext('2d');
+  octx.drawImage(intensity, 0, 0);
+  const img = octx.getImageData(0, 0, size, size);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const t = d[i] / 255;
+    if (t <= 0.02) {
+      d[i + 3] = 0;
+      continue;
+    }
+    const [r, g, b] = heatColorStops(Math.min(1, t));
+    d[i] = r;
+    d[i + 1] = g;
+    d[i + 2] = b;
+    d[i + 3] = Math.round(Math.min(255, 255 * (0.35 + 0.65 * t)));
+  }
+  octx.putImageData(img, 0, 0);
+  return out;
+}
+
+function setHeatmapLayer(points) {
+  if (!viewer) return;
+  clearHeatmapLayer();
+  if (!points || !points.length) return;
+
+  const lngs = points.map((p) => p.longitude);
+  const lats = points.map((p) => p.latitude);
+  let minLng = Math.min.apply(null, lngs);
+  let maxLng = Math.max.apply(null, lngs);
+  let minLat = Math.min.apply(null, lats);
+  let maxLat = Math.max.apply(null, lats);
+  const padLng = (maxLng - minLng) * 0.08 || 0.01;
+  const padLat = (maxLat - minLat) * 0.08 || 0.01;
+  minLng -= padLng;
+  maxLng += padLng;
+  minLat -= padLat;
+  maxLat += padLat;
+
+  const canvas = buildHeatmapCanvas(points, { minLng, minLat, maxLng, maxLat });
+  const rect = Cesium.Rectangle.fromDegrees(minLng, minLat, maxLng, maxLat);
+  const geometry = new Cesium.RectangleGeometry({
+    rectangle: rect,
+    height: 2,
+    vertexFormat: Cesium.VertexFormat.POSITION_AND_ST,
+  });
+  const material = Cesium.Material.fromType('Image', {
+    image: canvas.toDataURL('image/png'),
+    transparent: true,
+  });
+  heatmapPrimitive = new Cesium.Primitive({
+    geometryInstances: new Cesium.GeometryInstance({ geometry, id: 'map-heatmap-layer' }),
+    appearance: new Cesium.MaterialAppearance({ material, flat: true, translucent: true }),
+    asynchronous: false,
+  });
+  viewer.scene.primitives.add(heatmapPrimitive);
+  viewer.scene.requestRender();
+}
+
+function clearHeatmapLayer() {
+  if (!viewer || !heatmapPrimitive) return;
+  viewer.scene.primitives.remove(heatmapPrimitive);
+  heatmapPrimitive = null;
+  viewer.scene.requestRender();
+}
+
 defineExpose({
   plantWireframeEnabled,
   applyPlantWireframeEnabled,
@@ -6215,6 +6342,8 @@ defineExpose({
   flyToWorldPositions,
   setPlantAreaSelection,
   ensureUserInputsEnabled,
+  setHeatmapLayer,
+  clearHeatmapLayer,
 });
 
 async function waitForContainerSize(el, timeoutMs = 5000) {

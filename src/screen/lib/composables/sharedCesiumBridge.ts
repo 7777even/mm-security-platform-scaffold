@@ -135,6 +135,11 @@ export interface SharedCesiumMapExpose {
     options?: { fly?: boolean },
   ) => void | Promise<void>;
   ensureUserInputsEnabled?: () => void;
+  /** 报警+设备密度热力图层：points 为带权重的点位，组件内部自绘 canvas 贴地渲染。 */
+  setHeatmapLayer?: (
+    points: Array<{ longitude: number; latitude: number; weight: number }>,
+  ) => void;
+  clearHeatmapLayer?: () => void;
 }
 
 export const sharedMapRef: ShallowRef<SharedCesiumMapExpose | null> = shallowRef(null);
