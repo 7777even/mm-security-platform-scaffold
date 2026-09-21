@@ -697,24 +697,27 @@
   --map-area-select-field-bg: rgb(0 31 62 / 72%); /* select 控件半透底（源 rgb(0,31,62,.72)） */
   --map-area-select-option-bg: #062846; /* option 下拉项深蓝底（源 #062846） */
 
-  /* ---- 地图纯净模式按钮（源 MapCleanModeButton） ---- */
-  --map-clean-btn-border: rgb(44 163 255 / 58%); /* 纯净模式按钮描边（源 rgb(44,163,255,.58)） */
+  /* ---- 地图纯净模式按钮 ----
+     与工具栏 7 键（设计稿贴图按钮）统一 chrome：实测设计贴图描边 ≈ rgb(11,71,116)、
+     填充 ≈ rgb(6,46,79)、图标/文字近白；旧值（亮青描边 rgb(44,163,255,.58) + 青图标 #63d8ff）
+     比贴图亮约 1.5 倍、色相偏青，视觉上与上一排按钮割裂。 */
+  --map-clean-btn-border: rgb(12 84 132 / 85%); /* 描边：对齐设计贴图（原 rgb(44,163,255,.58)） */
   --map-clean-btn-bg: linear-gradient(
     180deg,
-    rgb(8 52 99 / 92%),
-    rgb(4 28 61 / 94%)
-  ); /* 纯净模式按钮渐变底（源 MapCleanModeButton） */
+    rgb(5 46 80 / 94%),
+    rgb(2 30 55 / 95%)
+  ); /* 渐变底：对齐设计贴图（原 rgb(8,52,99)/rgb(4,28,61)） */
 
-  --map-clean-btn-glow: rgb(0 144 255 / 16%); /* 纯净模式按钮外辉光（源 rgb(0,144,255,.16)） */
-  --map-clean-btn-fg: #ccecff; /* 纯净模式按钮文字（源 #ccecff） */
-  --map-clean-btn-border-hover: #55c9ff; /* 纯净模式按钮 hover 描边（源 #55c9ff） */
+  --map-clean-btn-glow: rgb(0 120 200 / 16%); /* 外辉光：收敛亮度（原 rgb(0,144,255,.16)） */
+  --map-clean-btn-fg: #dce6f2; /* 文字：近白（原偏青 #ccecff） */
+  --map-clean-btn-border-hover: #2f9fdd; /* hover 描边：适度提亮（原 #55c9ff） */
   --map-clean-btn-bg-hover: linear-gradient(
     180deg,
-    rgb(12 91 160 / 95%),
-    rgb(5 53 112 / 96%)
-  ); /* 纯净模式按钮 hover 渐变底（源 MapCleanModeButton） */
+    rgb(10 74 128 / 95%),
+    rgb(4 44 84 / 96%)
+  ); /* hover 渐变底 */
 
-  --map-clean-btn-icon: #63d8ff; /* 纯净模式按钮图标青（源 #63d8ff） */
+  --map-clean-btn-icon: #cfe2f4; /* 图标：近白（原亮青 #63d8ff） */
 
   /* ---- 面板组件硬编码色收编（Facilities/Device/Ledger/CC/SafetyAlarm；精确等值 token，零视觉回退）---- */
   --c-31d2ff: #31d2ff;
