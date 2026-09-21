@@ -213,3 +213,15 @@ export async function fetchEvacuationPeople(count?: number): Promise<EvacuationP
     params: count !== undefined ? { count } : undefined,
   });
 }
+
+/**
+ * 事件预警（报送）：标记事件已预警（reported=true），并同步关联事故救援事件
+ * （fac_accident_incident）的 reported 标志。返回更新后的事件项，供处置页刷新状态面板。
+ * 仅登录态（值守/指挥人员自助），与 create 同源。
+ */
+export async function reportEmergencyEvent(id: number): Promise<EmergencyEventItem> {
+  return request<EmergencyEventItem>({
+    url: `/emergency-events/${id}/report`,
+    method: 'POST',
+  });
+}

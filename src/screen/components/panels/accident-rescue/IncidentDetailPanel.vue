@@ -21,7 +21,7 @@ const props = withDefaults(
     actionKind?: 'event' | 'drill';
     panelTitle?: string;
     /** 已结束事件隐藏预警、终止按钮 */
-    incidentStatus?: 'processing' | 'pending' | 'done';
+    incidentStatus?: 'processing' | 'pending' | 'done' | 'warning';
     /** 已预警时事件预警按钮置灰不可点 */
     reported?: boolean;
     /** 是否已启动应急响应（页面级状态） */
@@ -63,6 +63,19 @@ watch(
     if (typeof value === 'boolean') emergencyResponseStarted.value = value;
   },
 );
+
+/** 事件状态徽标文案：预警（reported）/ 处置中 / 已结束 / 未处置，与列表「已预警」口径一致。 */
+const statusText = computed(() => {
+  if (props.incidentStatus === 'done') return '已结束';
+  if (props.incidentStatus === 'processing') return '处置中';
+  if (props.incidentStatus === 'warning' || eventWarningDone.value) return '已预警';
+  return '未处置';
+});
+const statusClass = computed(() => ({
+  'is-warning': statusText.value === '已预警',
+  'is-processing': statusText.value === '处置中',
+  'is-done': statusText.value === '已结束',
+}));
 
 const activeTab = ref(0);
 const editOpen = ref(false);
@@ -114,6 +127,8 @@ function closeWarningModal() {
 function confirmWarning() {
   eventWarningDone.value = true;
   warningModalOpen.value = false;
+  // 持久化到后端：标记事件已预警，刷新后状态可跨页面保留。
+  emit('report');
 }
 
 function handleStartEmergencyResponse() {
@@ -124,6 +139,7 @@ function handleStartEmergencyResponse() {
 
 const emit = defineEmits<{
   'start-emergency-response': [];
+  report: [];
 }>();
 </script>
 
@@ -155,6 +171,7 @@ const emit = defineEmits<{
 
         <div v-else class="incident-detail__section-head">
           <span>事件基础信息</span>
+          <span class="incident-detail__status" :class="statusClass">{{ statusText }}</span>
           <button type="button" @click="openEdit">✎ 编辑</button>
         </div>
 
@@ -379,6 +396,35 @@ const emit = defineEmits<{
   color: #68d4ff;
   font: 11px var(--font-body);
   cursor: pointer;
+}
+
+.incident-detail__status {
+  margin-left: auto;
+  padding: 1px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 18px;
+  color: #9fb6cc;
+  background: rgb(120 140 160 / 16%);
+  border: 1px solid rgb(120 140 160 / 34%);
+}
+
+.incident-detail__status.is-warning {
+  color: #ffd27a;
+  background: rgb(255 176 32 / 16%);
+  border-color: rgb(255 176 32 / 46%);
+}
+
+.incident-detail__status.is-processing {
+  color: #ff9b6a;
+  background: rgb(255 110 40 / 16%);
+  border-color: rgb(255 110 40 / 46%);
+}
+
+.incident-detail__status.is-done {
+  color: #7fe0a8;
+  background: rgb(40 200 120 / 16%);
+  border-color: rgb(40 200 120 / 46%);
 }
 
 .incident-detail__tab {

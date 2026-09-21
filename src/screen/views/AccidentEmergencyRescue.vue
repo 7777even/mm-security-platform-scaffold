@@ -48,7 +48,8 @@ import {
   extractEvacuationLinesFromGeoJson,
 } from '../lib/geo/evacuationRoute';
 import { pickPointAlongRoute, type EvacuationPerson } from '../lib/data/evacuationPeopleMock';
-import { fetchEvacuationPeople } from '@/services/emergencyEvent';
+import { fetchEvacuationPeople, reportEmergencyEvent } from '@/services/emergencyEvent';
+import { backendUnavailableWarn } from '@/services/backendFallback';
 import {
   fetchMonitoringPoints,
   fetchMonitoringAlarms,
@@ -263,9 +264,11 @@ const rightToolbarSections = [
   },
 ] as const;
 
-const displayIncidentStatus = computed<'processing' | 'pending' | 'done'>(() => {
+const displayIncidentStatus = computed<'processing' | 'pending' | 'done' | 'warning'>(() => {
   if (incident.value.status === 'done') return 'done';
-  return responseStarted.value ? 'processing' : 'pending';
+  if (responseStarted.value) return 'processing';
+  if (incident.value.reported) return 'warning';
+  return 'pending';
 });
 
 async function flyToIncident() {
@@ -314,6 +317,18 @@ function handleStartEmergencyResponse() {
   if (responseStarted.value) return;
   responseStarted.value = true;
   responseStartedAt.value = new Date().toISOString();
+}
+
+/** 事件预警（报送）：持久化 reported 到后端（fac_emergency_event + fac_accident_incident），刷新聚合使状态可跨刷新保留。 */
+async function handleEventReport() {
+  const id = incident.value.eventId;
+  if (!id) return;
+  try {
+    await reportEmergencyEvent(id);
+    await loadIncident();
+  } catch {
+    backendUnavailableWarn('accident-rescue', `/emergency-events/${id}/report`);
+  }
 }
 
 watch(
@@ -710,6 +725,7 @@ onUnmounted(() => {
                     :show-tabs="false"
                     hide-header
                     @start-emergency-response="handleStartEmergencyResponse"
+                    @report="handleEventReport"
                   />
                   <EmergencyPlanPanel
                     :incident-fields="incident.detailFields"
@@ -744,6 +760,7 @@ onUnmounted(() => {
                 :reported="incident.reported"
                 :response-started="responseStarted"
                 @start-emergency-response="handleStartEmergencyResponse"
+                @report="handleEventReport"
               />
               <EmergencyPlanPanel
                 :incident-fields="incident.detailFields"

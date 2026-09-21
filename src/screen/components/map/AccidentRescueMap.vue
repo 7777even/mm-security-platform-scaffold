@@ -32,7 +32,7 @@ const props = withDefaults(
     incidentLongitude?: number;
     incidentLatitude?: number;
     markerKind?: 'event' | 'drill';
-    incidentStatus?: 'processing' | 'pending' | 'done';
+    incidentStatus?: 'processing' | 'pending' | 'done' | 'warning';
     /** 救援路线回放控制：播放/倍速 */
     routePlayback?: {
       playing: boolean | Ref<boolean>;

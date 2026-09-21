@@ -57,7 +57,7 @@ export interface AccidentRescuePayload {
   mapStatus: string;
   startedAt?: string;
   endedAt?: string;
-  status: 'processing' | 'pending' | 'done';
+  status: 'processing' | 'pending' | 'done' | 'warning';
   reported: boolean;
   facilityName: string;
   detailFields: IncidentDetailField[];
