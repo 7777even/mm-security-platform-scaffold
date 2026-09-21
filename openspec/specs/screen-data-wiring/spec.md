@@ -60,3 +60,21 @@
 
 - **WHEN** `POST /emergency-events` 失败（弱网 / 离线）
 - **THEN** 前端回落 `sessionStorage` 草稿 + 本地自增 id，事件仍在列表与处置页可展示（不中断用户操作）
+
+### Requirement: 事故救援处置页事件预警持久化
+
+处置页（fm-rescue）点击「事件预警」时，前端须调用 `POST /api/v1/emergency-events/{id}/report` 将事件标记为已预警并刷新聚合；`reported=true` 时处置页派生「已预警」状态，刷新后保持，与应急指挥大屏列表口径一致。
+
+- 「事件预警」成功后须以返回 / 聚合的 `reported=true` 呈现「已预警」，不得仅停留在前端局部状态。
+- 预警状态经 `fac_emergency_event` 与 `fac_accident_incident` 双表 `reported` 同步；处置页 `displayIncidentStatus` 在 `reported=true` 时取 `warning`。
+
+#### Scenario: 处置页预警后状态保持
+
+- **WHEN** 用户在处置页点击「事件预警」并确认，且后端可达
+- **THEN** 前端调用 `POST /emergency-events/{id}/report` 并刷新 `/accident/rescue-incident`
+- **AND** 事件状态呈现为「已预警」，刷新页面后仍为「已预警」
+
+#### Scenario: 后端不可达时给出告警
+
+- **WHEN** `POST /emergency-events/{id}/report` 失败（弱网 / 离线）
+- **THEN** 前端经 `backendUnavailableWarn` 暴露告警，刷新后以聚合 `reported` 为准
