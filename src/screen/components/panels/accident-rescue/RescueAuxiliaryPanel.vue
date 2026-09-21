@@ -38,7 +38,7 @@ const RESCUE_KIND_ORDER = [
   '应急专家',
   '应急物资',
   '救援队伍',
-  '装备车辆',
+  '救援装备',
   '应急场所',
   '医疗机构',
   '应急车辆',
@@ -96,7 +96,8 @@ const items = computed(() =>
 );
 
 /* 与 rescueAuxiliaryStats.iconIndex 一一对应（0..7）：
-   应急专家/应急物资/救援队伍/装备车辆/应急场所/医疗机构/应急车辆/消防设施 */
+   应急专家/应急物资/救援队伍/救援装备/应急场所/医疗机构/应急车辆/消防设施
+   （注：第 4 项原「装备车辆」已在 V62 随后端 sys_emergency_strength 统一改名为「救援装备」） */
 const RESCUE_ICONS = [UserFilled, Box, Avatar, Van, OfficeBuilding, FirstAidKit, Van, Warning];
 
 /* eventCommand 布局图标轮转序列：与后端 /emergency/knowledge 返回顺序对应 */
