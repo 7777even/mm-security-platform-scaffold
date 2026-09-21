@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 站点图标：显式声明以消除 dev 下 /favicon.ico 的 404 请求；现代浏览器用 SVG，其余回退 ico -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- dev CSP meta 兜底（与 vite.config.ts server.headers 同源；HTTP 头与 meta 取最严格交集，
          当 webview/反代剥离 HTTP CSP 时仍由 meta 兜住）。
          'unsafe-eval' + 'wasm-unsafe-eval'：Cesium 1.x 内部用 new Function() 编译 GLSL 着色器，
