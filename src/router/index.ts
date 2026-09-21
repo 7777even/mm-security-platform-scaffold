@@ -161,7 +161,7 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     name: 'layout',
     component: () => import('@/components/layout/AppLayout.vue'),
-    redirect: '/fire',
+    redirect: '/emergency',
     children: [...SECONDARY_ROUTES],
   },
   {
