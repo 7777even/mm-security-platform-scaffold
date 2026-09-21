@@ -48,7 +48,11 @@ import {
   extractEvacuationLinesFromGeoJson,
 } from '../lib/geo/evacuationRoute';
 import { pickPointAlongRoute, type EvacuationPerson } from '../lib/data/evacuationPeopleMock';
-import { fetchEvacuationPeople, reportEmergencyEvent } from '@/services/emergencyEvent';
+import {
+  fetchEvacuationPeople,
+  reportEmergencyEvent,
+  startEmergencyResponse,
+} from '@/services/emergencyEvent';
 import { backendUnavailableWarn } from '@/services/backendFallback';
 import {
   fetchMonitoringPoints,
@@ -198,7 +202,15 @@ watch(
   },
   { immediate: true },
 );
-const responseStarted = ref(false);
+/** 本地乐观覆盖（点击后立即生效）；真实「已启动」以聚合的 incident.status 为准，刷新/深链后仍正确。 */
+const responseStartedLocal = ref(false);
+/** incident.status 可能是枚举（processing）或历史中文标签（处置中），一并识别。 */
+function isProcessingStatus(status?: string): boolean {
+  return status === 'processing' || status === '处置中';
+}
+const responseStarted = computed(
+  () => responseStartedLocal.value || isProcessingStatus(incident.value.status),
+);
 const activeLeftTab = ref<'info' | 'response' | 'dispatch'>('info');
 const focusedDispatchResource = ref<EmergencyDispatchResource | null>(null);
 const responseStartedAt = ref<string | undefined>(undefined);
@@ -265,7 +277,9 @@ const rightToolbarSections = [
 ] as const;
 
 const displayIncidentStatus = computed<'processing' | 'pending' | 'done' | 'warning'>(() => {
-  if (incident.value.status === 'done') return 'done';
+  // 后端 status_name 口径为枚举，但历史上亦可能落中文标签；宽化为 string 后一并识别。
+  const status: string = incident.value.status;
+  if (status === 'done' || status === '已结束') return 'done';
   if (responseStarted.value) return 'processing';
   if (incident.value.reported) return 'warning';
   return 'pending';
@@ -286,7 +300,7 @@ onMounted(() => {
 watch(
   () => incident.value.eventId,
   () => {
-    responseStarted.value = false;
+    responseStartedLocal.value = false;
     responseStartedAt.value = undefined;
     closeCommandActionDetail();
     void flyToIncident();
@@ -309,18 +323,35 @@ watch(showFacilityDetail, (open) => {
 });
 
 onMounted(() => {
-  responseStarted.value = false;
+  responseStartedLocal.value = false;
   responseStartedAt.value = undefined;
 });
 
-function handleStartEmergencyResponse() {
+async function handleStartEmergencyResponse() {
   if (responseStarted.value) return;
-  responseStarted.value = true;
+  // 演练为仿真的本地流程，不落库；避免把演练事件 id 误写到真实应急事件上。
+  if (isDrillMode.value) {
+    responseStartedLocal.value = true;
+    responseStartedAt.value = new Date().toISOString();
+    return;
+  }
+  const id = incident.value.eventId;
+  // 事件尚未加载（eventId 为空，如 autostart 在 setup 期触发）时不乐观置位，等加载后由 watcher/用户再触发。
+  if (!id) return;
+  responseStartedLocal.value = true;
   responseStartedAt.value = new Date().toISOString();
+  try {
+    await startEmergencyResponse(id);
+    await loadIncident();
+  } catch {
+    backendUnavailableWarn('accident-rescue', `/emergency-events/${id}/start-response`);
+  }
 }
 
 /** 事件预警（报送）：持久化 reported 到后端（fac_emergency_event + fac_accident_incident），刷新聚合使状态可跨刷新保留。 */
 async function handleEventReport() {
+  // 演练为仿真的本地流程，不落库；避免把演练事件 id 误写到真实应急事件上。
+  if (isDrillMode.value) return;
   const id = incident.value.eventId;
   if (!id) return;
   try {
@@ -331,11 +362,12 @@ async function handleEventReport() {
   }
 }
 
+// 依赖 eventId 一起 watch：autostart=1 时须等事件加载完（eventId 就绪）再启动，否则 setup 期 eventId 为空会空跑。
 watch(
-  () => shellRoute.query.value.autostart,
-  (value) => {
-    if (value === '1' && !isDrillMode.value && !responseStarted.value) {
-      handleStartEmergencyResponse();
+  () => [shellRoute.query.value.autostart, incident.value.eventId] as const,
+  ([value, id]) => {
+    if (value === '1' && !isDrillMode.value && id && !responseStarted.value) {
+      void handleStartEmergencyResponse();
     }
   },
   { immediate: true },

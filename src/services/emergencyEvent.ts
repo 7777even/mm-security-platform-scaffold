@@ -225,3 +225,15 @@ export async function reportEmergencyEvent(id: number): Promise<EmergencyEventIt
     method: 'POST',
   });
 }
+
+/**
+ * 启动应急响应：将事件状态推进为「处置中」（processing），并同步关联事故救援事件。
+ * 返回更新后的事件项，供处置页刷新状态与按钮（刷新后仍为「响应已启动」）。
+ * 仅登录态（值守/指挥人员自助），与 create/report 同源。
+ */
+export async function startEmergencyResponse(id: number): Promise<EmergencyEventItem> {
+  return request<EmergencyEventItem>({
+    url: `/emergency-events/${id}/start-response`,
+    method: 'POST',
+  });
+}
