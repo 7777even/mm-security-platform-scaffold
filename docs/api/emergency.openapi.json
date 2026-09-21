@@ -65,12 +65,17 @@
                       {
                         "kind": "应急专家",
                         "count": 47,
-                        "icon": "UserFilled"
+                        "icon": "UserFilled",
+                        "items": [
+                          { "name": "张伟", "meta": "救援专家 · 一中队" },
+                          { "name": "李强", "meta": "工艺专家 · 二中队" }
+                        ]
                       },
                       {
                         "kind": "应急物资",
                         "count": 3510,
-                        "icon": "Box"
+                        "icon": "Box",
+                        "items": [{ "name": "正压式空气呼吸器", "meta": "RHZK6.8 · 应急器材库" }]
                       }
                     ]
                   }
@@ -369,7 +374,8 @@
                         "id": "k1",
                         "title": "岗位应急处置卡",
                         "count": 158,
-                        "icon": "Document"
+                        "icon": "Document",
+                        "description": "岗位员工应掌握的应急处置卡片要点，覆盖启停、退守、隔离、上报等标准动作。"
                       }
                     ]
                   }
@@ -1174,6 +1180,32 @@
             "type": "string",
             "description": "图标名（Element Plus icon 名）",
             "example": "UserFilled"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StrengthItem"
+            },
+            "description": "真实明细预览（仅应急专家/应急物资/应急车辆/救援队伍 4 类有值，其余类别为 null），取各台账前 20 条",
+            "example": [
+              { "name": "张伟", "meta": "救援专家 · 一中队" },
+              { "name": "李强", "meta": "工艺专家 · 二中队" }
+            ]
+          }
+        }
+      },
+      "StrengthItem": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "明细名称（专家姓名 / 装备名 / 车牌 / 队伍名）",
+            "example": "张伟"
+          },
+          "meta": {
+            "type": "string",
+            "description": "辅助说明（岗位 / 规格 / 车型 / 区域），无则为空",
+            "example": "救援专家 · 一中队"
           }
         }
       },
@@ -1351,6 +1383,11 @@
             "type": "string",
             "description": "图标名（Element Plus icon 名）",
             "example": "Document"
+          },
+          "description": {
+            "type": "string",
+            "description": "知识分类说明（真实可编辑文案，来自 sys_knowledge_item.description）",
+            "example": "岗位员工应掌握的应急处置卡片要点，覆盖启停、退守、隔离、上报等标准动作。"
           }
         }
       },
