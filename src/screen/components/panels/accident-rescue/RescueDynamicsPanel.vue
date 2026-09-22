@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
 import { eventCommandDynamicsTabs } from '../../../lib/data/accidentRescueMock';
-import {
-  drillAwarenessDynamics,
-  drillBriefDynamics,
-  drillDynamics,
-} from '../../../lib/data/drillRescueMock';
 import { fetchAccidentIncident, type RescueDynamicEntry } from '@/services/accidentRescue';
 
 const props = withDefaults(
@@ -14,11 +9,14 @@ const props = withDefaults(
     theme?: 'accident' | 'drill';
     panelTitle?: string;
     layout?: 'rescue' | 'eventCommand';
+    /** 当前事件/演练 id：按 id 拉取后端真实动态；缺省/未命中时后端回退默认事件。 */
+    eventId?: number;
   }>(),
   {
     theme: 'accident',
     panelTitle: '消防救援动态',
     layout: 'rescue',
+    eventId: undefined,
   },
 );
 
@@ -50,24 +48,25 @@ onBeforeUnmount(() => window.speechSynthesis?.cancel());
 
 const isEventCommand = computed(() => props.layout === 'eventCommand');
 
-// 事件模式（fm-rescue）走真实后端 /accident/rescue-incident 的 dynamics；后端缺数据时
-// 暴露式返回空列表（service 已告警），绝不回落本地 fixture。演练模式（fm-drill）无后端，保留本地数据。
+// 事件模式与演练模式统一走后端 /accident/rescue-incident 的真实 dynamics（后端参考主数据，按
+// category 分为 rescue/command/brief/awareness）。后端缺数据/未连后端时暴露式返回空列表（service
+// 已告警），绝不回落本地 fixture（零下行控制红线）——演练页不再使用本地假动态。
 const allDynamics = ref<RescueDynamicEntry[]>([]);
-onMounted(async () => {
-  if (props.theme !== 'drill' && import.meta.env.VITE_API_BASE) {
-    const incident = await fetchAccidentIncident();
-    allDynamics.value = incident.dynamics ?? [];
-  }
-});
+async function loadDynamics(): Promise<void> {
+  if (!import.meta.env.VITE_API_BASE) return;
+  const incident = await fetchAccidentIncident(props.eventId);
+  allDynamics.value = incident.dynamics ?? [];
+}
+onMounted(loadDynamics);
+// 事件/演练切换（eventId 变化）时重新拉取，避免沿用上一事件动态
+watch(
+  () => props.eventId,
+  () => {
+    void loadDynamics();
+  },
+);
 
 const entries = computed<RescueDynamicEntry[]>(() => {
-  if (props.theme === 'drill') {
-    if (isEventCommand.value) {
-      if (activeTab.value === 1) return drillBriefDynamics;
-      if (activeTab.value === 2) return drillAwarenessDynamics;
-    }
-    return drillDynamics;
-  }
   if (allDynamics.value.length === 0) return [];
   if (isEventCommand.value) {
     const cat = activeTab.value === 0 ? 'command' : activeTab.value === 1 ? 'brief' : 'awareness';
