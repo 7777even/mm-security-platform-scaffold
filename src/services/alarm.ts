@@ -162,6 +162,14 @@ export interface FireAlarmItem {
   onsiteMonitorId?: string;
   onsiteMonitorLabel?: string;
   title: string;
+  /** 处置情况文本（可空）。 */
+  handleResult?: string;
+  /** 处置时间（格式 yyyy-MM-dd HH:mm:ss，可空）。 */
+  handleTime?: string;
+  /** 派单人员（逗号分隔，可空）。 */
+  dispatchPersonnel?: string;
+  /** 通知方式 APP/SMS（逗号分隔，可空）。 */
+  notifyMethod?: string;
 }
 
 const FIRE_ALARM_TEMPLATES: Omit<FireAlarmItem, 'alarmId' | 'time'>[] = [
@@ -390,4 +398,56 @@ export async function fetchFireAlarmPage(page = 1, size = 10): Promise<PageResul
     notifyBackendOffline('alarm', '/fire-alarms');
     return { list: [], total: 0, page, size };
   }
+}
+
+/** 消防报警写回请求体：局部更新，仅传需变更的字段。 */
+export interface FireAlarmUpdatePayload {
+  status?: FireAlarmItem['status'];
+  falseAlarm?: string;
+  /** 处置情况文本。不传则不更新。 */
+  handleResult?: string;
+  /** 处置时间（格式 yyyy-MM-dd HH:mm:ss）。不传则不更新。 */
+  handleTime?: string;
+  /** 派单人员（多个以英文逗号分隔）。不传则不更新。 */
+  dispatchPersonnel?: string;
+  /** 通知方式（APP/SMS，多个以英文逗号分隔，如 APP,SMS）。不传则不更新。 */
+  notifyMethod?: string;
+}
+
+/**
+ * 消防报警写回（确认/派单/闭环 + 误报标记）：PUT /fire-alarms/{alarmId}，落 fac_fire_alarm。
+ * 离线演示（VITE_USE_DEV_MOCK=true）仅本地成功、不落库；未连后端显式报错。
+ * 成功返回更新后的 FireAlarmItem，供调用方即时回填。
+ */
+export async function updateFireAlarm(
+  alarmId: string,
+  payload: FireAlarmUpdatePayload,
+): Promise<FireAlarmItem | null> {
+  if (useDevMock()) {
+    return Promise.resolve({
+      ...FIRE_ALARM_FIXTURE[0],
+      alarmId,
+      ...(payload.status ? { status: payload.status } : {}),
+      ...(payload.falseAlarm ? { falseAlarm: payload.falseAlarm } : {}),
+      ...(payload.handleResult !== undefined ? { handleResult: payload.handleResult } : {}),
+      ...(payload.handleTime !== undefined ? { handleTime: payload.handleTime } : {}),
+      ...(payload.dispatchPersonnel !== undefined
+        ? { dispatchPersonnel: payload.dispatchPersonnel }
+        : {}),
+      ...(payload.notifyMethod !== undefined ? { notifyMethod: payload.notifyMethod } : {}),
+    } as FireAlarmItem);
+  }
+  if (isAlarmOffline()) {
+    notifyBackendOffline(
+      'alarm',
+      `/fire-alarms/${alarmId}`,
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法写回消防报警');
+  }
+  return request<FireAlarmItem>({
+    url: `/fire-alarms/${encodeURIComponent(alarmId)}`,
+    method: 'PUT',
+    data: payload,
+  });
 }
