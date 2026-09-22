@@ -900,6 +900,10 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
   background: radial-gradient(circle at 25% 0%, rgb(56 189 248 / 8%), transparent 45%), #0b1220;
   box-shadow: 0 8px 26px rgb(0 0 0 / 40%);
   overflow: hidden;
+
+  /* 治本「收起后地图残留深色横条」：让面板独立成合成层，收起(strip)变矮时
+     不与 Cesium 画布同层光栅化，腾出区域不会被合成器误判为已遮挡而停止重绘。 */
+  will-change: transform;
 }
 
 .ppm.is-strip {
@@ -913,6 +917,10 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
 }
 
 .ppm.is-strip .ppm__stage {
+  display: none;
+}
+
+.ppm.is-strip .ppm__top-scroll {
   display: none;
 }
 
