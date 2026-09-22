@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
+import InfoDetailDialog from '../../common/InfoDetailDialog.vue';
 import {
   UserFilled,
   Box,
@@ -45,7 +46,15 @@ const RESCUE_KIND_ORDER = [
   '消防设施',
 ] as const;
 
-const rescueItems = ref<{ label: string; value: string; iconIndex: number }[]>([]);
+/** 辅助项：drill/event 通用；knowledge 布局附带后端 sys_knowledge_item.description 供点击详情。 */
+interface AuxItem {
+  label: string;
+  value: string;
+  iconIndex: number;
+  description?: string | null;
+}
+
+const rescueItems = ref<AuxItem[]>([]);
 const loadingRescue = ref(false);
 
 async function loadRescueStats() {
@@ -66,8 +75,8 @@ async function loadRescueStats() {
 }
 
 // 应急指挥布局：知识库卡片改由后端 /emergency/knowledge 提供（原 eventCommandAuxiliaryItems 已移除）。
-// 后端返回 { items: [{ id, title, count, icon }] }，图标按返回顺序轮转 KNOWLEDGE_ICONS。
-const knowledgeItems = ref<{ label: string; value: string; iconIndex: number }[]>([]);
+// 后端返回 { items: [{ id, title, count, icon, description }] }，图标按返回顺序轮转 KNOWLEDGE_ICONS。
+const knowledgeItems = ref<AuxItem[]>([]);
 const loadingKnowledge = ref(false);
 
 async function loadKnowledge() {
@@ -78,6 +87,7 @@ async function loadKnowledge() {
       label: k.title,
       value: String(k.count),
       iconIndex: index % KNOWLEDGE_ICONS.length,
+      description: k.description ?? null,
     }));
   } finally {
     loadingKnowledge.value = false;
@@ -93,6 +103,27 @@ const total = computed(() => items.value.reduce((sum, item) => sum + Number(item
 
 const items = computed(() =>
   props.layout === 'eventCommand' ? knowledgeItems.value : rescueItems.value,
+);
+
+/* 点击知识卡弹详情（与 SafetyKnowledgePanel 同一先例：纯展示卡改为可点开 InfoDetailDialog）。
+   rescue 布局（救援力量统计）无逐条说明，保持纯展示不响应点击。 */
+const selectedItem = ref<AuxItem | null>(null);
+const detailOpen = ref(false);
+
+function openItem(item: AuxItem): void {
+  if (props.layout !== 'eventCommand') return;
+  selectedItem.value = item;
+  detailOpen.value = true;
+}
+
+const itemFields = computed(() =>
+  selectedItem.value
+    ? [
+        { label: '知识主题', value: selectedItem.value.label },
+        { label: '知识条目', value: `${selectedItem.value.value} 条` },
+        { label: '说明', value: selectedItem.value.description ?? '该主题暂无分类说明。' },
+      ]
+    : [],
 );
 
 /* 与 rescueAuxiliaryStats.iconIndex 一一对应（0..7）：
@@ -129,7 +160,16 @@ const iconList = computed(() => (props.layout === 'eventCommand' ? KNOWLEDGE_ICO
       class="aux-grid"
       :class="[`aux-grid--${theme}`, { 'aux-grid--event-command': layout === 'eventCommand' }]"
     >
-      <div v-for="stat in items" :key="stat.label" class="aux-item">
+      <div
+        v-for="stat in items"
+        :key="stat.label"
+        class="aux-item"
+        :class="{ 'aux-item--clickable': layout === 'eventCommand' }"
+        :role="layout === 'eventCommand' ? 'button' : undefined"
+        :tabindex="layout === 'eventCommand' ? 0 : undefined"
+        @click="openItem(stat)"
+        @keydown.enter="openItem(stat)"
+      >
         <div class="aux-item__icon-wrap">
           <span class="aux-item__icon" aria-hidden="true">
             <component :is="iconList[stat.iconIndex]" />
@@ -141,6 +181,13 @@ const iconList = computed(() => (props.layout === 'eventCommand' ? KNOWLEDGE_ICO
         </div>
       </div>
     </div>
+
+    <InfoDetailDialog
+      :open="detailOpen"
+      title="应急辅助信息"
+      :fields="itemFields"
+      @close="detailOpen = false"
+    />
   </AccidentRescueSidePanel>
 </template>
 
@@ -256,6 +303,21 @@ const iconList = computed(() => (props.layout === 'eventCommand' ? KNOWLEDGE_ICO
   background: rgb(0 18 40 / 55%);
   border: 1px solid rgb(0 110 190 / 32%);
   box-shadow: inset 0 1px 0 rgb(120 180 255 / 6%);
+}
+
+/* 知识库布局（eventCommand）卡片可点击弹详情：给可点态与悬停反馈 */
+.aux-item--clickable {
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.aux-item--clickable:hover,
+.aux-item--clickable:focus-visible {
+  background: rgb(0 38 74 / 65%);
+  border-color: rgb(31 157 224 / 62%);
+  outline: none;
 }
 
 .aux-grid--drill .aux-item {
