@@ -448,10 +448,12 @@ const router = createRouter({
       meta: { title: '工作台' },
     },
     {
+      // 流程填报向导（mgmtWo  {
       // 流程填报向导（mgmtWorkbenchLinks 顶层入口，不在菜单分组内）
+      // 解冻：后端补齐 POST/PUT /api/v1/form-records（Change：openspec/changes/2026-09-22-add-form-records-write/）
       path: '/form',
       name: 'mgmt-form-wizard',
-      component: () => import('./views/module-embed.vue'),
+      component: () => import('./views/form-wizard.vue'),
       meta: { title: '流程填报' },
     },
     ...serviceRoutes,
