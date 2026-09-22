@@ -1,0 +1,327 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "流程填报记录接口（mgmt /form 流程填报向导）",
+    "description": "流程填报记录域，供 mgmt 端 /form 流程填报向导列表与多步填报使用，取代原型空壳。数据源为后端 fac_form_record 表（V66 新增）。字段范式对齐通讯通知记录域。填报类型为固定枚举；填报内容以 detail_json 结构化存储（按 formType 维度组织）。",
+    "version": "1.0.0"
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "paths": {
+    "/form-records": {
+      "get": {
+        "summary": "流程填报记录列表",
+        "description": "分页返回流程填报记录（按 id 降序，最新在前），供 /form 列表展示。",
+        "tags": ["form-records"],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64", "default": 1 },
+            "description": "页码（1-based）"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64", "default": 10 },
+            "description": "每页大小"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "流程填报记录列表",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FormRecordPageResult" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "list": [
+                      {
+                        "id": 2,
+                        "formNo": "FR-20260915-0002",
+                        "formType": "设备巡检",
+                        "title": "消防泵房周检填报",
+                        "reporter": "李娜",
+                        "department": "消防大队",
+                        "fillAt": "2026-09-15 14:05:00",
+                        "detailJson": "{\"deviceNo\":\"XF-1#\",\"deviceName\":\"消防泵1#\",\"result\":\"正常\",\"abnormal\":\"\"}",
+                        "status": "SUBMITTED",
+                        "remark": null,
+                        "version": 0
+                      },
+                      {
+                        "id": 1,
+                        "formNo": "FR-20260901-0001",
+                        "formType": "隐患排查",
+                        "title": "储罐区防静电接地巡检填报",
+                        "reporter": "张伟",
+                        "department": "储运部",
+                        "fillAt": "2026-09-01 09:20:00",
+                        "detailJson": "{\"location\":\"储罐区T-301\",\"level\":\"一般\",\"measure\":\"更换接地点并复测\",\"owner\":\"张伟\"}",
+                        "status": "REVIEWED",
+                        "remark": "已归档。",
+                        "version": 0
+                      }
+                    ],
+                    "total": 2,
+                    "page": 1,
+                    "size": 10
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "新增流程填报",
+        "description": "新增一条流程填报记录。任意登录用户（一线人员）即可提交；必填：formType（枚举）/ reporter / detailJson（结构化 JSON 字符串）；其余选填。",
+        "tags": ["form-records"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/FormRecordCreateRequest" },
+              "example": {
+                "formType": "隐患排查",
+                "title": "周界报警处置填报",
+                "reporter": "王强",
+                "department": "安环部",
+                "fillAt": "2026-09-22 10:30:00",
+                "detailJson": "{\"location\":\"周界报警点\",\"level\":\"一般\",\"measure\":\"现场确认误报并复位\",\"owner\":\"王强\"}",
+                "status": "SUBMITTED",
+                "remark": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "新增成功，返回落库后的完整记录",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FormRecordItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 3,
+                    "formNo": "FR-20260922103000-042",
+                    "formType": "隐患排查",
+                    "title": "周界报警处置填报",
+                    "reporter": "王强",
+                    "department": "安环部",
+                    "fillAt": "2026-09-22 10:30:00",
+                    "detailJson": "{\"location\":\"周界报警点\",\"level\":\"一般\",\"measure\":\"现场确认误报并复位\",\"owner\":\"王强\"}",
+                    "status": "SUBMITTED",
+                    "remark": "",
+                    "version": 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/form-records/{id}": {
+      "get": {
+        "summary": "流程填报记录详情",
+        "description": "按 id 返回单条流程填报记录；未命中返回业务码 404（HTTP 200 + B3 包络）。",
+        "tags": ["form-records"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "记录主键 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "流程填报记录详情",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FormRecordItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "formNo": "FR-20260901-0001",
+                    "formType": "隐患排查",
+                    "title": "储罐区防静电接地巡检填报",
+                    "reporter": "张伟",
+                    "department": "储运部",
+                    "fillAt": "2026-09-01 09:20:00",
+                    "detailJson": "{\"location\":\"储罐区T-301\",\"level\":\"一般\",\"measure\":\"更换接地点并复测\",\"owner\":\"张伟\"}",
+                    "status": "REVIEWED",
+                    "remark": "已归档。",
+                    "version": 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "更新流程填报（审核/状态流转）",
+        "description": "局部更新流程填报记录（状态流转/审核结论等，需 ADMIN 角色）。未传字段不更新；version 不一致返回 409。",
+        "tags": ["form-records"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "记录主键 id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/FormRecordUpdateRequest" },
+              "example": {
+                "status": "REVIEWED",
+                "remark": "复核通过。",
+                "version": 0
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功，返回更新后的完整记录",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FormRecordItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "formNo": "FR-20260901-0001",
+                    "formType": "隐患排查",
+                    "title": "储罐区防静电接地巡检填报",
+                    "reporter": "张伟",
+                    "department": "储运部",
+                    "fillAt": "2026-09-01 09:20:00",
+                    "detailJson": "{\"location\":\"储罐区T-301\",\"level\":\"一般\",\"measure\":\"更换接地点并复测\",\"owner\":\"张伟\"}",
+                    "status": "REVIEWED",
+                    "remark": "复核通过。",
+                    "version": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FormRecordPageResult": {
+        "type": "object",
+        "description": "流程填报记录分页结果（list/total/page/size，与 PageResult 同构）",
+        "properties": {
+          "list": {
+            "type": "array",
+            "description": "当前页记录",
+            "items": { "$ref": "#/components/schemas/FormRecordItem" }
+          },
+          "total": { "type": "integer", "description": "总记录数" },
+          "page": { "type": "integer", "description": "当前页码（1-based）" },
+          "size": { "type": "integer", "description": "每页大小" }
+        }
+      },
+      "FormRecordItem": {
+        "type": "object",
+        "description": "流程填报记录项（列表行 + 详情共用）",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "主键 id" },
+          "formNo": { "type": "string", "description": "填报编号（业务唯一展示号）" },
+          "formType": {
+            "type": "string",
+            "enum": ["隐患排查", "设备巡检", "值班交接", "其他"],
+            "description": "填报类型（固定枚举）"
+          },
+          "title": { "type": "string", "description": "填报标题" },
+          "reporter": { "type": "string", "description": "填报人" },
+          "department": { "type": "string", "description": "填报部门" },
+          "fillAt": {
+            "type": "string",
+            "description": "填报时间（原样存，格式 yyyy-MM-dd HH:mm:ss）"
+          },
+          "detailJson": {
+            "type": "string",
+            "description": "结构化填报内容（JSON 字符串，按 formType 维度组织）"
+          },
+          "status": {
+            "type": "string",
+            "description": "状态：DRAFT 草稿 / SUBMITTED 已提交 / REVIEWED 已审核"
+          },
+          "remark": { "type": "string", "description": "备注" },
+          "version": { "type": "integer", "format": "int64", "description": "乐观锁版本号" }
+        }
+      },
+      "FormRecordCreateRequest": {
+        "type": "object",
+        "description": "流程填报新增请求",
+        "properties": {
+          "formNo": { "type": "string", "description": "填报编号（可选，缺省后端生成）" },
+          "formType": {
+            "type": "string",
+            "enum": ["隐患排查", "设备巡检", "值班交接", "其他"],
+            "description": "填报类型（必填，枚举）"
+          },
+          "title": { "type": "string", "description": "填报标题（可选）" },
+          "reporter": { "type": "string", "description": "填报人（必填）" },
+          "department": { "type": "string", "description": "填报部门（可选）" },
+          "fillAt": { "type": "string", "description": "填报时间（可选，缺省取当前时间）" },
+          "detailJson": {
+            "type": "string",
+            "description": "结构化填报内容（必填，JSON 字符串，按 formType 维度组织）"
+          },
+          "status": { "type": "string", "description": "状态（可选，缺省 SUBMITTED）" },
+          "remark": { "type": "string", "description": "备注（可选）" }
+        }
+      },
+      "FormRecordUpdateRequest": {
+        "type": "object",
+        "description": "流程填报更新请求（局部更新，未传字段不更新）",
+        "properties": {
+          "formType": {
+            "type": "string",
+            "enum": ["隐患排查", "设备巡检", "值班交接", "其他"],
+            "description": "填报类型（枚举）。不传则不更新"
+          },
+          "title": { "type": "string", "description": "标题。不传则不更新" },
+          "reporter": { "type": "string", "description": "填报人。不传则不更新" },
+          "department": { "type": "string", "description": "填报部门。不传则不更新" },
+          "fillAt": { "type": "string", "description": "填报时间。不传则不更新" },
+          "detailJson": {
+            "type": "string",
+            "description": "结构化填报内容（JSON 字符串）。不传则不更新"
+          },
+          "status": {
+            "type": "string",
+            "description": "状态流转：DRAFT/SUBMITTED/REVIEWED。不传则不更新"
+          },
+          "remark": { "type": "string", "description": "备注。不传则不更新" },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "description": "乐观锁版本号（来自详情/列表项）。不传则不参与并发校验"
+          }
+        }
+      }
+    }
+  }
+}
