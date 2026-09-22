@@ -15,4 +15,4 @@
 - [x] `npm run type-check` 通过（vue-tsc EXIT=0）。
 - [x] `SUBAPP_NO_EMPTY=1 SUBAPP=fm-fire npm run build:subapps` 通过（fm-fire 产物更新）。
 - [x] `AlarmDetailPanel.spec.ts` 10/10 通过；改动 9 文件 eslint 通过。
-- [ ] 真机联调：确认一条消防报警后刷新列表，状态保持「已确认」（需后端 8787 实例在跑）。
+- [x] 真机联调：确认一条消防报警后刷新列表，状态保持「已确认」（已验证：确认后 status=ACKED 落库）。
