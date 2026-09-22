@@ -41,7 +41,11 @@ import {
   type IncidentDetailField,
 } from '@/services/accidentRescue';
 import type { EmergencyEventItem } from '@/services/emergencyEvent';
-import { getFireEmergencyEventById } from '../lib/composables/useFireEmergencyEventList';
+import {
+  getFireEmergencyEventById,
+  fireEmergencyAllEventGroups,
+  fireEmergencyEventGroupsState,
+} from '../lib/composables/useFireEmergencyEventList';
 import { getSharedMap } from '../lib/composables/sharedCesiumBridge';
 import {
   buildEvacuationRouteFromGeoJson,
@@ -178,6 +182,17 @@ watch(
   () => [shellRoute.query.value.eventId, isDrillMode.value],
   () => {
     void loadIncident();
+  },
+);
+
+// 演练事件列表由 loadFireEmergencyEvents 异步从后端拉取；直接深链进入演练页时，
+// 进场那一刻列表常尚未就绪，resolveDrillRescueIncident 会回落到 startedAt='' 的空态，
+// 导致顶栏「已持续时间」卡在 0秒 且永不走表。列表就绪后重新解析一次演练事件，
+// 使计时起点正确落地（useElapsedDuration 监听 startedAt 变化即会自行启动秒级计时）。
+watch(
+  () => fireEmergencyAllEventGroups.value.length,
+  () => {
+    if (isDrillMode.value) void loadIncident();
   },
 );
 
@@ -327,35 +342,56 @@ onMounted(() => {
   responseStartedAt.value = undefined;
 });
 
+/**
+ * 演练事件同样以真实 id 落于 fac_emergency_event（kind=drill），与应急事件共用同一套
+ * report/start-response 端点。后端写入成功后，把变更同步回前端内存事件库，使演练页状态面板
+ * 在「不重新拉整张列表」的前提下即时反映（刷新后由后端聚合兜底，仍为已持久化状态）。
+ */
+function applyDrillEventMutation(mutator: (event: EmergencyEventItem) => void): void {
+  const eid = incident.value.eventId;
+  if (!eid) return;
+  for (const group of fireEmergencyEventGroupsState.value) {
+    const target = group.events.find((event) => event.id === eid);
+    if (target) {
+      mutator(target);
+      break;
+    }
+  }
+}
+
 async function handleStartEmergencyResponse() {
   if (responseStarted.value) return;
-  // 演练为仿真的本地流程，不落库；避免把演练事件 id 误写到真实应急事件上。
-  if (isDrillMode.value) {
-    responseStartedLocal.value = true;
-    responseStartedAt.value = new Date().toISOString();
-    return;
-  }
   const id = incident.value.eventId;
   // 事件尚未加载（eventId 为空，如 autostart 在 setup 期触发）时不乐观置位，等加载后由 watcher/用户再触发。
   if (!id) return;
+  // 演练与应急事件同源持久化：写后端 fac_emergency_event（status→processing）+ 同步 fac_accident_incident。
   responseStartedLocal.value = true;
   responseStartedAt.value = new Date().toISOString();
   try {
     await startEmergencyResponse(id);
+    if (isDrillMode.value) {
+      applyDrillEventMutation((event) => {
+        event.status = 'processing';
+      });
+    }
     await loadIncident();
   } catch {
     backendUnavailableWarn('accident-rescue', `/emergency-events/${id}/start-response`);
   }
 }
 
-/** 事件预警（报送）：持久化 reported 到后端（fac_emergency_event + fac_accident_incident），刷新聚合使状态可跨刷新保留。 */
+/** 事件预警（报送）：持久化 reported 到后端（fac_emergency_event + fac_accident_incident），刷新聚合使状态可跨刷新保留。
+ * 演练事件为同一张表的 drill 行，同样落库，刷新后仍为「已预警」。 */
 async function handleEventReport() {
-  // 演练为仿真的本地流程，不落库；避免把演练事件 id 误写到真实应急事件上。
-  if (isDrillMode.value) return;
   const id = incident.value.eventId;
   if (!id) return;
   try {
     await reportEmergencyEvent(id);
+    if (isDrillMode.value) {
+      applyDrillEventMutation((event) => {
+        event.reported = true;
+      });
+    }
     await loadIncident();
   } catch {
     backendUnavailableWarn('accident-rescue', `/emergency-events/${id}/report`);
@@ -843,6 +879,7 @@ onUnmounted(() => {
             <RescueDynamicsPanel
               layout="eventCommand"
               :theme="panelTheme"
+              :event-id="incident.eventId"
               :panel-title="isDrillMode ? '演练响应动态' : '应急响应动态'"
             />
           </aside>
