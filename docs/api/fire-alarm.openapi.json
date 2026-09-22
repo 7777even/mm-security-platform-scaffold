@@ -89,6 +89,71 @@
           "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
         }
       }
+    },
+    "/fire-alarms/{alarmId}": {
+      "put": {
+        "tags": ["fire-alarm"],
+        "operationId": "updateFireAlarm",
+        "summary": "消防报警写回（确认/派单/闭环 + 误报标记）",
+        "description": "对单条消防报警做处置状态流转或误报标记，落 fac_fire_alarm 真实表（乐观锁 version 自动并发防护）。需权限码 fire-alarm:ack。成功返回更新后的 FireAlarmItem（B3 包络），并广播 fire-alarm.alarm 实时变更。状态枚举对齐字典 fire_alarm_status：ACTIVE 待处理 / ACKED 已确认 / DISPATCHED 已派单 / CLOSED 已闭环；误报对齐 fire_alarm_false：是 / 否 / 未核实。处置字段（handleResult 处置情况文本 / handleTime 处置时间 / dispatchPersonnel 派单人员 / notifyMethod 通知方式）为可选自由文本，仅在传入非空时覆盖，不传不更新。",
+        "parameters": [
+          {
+            "name": "alarmId",
+            "in": "path",
+            "required": true,
+            "description": "报警编号（主键，如 FA-20260907-001）",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "局部更新请求：仅传入需要变更的字段，未传字段不更新",
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/FireAlarmUpdateRequest" },
+              "example": { "status": "ACKED" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=更新后的 FireAlarmItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/FireAlarmItem" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "alarmId": "FA-20260907-001",
+                    "status": "ACKED",
+                    "falseAlarm": "未核实",
+                    "title": "蜡油加氢装置火灾",
+                    "handleResult": "已现场核实现场无明火，持续观察",
+                    "handleTime": "2026-08-20 10:30:00",
+                    "dispatchPersonnel": "张三,李四",
+                    "notifyMethod": "APP,SMS"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "./_shared.json#/components/responses/BadRequest" },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" },
+          "404": { "$ref": "./_shared.json#/components/responses/BadRequest" }
+        }
+      }
     }
   },
   "components": {
@@ -116,14 +181,57 @@
           "falseAlarm": { "type": "string", "description": "是否误报（未核实/是/否）" },
           "status": {
             "type": "string",
-            "description": "处置状态（ACTIVE 报警中 / CLOSED 已关闭）"
+            "description": "处置状态（ACTIVE 待处理 / ACKED 已确认 / DISPATCHED 已派单 / CLOSED 已闭环），对齐字典 fire_alarm_status"
           },
           "rescueEventId": { "type": "string", "description": "关联救援事件 id（可空）" },
           "monitorId": { "type": "string", "description": "监控点 id（可空）" },
           "monitorLabel": { "type": "string", "description": "监控点名称（可空）" },
           "onsiteMonitorId": { "type": "string", "description": "现场监控点 id（可空）" },
           "onsiteMonitorLabel": { "type": "string", "description": "现场监控点名称（可空）" },
-          "title": { "type": "string", "description": "报警标题" }
+          "title": { "type": "string", "description": "报警标题" },
+          "handleResult": { "type": "string", "description": "处置情况文本（可空）" },
+          "handleTime": {
+            "type": "string",
+            "description": "处置时间（格式 yyyy-MM-dd HH:mm:ss，可空）"
+          },
+          "dispatchPersonnel": {
+            "type": "string",
+            "description": "派单人员（多个以英文逗号分隔，可空）"
+          },
+          "notifyMethod": {
+            "type": "string",
+            "description": "通知方式（APP/SMS，多个以英文逗号分隔，如 APP,SMS，可空）"
+          }
+        }
+      },
+      "FireAlarmUpdateRequest": {
+        "type": "object",
+        "description": "消防报警写回请求（局部更新，仅传入需变更的字段）。状态枚举对齐 fire_alarm_status，误报对齐 fire_alarm_false。",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "处置状态：ACTIVE 待处理 / ACKED 已确认 / DISPATCHED 已派单 / CLOSED 已闭环。不传则不更新状态。"
+          },
+          "falseAlarm": {
+            "type": "string",
+            "description": "是否误报：是 / 否 / 未核实。不传则不更新。"
+          },
+          "handleResult": {
+            "type": "string",
+            "description": "处置情况文本。不传则不更新。"
+          },
+          "handleTime": {
+            "type": "string",
+            "description": "处置时间（格式 yyyy-MM-dd HH:mm:ss）。不传则不更新。"
+          },
+          "dispatchPersonnel": {
+            "type": "string",
+            "description": "派单人员（多个以英文逗号分隔）。不传则不更新。"
+          },
+          "notifyMethod": {
+            "type": "string",
+            "description": "通知方式（APP/SMS，多个以英文逗号分隔，如 APP,SMS）。不传则不更新。"
+          }
         }
       }
     }
