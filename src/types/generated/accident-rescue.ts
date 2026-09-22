@@ -8,7 +8,7 @@ export interface paths {
     };
     /**
      * 事故救援事件聚合
-     * @description 返回单个事故救援事件的完整聚合数据：事件基础信息、详情字段、可调度资源、值班人员、辅助统计与动态快讯。eventId 为空或未命中时回退到默认事件（is_default=TRUE），保证大屏不空屏。
+     * @description 返回单个事故救援事件的完整聚合数据：事件基础信息、详情字段、可调度资源、值班人员、辅助统计与动态快讯。eventId 为空或未命中时回退到默认事件（is_default=TRUE），保证大屏不空屏。动态快讯按事件隔离：eventId 命中演练事件时返回该演练事件的专属动态，命中真实事件时返回该事件动态，二者各自独立、不共用同一份全局参考。
      */
     get: {
       parameters: {
@@ -210,7 +210,7 @@ export interface components {
       dutyPersons?: components['schemas']['RescueDutyPerson'][];
       /** @description 辅助统计项 */
       auxiliaryStats?: components['schemas']['RescueAuxiliaryStat'][];
-      /** @description 动态快讯（含救援/指令/简报/态势四类） */
+      /** @description 动态快讯（按事件隔离，演练/真实事件各自独立；含救援/指令/简报/态势四类） */
       dynamics?: components['schemas']['RescueDynamicEntry'][];
     };
     /** @description 事件详情字段 */
