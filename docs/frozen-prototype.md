@@ -5,9 +5,7 @@
 
 ## 冻结页面（mgmt 端）
 
-| 路径    | 当前形态                                       | 冻结原因                       |
-| ------- | ---------------------------------------------- | ------------------------------ |
-| `/form` | `apps/mgmt/views/form-wizard.vue` 流程填报向导 | 纯原型空壳，无后端填报存储端点 |
+> **已全部解除冻结**：原唯一冻结页 `/form`（流程填报向导）经跨库四同步新增后端 `POST/PUT /api/v1/form-records`（Change：`openspec/changes/2026-09-22-add-form-records-write/`，两端各一），前端改为服务驱动视图 `apps/mgmt/views/form-wizard.vue`（列表 + 多步填报向导 + ADMIN 审核），解除冻结。
 
 > **已解除冻结（mgmt 端，2026-09-16）**：`/comm-sms`、`/comm-call`、`/comm-broadcast`、`/comm-push`、`/comm-intercom`
 > 经跨库四同步新增后端 `GET /api/v1/communication/records`（Change：`openspec/changes/2026-09-16-add-comm-records-domain/`，两端各一），
