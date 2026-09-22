@@ -9,6 +9,7 @@ import {
 import MapPageShell from '../components/map/MapPageShell.vue';
 import AccidentRescueMap from '../components/map/AccidentRescueMap.vue';
 import AccidentRescueMarkersOverlay from '../components/map/AccidentRescueMarkersOverlay.vue';
+import AuxiliaryKnowledgeMapOverlay from '../components/map/AuxiliaryKnowledgeMapOverlay.vue';
 import AccidentRescueHeader from '../components/layout/AccidentRescueHeader.vue';
 import EvacuationPeoplePanel from '../components/panels/accident-rescue/EvacuationPeoplePanel.vue';
 import MonitoringPointsScenePanel from '../components/panels/accident-rescue/MonitoringPointsScenePanel.vue';
@@ -65,6 +66,7 @@ import {
   type MonitoringAlarm,
 } from '@/services/hazard';
 import { useMapControls } from '../lib/composables/useMapControls';
+import { closeAuxiliaryKnowledgeScatter } from '../lib/composables/useAuxiliaryKnowledgeMapView';
 import { fetchFacilityDetail, type FacilityDetailInfo } from '@/services/hazard';
 import { fetchEmergencyCommandDetail, type CommandActionDetail } from '@/services/emergency';
 import { facilityDetailOpen, closeFacilityDetail } from '../lib/composables/useFacilityDetail';
@@ -318,6 +320,7 @@ watch(
     responseStartedLocal.value = false;
     responseStartedAt.value = undefined;
     closeCommandActionDetail();
+    closeAuxiliaryKnowledgeScatter();
     void flyToIncident();
   },
 );
@@ -681,6 +684,7 @@ onUnmounted(() => {
   closeCommandActionDetail();
   getSharedMap()?.clearEvacuationRoute?.();
   getSharedMap()?.setMonitoringFocusArea?.(false);
+  closeAuxiliaryKnowledgeScatter();
   sandbox.exitSandbox();
 });
 </script>
@@ -731,6 +735,8 @@ onUnmounted(() => {
         @focus-monitoring="focusMonitoringPoint"
         @focus-person="focusPerson"
       />
+
+      <AuxiliaryKnowledgeMapOverlay v-if="sceneMode === 'default'" :theme="panelTheme" />
     </template>
 
     <div class="accident-rescue-page__ui">

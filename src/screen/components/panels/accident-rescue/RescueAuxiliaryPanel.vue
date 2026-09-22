@@ -16,6 +16,7 @@ import {
 } from '@element-plus/icons-vue';
 import { fetchEmergencyStrength } from '@/services/emergency';
 import { fetchEmergencyKnowledge } from '@/services/knowledge';
+import { openAuxiliaryKnowledgeScatter } from '../../../lib/composables/useAuxiliaryKnowledgeMapView';
 
 const props = withDefaults(
   defineProps<{
@@ -114,6 +115,8 @@ function openItem(item: AuxItem): void {
   if (props.layout !== 'eventCommand') return;
   selectedItem.value = item;
   detailOpen.value = true;
+  // 同步在地图撒点示意（对齐应急事件页救援力量落图效果；知识项无真实坐标，仅位置示意）
+  openAuxiliaryKnowledgeScatter(item.label, Number(item.value || 0));
 }
 
 const itemFields = computed(() =>
