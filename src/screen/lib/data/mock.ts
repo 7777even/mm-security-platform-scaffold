@@ -35,6 +35,8 @@ export interface AlarmItem {
   monitorLabel: string;
   onsiteMonitorId: string;
   onsiteMonitorLabel: string;
+  /** 消防报警真实主键（fac_fire_alarm.alarmId），仅消防报警源携带，用于详情写回落库 */
+  fireAlarmId?: string;
   /** 可选地图点位，用于视频联动时将告警锚点固定在实际地理位置 */
   longitude?: number;
   latitude?: number;

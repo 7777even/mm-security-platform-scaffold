@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
 import AlarmCard from '../common/AlarmCard.vue';
 import FireAlarmListDialog from '../common/FireAlarmListDialog.vue';
@@ -12,6 +12,7 @@ import { fetchFireMonitorAreas, type FireMonitorArea } from '@/services/fireSitu
 import { toScreenAlarmFromFire } from '../../lib/adapters/alarmAdapter';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
 import { showToast } from '../../lib/composables/useToast';
+import { fireAlarmChanged } from '../../lib/composables/useScreenAlarmFeed';
 import fireAreaScene from '../../assets/semantic-scenes/fire-alarm-pipe-rack.png';
 import type { ConcretePlantAreaCode } from '../../lib/data/plantAreas';
 
@@ -65,7 +66,7 @@ const { selectedPlantArea, selectedPlantAreaDefinition, filterByPlantArea } = us
 const realAlarms = ref<AlarmItem[]>([]);
 const visibleAlarms = computed(() => filterByPlantArea(realAlarms.value));
 
-onMounted(async () => {
+async function loadFireAlarms() {
   try {
     const res = await fetchFireAlarmPage(1, 1000);
     realAlarms.value = res.list
@@ -74,7 +75,11 @@ onMounted(async () => {
   } catch {
     // 真实接口异常时保持空列表（面板降级为「消防态势平稳」），不阻断其它模块
   }
-});
+}
+
+onMounted(loadFireAlarms);
+// 写回（确认/处置/误报）成功后，进行中报警列表随之刷新，已确认/已派单/已闭环的报警退出「进行中」视图
+watch(fireAlarmChanged, loadFireAlarms);
 const hasActiveAlarm = computed(() => demoAlarmEnabled.value && visibleAlarms.value.length > 0);
 const visibleFireAreas = computed(() => {
   if (selectedPlantArea.value === 'all') return fireAreas.value;

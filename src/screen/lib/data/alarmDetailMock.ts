@@ -61,6 +61,8 @@ export interface AlarmDetailItem {
   monitorId?: string;
   monitorLabel?: string;
   workOrderNo?: string;
+  /** 消防报警真实主键（fac_fire_alarm.alarmId）；携带时详情面板的状态流转/误报标记会写回落库 */
+  fireAlarmId?: string;
 }
 
 export const alarmDetailTypeOptions = [
@@ -102,6 +104,9 @@ function normalizeFireType(alarmType: string): AlarmDetailType {
 export function fireAlarmToDetail(alarm: AlarmItem): AlarmDetailItem {
   const type = normalizeFireType(alarm.alarmType);
   const images = type === '视频AI' ? SECURITY_IMAGES : FIRE_IMAGES;
+  // 消防报警状态来自 fac_fire_alarm（ACTIVE/ACKED/DISPATCHED/CLOSED），与 screen AlarmItem.status 的
+  // 中文标签（未处置/已确认/处置中/已处置）区分——此处按后端 4 态字典映射回详情中文态。
+  const status = mapFireStatusToDetail(alarm.status);
   return {
     id: `fire-${alarm.id}`,
     alarmCode: `AL-20260820-${String(alarm.id).padStart(3, '0')}`,
@@ -109,8 +114,8 @@ export function fireAlarmToDetail(alarm: AlarmItem): AlarmDetailItem {
     alarmType: type,
     source: alarm.source,
     level: alarm.titleColor === 'danger' ? '一级' : '二级',
-    status: alarm.status === '未处置' ? '未确认' : alarm.status === '处置中' ? '处理中' : '已处理',
-    falseAlarm: '未核实',
+    status,
+    falseAlarm: alarm.fireAlarmId ? '未核实' : '未核实',
     time: alarm.time,
     objectType: '区域',
     objectName: alarm.title,
@@ -137,7 +142,23 @@ export function fireAlarmToDetail(alarm: AlarmItem): AlarmDetailItem {
     rescueEventId: alarm.rescueEventId,
     monitorId: alarm.onsiteMonitorId ?? alarm.monitorId,
     monitorLabel: alarm.onsiteMonitorLabel ?? alarm.monitorLabel,
+    fireAlarmId: alarm.fireAlarmId,
   };
+}
+
+/** 后端消防报警 status（ACTIVE/ACKED/DISPATCHED/CLOSED）→ 详情中文态（未确认/已确认/处理中/已处理）。 */
+export function mapFireStatusToDetail(status: string | undefined): AlarmDetailStatus {
+  switch (status) {
+    case 'ACKED':
+      return '已确认';
+    case 'DISPATCHED':
+      return '处理中';
+    case 'CLOSED':
+      return '已处理';
+    case 'ACTIVE':
+    default:
+      return '未确认';
+  }
 }
 
 export function fireListItemToDetail(item: FireAlarmItem): AlarmDetailItem {
@@ -150,8 +171,8 @@ export function fireListItemToDetail(item: FireAlarmItem): AlarmDetailItem {
     alarmType: type,
     source: item.source,
     level: item.level,
-    status: item.status === 'CLOSED' ? '已处理' : '未确认',
-    falseAlarm: item.falseAlarm === '是' ? '是' : '未核实',
+    status: mapFireStatusToDetail(item.status),
+    falseAlarm: item.falseAlarm === '是' ? '是' : item.falseAlarm === '否' ? '否' : '未核实',
     time: item.time,
     objectType: item.objectType,
     objectName: item.objectName,
@@ -163,16 +184,19 @@ export function fireListItemToDetail(item: FireAlarmItem): AlarmDetailItem {
     imageLabels:
       type === '视频AI' ? ['周界现场抓拍'] : ['告警现场', '关联装置现场', '储罐区联动画面'],
     ...coordsFor(item.alarmId),
-    dispatchPersonnel: [],
-    notifyApp: true,
-    notifySms: false,
-    handleResult: '',
-    handleTime: '',
+    dispatchPersonnel: item.dispatchPersonnel
+      ? item.dispatchPersonnel.split(',').filter(Boolean)
+      : [],
+    notifyApp: item.notifyMethod ? item.notifyMethod.includes('APP') : true,
+    notifySms: item.notifyMethod ? item.notifyMethod.includes('SMS') : false,
+    handleResult: item.handleResult || '',
+    handleTime: item.handleTime || '',
     attachments: [],
     timeline: baseTimeline(item.time, item.title),
     rescueEventId: item.rescueEventId ? Number(item.rescueEventId) : undefined,
     monitorId: item.onsiteMonitorId ?? item.monitorId,
     monitorLabel: item.onsiteMonitorLabel ?? item.monitorLabel,
+    fireAlarmId: item.alarmId,
   };
 }
 

@@ -1,4 +1,4 @@
-import { ref, type Ref } from 'vue';
+import { ref, watch, type Ref } from 'vue';
 import { fetchAlarmPage, fetchFireAlarmPage } from '@/services/alarm';
 import { toScreenAlarm, toScreenAlarmFromFire } from '../adapters/alarmAdapter';
 import type { AlarmItem as ScreenAlarmItem } from '../data/mock';
@@ -116,3 +116,24 @@ export function refreshScreenFireAlarms(size = 20): Promise<void> {
     });
   return fireInflight;
 }
+
+/**
+ * 消防报警写回后的刷新信号：写接口成功后置位，订阅方（SafetyAlarmPanel / FireAlarmListDialog /
+ * 声光报警源）据此重新拉取，保证列表与详情状态一致。
+ */
+export const fireAlarmChanged = ref(0);
+
+export function touchFireAlarmChanged(): void {
+  fireAlarmChanged.value += 1;
+}
+
+/** 强制重载消防报警源（声光报警取首条）。写回后置位 fireAlarmChanged 时调用。 */
+export function reloadScreenFireAlarms(size = 20): Promise<void> {
+  fireLoaded = false;
+  return refreshScreenFireAlarms(size);
+}
+
+// 写回成功后，声光报警源（screenFireAlarms）随之刷新，保持首条与列表一致。
+watch(fireAlarmChanged, () => {
+  void reloadScreenFireAlarms();
+});

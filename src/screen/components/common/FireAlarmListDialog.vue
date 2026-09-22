@@ -8,6 +8,7 @@ import { backendUnavailableWarn } from '@/services/backendFallback';
 import { fireListItemToDetail } from '../../lib/data/alarmDetailMock';
 import { useAlarmDetailPanel } from '../../lib/composables/useAlarmDetailPanel';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
+import { fireAlarmChanged } from '../../lib/composables/useScreenAlarmFeed';
 
 const props = defineProps<{
   open: boolean;
@@ -86,6 +87,10 @@ async function loadAlarms() {
     loading.value = false;
   }
 }
+
+onMounted(loadAlarms);
+// 写回（确认/处置/误报）成功后刷新列表，保证弹窗内状态与后端一致
+watch(fireAlarmChanged, loadAlarms);
 
 // 列表跟随页面「厂区」筛选。默认厂区为「全厂区」→ 显示接口全部；切到某厂区则只显示该厂区。
 const filteredItems = computed(() =>

@@ -62,6 +62,8 @@ async function clickByText(w: VueWrapper, text: string) {
   if (!b) throw new Error(`未找到按钮：${text}`);
   await b.trigger('click');
   await nextTick();
+  // 状态流转改为异步写回（确认/处置/误报先落库再改本地态），需冲刷微任务后再断言
+  await flushPromises();
 }
 
 async function mountPanel(status: AlarmDetailStatus, overrides: Partial<AlarmDetailItem> = {}) {

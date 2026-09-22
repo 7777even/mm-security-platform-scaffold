@@ -6,6 +6,9 @@ import { fetchDispatchPersonnel, type DispatchPersonnelOption } from '@/services
 import { useAlarmDetailPanel } from '../../lib/composables/useAlarmDetailPanel';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
 import { showToast } from '../../lib/composables/useToast';
+import { updateFireAlarm, type FireAlarmUpdatePayload } from '@/services/alarm';
+import type { AlarmDetailStatus, FalseAlarmStatus } from '../../lib/data/alarmDetailMock';
+import { touchFireAlarmChanged } from '../../lib/composables/useScreenAlarmFeed';
 
 const router = useRouter();
 const {
@@ -50,23 +53,90 @@ function pushTimeline(action: string, detailText: string) {
   });
 }
 
-function confirmAlarm() {
+/**
+ * 详情中文态（未确认/已确认/处理中/已处理）→ 后端消防报警 status 枚举（ACTIVE/ACKED/DISPATCHED/CLOSED）。
+ * 纯展示态↔枚举映射，就地实现（避免大屏组件值导入 lib/data 业务函数，gate:screen 约束）。
+ */
+function mapDetailStatusToFire(status: AlarmDetailStatus): string {
+  switch (status) {
+    case '已确认':
+      return 'ACKED';
+    case '处理中':
+      return 'DISPATCHED';
+    case '已处理':
+      return 'CLOSED';
+    case '未确认':
+    default:
+      return 'ACTIVE';
+  }
+}
+
+/**
+ * 消防报警写回落库：仅当详情携带 fireAlarmId（真实 fac_fire_alarm 主键）时写回。
+ * 成功广播 fireAlarmChanged 触发列表/卡片/声光报警源刷新；失败提示并回 false，由调用方中止本地状态流转。
+ * 非消防报警（无 fireAlarmId）直接放行，保持既有内存态行为不变。
+ */
+async function persistFireAlarm(partial: {
+  status?: AlarmDetailStatus;
+  falseAlarm?: FalseAlarmStatus;
+  handleResult?: string;
+  handleTime?: string;
+  dispatchPersonnel?: string[];
+  notifyApp?: boolean;
+  notifySms?: boolean;
+}): Promise<boolean> {
+  const item = detail.value;
+  const alarmId = item?.fireAlarmId;
+  if (!alarmId) return true;
+  const payload: FireAlarmUpdatePayload = {};
+  if (partial.status)
+    payload.status = mapDetailStatusToFire(partial.status) as FireAlarmUpdatePayload['status'];
+  if (partial.falseAlarm) payload.falseAlarm = partial.falseAlarm;
+  if (partial.handleResult !== undefined) payload.handleResult = partial.handleResult;
+  if (partial.handleTime !== undefined) payload.handleTime = partial.handleTime;
+  if (partial.dispatchPersonnel !== undefined)
+    payload.dispatchPersonnel = partial.dispatchPersonnel.join(',');
+  const methods: string[] = [];
+  if (partial.notifyApp ?? item.notifyApp) methods.push('APP');
+  if (partial.notifySms ?? item.notifySms) methods.push('SMS');
+  payload.notifyMethod = methods.join(',');
+  try {
+    await updateFireAlarm(alarmId, payload);
+    touchFireAlarmChanged();
+    return true;
+  } catch {
+    showToast('处置信息写回失败，请稍后重试');
+    return false;
+  }
+}
+
+async function confirmAlarm() {
   const item = detail.value;
   if (!item || item.status !== '未确认') return;
+  if (!(await persistFireAlarm({ status: '已确认' }))) return;
   patchAlarmDetail({ status: '已确认' });
   pushTimeline('确认告警', '确认为真实告警');
 }
 
-function startHandle() {
+async function startHandle() {
   const item = detail.value;
   if (!item || item.status !== '已确认') return;
+  if (!(await persistFireAlarm({ status: '处理中' }))) return;
   patchAlarmDetail({ status: '处理中' });
   pushTimeline('开始处置', '开始处置');
 }
 
-function submitHandle() {
+async function submitHandle() {
   const item = detail.value;
   if (!item || item.status !== '处理中') return;
+  if (
+    !(await persistFireAlarm({
+      status: '已处理',
+      handleTime: item.handleTime || now(),
+      handleResult: item.handleResult,
+    }))
+  )
+    return;
   patchAlarmDetail({
     status: '已处理',
     handleTime: item.handleTime || now(),
@@ -74,40 +144,52 @@ function submitHandle() {
   pushTimeline('提交处置', item.handleResult || '提交处置反馈');
 }
 
-function markFalseAlarm() {
+async function markFalseAlarm() {
   const item = detail.value;
   if (!item || item.status === '已处理') return;
+  if (!(await persistFireAlarm({ falseAlarm: '是' }))) return;
   patchAlarmDetail({ falseAlarm: '是' });
   pushTimeline('标记误报', '该告警被标记为误报，不计入统计');
 }
 
-function addPersonnel() {
+async function addPersonnel() {
   const item = detail.value;
   if (!item || !selectedPersonnel.value) return;
   if (item.dispatchPersonnel.includes(selectedPersonnel.value)) return;
-  patchAlarmDetail({
-    dispatchPersonnel: [...item.dispatchPersonnel, selectedPersonnel.value],
-  });
+  const next = [...item.dispatchPersonnel, selectedPersonnel.value];
+  if (!(await persistFireAlarm({ dispatchPersonnel: next }))) return;
+  patchAlarmDetail({ dispatchPersonnel: next });
   selectedPersonnel.value = '';
 }
 
-function removePersonnel(name: string) {
+async function removePersonnel(name: string) {
   const item = detail.value;
   if (!item) return;
-  patchAlarmDetail({
-    dispatchPersonnel: item.dispatchPersonnel.filter((p) => p !== name),
-  });
+  const next = item.dispatchPersonnel.filter((p) => p !== name);
+  if (!(await persistFireAlarm({ dispatchPersonnel: next }))) return;
+  patchAlarmDetail({ dispatchPersonnel: next });
 }
 
-function toggleNotify(key: 'notifyApp' | 'notifySms') {
+async function toggleNotify(key: 'notifyApp' | 'notifySms') {
   const item = detail.value;
   if (!item) return;
-  patchAlarmDetail({ [key]: !item[key] });
+  const next = !item[key];
+  if (!(await persistFireAlarm({ [key]: next } as { notifyApp?: boolean; notifySms?: boolean })))
+    return;
+  patchAlarmDetail({ [key]: next });
 }
 
-function setFalseAlarm(value: '是' | '否' | '未核实') {
+/** 处置情况文本失焦即写回（落 fac_fire_alarm.handle_result）。 */
+async function onHandleResultBlur() {
   const item = detail.value;
   if (!item) return;
+  if (!(await persistFireAlarm({ handleResult: item.handleResult }))) return;
+}
+
+async function setFalseAlarm(value: '是' | '否' | '未核实') {
+  const item = detail.value;
+  if (!item || item.falseAlarm === value) return;
+  if (!(await persistFireAlarm({ falseAlarm: value }))) return;
   patchAlarmDetail({ falseAlarm: value });
 }
 
@@ -473,6 +555,7 @@ function trendX(item: AlarmDetailItem, index: number): number {
             v-model="detail.handleResult"
             class="alarm-detail__textarea"
             placeholder="请输入处置情况"
+            @blur="onHandleResultBlur"
           />
           <div class="alarm-detail__row">
             <span class="alarm-detail__label">处置时间</span>

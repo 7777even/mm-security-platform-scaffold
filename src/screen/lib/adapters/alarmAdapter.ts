@@ -122,5 +122,7 @@ export function toScreenAlarmFromFire(alarm: FireAlarmItem, index = 0): ScreenAl
     monitorLabel: alarm.monitorLabel ?? '',
     onsiteMonitorId: alarm.onsiteMonitorId ?? '',
     onsiteMonitorLabel: alarm.onsiteMonitorLabel ?? '',
+    // 携带消防报警真实主键，供详情面板写回落库（fac_fire_alarm.alarmId）
+    fireAlarmId: alarm.alarmId,
   };
 }
