@@ -243,6 +243,51 @@ export async function updatePerimeterAlarm(
   });
 }
 
+/** 周界入侵告警创建请求体：title 必填，其余可选（后端填充默认）。 */
+export interface PerimeterAlarmCreatePayload {
+  /** 告警标题（必填）。 */
+  title: string;
+  /** 告警类型（缺省 周界入侵告警）。 */
+  alarmType?: string;
+  /** 告警等级。 */
+  levelCode?: string;
+  /** 告警位置。 */
+  location?: string;
+  /** 发生时间 yyyy-MM-dd HH:mm:ss（缺省当前时刻）。 */
+  alarmTime?: string;
+  /** 告警说明。 */
+  description?: string;
+  /** 入侵对象名称（可选）。 */
+  objectName?: string;
+  /** 入侵对象类型（可选）。 */
+  objectType?: string;
+  /** 入侵位置（可选）。 */
+  intrusionPosition?: string;
+  /** 入侵方式（可选）。 */
+  intrusionMethod?: string;
+  /** 关联摄像机（可选）。 */
+  relatedCamera?: string;
+}
+
+/**
+ * 周界入侵告警手工创建（录入）：POST /security/perimeter-alarms，落 fac_perimeter_alarm。
+ * 离线（未配置 VITE_API_BASE）显式报错并抛异常；成功返回新建的 PerimeterAlarmDetail。
+ * 与 updatePerimeterAlarm 同源范式；后端经 @RealtimeSync 广播 security.perimeter-alarm.changed，面板自动刷新。
+ */
+export async function createPerimeterAlarm(
+  payload: PerimeterAlarmCreatePayload,
+): Promise<PerimeterAlarmDetail | null> {
+  if (!import.meta.env.VITE_API_BASE) {
+    backendUnavailableWarn('security', '/security/perimeter-alarms');
+    throw new Error('后端未连接，无法创建周界入侵告警');
+  }
+  return request<PerimeterAlarmDetail>({
+    url: '/security/perimeter-alarms',
+    method: 'POST',
+    data: payload,
+  });
+}
+
 /**
  * 周界入侵告警写回后的刷新信号：写接口成功后置位，订阅方（SecurityStatusPanel）据此重新拉取最新告警，
  * 保证面板与详情状态一致；同时后端经 @RealtimeSync 广播 security.perimeter-alarm.changed，

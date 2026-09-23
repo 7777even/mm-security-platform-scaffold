@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
+import PerimeterAlarmCreateDialog from './PerimeterAlarmCreateDialog.vue';
 import { showToast } from '../../../lib/composables/useToast';
 import { perimeterAlarmToDetail } from '../../../lib/data/alarmDetailMock';
 import { useAlarmDetailPanel } from '../../../lib/composables/useAlarmDetailPanel';
@@ -10,9 +11,12 @@ import {
 } from '../../../lib/composables/useAlarmVideoPopups';
 import type { AlarmItem } from '../../../lib/data/mock';
 import {
+  createPerimeterAlarm,
   fetchLatestPerimeterAlarm,
   fetchPerimeterAlarmSnapshotUrl,
   perimeterAlarmChanged,
+  touchPerimeterAlarmChanged,
+  type PerimeterAlarmCreatePayload,
   type PerimeterAlarmDetail,
 } from '@/services/security';
 import { subscribeDomainChange } from '@/services/realtime';
@@ -23,6 +27,7 @@ const alarm = ref<PerimeterAlarmDetail | null>(null);
 const snapshotUrl = ref<string | null>(null);
 const alarmActive = ref(false);
 const handling = ref(false);
+const createOpen = ref(false);
 const { closeAlarmDetail, openAlarmDetail } = useAlarmDetailPanel();
 
 /** 后端 @RealtimeSync 广播 security.perimeter-alarm.changed 的退订句柄，卸载时清理避免泄漏。 */
@@ -101,6 +106,17 @@ function resetDemo() {
   showToast('已恢复周界入侵报警演示场景');
 }
 
+/** 手工录入一条周界入侵告警：先落库后触发同端刷新（后端亦经 @RealtimeSync 广播多端）。 */
+async function handleCreatePerimeterAlarm(payload: PerimeterAlarmCreatePayload) {
+  try {
+    await createPerimeterAlarm(payload);
+    touchPerimeterAlarmChanged();
+    showToast('周界入侵告警已创建');
+  } catch (e) {
+    showToast('创建失败：' + (e instanceof Error ? e.message : '未知错误'));
+  }
+}
+
 onMounted(() => {
   void loadPerimeterAlarm();
   // 实时联通：后端处置写回经 @RealtimeSync 广播 security.perimeter-alarm.changed，
@@ -124,6 +140,9 @@ onUnmounted(() => {
 <template>
   <PanelCard title="当前厂区状态" variant="patrolAlarm" module="security">
     <div class="security-status">
+      <div class="panel-actions">
+        <button type="button" class="create-btn" @click="createOpen = true">+ 新增治安报警</button>
+      </div>
       <section class="status-summary" :class="{ 'status-summary--normal': !alarmActive }">
         <span class="status-summary__icon" aria-hidden="true">{{ alarmActive ? '!' : '✓' }}</span>
         <div class="status-summary__copy">
@@ -178,6 +197,11 @@ onUnmounted(() => {
 
       <button v-else type="button" class="reset-demo" @click="resetDemo">恢复报警演示</button>
     </div>
+    <PerimeterAlarmCreateDialog
+      :open="createOpen"
+      @close="createOpen = false"
+      @submit="handleCreatePerimeterAlarm"
+    />
   </PanelCard>
 </template>
 
@@ -414,6 +438,28 @@ onUnmounted(() => {
   color: #dceeff;
   font: 11px var(--font-body);
   cursor: pointer;
+}
+
+.panel-actions {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+.create-btn {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid rgb(20 207 255 / 88%);
+  border-radius: 3px;
+  background: rgb(0 103 150 / 72%);
+  color: #dceeff;
+  font: 11px var(--font-body);
+  cursor: pointer;
+}
+
+.create-btn:hover {
+  border-color: rgb(62 211 255 / 95%);
+  background: rgb(0 124 178 / 85%);
 }
 
 .disposal-card button:hover,
