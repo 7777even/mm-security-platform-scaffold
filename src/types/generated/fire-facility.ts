@@ -83,6 +83,108 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/fire-facility/monitors/report': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 消防设施监测运行数据上报
+     * @description 设备/采集/模拟上报 → 按 key_code upsert 监控卡片（计数/状态/最近上报时间）+ 整体替换监控参数，返回刷新后的全量监测概览。需权限码 fire-facility:handle（V68）。标记 fire-facility.monitor 实时广播。命中即局部更新（不传不覆盖），未命中按 facilityType 新建；每次上报刷新 last_report_time。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "items": [
+           *         {
+           *           "key": "water",
+           *           "facilityType": "消防水源",
+           *           "total": 46,
+           *           "online": 44,
+           *           "offline": 1,
+           *           "fault": 1,
+           *           "status": "告警",
+           *           "lastReportTime": "2026-09-23 08:50:00",
+           *           "params": [
+           *             {
+           *               "label": "水泵运行",
+           *               "value": "运行",
+           *               "tone": "normal"
+           *             },
+           *             {
+           *               "label": "水位",
+           *               "value": "32%",
+           *               "tone": "warning"
+           *             }
+           *           ]
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['FireFacilityMonitorReportRequest'];
+        };
+      };
+      responses: {
+        /** @description 上报成功，返回刷新后的全量监测概览 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "typeOptions": [
+             *           "消防水泵",
+             *           "火灾报警控制器"
+             *         ],
+             *         "items": [
+             *           {
+             *             "key": "water",
+             *             "facilityType": "消防水源",
+             *             "total": 46,
+             *             "online": 44,
+             *             "offline": 1,
+             *             "fault": 1,
+             *             "status": "告警",
+             *             "params": [
+             *               {
+             *                 "label": "水泵运行",
+             *                 "value": "运行",
+             *                 "tone": "normal"
+             *               }
+             *             ],
+             *             "lastReportTime": "2026-09-23 08:50:00"
+             *           }
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['FireFacilityMonitorResult'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/fire-facility/ledger': {
     parameters: {
       query?: never;
@@ -232,6 +334,92 @@ export interface paths {
       };
     };
     put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/fire-facility/faults/{faultId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 消防设施故障写回
+     * @description 确认/派单/维修/验收状态流转 + 派单/维修/验收字段局部更新 + 时间线追加。需权限码 fire-facility:handle（V68 已登记并授权）。返回更新后的故障明细（含完整时间线），供前端即时回填并触发 fire-facility.fault 实时广播。字段均为可选，未传则不更新（read-modify-write）。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 故障记录 id（fac_fire_facility_fault.id） */
+          faultId: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "faultStatus": "已确认",
+           *       "timelines": [
+           *         {
+           *           "time": "2026-09-22 10:30:00",
+           *           "operator": "值班员",
+           *           "action": "确认故障",
+           *           "detail": "确认为故障，待派单"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['FireFacilityFaultUpdateRequest'];
+        };
+      };
+      responses: {
+        /** @description 写回成功，返回更新后的故障明细 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 1001,
+             *         "faultCode": "F-20260317-001",
+             *         "status": "已确认",
+             *         "workOrderNo": null,
+             *         "repairPerson": null,
+             *         "timeline": [
+             *           {
+             *             "time": "2026-03-17 09:30:00",
+             *             "operator": "系统",
+             *             "action": "发现故障",
+             *             "detail": "自动巡检触发压力告警"
+             *           },
+             *           {
+             *             "time": "2026-09-22 10:30:00",
+             *             "operator": "值班员",
+             *             "action": "确认故障",
+             *             "detail": "确认为故障，待派单"
+             *           }
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['FireFacilityFaultItem'];
+          };
+        };
+      };
+    };
     post?: never;
     delete?: never;
     options?: never;
@@ -495,6 +683,74 @@ export interface components {
       /** @description 各设施类型监测概览列表 */
       items?: components['schemas']['FireFacilityMonitorSummary'][];
     };
+    /** @description 监测运行数据上报 - 监控参数项 */
+    FireFacilityMonitorReportParam: {
+      /**
+       * @description 参数名称
+       * @example 水泵运行
+       */
+      label?: string;
+      /**
+       * @description 参数取值
+       * @example 运行
+       */
+      value?: string;
+      /**
+       * @description 着色基调：green/blue/red/grey/normal/warning/danger
+       * @example normal
+       */
+      tone?: string;
+    };
+    /** @description 监测运行数据上报 - 单分项条目（按 key upsert） */
+    FireFacilityMonitorReportItem: {
+      /**
+       * @description 分项唯一键（key_code），必填
+       * @example water
+       */
+      key?: string;
+      /**
+       * @description 设施类型（新建分项时必填）
+       * @example 消防水源
+       */
+      facilityType?: string;
+      /**
+       * @description 设施总数
+       * @example 46
+       */
+      total?: number;
+      /**
+       * @description 在线数
+       * @example 44
+       */
+      online?: number;
+      /**
+       * @description 离线数
+       * @example 1
+       */
+      offline?: number;
+      /**
+       * @description 故障数
+       * @example 1
+       */
+      fault?: number;
+      /**
+       * @description 监测状态：正常/告警/离线/在线
+       * @example 告警
+       */
+      status?: string;
+      /**
+       * @description 最近上报时间（yyyy-MM-dd HH:mm:ss），不传则用上报时刻
+       * @example 2026-09-23 08:50:00
+       */
+      lastReportTime?: string;
+      /** @description 监控参数明细（传入即整体替换） */
+      params?: components['schemas']['FireFacilityMonitorReportParam'][];
+    };
+    /** @description 消防设施监测运行数据上报请求：设备/采集/模拟上报的分项列表 */
+    FireFacilityMonitorReportRequest: {
+      /** @description 上报的分项列表（按 key upsert） */
+      items?: components['schemas']['FireFacilityMonitorReportItem'][];
+    };
     /** @description 设施维保记录项 */
     FireFacilityMaintenanceRecord: {
       /**
@@ -587,6 +843,74 @@ export interface components {
        * @example 自动巡检触发压力告警
        */
       detail?: string;
+    };
+    /** @description 故障写回时随状态流转追加的时间线条目 */
+    FireFacilityFaultTimelineCreate: {
+      /**
+       * @description 发生时间（yyyy-MM-dd HH:mm:ss）
+       * @example 2026-09-22 10:30:00
+       */
+      time?: string;
+      /**
+       * @description 操作人
+       * @example 值班员
+       */
+      operator?: string;
+      /**
+       * @description 操作动作（如 确认故障 / 生成工单并派发 / 开始维修 / 提交验收 / 验收合格 / 验收不合格）
+       * @example 确认故障
+       */
+      action?: string;
+      /**
+       * @description 操作详情
+       * @example 确认为故障，待派单
+       */
+      detail?: string;
+    };
+    /** @description 消防设施故障写回请求：状态流转 + 字段局部更新 + 时间线追加。所有字段可选，未传则不更新。 */
+    FireFacilityFaultUpdateRequest: {
+      /**
+       * @description 故障状态：待确认/已确认/已派单/维修中/待验收/已闭环
+       * @example 已确认
+       */
+      faultStatus?: string;
+      /**
+       * @description 工单号（派单时生成）
+       * @example WO-20260922-001
+       */
+      workOrderNo?: string;
+      /**
+       * @description 维修人/派单人员
+       * @example 李维修
+       */
+      repairPerson?: string;
+      /**
+       * @description 预计完成时间（yyyy-MM-dd HH:mm:ss）
+       * @example 2026-09-24 18:00:00
+       */
+      estimatedFinish?: string;
+      /**
+       * @description 实际完成时间（yyyy-MM-dd HH:mm:ss）
+       * @example 2026-09-23 16:40:00
+       */
+      actualFinish?: string;
+      /**
+       * @description 维修措施说明
+       * @example 更换密封圈并校准
+       */
+      repairMeasures?: string;
+      /**
+       * @description 验收人
+       * @example 值班员
+       */
+      acceptancePerson?: string;
+      /**
+       * @description 验收结论（如 合格/不合格）
+       * @example 合格
+       */
+      acceptanceResult?: string;
+      /** @description 随本次写回追加的故障时间线（可选） */
+      timelines?: components['schemas']['FireFacilityFaultTimelineCreate'][];
     };
     /** @description 设施故障明细项 */
     FireFacilityFaultItem: {
