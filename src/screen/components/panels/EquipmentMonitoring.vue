@@ -51,7 +51,11 @@ async function loadPatrols(): Promise<void> {
 // 三端实时刷新（realtime-channel spec）：任一端上报巡查执行（fire.patrol 域），本面板巡查记录自动重拉。
 useDomainAutoRefresh('fire.patrol', loadPatrols, { immediate: false });
 
-const TODAY = '2026-08-20';
+const TODAY = (() => {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+})();
 const todayRecords = computed(() =>
   filterByPlantArea(patrolRecords.value).filter((item) => item.patrolDate === TODAY),
 );

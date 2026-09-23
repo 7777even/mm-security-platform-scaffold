@@ -12,6 +12,11 @@ import {
   type PerimeterAlarmUpdatePayload,
   touchPerimeterAlarmChanged,
 } from '@/services/security';
+import {
+  updateProductionAlarm,
+  type ProductionAlarmUpdatePayload,
+  touchProductionAlarmChanged,
+} from '@/services/production';
 import type { AlarmDetailStatus, FalseAlarmStatus } from '../../lib/data/alarmDetailMock';
 import { touchFireAlarmChanged } from '../../lib/composables/useScreenAlarmFeed';
 
@@ -47,7 +52,11 @@ watch(
 const detail = computed(() => activeAlarmDetail.value);
 
 function now(): string {
-  return '2026-08-20 10:30:00';
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(
+    d.getMinutes(),
+  )}:${p(d.getSeconds())}`;
 }
 
 function pushTimeline(action: string, detailText: string) {
@@ -91,6 +100,24 @@ function mapDetailStatusToPerimeter(status: AlarmDetailStatus): string {
     case '未确认':
     default:
       return '未确认';
+  }
+}
+
+/**
+ * 详情中文态（未确认/已确认/处理中/已处理）→ 后端生产报警 status 字典（未处置/已确认/处置中/已处置）。
+ * 生产报警后端字典与详情展示一一对应（新增「已确认」态，区别于原 KPI 仅 3 态）。
+ */
+function mapDetailStatusToProduction(status: AlarmDetailStatus): string {
+  switch (status) {
+    case '已确认':
+      return '已确认';
+    case '处理中':
+      return '处置中';
+    case '已处理':
+      return '已处置';
+    case '未确认':
+    default:
+      return '未处置';
   }
 }
 
@@ -173,6 +200,46 @@ async function persistPerimeterAlarm(partial: {
 }
 
 /**
+ * 生产报警写回落库：仅当详情携带 productionAlarmId（fac_production_alarm.id）时写回。
+ * 与 persistFireAlarm / persistPerimeterAlarm 同源范式；成功广播 productionAlarmChanged 触发生产报警面板实时刷新；
+ * 失败提示并回 false，由调用方中止本地状态流转。通知方式由详情面板的 notifyApp/notifySms 布尔合并为
+ * APP/SMS 逗号分隔串（与后端 ProductionAlarmUpdateRequest.notifyMethod 对齐）。
+ */
+async function persistProductionAlarm(partial: {
+  status?: AlarmDetailStatus;
+  falseAlarm?: FalseAlarmStatus;
+  handleResult?: string;
+  handleTime?: string;
+  dispatchPersonnel?: string[];
+  notifyApp?: boolean;
+  notifySms?: boolean;
+}): Promise<boolean> {
+  const item = detail.value;
+  if (!item) return false;
+  const alarmId = item?.productionAlarmId;
+  if (alarmId == null) return true;
+  const payload: ProductionAlarmUpdatePayload = {};
+  if (partial.status) payload.status = mapDetailStatusToProduction(partial.status);
+  if (partial.falseAlarm) payload.falseAlarm = partial.falseAlarm;
+  if (partial.handleResult !== undefined) payload.handleResult = partial.handleResult;
+  if (partial.handleTime !== undefined) payload.handleTime = partial.handleTime;
+  if (partial.dispatchPersonnel !== undefined)
+    payload.dispatchPersonnel = partial.dispatchPersonnel.join(',');
+  const methods: string[] = [];
+  if (partial.notifyApp ?? item.notifyApp) methods.push('APP');
+  if (partial.notifySms ?? item.notifySms) methods.push('SMS');
+  payload.notifyMethod = methods.join(',');
+  try {
+    await updateProductionAlarm(alarmId, payload);
+    touchProductionAlarmChanged();
+    return true;
+  } catch {
+    showToast('处置信息写回失败，请稍后重试');
+    return false;
+  }
+}
+
+/**
  * 处置动作统一写回入口：按详情主键归属分支到消防或周界写回，
  * 既无 fireAlarmId 也无 perimeterAlarmId（纯内存态演示告警）直接放行，保持既有行为不变。
  */
@@ -189,6 +256,7 @@ async function persistAlarm(partial: {
   if (!item) return false;
   if (item.fireAlarmId) return persistFireAlarm(partial);
   if (item.perimeterAlarmId != null) return persistPerimeterAlarm(partial);
+  if (item.productionAlarmId != null) return persistProductionAlarm(partial);
   return true;
 }
 
