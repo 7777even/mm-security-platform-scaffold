@@ -1,5 +1,6 @@
 import http, { request } from '@/services/http';
 import { backendUnavailableWarn, resolveOfflineFetch } from '@/services/backendFallback';
+import { ref } from 'vue';
 import * as searchFixture from '@/services/map-data/securitySearchMock';
 import type { SecurityTrackMode } from '@/services/map-data/securityTrackMock';
 
@@ -202,6 +203,55 @@ export async function fetchPerimeterAlarmSnapshotUrl(id: number): Promise<string
   } catch {
     return null;
   }
+}
+
+/** 周界入侵告警写回请求体：局部更新，仅传需变更的字段。 */
+export interface PerimeterAlarmUpdatePayload {
+  /** 处置状态：未确认/已确认/已派单/已处理。不传则不更新。 */
+  status?: string;
+  /** 是否误报：是/否/未核实。不传则不更新。 */
+  falseAlarm?: string;
+  /** 处置情况文本。不传则不更新。 */
+  handleResult?: string;
+  /** 处置时间（格式 yyyy-MM-dd HH:mm:ss）。不传则不更新。 */
+  handleTime?: string;
+  /** 派单人员（多个以英文逗号分隔）。不传则不更新。 */
+  dispatchPersonnel?: string;
+  /** APP 通知开关。不传则不更新。 */
+  notifyApp?: boolean;
+  /** 短信通知开关。不传则不更新。 */
+  notifySms?: boolean;
+}
+
+/**
+ * 周界入侵告警写回（确认/派单/处置 + 误报标记）：PUT /security/perimeter-alarms/{id}，落 fac_perimeter_alarm。
+ * 离线（未配置 VITE_API_BASE）显式报错并抛异常；成功返回更新后的 PerimeterAlarmDetail，供调用方即时回填。
+ * 与消防报警 updateFireAlarm 同源范式。
+ */
+export async function updatePerimeterAlarm(
+  id: number,
+  payload: PerimeterAlarmUpdatePayload,
+): Promise<PerimeterAlarmDetail | null> {
+  if (!import.meta.env.VITE_API_BASE) {
+    backendUnavailableWarn('security', `/security/perimeter-alarms/${id}`);
+    throw new Error('后端未连接，无法写回周界入侵告警');
+  }
+  return request<PerimeterAlarmDetail>({
+    url: `/security/perimeter-alarms/${encodeURIComponent(id)}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+/**
+ * 周界入侵告警写回后的刷新信号：写接口成功后置位，订阅方（SecurityStatusPanel）据此重新拉取最新告警，
+ * 保证面板与详情状态一致；同时后端经 @RealtimeSync 广播 security.perimeter-alarm.changed，
+ * 多端/同端无需写接口也能实时反映。
+ */
+export const perimeterAlarmChanged = ref(0);
+
+export function touchPerimeterAlarmChanged(): void {
+  perimeterAlarmChanged.value += 1;
 }
 
 export type PatrolCameraStatus = '正常' | '离线' | '故障';
