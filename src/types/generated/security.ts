@@ -263,6 +263,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/security/perimeter-alarms': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 创建周界入侵告警（手工录入）
+     * @description 操作员手工录入一条周界入侵告警，需权限码 security:perimeter-create（V76 已登记并授权）。后端生成 alarmCode、置 status='未确认'、经 security.perimeter-alarm 实时广播。
+     */
+    post: operations['createPerimeterAlarm'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -792,6 +812,64 @@ export interface components {
        * @example 现场抓拍
        */
       snapshotLabel?: string;
+    };
+    /** @description 周界入侵告警创建请求：title 必填，其余可缺省由后端填充默认。 */
+    PerimeterAlarmCreateRequest: {
+      /**
+       * @description 告警标题（必填）
+       * @example 南门未经授权翻越
+       */
+      title: string;
+      /**
+       * @description 告警类型（缺省 周界入侵告警）
+       * @example 周界入侵告警
+       */
+      alarmType?: string;
+      /**
+       * @description 告警等级
+       * @example 一级
+       */
+      levelCode?: string;
+      /**
+       * @description 告警位置
+       * @example 厂区南门西侧 200 米
+       */
+      location?: string;
+      /**
+       * @description 发生时间 yyyy-MM-dd HH:mm:ss（缺省当前时刻）
+       * @example 2026-09-23 17:30:00
+       */
+      alarmTime?: string;
+      /**
+       * @description 告警说明
+       * @example 监控识别到人员翻越周界栅栏
+       */
+      description?: string;
+      /**
+       * @description 入侵对象名称（可选）
+       * @example 翻越人员
+       */
+      objectName?: string;
+      /**
+       * @description 入侵对象类型（可选）
+       * @example 人员
+       */
+      objectType?: string;
+      /**
+       * @description 入侵位置（可选）
+       * @example 栅栏中段
+       */
+      intrusionPosition?: string;
+      /**
+       * @description 入侵方式（可选）
+       * @example 翻越
+       */
+      intrusionMethod?: string;
+      /**
+       * @description 关联摄像机（可选）
+       * @example CAM-007
+       */
+      relatedCamera?: string;
     };
   };
   responses: {
@@ -1448,6 +1526,59 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  createPerimeterAlarm: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "title": "南门未经授权翻越",
+         *       "alarmType": "周界入侵告警",
+         *       "levelCode": "一级",
+         *       "location": "厂区南门西侧 200 米",
+         *       "alarmTime": "2026-09-23 17:30:00",
+         *       "description": "监控识别到人员翻越周界栅栏",
+         *       "objectName": "翻越人员"
+         *     }
+         */
+        'application/json': components['schemas']['PerimeterAlarmCreateRequest'];
+      };
+    };
+    responses: {
+      /** @description 创建成功，返回新告警详情 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 99,
+           *         "alarmCode": "PA-20260923-173000",
+           *         "title": "南门未经授权翻越",
+           *         "status": "未确认",
+           *         "level": "一级"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['PerimeterAlarmDetail'];
+          };
+        };
       };
     };
   };

@@ -13,8 +13,18 @@
       "description": "默认 baseURL（VITE_API_BASE 可覆盖，见 src/services/http.ts）"
     }
   ],
-  "security": [{ "bearerAuth": [], "replaySign": [] }],
-  "tags": [{ "name": "security", "description": "安全防恐" }],
+  "security": [
+    {
+      "bearerAuth": [],
+      "replaySign": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "security",
+      "description": "安全防恐"
+    }
+  ],
   "paths": {
     "/security/patrol-cameras": {
       "get": {
@@ -22,7 +32,11 @@
         "operationId": "listPatrolCameras",
         "summary": "巡逻摄像机列表",
         "description": "返回全部巡逻摄像机点位（名称、防控区域、状态、经纬度），用于安全防恐一张图与列表。数据来自 fac_patrol_camera 真实表。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=巡逻摄像机列表）",
@@ -30,13 +44,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/PatrolCameraItem" }
+                          "items": {
+                            "$ref": "#/components/schemas/PatrolCameraItem"
+                          }
                         }
                       }
                     }
@@ -68,7 +86,11 @@
         "operationId": "listGateControls",
         "summary": "道闸（门禁卡口）列表",
         "description": "返回全部道闸点位（名称、所属门、状态、经纬度），用于门禁卡口分布与列表。数据来自 fac_gate_control 真实表。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=道闸列表）",
@@ -76,13 +98,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/GateControlItem" }
+                          "items": {
+                            "$ref": "#/components/schemas/GateControlItem"
+                          }
                         }
                       }
                     }
@@ -114,7 +140,11 @@
         "operationId": "listBollards",
         "summary": "防恐柱列表",
         "description": "返回全部防恐柱点位（名称、所属门/区、状态、经纬度），用于防恐柱分布与列表。数据来自 fac_bollard 真实表。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=防恐柱列表）",
@@ -122,13 +152,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/BollardItem" }
+                          "items": {
+                            "$ref": "#/components/schemas/BollardItem"
+                          }
                         }
                       }
                     }
@@ -165,10 +199,14 @@
             "name": "keyword",
             "in": "query",
             "required": false,
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "检索关键字（车牌/卡口/状态，忽略大小写）"
           },
-          { "$ref": "./_shared.json#/components/parameters/lang" }
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
         ],
         "responses": {
           "200": {
@@ -177,13 +215,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/VehicleSearchResult" }
+                          "items": {
+                            "$ref": "#/components/schemas/VehicleSearchResult"
+                          }
                         }
                       }
                     }
@@ -220,10 +262,14 @@
             "name": "keyword",
             "in": "query",
             "required": false,
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "检索关键字（姓名/卡口/状态，忽略大小写）"
           },
-          { "$ref": "./_shared.json#/components/parameters/lang" }
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
         ],
         "responses": {
           "200": {
@@ -232,13 +278,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/PersonSearchResult" }
+                          "items": {
+                            "$ref": "#/components/schemas/PersonSearchResult"
+                          }
                         }
                       }
                     }
@@ -269,7 +319,11 @@
         "operationId": "listSecurityEvents",
         "summary": "门禁事件列表",
         "description": "返回全部安防门禁事件（人员、通道、卡号、车辆、进出方向、等级、时间），用于门禁事件记录查询。数据来自 fac_security_event 真实表。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=门禁事件列表）",
@@ -277,13 +331,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/SecurityEvent" }
+                          "items": {
+                            "$ref": "#/components/schemas/SecurityEvent"
+                          }
                         }
                       }
                     }
@@ -318,20 +376,28 @@
         "summary": "巡更/通行轨迹时间轴",
         "description": "返回指定模式（vehicle/person）下某实体（车辆/人员）的通行轨迹节点；该实体无记录时回落到该模式的默认轨迹。",
         "parameters": [
-          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          },
           {
             "name": "mode",
             "in": "query",
             "required": true,
             "description": "轨迹模式：vehicle=车辆，person=人员",
-            "schema": { "type": "string", "enum": ["vehicle", "person"] }
+            "schema": {
+              "type": "string",
+              "enum": ["vehicle", "person"]
+            }
           },
           {
             "name": "entityId",
             "in": "query",
             "required": false,
             "description": "实体 ID（车辆/人员主键）；缺省或该实体无轨迹时使用默认轨迹",
-            "schema": { "type": "integer", "format": "int64" }
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
           }
         ],
         "responses": {
@@ -341,13 +407,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/SecurityTrackTimelineItem" }
+                          "items": {
+                            "$ref": "#/components/schemas/SecurityTrackTimelineItem"
+                          }
                         }
                       }
                     }
@@ -370,7 +440,9 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -381,20 +453,28 @@
         "summary": "轨迹概要（起止点 + 时间范围）",
         "description": "返回该模式轨迹的起点/终点标签与时间范围；时间范围由时间轴首尾节点推导，无节点时为「—」。",
         "parameters": [
-          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          },
           {
             "name": "mode",
             "in": "query",
             "required": true,
             "description": "轨迹模式：vehicle=车辆，person=人员",
-            "schema": { "type": "string", "enum": ["vehicle", "person"] }
+            "schema": {
+              "type": "string",
+              "enum": ["vehicle", "person"]
+            }
           },
           {
             "name": "entityId",
             "in": "query",
             "required": false,
             "description": "实体 ID（车辆/人员主键）",
-            "schema": { "type": "integer", "format": "int64" }
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
           }
         ],
         "responses": {
@@ -404,11 +484,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/SecurityTrackSummary" }
+                        "data": {
+                          "$ref": "#/components/schemas/SecurityTrackSummary"
+                        }
                       }
                     }
                   ]
@@ -425,7 +509,9 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -436,13 +522,18 @@
         "summary": "车辆识别检索详情",
         "description": "返回单条车辆通行记录的详情（车牌/驾驶员/单位/预约/货物等）。",
         "parameters": [
-          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          },
           {
             "name": "id",
             "in": "path",
             "required": true,
             "description": "车辆检索记录主键",
-            "schema": { "type": "integer", "format": "int64" }
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
           }
         ],
         "responses": {
@@ -452,11 +543,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/VehicleSearchDetail" }
+                        "data": {
+                          "$ref": "#/components/schemas/VehicleSearchDetail"
+                        }
                       }
                     }
                   ]
@@ -475,7 +570,9 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -486,13 +583,18 @@
         "summary": "人员识别检索详情",
         "description": "返回单条人员通行记录的详情（姓名/单位/证件/预约/特种作业等）。",
         "parameters": [
-          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          },
           {
             "name": "id",
             "in": "path",
             "required": true,
             "description": "人员检索记录主键",
-            "schema": { "type": "integer", "format": "int64" }
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
           }
         ],
         "responses": {
@@ -502,11 +604,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/PersonSearchDetail" }
+                        "data": {
+                          "$ref": "#/components/schemas/PersonSearchDetail"
+                        }
                       }
                     }
                   ]
@@ -525,7 +631,9 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -535,7 +643,11 @@
         "operationId": "getLatestPerimeterAlarm",
         "summary": "最新周界入侵告警",
         "description": "返回告警时间最新的一条周界入侵告警详情（含位置/设备/处置状态/关联监控与现场抓拍路径），供安防态势面板展示待处置告警。数据来自 fac_perimeter_alarm 真实表；表为空时 data=null。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=PerimeterAlarmDetail，无告警时为 null）",
@@ -543,11 +655,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/PerimeterAlarmDetail" }
+                        "data": {
+                          "$ref": "#/components/schemas/PerimeterAlarmDetail"
+                        }
                       }
                     }
                   ]
@@ -569,7 +685,9 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
@@ -580,13 +698,18 @@
         "summary": "周界入侵告警详情",
         "description": "按主键返回单条周界入侵告警详情；未找到时 data=null。",
         "parameters": [
-          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          },
           {
             "name": "id",
             "in": "path",
             "required": true,
             "description": "周界入侵告警主键",
-            "schema": { "type": "integer", "format": "int64" }
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
           }
         ],
         "responses": {
@@ -596,11 +719,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/PerimeterAlarmDetail" }
+                        "data": {
+                          "$ref": "#/components/schemas/PerimeterAlarmDetail"
+                        }
                       }
                     }
                   ]
@@ -621,7 +748,9 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       },
       "put": {
@@ -630,20 +759,28 @@
         "summary": "周界入侵告警写回",
         "description": "确认/派单/处置状态流转 + 误报标记 + 处置情况/时间/派单人员/通知方式局部更新。需权限码 security:perimeter-ack（V70 已登记并授权）。返回更新后的 PerimeterAlarmDetail，供前端即时回填并触发 security.perimeter-alarm 实时广播。字段均为可选，未传则不更新（read-modify-write）。",
         "parameters": [
-          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          },
           {
             "name": "id",
             "in": "path",
             "required": true,
             "description": "周界入侵告警主键（fac_perimeter_alarm.id）",
-            "schema": { "type": "integer", "format": "int64", "example": 1 }
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 1
+            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/PerimeterAlarmUpdateRequest" },
+              "schema": {
+                "$ref": "#/components/schemas/PerimeterAlarmUpdateRequest"
+              },
               "example": {
                 "status": "已确认",
                 "handleResult": "经核实为检修人员临时跨越，已现场纠正",
@@ -662,11 +799,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/PerimeterAlarmDetail" }
+                        "data": {
+                          "$ref": "#/components/schemas/PerimeterAlarmDetail"
+                        }
                       }
                     }
                   ]
@@ -691,11 +832,12 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
         }
       }
     },
-
     "/security/perimeter-alarms/{id}/snapshot": {
       "get": {
         "tags": ["security"],
@@ -708,7 +850,11 @@
             "in": "path",
             "required": true,
             "description": "周界入侵告警 id（取自 /security/perimeter-alarms/latest）",
-            "schema": { "type": "integer", "format": "int64", "example": 1 }
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 1
+            }
           }
         ],
         "responses": {
@@ -716,11 +862,83 @@
             "description": "现场抓拍字节（image/jpeg）",
             "content": {
               "image/jpeg": {
-                "schema": { "type": "string", "format": "binary" }
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
               }
             }
           },
-          "404": { "description": "该告警无现场抓拍（snapshot_bytes 为空）" }
+          "404": {
+            "description": "该告警无现场抓拍（snapshot_bytes 为空）"
+          }
+        }
+      }
+    },
+    "/security/perimeter-alarms": {
+      "post": {
+        "tags": ["security"],
+        "operationId": "createPerimeterAlarm",
+        "summary": "创建周界入侵告警（手工录入）",
+        "description": "操作员手工录入一条周界入侵告警，需权限码 security:perimeter-create（V76 已登记并授权）。后端生成 alarmCode、置 status='未确认'、经 security.perimeter-alarm 实时广播。",
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PerimeterAlarmCreateRequest"
+              },
+              "example": {
+                "title": "南门未经授权翻越",
+                "alarmType": "周界入侵告警",
+                "levelCode": "一级",
+                "location": "厂区南门西侧 200 米",
+                "alarmTime": "2026-09-23 17:30:00",
+                "description": "监控识别到人员翻越周界栅栏",
+                "objectName": "翻越人员"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "创建成功，返回新告警详情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/PerimeterAlarmDetail"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 99,
+                    "alarmCode": "PA-20260923-173000",
+                    "title": "南门未经授权翻越",
+                    "status": "未确认",
+                    "level": "一级"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -730,83 +948,201 @@
       "PatrolCameraItem": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "format": "int64", "description": "摄像机主键" },
-          "name": { "type": "string", "description": "摄像机名称" },
-          "zone": { "type": "string", "description": "防控区域（路网/门禁卡口/核心区/周界/外围）" },
-          "status": { "type": "string", "description": "状态（正常/离线/故障）" },
-          "longitude": { "type": "number", "description": "经度" },
-          "latitude": { "type": "number", "description": "纬度" }
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "摄像机主键"
+          },
+          "name": {
+            "type": "string",
+            "description": "摄像机名称"
+          },
+          "zone": {
+            "type": "string",
+            "description": "防控区域（路网/门禁卡口/核心区/周界/外围）"
+          },
+          "status": {
+            "type": "string",
+            "description": "状态（正常/离线/故障）"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "经度"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "纬度"
+          }
         }
       },
       "GateControlItem": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "format": "int64", "description": "道闸主键" },
-          "name": { "type": "string", "description": "道闸名称" },
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "道闸主键"
+          },
+          "name": {
+            "type": "string",
+            "description": "道闸名称"
+          },
           "location": {
             "type": "string",
             "description": "所属门（1#门/2#门/东门/南门/西门/北门）"
           },
-          "status": { "type": "string", "description": "状态（正常/离线/故障）" },
-          "longitude": { "type": "number", "description": "经度" },
-          "latitude": { "type": "number", "description": "纬度" }
+          "status": {
+            "type": "string",
+            "description": "状态（正常/离线/故障）"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "经度"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "纬度"
+          }
         }
       },
       "BollardItem": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "format": "int64", "description": "防恐柱主键" },
-          "name": { "type": "string", "description": "防恐柱名称" },
-          "zone": { "type": "string", "description": "所属门/区" },
-          "status": { "type": "string", "description": "状态（正常/离线/故障）" },
-          "longitude": { "type": "number", "description": "经度" },
-          "latitude": { "type": "number", "description": "纬度" }
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "防恐柱主键"
+          },
+          "name": {
+            "type": "string",
+            "description": "防恐柱名称"
+          },
+          "zone": {
+            "type": "string",
+            "description": "所属门/区"
+          },
+          "status": {
+            "type": "string",
+            "description": "状态（正常/离线/故障）"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "经度"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "纬度"
+          }
         }
       },
       "VehicleSearchResult": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "format": "int64", "description": "记录主键" },
-          "plate": { "type": "string", "description": "车牌号（识别失败为「未识别」）" },
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "记录主键"
+          },
+          "plate": {
+            "type": "string",
+            "description": "车牌号（识别失败为「未识别」）"
+          },
           "confidence": {
             "type": "integer",
             "nullable": true,
             "description": "识别置信度（0-100，识别失败为空）"
           },
-          "gate": { "type": "string", "description": "卡口（如 东门-入）" },
-          "status": { "type": "string", "description": "进出状态（入厂/出厂）" },
-          "time": { "type": "string", "description": "识别时间" }
+          "gate": {
+            "type": "string",
+            "description": "卡口（如 东门-入）"
+          },
+          "status": {
+            "type": "string",
+            "description": "进出状态（入厂/出厂）"
+          },
+          "time": {
+            "type": "string",
+            "description": "识别时间"
+          }
         }
       },
       "PersonSearchResult": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "format": "int64", "description": "记录主键" },
-          "name": { "type": "string", "description": "人员姓名" },
-          "gate": { "type": "string", "description": "卡口" },
-          "status": { "type": "string", "description": "进出状态（入厂/出厂）" },
-          "date": { "type": "string", "description": "日期" }
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "记录主键"
+          },
+          "name": {
+            "type": "string",
+            "description": "人员姓名"
+          },
+          "gate": {
+            "type": "string",
+            "description": "卡口"
+          },
+          "status": {
+            "type": "string",
+            "description": "进出状态（入厂/出厂）"
+          },
+          "date": {
+            "type": "string",
+            "description": "日期"
+          }
         }
       },
       "SecurityEvent": {
         "type": "object",
         "properties": {
-          "eventId": { "type": "string", "description": "事件编号" },
-          "person": { "type": "string", "description": "持卡人姓名" },
-          "channel": { "type": "string", "description": "门禁通道" },
-          "cardId": { "type": "string", "description": "卡号" },
-          "vehicle": { "type": "string", "description": "关联车辆" },
-          "direction": { "type": "string", "description": "进出方向（进/出）" },
-          "level": { "type": "integer", "description": "权限等级（1/2/3）" },
-          "ts": { "type": "string", "description": "事件时间" }
+          "eventId": {
+            "type": "string",
+            "description": "事件编号"
+          },
+          "person": {
+            "type": "string",
+            "description": "持卡人姓名"
+          },
+          "channel": {
+            "type": "string",
+            "description": "门禁通道"
+          },
+          "cardId": {
+            "type": "string",
+            "description": "卡号"
+          },
+          "vehicle": {
+            "type": "string",
+            "description": "关联车辆"
+          },
+          "direction": {
+            "type": "string",
+            "description": "进出方向（进/出）"
+          },
+          "level": {
+            "type": "integer",
+            "description": "权限等级（1/2/3）"
+          },
+          "ts": {
+            "type": "string",
+            "description": "事件时间"
+          }
         }
       },
       "SecurityTrackTimelineItem": {
         "type": "object",
         "description": "轨迹时间轴节点",
         "properties": {
-          "id": { "type": "integer", "format": "int64", "description": "节点主键" },
-          "location": { "type": "string", "description": "节点位置", "example": "东门-入" },
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "节点主键"
+          },
+          "location": {
+            "type": "string",
+            "description": "节点位置",
+            "example": "东门-入"
+          },
           "status": {
             "type": "string",
             "description": "节点状态（入厂/通行/到达/停留/作业）",
@@ -818,7 +1154,11 @@
             "enum": ["enter", "exit", "pass"],
             "example": "enter"
           },
-          "time": { "type": "string", "description": "发生时间", "example": "2026-01-20 09:12:08" },
+          "time": {
+            "type": "string",
+            "description": "发生时间",
+            "example": "2026-01-20 09:12:08"
+          },
           "captureHint": {
             "type": "string",
             "description": "抓拍来源提示，无则为空",
@@ -830,8 +1170,16 @@
         "type": "object",
         "description": "轨迹概要",
         "properties": {
-          "startLabel": { "type": "string", "description": "起点标签", "example": "东门" },
-          "endLabel": { "type": "string", "description": "终点标签", "example": "装卸点" },
+          "startLabel": {
+            "type": "string",
+            "description": "起点标签",
+            "example": "东门"
+          },
+          "endLabel": {
+            "type": "string",
+            "description": "终点标签",
+            "example": "装卸点"
+          },
           "timeRange": {
             "type": "string",
             "description": "时间范围（首节点 - 末节点，无节点为「—」）",
@@ -843,18 +1191,42 @@
         "type": "object",
         "description": "车辆识别检索详情（检索结果 + 派单/货物扩展）",
         "properties": {
-          "id": { "type": "integer", "format": "int64", "description": "记录主键" },
-          "plate": { "type": "string", "description": "车牌号" },
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "记录主键"
+          },
+          "plate": {
+            "type": "string",
+            "description": "车牌号"
+          },
           "confidence": {
             "type": "integer",
             "nullable": true,
             "description": "识别置信度（0-100，识别失败为空）"
           },
-          "gate": { "type": "string", "description": "卡口" },
-          "status": { "type": "string", "description": "进出状态" },
-          "time": { "type": "string", "description": "识别时间" },
-          "vehicleType": { "type": "string", "description": "车辆类型", "example": "危化品运输车" },
-          "driverName": { "type": "string", "description": "驾驶员姓名", "example": "刘师傅" },
+          "gate": {
+            "type": "string",
+            "description": "卡口"
+          },
+          "status": {
+            "type": "string",
+            "description": "进出状态"
+          },
+          "time": {
+            "type": "string",
+            "description": "识别时间"
+          },
+          "vehicleType": {
+            "type": "string",
+            "description": "车辆类型",
+            "example": "危化品运输车"
+          },
+          "driverName": {
+            "type": "string",
+            "description": "驾驶员姓名",
+            "example": "刘师傅"
+          },
           "driverPhone": {
             "type": "string",
             "description": "驾驶员电话（脱敏）",
@@ -875,28 +1247,68 @@
             "description": "预约时段",
             "example": "2026-01-20 09:00 — 18:00"
           },
-          "visitPurpose": { "type": "string", "description": "来访事由", "example": "原料配送" },
-          "waybillNo": { "type": "string", "description": "运单号", "example": "YD202601200031" },
-          "cargo": { "type": "string", "description": "货物", "example": "工业乙醇" },
-          "destination": { "type": "string", "description": "目的地", "example": "炼油一区装卸点" }
+          "visitPurpose": {
+            "type": "string",
+            "description": "来访事由",
+            "example": "原料配送"
+          },
+          "waybillNo": {
+            "type": "string",
+            "description": "运单号",
+            "example": "YD202601200031"
+          },
+          "cargo": {
+            "type": "string",
+            "description": "货物",
+            "example": "工业乙醇"
+          },
+          "destination": {
+            "type": "string",
+            "description": "目的地",
+            "example": "炼油一区装卸点"
+          }
         }
       },
       "PersonSearchDetail": {
         "type": "object",
         "description": "人员识别检索详情（检索结果 + 访客/作业扩展）",
         "properties": {
-          "id": { "type": "integer", "format": "int64", "description": "记录主键" },
-          "name": { "type": "string", "description": "人员姓名" },
-          "gate": { "type": "string", "description": "卡口" },
-          "status": { "type": "string", "description": "进出状态" },
-          "date": { "type": "string", "description": "日期" },
-          "gender": { "type": "string", "description": "性别", "example": "男" },
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "记录主键"
+          },
+          "name": {
+            "type": "string",
+            "description": "人员姓名"
+          },
+          "gate": {
+            "type": "string",
+            "description": "卡口"
+          },
+          "status": {
+            "type": "string",
+            "description": "进出状态"
+          },
+          "date": {
+            "type": "string",
+            "description": "日期"
+          },
+          "gender": {
+            "type": "string",
+            "description": "性别",
+            "example": "男"
+          },
           "phone": {
             "type": "string",
             "description": "联系电话（脱敏）",
             "example": "138****1001"
           },
-          "company": { "type": "string", "description": "所属单位", "example": "茂名石化检修公司" },
+          "company": {
+            "type": "string",
+            "description": "所属单位",
+            "example": "茂名石化检修公司"
+          },
           "idNumber": {
             "type": "string",
             "description": "证件号（脱敏）",
@@ -912,7 +1324,11 @@
             "description": "预约时段",
             "example": "2026-01-20 08:00 — 17:00"
           },
-          "visitPurpose": { "type": "string", "description": "来访事由", "example": "设备检修" },
+          "visitPurpose": {
+            "type": "string",
+            "description": "来访事由",
+            "example": "设备检修"
+          },
           "specialOperation": {
             "type": "string",
             "description": "特种作业类型，无则为「—」",
@@ -970,16 +1386,36 @@
         "type": "object",
         "description": "周界入侵告警详情（前端由 perimeterAlarmToDetail 适配为 AlarmDetailItem）",
         "properties": {
-          "id": { "type": "integer", "format": "int64", "description": "告警主键" },
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "告警主键"
+          },
           "alarmCode": {
             "type": "string",
             "description": "告警编号",
             "example": "AL-20260820-007"
           },
-          "title": { "type": "string", "description": "告警标题", "example": "周界入侵告警" },
-          "alarmType": { "type": "string", "description": "告警类型", "example": "周界" },
-          "source": { "type": "string", "description": "告警来源", "example": "周界防范" },
-          "level": { "type": "string", "description": "告警级别", "example": "一级" },
+          "title": {
+            "type": "string",
+            "description": "告警标题",
+            "example": "周界入侵告警"
+          },
+          "alarmType": {
+            "type": "string",
+            "description": "告警类型",
+            "example": "周界"
+          },
+          "source": {
+            "type": "string",
+            "description": "告警来源",
+            "example": "周界防范"
+          },
+          "level": {
+            "type": "string",
+            "description": "告警级别",
+            "example": "一级"
+          },
           "status": {
             "type": "string",
             "description": "处置状态（未确认/已确认/处理中/已处理）",
@@ -990,8 +1426,16 @@
             "description": "是否误报（是/否/未核实）",
             "example": "未核实"
           },
-          "time": { "type": "string", "description": "告警时间", "example": "2026-08-20 03:22:48" },
-          "objectType": { "type": "string", "description": "告警对象类型", "example": "区域" },
+          "time": {
+            "type": "string",
+            "description": "告警时间",
+            "example": "2026-08-20 03:22:48"
+          },
+          "objectType": {
+            "type": "string",
+            "description": "告警对象类型",
+            "example": "区域"
+          },
           "objectName": {
             "type": "string",
             "description": "告警对象名称",
@@ -1012,29 +1456,59 @@
             "description": "触发设备类型",
             "example": "周界摄像机"
           },
-          "deviceId": { "type": "string", "description": "触发设备编号", "example": "CAM-PERI-07" },
-          "point": { "type": "string", "description": "报警点位", "example": "南门西侧 200 米" },
+          "deviceId": {
+            "type": "string",
+            "description": "触发设备编号",
+            "example": "CAM-PERI-07"
+          },
+          "point": {
+            "type": "string",
+            "description": "报警点位",
+            "example": "南门西侧 200 米"
+          },
           "intrusionPosition": {
             "type": "string",
             "description": "入侵位置",
             "example": "南门西侧 200 米"
           },
-          "intrusionMethod": { "type": "string", "description": "入侵方式", "example": "翻越围栏" },
+          "intrusionMethod": {
+            "type": "string",
+            "description": "入侵方式",
+            "example": "翻越围栏"
+          },
           "relatedCamera": {
             "type": "string",
             "description": "关联摄像机",
             "example": "CAM-PERI-07"
           },
-          "longitude": { "type": "number", "description": "经度", "example": 110.8872 },
-          "latitude": { "type": "number", "description": "纬度", "example": 21.6709 },
+          "longitude": {
+            "type": "number",
+            "description": "经度",
+            "example": 110.8872
+          },
+          "latitude": {
+            "type": "number",
+            "description": "纬度",
+            "example": 21.6709
+          },
           "dispatchPersonnel": {
             "type": "array",
             "description": "已派发人员，未派发为空数组",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "example": []
           },
-          "notifyApp": { "type": "boolean", "description": "是否 App 通知", "example": true },
-          "notifySms": { "type": "boolean", "description": "是否短信通知", "example": false },
+          "notifyApp": {
+            "type": "boolean",
+            "description": "是否 App 通知",
+            "example": true
+          },
+          "notifySms": {
+            "type": "boolean",
+            "description": "是否短信通知",
+            "example": false
+          },
           "handleResult": {
             "type": "string",
             "description": "处置结果，未处置为空串",
@@ -1075,6 +1549,68 @@
             "type": "string",
             "description": "现场抓拍说明文字，无抓拍为空串",
             "example": "现场抓拍"
+          }
+        }
+      },
+      "PerimeterAlarmCreateRequest": {
+        "type": "object",
+        "description": "周界入侵告警创建请求：title 必填，其余可缺省由后端填充默认。",
+        "required": ["title"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "告警标题（必填）",
+            "example": "南门未经授权翻越"
+          },
+          "alarmType": {
+            "type": "string",
+            "description": "告警类型（缺省 周界入侵告警）",
+            "example": "周界入侵告警"
+          },
+          "levelCode": {
+            "type": "string",
+            "description": "告警等级",
+            "example": "一级"
+          },
+          "location": {
+            "type": "string",
+            "description": "告警位置",
+            "example": "厂区南门西侧 200 米"
+          },
+          "alarmTime": {
+            "type": "string",
+            "description": "发生时间 yyyy-MM-dd HH:mm:ss（缺省当前时刻）",
+            "example": "2026-09-23 17:30:00"
+          },
+          "description": {
+            "type": "string",
+            "description": "告警说明",
+            "example": "监控识别到人员翻越周界栅栏"
+          },
+          "objectName": {
+            "type": "string",
+            "description": "入侵对象名称（可选）",
+            "example": "翻越人员"
+          },
+          "objectType": {
+            "type": "string",
+            "description": "入侵对象类型（可选）",
+            "example": "人员"
+          },
+          "intrusionPosition": {
+            "type": "string",
+            "description": "入侵位置（可选）",
+            "example": "栅栏中段"
+          },
+          "intrusionMethod": {
+            "type": "string",
+            "description": "入侵方式（可选）",
+            "example": "翻越"
+          },
+          "relatedCamera": {
+            "type": "string",
+            "description": "关联摄像机（可选）",
+            "example": "CAM-007"
           }
         }
       }
