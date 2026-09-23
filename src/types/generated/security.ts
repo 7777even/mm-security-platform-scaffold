@@ -226,7 +226,11 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /**
+     * 周界入侵告警详情
+     * @description 按主键返回单条周界入侵告警详情；未找到时 data=null。
+     */
+    get: operations['getPerimeterAlarm'];
     /**
      * 周界入侵告警写回
      * @description 确认/派单/处置状态流转 + 误报标记 + 处置情况/时间/派单人员/通知方式局部更新。需权限码 security:perimeter-ack（V70 已登记并授权）。返回更新后的 PerimeterAlarmDetail，供前端即时回填并触发 security.perimeter-alarm 实时广播。字段均为可选，未传则不更新（read-modify-write）。
@@ -1297,6 +1301,50 @@ export interface operations {
            *         "location": "厂区南门西侧 200 米",
            *         "deviceId": "CAM-PERI-07",
            *         "snapshotPath": "/api/v1/security/perimeter-alarms/1/snapshot"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['PerimeterAlarmDetail'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  getPerimeterAlarm: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path: {
+        /** @description 周界入侵告警主键 */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=PerimeterAlarmDetail） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 2,
+           *         "alarmCode": "AL-20260819-003",
+           *         "title": "周界入侵告警",
+           *         "status": "已处理",
+           *         "time": "2026-08-19 21:10:05",
+           *         "location": "厂区西门北侧 120 米",
+           *         "handleResult": "经核实为检修人员临时跨越通道，已现场纠正并封闭临时开口。"
            *       }
            *     }
            */

@@ -121,7 +121,7 @@ export interface paths {
              *             "name": "炼油一部装置区",
              *             "status": "normal",
              *             "statusLabel": "运行正常",
-             *             "equipment": 128,
+             *             "equipment": 92,
              *             "cameras": 24,
              *             "personnel": 16
              *           },
@@ -131,7 +131,7 @@ export interface paths {
              *             "name": "储运罐区",
              *             "status": "attention",
              *             "statusLabel": "2台设备离线",
-             *             "equipment": 96,
+             *             "equipment": 68,
              *             "cameras": 18,
              *             "personnel": 9
              *           }
@@ -349,8 +349,8 @@ export interface components {
        */
       statusLabel?: string;
       /**
-       * @description 消防设备数
-       * @example 128
+       * @description 消防设备数（按区聚合自监测表 fac_fire_facility_monitor，与监测总数 983 真源归一）
+       * @example 92
        */
       equipment?: number;
       /**

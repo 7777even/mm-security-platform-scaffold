@@ -623,37 +623,7 @@
           },
           "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
         }
-      }
-    },
-    "/security/perimeter-alarms/{id}/snapshot": {
-      "get": {
-        "tags": ["security"],
-        "operationId": "getPerimeterAlarmSnapshot",
-        "summary": "周界入侵告警现场抓拍",
-        "description": "返回该告警 snapshot_bytes 列中的现场抓拍（JPEG）。当前为演示占位图，由 dev 启动时的 PerimeterAlarmSnapshotSeeder 生成；后续接真流时替换为媒体网关写入的实时抓拍。鉴权同 /security/*（需 JWT），前端用带 token 的 http 客户端取 blob 后转 objectURL 渲染。",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "description": "周界入侵告警 id（取自 /security/perimeter-alarms/latest）",
-            "schema": { "type": "integer", "format": "int64", "example": 1 }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "现场抓拍字节（image/jpeg）",
-            "content": {
-              "image/jpeg": {
-                "schema": { "type": "string", "format": "binary" }
-              }
-            }
-          },
-          "404": { "description": "该告警无现场抓拍（snapshot_bytes 为空）" }
-        }
-      }
-    },
-    "/security/perimeter-alarms/{id}": {
+      },
       "put": {
         "tags": ["security"],
         "operationId": "updatePerimeterAlarm",
@@ -722,6 +692,35 @@
             }
           },
           "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+
+    "/security/perimeter-alarms/{id}/snapshot": {
+      "get": {
+        "tags": ["security"],
+        "operationId": "getPerimeterAlarmSnapshot",
+        "summary": "周界入侵告警现场抓拍",
+        "description": "返回该告警 snapshot_bytes 列中的现场抓拍（JPEG）。当前为演示占位图，由 dev 启动时的 PerimeterAlarmSnapshotSeeder 生成；后续接真流时替换为媒体网关写入的实时抓拍。鉴权同 /security/*（需 JWT），前端用带 token 的 http 客户端取 blob 后转 objectURL 渲染。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "周界入侵告警 id（取自 /security/perimeter-alarms/latest）",
+            "schema": { "type": "integer", "format": "int64", "example": 1 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "现场抓拍字节（image/jpeg）",
+            "content": {
+              "image/jpeg": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          },
+          "404": { "description": "该告警无现场抓拍（snapshot_bytes 为空）" }
         }
       }
     }
