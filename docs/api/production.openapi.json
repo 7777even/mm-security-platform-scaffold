@@ -94,6 +94,69 @@
         }
       }
     },
+    "/production/alarms/{id}": {
+      "put": {
+        "summary": "生产报警写回",
+        "description": "确认/处理中/已处置状态流转 + 误报标记 + 处置情况/时间/派单人员/通知方式。局部更新（read-modify-write），记录不存在返回 404 业务码；perm 受 production:ack 保护。",
+        "tags": ["production"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "生产报警 id（fac_production_alarm.id）",
+            "schema": { "type": "integer", "format": "int64", "example": 1 }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "写回请求；字段均为可选，仅传需变更项，未传不覆盖",
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ProductionAlarmUpdateRequest" },
+              "example": {
+                "status": "已确认",
+                "falseAlarm": "否",
+                "handleResult": "已现场处置并闭环",
+                "handleTime": "2026-08-20 10:30:00",
+                "dispatchPersonnel": "张伟,李强",
+                "notifyMethod": "APP,SMS"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "写回成功，返回更新后的生产报警项",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProductionAlarmItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "title": "人员跌倒",
+                    "titleColor": "warning",
+                    "location": "化工区乙烯装置东侧",
+                    "time": "2026-03-17 14:21:30",
+                    "description": "A装置区域发现人员跌倒。",
+                    "status": "已确认",
+                    "falseAlarm": "否",
+                    "handleResult": "已现场处置并闭环",
+                    "handleTime": "2026-08-20 10:30:00",
+                    "dispatchPersonnel": "张伟,李强",
+                    "notifyMethod": "APP,SMS",
+                    "iconIndex": 0,
+                    "thumb": "person_fall.png"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/production/risk-warnings": {
       "get": {
         "summary": "风险预警列表",
@@ -404,8 +467,40 @@
           },
           "status": {
             "type": "string",
-            "description": "处置状态（未处置 / 处置中 / 已处置）",
+            "description": "处置状态（未处置 / 已确认 / 处置中 / 已处置）",
+            "enum": ["未处置", "已确认", "处置中", "已处置"],
             "example": "未处置"
+          },
+          "falseAlarm": {
+            "type": "string",
+            "description": "是否误报（是 / 否 / 未核实，可空）",
+            "enum": ["是", "否", "未核实"],
+            "example": "未核实",
+            "nullable": true
+          },
+          "handleResult": {
+            "type": "string",
+            "description": "处置情况文本（可空）",
+            "example": "已现场处置并闭环",
+            "nullable": true
+          },
+          "handleTime": {
+            "type": "string",
+            "description": "处置时间（yyyy-MM-dd HH:mm:ss，可空）",
+            "example": "2026-08-20 10:30:00",
+            "nullable": true
+          },
+          "dispatchPersonnel": {
+            "type": "string",
+            "description": "派单人员（多个以英文逗号分隔，可空）",
+            "example": "张伟,李强",
+            "nullable": true
+          },
+          "notifyMethod": {
+            "type": "string",
+            "description": "通知方式（APP/SMS，多个以英文逗号分隔，可空）",
+            "example": "APP,SMS",
+            "nullable": true
           },
           "iconIndex": { "type": "integer", "description": "图标索引", "example": 0 },
           "thumb": {
@@ -413,6 +508,44 @@
             "description": "报警抓图文件名（前端静态资源解析，可为空）",
             "example": "person_fall.png",
             "nullable": true
+          }
+        }
+      },
+      "ProductionAlarmUpdateRequest": {
+        "type": "object",
+        "description": "生产报警写回请求；字段均为可选，前端按实际状态机跃迁局部更新，未涉及的字段不传（read-modify-write）。",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "处置状态（未处置 / 已确认 / 处置中 / 已处置），不传则不更新状态",
+            "enum": ["未处置", "已确认", "处置中", "已处置"],
+            "example": "已确认"
+          },
+          "falseAlarm": {
+            "type": "string",
+            "description": "是否误报（是 / 否 / 未核实），不传则不更新",
+            "enum": ["是", "否", "未核实"],
+            "example": "否"
+          },
+          "handleResult": {
+            "type": "string",
+            "description": "处置情况文本，不传则不更新",
+            "example": "已现场处置并闭环"
+          },
+          "handleTime": {
+            "type": "string",
+            "description": "处置时间（yyyy-MM-dd HH:mm:ss），不传则不更新",
+            "example": "2026-08-20 10:30:00"
+          },
+          "dispatchPersonnel": {
+            "type": "string",
+            "description": "派单人员（多个以英文逗号分隔），不传则不更新",
+            "example": "张伟,李强"
+          },
+          "notifyMethod": {
+            "type": "string",
+            "description": "通知方式（APP/SMS，多个以英文逗号分隔），不传则不更新",
+            "example": "APP,SMS"
           }
         }
       },

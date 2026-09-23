@@ -144,6 +144,85 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/production/alarms/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 生产报警写回
+     * @description 确认/处理中/已处置状态流转 + 误报标记 + 处置情况/时间/派单人员/通知方式。局部更新（read-modify-write），记录不存在返回 404 业务码；perm 受 production:ack 保护。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 生产报警 id（fac_production_alarm.id） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      /** @description 写回请求；字段均为可选，仅传需变更项，未传不覆盖 */
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "status": "已确认",
+           *       "falseAlarm": "否",
+           *       "handleResult": "已现场处置并闭环",
+           *       "handleTime": "2026-08-20 10:30:00",
+           *       "dispatchPersonnel": "张伟,李强",
+           *       "notifyMethod": "APP,SMS"
+           *     }
+           */
+          'application/json': components['schemas']['ProductionAlarmUpdateRequest'];
+        };
+      };
+      responses: {
+        /** @description 写回成功，返回更新后的生产报警项 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 1,
+             *         "title": "人员跌倒",
+             *         "titleColor": "warning",
+             *         "location": "化工区乙烯装置东侧",
+             *         "time": "2026-03-17 14:21:30",
+             *         "description": "A装置区域发现人员跌倒。",
+             *         "status": "已确认",
+             *         "falseAlarm": "否",
+             *         "handleResult": "已现场处置并闭环",
+             *         "handleTime": "2026-08-20 10:30:00",
+             *         "dispatchPersonnel": "张伟,李强",
+             *         "notifyMethod": "APP,SMS",
+             *         "iconIndex": 0,
+             *         "thumb": "person_fall.png"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['ProductionAlarmItem'];
+          };
+        };
+      };
+    };
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/production/risk-warnings': {
     parameters: {
       query?: never;
@@ -593,10 +672,37 @@ export interface components {
        */
       description?: string;
       /**
-       * @description 处置状态（未处置 / 处置中 / 已处置）
+       * @description 处置状态（未处置 / 已确认 / 处置中 / 已处置）
        * @example 未处置
+       * @enum {string}
        */
-      status?: string;
+      status?: '未处置' | '已确认' | '处置中' | '已处置';
+      /**
+       * @description 是否误报（是 / 否 / 未核实，可空）
+       * @example 未核实
+       * @enum {string|null}
+       */
+      falseAlarm?: '是' | '否' | '未核实' | null;
+      /**
+       * @description 处置情况文本（可空）
+       * @example 已现场处置并闭环
+       */
+      handleResult?: string | null;
+      /**
+       * @description 处置时间（yyyy-MM-dd HH:mm:ss，可空）
+       * @example 2026-08-20 10:30:00
+       */
+      handleTime?: string | null;
+      /**
+       * @description 派单人员（多个以英文逗号分隔，可空）
+       * @example 张伟,李强
+       */
+      dispatchPersonnel?: string | null;
+      /**
+       * @description 通知方式（APP/SMS，多个以英文逗号分隔，可空）
+       * @example APP,SMS
+       */
+      notifyMethod?: string | null;
       /**
        * @description 图标索引
        * @example 0
@@ -607,6 +713,41 @@ export interface components {
        * @example person_fall.png
        */
       thumb?: string | null;
+    };
+    /** @description 生产报警写回请求；字段均为可选，前端按实际状态机跃迁局部更新，未涉及的字段不传（read-modify-write）。 */
+    ProductionAlarmUpdateRequest: {
+      /**
+       * @description 处置状态（未处置 / 已确认 / 处置中 / 已处置），不传则不更新状态
+       * @example 已确认
+       * @enum {string}
+       */
+      status?: '未处置' | '已确认' | '处置中' | '已处置';
+      /**
+       * @description 是否误报（是 / 否 / 未核实），不传则不更新
+       * @example 否
+       * @enum {string}
+       */
+      falseAlarm?: '是' | '否' | '未核实';
+      /**
+       * @description 处置情况文本，不传则不更新
+       * @example 已现场处置并闭环
+       */
+      handleResult?: string;
+      /**
+       * @description 处置时间（yyyy-MM-dd HH:mm:ss），不传则不更新
+       * @example 2026-08-20 10:30:00
+       */
+      handleTime?: string;
+      /**
+       * @description 派单人员（多个以英文逗号分隔），不传则不更新
+       * @example 张伟,李强
+       */
+      dispatchPersonnel?: string;
+      /**
+       * @description 通知方式（APP/SMS，多个以英文逗号分隔），不传则不更新
+       * @example APP,SMS
+       */
+      notifyMethod?: string;
     };
     /** @description 风险预警项 */
     RiskWarningItem: {
