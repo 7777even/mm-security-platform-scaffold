@@ -9,6 +9,6 @@
 - [x] ProductionAlarmPanel.vue 订阅 subscribeDomainChange('production.alarm') + watch(productionAlarmChanged)，onUnmounted 退订
 - [x] ProductionAreaView.vue 订阅 subscribeDomainChange('production.alarm') + watch(productionAlarmChanged)，onUnmounted 退订
 - [x] npm run type-check 通过（修复 ProductionAlarmItem 缺失字段 / FalseAlarmStatus 类型 / onUnmounted 导入等）
-- [ ] npm run test 回归（vitest run 全绿）
-- [ ] 按 scope 拆分双仓提交（frontend: screen/production/shared）
-- [ ] 归档至 openspec/archive/（全勾后按纪律归档，补 spec-delta 并回填 openspec/specs/）
+- [x] npm run test 回归（vitest run 全绿）
+- [x] 按 scope 拆分双仓提交（frontend: screen/production/shared）
+- [x] 归档至 openspec/archive/（全勾后按纪律归档，补 spec-delta 并回填 openspec/specs/）
