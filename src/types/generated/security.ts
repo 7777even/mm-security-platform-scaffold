@@ -226,12 +226,12 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    get?: never;
     /**
-     * 周界入侵告警详情
-     * @description 按主键返回单条周界入侵告警详情；未找到时 data=null。
+     * 周界入侵告警写回
+     * @description 确认/派单/处置状态流转 + 误报标记 + 处置情况/时间/派单人员/通知方式局部更新。需权限码 security:perimeter-ack（V70 已登记并授权）。返回更新后的 PerimeterAlarmDetail，供前端即时回填并触发 security.perimeter-alarm 实时广播。字段均为可选，未传则不更新（read-modify-write）。
      */
-    get: operations['getPerimeterAlarm'];
-    put?: never;
+    put: operations['updatePerimeterAlarm'];
     post?: never;
     delete?: never;
     options?: never;
@@ -586,6 +586,44 @@ export interface components {
        * @example 炼油二区
        */
       operationArea?: string;
+    };
+    /** @description 周界入侵告警写回请求：状态流转 + 字段局部更新。所有字段可选，未传则不更新。 */
+    PerimeterAlarmUpdateRequest: {
+      /**
+       * @description 处置状态：未确认/已确认/已派单/已处理
+       * @example 已确认
+       */
+      status?: string;
+      /**
+       * @description 是否误报：是/否/未核实
+       * @example 否
+       */
+      falseAlarm?: string;
+      /**
+       * @description 处置情况文本（不传则不更新）
+       * @example 经核实为检修人员临时跨越，已现场纠正
+       */
+      handleResult?: string;
+      /**
+       * @description 处置时间（yyyy-MM-dd HH:mm:ss，不传则不更新）
+       * @example 2026-09-23 10:30:00
+       */
+      handleTime?: string;
+      /**
+       * @description 派单人员（多个以英文逗号分隔，不传则不更新）
+       * @example 王成,赵五
+       */
+      dispatchPersonnel?: string;
+      /**
+       * @description APP 通知开关（不传则不更新）
+       * @example true
+       */
+      notifyApp?: boolean;
+      /**
+       * @description 短信通知开关（不传则不更新）
+       * @example false
+       */
+      notifySms?: boolean;
     };
     /** @description 周界入侵告警详情（前端由 perimeterAlarmToDetail 适配为 AlarmDetailItem） */
     PerimeterAlarmDetail: {
@@ -1270,7 +1308,7 @@ export interface operations {
       401: components['responses']['Unauthorized'];
     };
   };
-  getPerimeterAlarm: {
+  updatePerimeterAlarm: {
     parameters: {
       query?: never;
       header?: {
@@ -1278,14 +1316,28 @@ export interface operations {
         'Accept-Language'?: components['parameters']['lang'];
       };
       path: {
-        /** @description 周界入侵告警主键 */
+        /** @description 周界入侵告警主键（fac_perimeter_alarm.id） */
         id: number;
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "status": "已确认",
+         *       "handleResult": "经核实为检修人员临时跨越，已现场纠正",
+         *       "handleTime": "2026-09-23 10:30:00",
+         *       "dispatchPersonnel": "王成,赵五",
+         *       "notifyApp": true,
+         *       "notifySms": false
+         *     }
+         */
+        'application/json': components['schemas']['PerimeterAlarmUpdateRequest'];
+      };
+    };
     responses: {
-      /** @description B3 成功包络（data=PerimeterAlarmDetail） */
+      /** @description 写回成功，返回更新后的告警详情 */
       200: {
         headers: {
           [name: string]: unknown;
@@ -1296,13 +1348,20 @@ export interface operations {
            *       "code": 0,
            *       "message": "ok",
            *       "data": {
-           *         "id": 2,
-           *         "alarmCode": "AL-20260819-003",
+           *         "id": 1,
+           *         "alarmCode": "AL-20260820-007",
            *         "title": "周界入侵告警",
-           *         "status": "已处理",
-           *         "time": "2026-08-19 21:10:05",
-           *         "location": "厂区西门北侧 120 米",
-           *         "handleResult": "经核实为检修人员临时跨越通道，已现场纠正并封闭临时开口。"
+           *         "status": "已确认",
+           *         "time": "2026-08-20 03:22:48",
+           *         "location": "厂区南门西侧 200 米",
+           *         "handleResult": "经核实为检修人员临时跨越，已现场纠正",
+           *         "handleTime": "2026-09-23 10:30:00",
+           *         "dispatchPersonnel": [
+           *           "王成",
+           *           "赵五"
+           *         ],
+           *         "notifyApp": true,
+           *         "notifySms": false
            *       }
            *     }
            */

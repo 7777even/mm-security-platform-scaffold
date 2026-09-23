@@ -652,6 +652,78 @@
           "404": { "description": "该告警无现场抓拍（snapshot_bytes 为空）" }
         }
       }
+    },
+    "/security/perimeter-alarms/{id}": {
+      "put": {
+        "tags": ["security"],
+        "operationId": "updatePerimeterAlarm",
+        "summary": "周界入侵告警写回",
+        "description": "确认/派单/处置状态流转 + 误报标记 + 处置情况/时间/派单人员/通知方式局部更新。需权限码 security:perimeter-ack（V70 已登记并授权）。返回更新后的 PerimeterAlarmDetail，供前端即时回填并触发 security.perimeter-alarm 实时广播。字段均为可选，未传则不更新（read-modify-write）。",
+        "parameters": [
+          { "$ref": "./_shared.json#/components/parameters/lang" },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "周界入侵告警主键（fac_perimeter_alarm.id）",
+            "schema": { "type": "integer", "format": "int64", "example": 1 }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PerimeterAlarmUpdateRequest" },
+              "example": {
+                "status": "已确认",
+                "handleResult": "经核实为检修人员临时跨越，已现场纠正",
+                "handleTime": "2026-09-23 10:30:00",
+                "dispatchPersonnel": "王成,赵五",
+                "notifyApp": true,
+                "notifySms": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "写回成功，返回更新后的告警详情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/PerimeterAlarmDetail" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "alarmCode": "AL-20260820-007",
+                    "title": "周界入侵告警",
+                    "status": "已确认",
+                    "time": "2026-08-20 03:22:48",
+                    "location": "厂区南门西侧 200 米",
+                    "handleResult": "经核实为检修人员临时跨越，已现场纠正",
+                    "handleTime": "2026-09-23 10:30:00",
+                    "dispatchPersonnel": ["王成", "赵五"],
+                    "notifyApp": true,
+                    "notifySms": false
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
     }
   },
   "components": {
@@ -851,6 +923,47 @@
             "type": "string",
             "description": "作业区域，无则为「—」",
             "example": "炼油二区"
+          }
+        }
+      },
+      "PerimeterAlarmUpdateRequest": {
+        "type": "object",
+        "description": "周界入侵告警写回请求：状态流转 + 字段局部更新。所有字段可选，未传则不更新。",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "处置状态：未确认/已确认/已派单/已处理",
+            "example": "已确认"
+          },
+          "falseAlarm": {
+            "type": "string",
+            "description": "是否误报：是/否/未核实",
+            "example": "否"
+          },
+          "handleResult": {
+            "type": "string",
+            "description": "处置情况文本（不传则不更新）",
+            "example": "经核实为检修人员临时跨越，已现场纠正"
+          },
+          "handleTime": {
+            "type": "string",
+            "description": "处置时间（yyyy-MM-dd HH:mm:ss，不传则不更新）",
+            "example": "2026-09-23 10:30:00"
+          },
+          "dispatchPersonnel": {
+            "type": "string",
+            "description": "派单人员（多个以英文逗号分隔，不传则不更新）",
+            "example": "王成,赵五"
+          },
+          "notifyApp": {
+            "type": "boolean",
+            "description": "APP 通知开关（不传则不更新）",
+            "example": true
+          },
+          "notifySms": {
+            "type": "boolean",
+            "description": "短信通知开关（不传则不更新）",
+            "example": false
           }
         }
       },
