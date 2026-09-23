@@ -7,6 +7,11 @@ import { useAlarmDetailPanel } from '../../lib/composables/useAlarmDetailPanel';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
 import { showToast } from '../../lib/composables/useToast';
 import { updateFireAlarm, type FireAlarmUpdatePayload } from '@/services/alarm';
+import {
+  updatePerimeterAlarm,
+  type PerimeterAlarmUpdatePayload,
+  touchPerimeterAlarmChanged,
+} from '@/services/security';
 import type { AlarmDetailStatus, FalseAlarmStatus } from '../../lib/data/alarmDetailMock';
 import { touchFireAlarmChanged } from '../../lib/composables/useScreenAlarmFeed';
 
@@ -72,6 +77,24 @@ function mapDetailStatusToFire(status: AlarmDetailStatus): string {
 }
 
 /**
+ * 详情中文态（未确认/已确认/处理中/已处理）→ 后端周界入侵告警 status 枚举（未确认/已确认/已派单/已处理）。
+ * 全 alarm 域详情统一展示「处理中」，而周界后端字典用「已派单」，此处按域映射回写。
+ */
+function mapDetailStatusToPerimeter(status: AlarmDetailStatus): string {
+  switch (status) {
+    case '已确认':
+      return '已确认';
+    case '处理中':
+      return '已派单';
+    case '已处理':
+      return '已处理';
+    case '未确认':
+    default:
+      return '未确认';
+  }
+}
+
+/**
  * 消防报警写回落库：仅当详情携带 fireAlarmId（真实 fac_fire_alarm 主键）时写回。
  * 成功广播 fireAlarmChanged 触发列表/卡片/声光报警源刷新；失败提示并回 false，由调用方中止本地状态流转。
  * 非消防报警（无 fireAlarmId）直接放行，保持既有内存态行为不变。
@@ -110,10 +133,69 @@ async function persistFireAlarm(partial: {
   }
 }
 
+/**
+ * 周界入侵告警写回落库：仅当详情携带 perimeterAlarmId（fac_perimeter_alarm.id）时写回。
+ * 与 persistFireAlarm 同源范式；成功广播 perimeterAlarmChanged 触发 SecurityStatusPanel 实时刷新；
+ * 失败提示并回 false，由调用方中止本地状态流转。后端校验中文状态字典（未确认/已确认/已派单/已处理）。
+ */
+async function persistPerimeterAlarm(partial: {
+  status?: AlarmDetailStatus;
+  falseAlarm?: FalseAlarmStatus;
+  handleResult?: string;
+  handleTime?: string;
+  dispatchPersonnel?: string[];
+  notifyApp?: boolean;
+  notifySms?: boolean;
+}): Promise<boolean> {
+  const item = detail.value;
+  const alarmId = item?.perimeterAlarmId;
+  if (!alarmId) return true;
+  const payload: PerimeterAlarmUpdatePayload = {};
+  if (partial.status) payload.status = mapDetailStatusToPerimeter(partial.status);
+  if (partial.falseAlarm) payload.falseAlarm = partial.falseAlarm;
+  if (partial.handleResult !== undefined) payload.handleResult = partial.handleResult;
+  if (partial.handleTime !== undefined) payload.handleTime = partial.handleTime;
+  if (partial.dispatchPersonnel !== undefined)
+    payload.dispatchPersonnel = partial.dispatchPersonnel.join(',');
+  const methods: string[] = [];
+  if (partial.notifyApp ?? item.notifyApp) methods.push('APP');
+  if (partial.notifySms ?? item.notifySms) methods.push('SMS');
+  payload.notifyApp = methods.includes('APP');
+  payload.notifySms = methods.includes('SMS');
+  try {
+    await updatePerimeterAlarm(alarmId, payload);
+    touchPerimeterAlarmChanged();
+    return true;
+  } catch {
+    showToast('处置信息写回失败，请稍后重试');
+    return false;
+  }
+}
+
+/**
+ * 处置动作统一写回入口：按详情主键归属分支到消防或周界写回，
+ * 既无 fireAlarmId 也无 perimeterAlarmId（纯内存态演示告警）直接放行，保持既有行为不变。
+ */
+async function persistAlarm(partial: {
+  status?: AlarmDetailStatus;
+  falseAlarm?: FalseAlarmStatus;
+  handleResult?: string;
+  handleTime?: string;
+  dispatchPersonnel?: string[];
+  notifyApp?: boolean;
+  notifySms?: boolean;
+}): Promise<boolean> {
+  const item = detail.value;
+  if (!item) return false;
+  if (item.fireAlarmId) return persistFireAlarm(partial);
+  if (item.perimeterAlarmId != null) return persistPerimeterAlarm(partial);
+  return true;
+}
+
 async function confirmAlarm() {
   const item = detail.value;
   if (!item || item.status !== '未确认') return;
-  if (!(await persistFireAlarm({ status: '已确认' }))) return;
+  if (!(await persistAlarm({ status: '已确认' }))) return;
   patchAlarmDetail({ status: '已确认' });
   pushTimeline('确认告警', '确认为真实告警');
 }
@@ -121,7 +203,7 @@ async function confirmAlarm() {
 async function startHandle() {
   const item = detail.value;
   if (!item || item.status !== '已确认') return;
-  if (!(await persistFireAlarm({ status: '处理中' }))) return;
+  if (!(await persistAlarm({ status: '处理中' }))) return;
   patchAlarmDetail({ status: '处理中' });
   pushTimeline('开始处置', '开始处置');
 }
@@ -130,7 +212,7 @@ async function submitHandle() {
   const item = detail.value;
   if (!item || item.status !== '处理中') return;
   if (
-    !(await persistFireAlarm({
+    !(await persistAlarm({
       status: '已处理',
       handleTime: item.handleTime || now(),
       handleResult: item.handleResult,
@@ -147,7 +229,7 @@ async function submitHandle() {
 async function markFalseAlarm() {
   const item = detail.value;
   if (!item || item.status === '已处理') return;
-  if (!(await persistFireAlarm({ falseAlarm: '是' }))) return;
+  if (!(await persistAlarm({ falseAlarm: '是' }))) return;
   patchAlarmDetail({ falseAlarm: '是' });
   pushTimeline('标记误报', '该告警被标记为误报，不计入统计');
 }
@@ -157,7 +239,7 @@ async function addPersonnel() {
   if (!item || !selectedPersonnel.value) return;
   if (item.dispatchPersonnel.includes(selectedPersonnel.value)) return;
   const next = [...item.dispatchPersonnel, selectedPersonnel.value];
-  if (!(await persistFireAlarm({ dispatchPersonnel: next }))) return;
+  if (!(await persistAlarm({ dispatchPersonnel: next }))) return;
   patchAlarmDetail({ dispatchPersonnel: next });
   selectedPersonnel.value = '';
 }
@@ -166,7 +248,7 @@ async function removePersonnel(name: string) {
   const item = detail.value;
   if (!item) return;
   const next = item.dispatchPersonnel.filter((p) => p !== name);
-  if (!(await persistFireAlarm({ dispatchPersonnel: next }))) return;
+  if (!(await persistAlarm({ dispatchPersonnel: next }))) return;
   patchAlarmDetail({ dispatchPersonnel: next });
 }
 
@@ -174,7 +256,7 @@ async function toggleNotify(key: 'notifyApp' | 'notifySms') {
   const item = detail.value;
   if (!item) return;
   const next = !item[key];
-  if (!(await persistFireAlarm({ [key]: next } as { notifyApp?: boolean; notifySms?: boolean })))
+  if (!(await persistAlarm({ [key]: next } as { notifyApp?: boolean; notifySms?: boolean })))
     return;
   patchAlarmDetail({ [key]: next });
 }
@@ -183,13 +265,13 @@ async function toggleNotify(key: 'notifyApp' | 'notifySms') {
 async function onHandleResultBlur() {
   const item = detail.value;
   if (!item) return;
-  if (!(await persistFireAlarm({ handleResult: item.handleResult }))) return;
+  if (!(await persistAlarm({ handleResult: item.handleResult }))) return;
 }
 
 async function setFalseAlarm(value: '是' | '否' | '未核实') {
   const item = detail.value;
   if (!item || item.falseAlarm === value) return;
-  if (!(await persistFireAlarm({ falseAlarm: value }))) return;
+  if (!(await persistAlarm({ falseAlarm: value }))) return;
   patchAlarmDetail({ falseAlarm: value });
 }
 

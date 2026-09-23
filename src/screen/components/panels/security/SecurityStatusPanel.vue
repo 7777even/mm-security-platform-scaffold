@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import { showToast } from '../../../lib/composables/useToast';
 import { perimeterAlarmToDetail } from '../../../lib/data/alarmDetailMock';
@@ -12,8 +12,10 @@ import type { AlarmItem } from '../../../lib/data/mock';
 import {
   fetchLatestPerimeterAlarm,
   fetchPerimeterAlarmSnapshotUrl,
+  perimeterAlarmChanged,
   type PerimeterAlarmDetail,
 } from '@/services/security';
+import { subscribeDomainChange } from '@/services/realtime';
 
 // B6 去 mock：周界入侵告警改由后端 GET /security/perimeter-alarms/latest 提供，
 // 现场抓拍走字节端点取 blob → objectURL（<img> 原生 src 无法带 Authorization 头）。
@@ -22,6 +24,9 @@ const snapshotUrl = ref<string | null>(null);
 const alarmActive = ref(false);
 const handling = ref(false);
 const { closeAlarmDetail, openAlarmDetail } = useAlarmDetailPanel();
+
+/** 后端 @RealtimeSync 广播 security.perimeter-alarm.changed 的退订句柄，卸载时清理避免泄漏。 */
+let unsubscribePerimeter: (() => void) | null = null;
 
 const detail = computed(() =>
   alarm.value ? perimeterAlarmToDetail(alarm.value, snapshotUrl.value) : null,
@@ -96,10 +101,23 @@ function resetDemo() {
   showToast('已恢复周界入侵报警演示场景');
 }
 
-onMounted(loadPerimeterAlarm);
+onMounted(() => {
+  void loadPerimeterAlarm();
+  // 实时联通：后端处置写回经 @RealtimeSync 广播 security.perimeter-alarm.changed，
+  // 本端（含其他标签页/实例）订阅后自动重拉最新周界告警，无需手动刷新。
+  unsubscribePerimeter = subscribeDomainChange('security.perimeter-alarm', () => {
+    void loadPerimeterAlarm();
+  });
+});
+
+// 同端写回成功后 touchPerimeterAlarmChanged 置位，即时重拉（覆盖 ws 尚未连通/延迟场景）。
+watch(perimeterAlarmChanged, () => {
+  void loadPerimeterAlarm();
+});
 
 onUnmounted(() => {
   if (snapshotUrl.value) URL.revokeObjectURL(snapshotUrl.value);
+  unsubscribePerimeter?.();
 });
 </script>
 

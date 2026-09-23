@@ -63,6 +63,8 @@ export interface AlarmDetailItem {
   workOrderNo?: string;
   /** 消防报警真实主键（fac_fire_alarm.alarmId）；携带时详情面板的状态流转/误报标记会写回落库 */
   fireAlarmId?: string;
+  /** 周界入侵告警真实主键（fac_perimeter_alarm.id）；携带时详情面板的状态流转/误报标记会写回落库 */
+  perimeterAlarmId?: number;
 }
 
 export const alarmDetailTypeOptions = [
@@ -385,12 +387,14 @@ export function perimeterAlarmToDetail(
     monitorId: alarm.monitorId,
     monitorLabel: alarm.monitorLabel,
     workOrderNo: alarm.workOrderNo || undefined,
+    perimeterAlarmId: alarm.id,
   };
 }
 
 function normalizePerimeterStatus(status: string): AlarmDetailStatus {
   if (status === '已确认') return '已确认';
-  if (status === '处理中') return '处理中';
+  // 后端周界状态字典用「已派单」，详情中文态按全 alarm 域统一展示为「处理中」。
+  if (status === '已派单') return '处理中';
   if (status === '已处理') return '已处理';
   return '未确认';
 }
