@@ -4,6 +4,7 @@ import {
   REASON_CONTRACT_MISMATCH,
   resolveOfflineFetch,
 } from '@/services/backendFallback';
+import { ref } from 'vue';
 
 // 生产应急大屏（fm-production / fm-production-area）数据服务（契约：docs/api/production.openapi.json）。
 // 后端数据源：V13 落地的 fac_production_* 九张表（设施 / 设备分类 / 统计 / 报警 / 风险预警 /
@@ -57,6 +58,16 @@ export interface ProductionAlarmItem {
   time: string;
   description: string;
   status: string;
+  /** 是否误报：是 / 否 / 未核实（可空，写回后回填）。 */
+  falseAlarm: string | null;
+  /** 处置情况文本（写回后回填）。 */
+  handleResult: string | null;
+  /** 处置时间（yyyy-MM-dd HH:mm:ss，写回后回填）。 */
+  handleTime: string | null;
+  /** 派单人员（逗号分隔，写回后回填）。 */
+  dispatchPersonnel: string | null;
+  /** 通知方式（APP/SMS，逗号分隔，写回后回填）。 */
+  notifyMethod: string | null;
   iconIndex: number;
   thumb: string | null;
 }
@@ -206,6 +217,11 @@ const DEV_ALARMS: ProductionAlarmItem[] = [
     time: '2026-03-17 14:21:30',
     description: 'A装置区域发现人员跌倒。',
     status: '未处置',
+    falseAlarm: null,
+    handleResult: null,
+    handleTime: null,
+    dispatchPersonnel: null,
+    notifyMethod: null,
     iconIndex: 0,
     // 裸文件名前端不可寻址（会 404 裂图）；无真实抓拍资源时置 null 走设计稿兜底图
     thumb: null,
@@ -492,4 +508,49 @@ export function getDevicesByCategory(
 ): ProductionDeviceItem[] {
   if (!category) return items;
   return items.filter((d) => d.category === category);
+}
+
+// === 生产报警写回落库（确认/处理中/已处置状态流转 + 误报标记 + 处置情况/时间/派单人员/通知方式）===
+/**
+ * 生产报警写回请求体：局部更新，仅传需变更的字段。
+ * status 字典：未处置 / 已确认 / 处置中 / 已处置（详情中文态映射见 AlarmDetailPanel 的 mapDetailStatusToProduction）。
+ * notifyMethod 为 APP/SMS 逗号分隔串（由详情面板的 notifyApp/notifySms 布尔合并）。
+ */
+export interface ProductionAlarmUpdatePayload {
+  status?: string;
+  falseAlarm?: string;
+  handleResult?: string;
+  handleTime?: string;
+  dispatchPersonnel?: string;
+  notifyMethod?: string;
+}
+
+/**
+ * 生产报警写回落库：PUT /production/alarms/{id}，落 fac_production_alarm。
+ * 离线（未配置 VITE_API_BASE）显式报错并抛异常；成功返回更新后的 ProductionAlarmItem，供调用方即时回填。
+ * 与消防报警 updateFireAlarm / 周界 updatePerimeterAlarm 同源范式。
+ */
+export async function updateProductionAlarm(
+  id: number,
+  payload: ProductionAlarmUpdatePayload,
+): Promise<ProductionAlarmItem | null> {
+  if (!import.meta.env.VITE_API_BASE) {
+    backendUnavailableWarn('production', `/production/alarms/${id}`);
+    throw new Error('后端未连接，无法写回生产报警');
+  }
+  return request<ProductionAlarmItem>({
+    url: `/production/alarms/${encodeURIComponent(id)}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+/**
+ * 生产报警写回后的刷新信号：写接口成功后置位，订阅方（ProductionAlarmPanel / ProductionAreaView）据此重新拉取，
+ * 保证面板与详情状态一致；同时后端经 @RealtimeSync 广播 production.alarm.changed，多端/同端无需写接口也能实时反映。
+ */
+export const productionAlarmChanged = ref(0);
+
+export function touchProductionAlarmChanged(): void {
+  productionAlarmChanged.value += 1;
 }

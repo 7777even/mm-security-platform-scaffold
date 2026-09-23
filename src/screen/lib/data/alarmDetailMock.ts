@@ -65,6 +65,8 @@ export interface AlarmDetailItem {
   fireAlarmId?: string;
   /** 周界入侵告警真实主键（fac_perimeter_alarm.id）；携带时详情面板的状态流转/误报标记会写回落库 */
   perimeterAlarmId?: number;
+  /** 生产报警真实主键（fac_production_alarm.id）；携带时详情面板的状态流转/误报标记会写回落库 */
+  productionAlarmId?: number;
 }
 
 export const alarmDetailTypeOptions = [
@@ -260,6 +262,16 @@ export function productionAlarmToDetail(item: ProductionAlarmItem): AlarmDetailI
       ? 'DCS'
       : '视频AI';
   const images = item.thumb ? [item.thumb] : PROD_IMAGES;
+  // 后端 status 字典（未处置/已确认/处置中/已处置）→ 详情中文态（未确认/已确认/处理中/已处理）。
+  const status =
+    item.status === '未处置'
+      ? '未确认'
+      : item.status === '已确认'
+        ? '已确认'
+        : item.status === '处置中'
+          ? '处理中'
+          : '已处理';
+  const notifyMethod = item.notifyMethod ?? '';
   return {
     id: `prod-${item.id}`,
     alarmCode: `AL-20260820-${String(item.id + 10).padStart(3, '0')}`,
@@ -267,8 +279,8 @@ export function productionAlarmToDetail(item: ProductionAlarmItem): AlarmDetailI
     alarmType: type,
     source: type === '视频AI' ? '视频AI分析' : type === 'GDS' ? 'GDS系统' : 'DCS系统',
     level: item.titleColor === 'danger' ? '一级' : '二级',
-    status: item.status === '未处置' ? '未确认' : item.status === '处置中' ? '处理中' : '已处理',
-    falseAlarm: '未核实',
+    status,
+    falseAlarm: (item.falseAlarm as FalseAlarmStatus | null) ?? '未核实',
     time: item.time,
     objectType: '装置',
     objectName: item.title,
@@ -288,15 +300,18 @@ export function productionAlarmToDetail(item: ProductionAlarmItem): AlarmDetailI
           }
         : undefined,
     ...coordsFor(item.id + 20),
-    dispatchPersonnel: [],
-    notifyApp: true,
-    notifySms: false,
-    handleResult: '',
-    handleTime: '',
+    dispatchPersonnel: item.dispatchPersonnel
+      ? item.dispatchPersonnel.split(',').filter(Boolean)
+      : [],
+    notifyApp: notifyMethod.includes('APP'),
+    notifySms: notifyMethod.includes('SMS'),
+    handleResult: item.handleResult ?? '',
+    handleTime: item.handleTime ?? '',
     attachments: [],
     timeline: baseTimeline(item.time, item.title),
     monitorId: `cam-prod-${item.id}`,
     monitorLabel: item.title,
+    productionAlarmId: item.id,
   };
 }
 

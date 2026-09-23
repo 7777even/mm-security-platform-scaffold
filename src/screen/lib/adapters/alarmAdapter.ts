@@ -94,6 +94,11 @@ export function toProductionAlarmItem(alarm: ApiAlarmItem, index = 0): Productio
     time: formatTs(alarm.ts),
     description: alarm.description ?? '',
     status: STATUS_LABEL[alarm.status ?? 'ACTIVE'],
+    falseAlarm: null,
+    handleResult: null,
+    handleTime: null,
+    dispatchPersonnel: null,
+    notifyMethod: null,
     iconIndex: Math.min(Math.max(level - 1, 0), 3),
     thumb: null,
   };
