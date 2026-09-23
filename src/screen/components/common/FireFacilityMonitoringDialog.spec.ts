@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { flushPromises, mount, VueWrapper } from '@vue/test-utils';
 import FireFacilityMonitoringDialog from './FireFacilityMonitoringDialog.vue';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
 
 // 故障数据由 service 提供，此处给出稳定可控的一条「待确认」故障。
-const { makeFault } = vi.hoisted(() => ({
+const { makeFault, mockUpdateFault } = vi.hoisted(() => ({
   makeFault: (status: string) => ({
     id: 1,
     faultCode: 'F-2026-001',
@@ -21,12 +21,19 @@ const { makeFault } = vi.hoisted(() => ({
     status,
     timeline: [],
   }),
+  mockUpdateFault: vi.fn(),
 }));
 
 vi.mock('@/services/map-data/fireFacilityMonitoringMock', () => ({
   loadFireFacilityFaults: vi.fn(() => Promise.resolve([makeFault('待确认')])),
   loadFireFacilityMonitors: vi.fn(() => Promise.resolve([])),
   loadFireFacilityLedger: vi.fn(() => Promise.resolve([])),
+}));
+
+// 状态流转现为「先走后端写回」：mock 写回成功（返回 null = 保留本地乐观更新），
+// 以便在无后端环境下校验状态机；同时可断言写回被正确调用。
+vi.mock('@/services/fireFacility', () => ({
+  updateFireFacilityFault: mockUpdateFault,
 }));
 
 const { openFireFacilityMonitoring, closeFireFacilityMonitoring } =
@@ -98,6 +105,12 @@ describe('FireFacilityMonitoringDialog 故障处置状态机', () => {
     closeFireFacilityMonitoring();
   });
 
+  beforeEach(() => {
+    mockUpdateFault.mockReset();
+    // 写回成功但不回填服务端数据 → 保留本地乐观更新，状态机断言成立。
+    mockUpdateFault.mockResolvedValue(null);
+  });
+
   it('待确认故障只暴露「确认」操作，后续流转按钮不出现', async () => {
     const w = await mountDialog();
     expect(badgeText()).toBe('待确认');
@@ -109,6 +122,11 @@ describe('FireFacilityMonitoringDialog 故障处置状态机', () => {
   it('确认后状态推进为已确认，操作切换为「派单」', async () => {
     const w = await mountDialog();
     await clickBtn(w, '确认');
+    // 先确认写回被调用（mock 生效），再校验状态机推进。
+    expect(mockUpdateFault).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({ faultStatus: '已确认' }),
+    );
     expect(badgeText()).toBe('已确认');
     expect(btnByText(w, '派单')).toBeTruthy();
     expect(btnByText(w, '确认')).toBeUndefined();
@@ -120,9 +138,16 @@ describe('FireFacilityMonitoringDialog 故障处置状态机', () => {
     await clickBtn(w, '派单');
     expect(badgeText()).toBe('已派单');
     expect(btnByText(w, '开始维修')).toBeTruthy();
+    // 写回携带工单号（形如 WO-<yyyyMMdd>-001，按当天日期 + 既有最大值递增生成）。
+    expect(mockUpdateFault).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({
+        faultStatus: '已派单',
+        workOrderNo: expect.stringMatching(/^WO-\d{8}-\d{3}$/),
+      }),
+    );
     // 工单号挂在「工单跟踪」页签（问题设备页只显示状态与操作），切过去再校验。
-    // 形如 WO-20260820-001，由 nextWorkOrderNo 按既有最大值递增生成。
     await clickBtn(w, '工单跟踪');
-    expect(document.body.textContent ?? '').toMatch(/WO-20260820-\d{3}/);
+    expect(document.body.textContent ?? '').toMatch(/WO-\d{8}-\d{3}/);
   });
 });

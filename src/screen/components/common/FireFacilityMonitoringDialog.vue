@@ -13,6 +13,7 @@ import {
   type FaultTimelineItem,
   type WorkOrderStatus,
 } from '@/services/map-data/fireFacilityMonitoringMock';
+import { updateFireFacilityFault, type FireFacilityFaultItem } from '@/services/fireFacility';
 import { facilityAlarmToDetail } from '../../lib/data/alarmDetailMock';
 import {
   useFireFacilityMonitoringDialog,
@@ -359,7 +360,11 @@ function findWorkOrder(workOrderNo: string): FacilityWorkOrderItem | undefined {
 }
 
 function currentTime(): string {
-  return '2026-08-20 10:30:00';
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(
+    d.getMinutes(),
+  )}:${p(d.getSeconds())}`;
 }
 
 function pushTimeline(
@@ -367,7 +372,7 @@ function pushTimeline(
   action: string,
   detail: string,
   operator = '值班员',
-) {
+): FaultTimelineItem {
   const item: FaultTimelineItem = {
     time: currentTime(),
     operator,
@@ -375,6 +380,7 @@ function pushTimeline(
     detail,
   };
   fault.timeline.push(item);
+  return item;
 }
 
 function nextWorkOrderNo(): string {
@@ -382,54 +388,193 @@ function nextWorkOrderNo(): string {
     (acc, order) => Math.max(acc, Number(order.workOrderNo.split('-').pop() ?? '0')),
     0,
   );
-  return `WO-20260820-${String(max + 1).padStart(3, '0')}`;
+  const ymd = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  return `WO-${ymd}-${String(max + 1).padStart(3, '0')}`;
 }
 
-function confirmFault(fault: FacilityFaultItem) {
+/** 写回前快照可变更字段，失败时用其回滚本地乐观更新。 */
+interface FaultSnapshot {
+  status: FaultStatus;
+  workOrderNo?: string;
+  repairPerson?: string;
+  estimatedFinish?: string;
+  actualFinish?: string;
+  repairMeasures?: string;
+  acceptancePerson?: string;
+  acceptanceResult?: string;
+  timelineLen: number;
+}
+
+function snapshotFault(fault: FacilityFaultItem): FaultSnapshot {
+  return {
+    status: fault.status,
+    workOrderNo: fault.workOrderNo,
+    repairPerson: fault.repairPerson,
+    estimatedFinish: fault.estimatedFinish,
+    actualFinish: fault.actualFinish,
+    repairMeasures: fault.repairMeasures,
+    acceptancePerson: fault.acceptancePerson,
+    acceptanceResult: fault.acceptanceResult,
+    timelineLen: fault.timeline.length,
+  };
+}
+
+function rollbackFault(fault: FacilityFaultItem, snap: FaultSnapshot) {
+  fault.status = snap.status;
+  fault.workOrderNo = snap.workOrderNo;
+  fault.repairPerson = snap.repairPerson;
+  fault.estimatedFinish = snap.estimatedFinish;
+  fault.actualFinish = snap.actualFinish;
+  fault.repairMeasures = snap.repairMeasures;
+  fault.acceptancePerson = snap.acceptancePerson;
+  fault.acceptanceResult = snap.acceptanceResult;
+  if (fault.timeline.length > snap.timelineLen) fault.timeline.length = snap.timelineLen;
+}
+
+/** 以服务端返回（FireFacilityFaultItem）回填本地项，作为权威状态来源。 */
+function reconcileFault(fault: FacilityFaultItem, res: FireFacilityFaultItem) {
+  fault.status = res.status as FaultStatus;
+  fault.workOrderNo = res.workOrderNo ?? undefined;
+  fault.repairPerson = res.repairPerson ?? undefined;
+  fault.estimatedFinish = res.estimatedFinish ?? undefined;
+  fault.actualFinish = res.actualFinish ?? undefined;
+  fault.repairMeasures = res.repairMeasures ?? undefined;
+  fault.acceptancePerson = res.acceptancePerson ?? undefined;
+  fault.acceptanceResult = res.acceptanceResult ?? undefined;
+  if (res.timeline) {
+    fault.timeline = res.timeline.map((t) => ({
+      time: t.time,
+      operator: t.operator,
+      action: t.action,
+      detail: t.detail,
+    }));
+  }
+}
+
+/**
+ * 通用写回：先本地乐观更新（状态 + 推送时间轴），再 PUT 后端；
+ * 成功且返回服务端数据则以其回填；失败则回滚本地变更并返回 false（不向上抛，
+ * 避免异步点击处理器出现未捕获 rejection）。
+ */
+async function persistFaultTransition(
+  fault: FacilityFaultItem,
+  applyLocal: () => FaultTimelineItem,
+  payload: import('@/services/fireFacility').FireFacilityFaultUpdatePayload,
+): Promise<boolean> {
+  const snap = snapshotFault(fault);
+  const tl = applyLocal();
+  const timelinePayload = payload.timelines ?? [
+    { time: tl.time, operator: tl.operator, action: tl.action, detail: tl.detail },
+  ];
+  const finalPayload: import('@/services/fireFacility').FireFacilityFaultUpdatePayload = {
+    ...payload,
+    timelines: timelinePayload,
+  };
+  try {
+    const res = await updateFireFacilityFault(fault.id, finalPayload);
+    if (res) reconcileFault(fault, res);
+    return true;
+  } catch (e) {
+    rollbackFault(fault, snap);
+    console.error('消防设施故障写回失败：', e);
+    return false;
+  }
+}
+
+async function confirmFault(fault: FacilityFaultItem) {
   if (fault.status !== '待确认') return;
-  fault.status = '已确认';
-  pushTimeline(fault, '确认故障', '确认为故障，待派单');
-}
-
-function dispatchFault(fault: FacilityFaultItem) {
-  if (fault.status !== '已确认') return;
-  fault.status = '已派单';
-  fault.workOrderNo = nextWorkOrderNo();
-  fault.repairPerson = '李维修';
-  fault.estimatedFinish = '2026-08-22 18:00:00';
-  pushTimeline(
+  await persistFaultTransition(
     fault,
-    '生成工单并派发',
-    `生成工单 ${fault.workOrderNo}，派发至 ${fault.repairPerson}`,
+    () => {
+      fault.status = '已确认';
+      return pushTimeline(fault, '确认故障', '确认为故障，待派单');
+    },
+    { faultStatus: '已确认' },
   );
 }
 
-function startRepair(fault: FacilityFaultItem) {
+async function dispatchFault(fault: FacilityFaultItem) {
+  if (fault.status !== '已确认') return;
+  const workOrderNo = nextWorkOrderNo();
+  const repairPerson = '李维修';
+  await persistFaultTransition(
+    fault,
+    () => {
+      fault.status = '已派单';
+      fault.workOrderNo = workOrderNo;
+      fault.repairPerson = repairPerson;
+      fault.estimatedFinish = `${new Date(Date.now() + 2 * 86400000)
+        .toISOString()
+        .slice(0, 10)} 18:00:00`;
+      return pushTimeline(
+        fault,
+        '生成工单并派发',
+        `生成工单 ${workOrderNo}，派发至 ${repairPerson}`,
+      );
+    },
+    {
+      faultStatus: '已派单',
+      workOrderNo,
+      repairPerson,
+      estimatedFinish: fault.estimatedFinish,
+    },
+  );
+}
+
+async function startRepair(fault: FacilityFaultItem) {
   if (fault.status !== '已派单') return;
-  fault.status = '维修中';
-  pushTimeline(fault, '开始维修', '开始现场维修');
+  await persistFaultTransition(
+    fault,
+    () => {
+      fault.status = '维修中';
+      return pushTimeline(fault, '开始维修', '开始现场维修');
+    },
+    { faultStatus: '维修中' },
+  );
 }
 
-function submitAcceptance(fault: FacilityFaultItem) {
+async function submitAcceptance(fault: FacilityFaultItem) {
   if (fault.status !== '维修中') return;
-  fault.status = '待验收';
-  fault.repairMeasures = '维修完成，提交验收';
-  fault.actualFinish = currentTime();
-  pushTimeline(fault, '提交验收', fault.repairMeasures);
+  const repairMeasures = '维修完成，提交验收';
+  const actualFinish = currentTime();
+  await persistFaultTransition(
+    fault,
+    () => {
+      fault.status = '待验收';
+      fault.repairMeasures = repairMeasures;
+      fault.actualFinish = actualFinish;
+      return pushTimeline(fault, '提交验收', repairMeasures);
+    },
+    { faultStatus: '待验收', repairMeasures, actualFinish },
+  );
 }
 
-function acceptFault(fault: FacilityFaultItem) {
+async function acceptFault(fault: FacilityFaultItem) {
   if (fault.status !== '待验收') return;
-  fault.status = '已闭环';
-  fault.acceptancePerson = '值班员';
-  fault.acceptanceResult = '合格';
-  pushTimeline(fault, '验收合格', '验收通过，故障闭环');
+  const acceptancePerson = '值班员';
+  const acceptanceResult = '合格';
+  await persistFaultTransition(
+    fault,
+    () => {
+      fault.status = '已闭环';
+      fault.acceptancePerson = acceptancePerson;
+      fault.acceptanceResult = acceptanceResult;
+      return pushTimeline(fault, '验收合格', '验收通过，故障闭环');
+    },
+    { faultStatus: '已闭环', acceptancePerson, acceptanceResult },
+  );
 }
 
-function rejectFault(fault: FacilityFaultItem) {
+async function rejectFault(fault: FacilityFaultItem) {
   if (fault.status !== '待验收') return;
-  fault.status = '维修中';
-  pushTimeline(fault, '验收不合格', '验收不合格，退回维修');
+  await persistFaultTransition(
+    fault,
+    () => {
+      fault.status = '维修中';
+      return pushTimeline(fault, '验收不合格', '验收不合格，退回维修');
+    },
+    { faultStatus: '维修中' },
+  );
 }
 
 function openFaultDetail(fault: FacilityFaultItem) {
@@ -438,32 +583,32 @@ function openFaultDetail(fault: FacilityFaultItem) {
 
 function confirmFaultByCode(faultCode: string) {
   const fault = findFault(faultCode);
-  if (fault) confirmFault(fault);
+  if (fault) void confirmFault(fault);
 }
 
 function dispatchFaultByCode(faultCode: string) {
   const fault = findFault(faultCode);
-  if (fault) dispatchFault(fault);
+  if (fault) void dispatchFault(fault);
 }
 
 function startRepairByCode(faultCode: string) {
   const fault = findFault(faultCode);
-  if (fault) startRepair(fault);
+  if (fault) void startRepair(fault);
 }
 
 function submitAcceptanceByCode(faultCode: string) {
   const fault = findFault(faultCode);
-  if (fault) submitAcceptance(fault);
+  if (fault) void submitAcceptance(fault);
 }
 
 function acceptFaultByCode(faultCode: string) {
   const fault = findFault(faultCode);
-  if (fault) acceptFault(fault);
+  if (fault) void acceptFault(fault);
 }
 
 function rejectFaultByCode(faultCode: string) {
   const fault = findFault(faultCode);
-  if (fault) rejectFault(fault);
+  if (fault) void rejectFault(fault);
 }
 
 function openUnifiedAlarmDetail(alarm: FacilityAlarmItem) {
