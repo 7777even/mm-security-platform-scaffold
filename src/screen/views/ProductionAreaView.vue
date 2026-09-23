@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import DashboardLayout from '../components/layout/DashboardLayout.vue';
 import MapPageShell from '../components/map/MapPageShell.vue';
@@ -9,7 +9,12 @@ import ProductionAreaPersonnelPanel from '../components/panels/production/Produc
 import ProductionAreaAlarmPanel from '../components/panels/production/ProductionAreaAlarmPanel.vue';
 import ProductionAreaFacilityListPanel from '../components/panels/production/ProductionAreaFacilityListPanel.vue';
 import { getSharedMap, onSharedMapReady } from '../lib/composables/sharedCesiumBridge';
-import { fetchProductionAreaDetail, type ProductionAreaDetail } from '@/services/production';
+import {
+  fetchProductionAreaDetail,
+  productionAlarmChanged,
+  type ProductionAreaDetail,
+} from '@/services/production';
+import { subscribeDomainChange } from '@/services/realtime';
 
 const props = defineProps<{
   facilityId: string;
@@ -68,11 +73,25 @@ watch(activeZoneId, () => {
   void flyToActiveZone();
 });
 
+watch(productionAlarmChanged, () => {
+  void loadDetail();
+});
+
+let unsubscribeProduction: (() => void) | undefined;
+
 onMounted(() => {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => void flyToActiveZone());
   });
   onSharedMapReady(() => void flyToActiveZone());
+  // 后端 @RealtimeSync(production.alarm) 广播 + 详情面板写回后的本地信号，触发装置区报警重载
+  unsubscribeProduction = subscribeDomainChange('production.alarm', () => {
+    void loadDetail();
+  });
+});
+
+onUnmounted(() => {
+  unsubscribeProduction?.();
 });
 </script>
 
