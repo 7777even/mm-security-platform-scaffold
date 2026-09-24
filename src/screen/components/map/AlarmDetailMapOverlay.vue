@@ -17,7 +17,8 @@ const { anchorStyle } = useCesiumScreenAnchor(() => {
 
 function flyToTarget() {
   const target = alarmMapTarget.value;
-  if (!target) return;
+  // 坐标缺失（新建告警未带经纬度）时不飞入，避免 Cesium 因 undefined 坐标崩溃。
+  if (!target || !Number.isFinite(target.longitude) || !Number.isFinite(target.latitude)) return;
   getSharedMap()?.flyToWorldPositions?.({
     positions: [{ longitude: target.longitude, latitude: target.latitude }],
     duration: 1.2,

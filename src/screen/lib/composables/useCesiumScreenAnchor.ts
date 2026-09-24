@@ -37,11 +37,23 @@ export function useCesiumScreenAnchor(resolveWorld: () => WorldPosition | null) 
     map: CesiumMapMarkerApi | null = getSharedMap() as CesiumMapMarkerApi | null,
   ) {
     const world = resolveWorld();
-    if (!world || !map?.worldToScreen) {
+    const lon = world?.longitude;
+    const lat = world?.latitude;
+    // 坐标缺失/非数字（如新建告警未带经纬度）时跳过 worldToScreen，避免 Cesium
+    // Cartesian3.fromDegrees(undefined) 抛 DeveloperError 导致整图渲染崩溃。
+    // 注意：Number.isFinite 不收窄类型，须用 typeof 强制收窄 lon/lat 为 number。
+    if (
+      !world ||
+      !map?.worldToScreen ||
+      typeof lon !== 'number' ||
+      typeof lat !== 'number' ||
+      !Number.isFinite(lon) ||
+      !Number.isFinite(lat)
+    ) {
       if (screenPos.value !== null) screenPos.value = null;
       return;
     }
-    const next = map.worldToScreen(world.longitude, world.latitude, world.height);
+    const next = map.worldToScreen(lon, lat, world.height);
     if (screenPosChanged(screenPos.value, next)) {
       screenPos.value = next;
     }
@@ -130,7 +142,12 @@ export function useBoundaryGateScreenPositions(
 
     for (const gate of gates) {
       const world = edges?.[gate.edge] ?? fallback[gate.edge];
-      if (!world || !map?.worldToScreen) {
+      if (
+        !world ||
+        !map?.worldToScreen ||
+        !Number.isFinite(world.longitude) ||
+        !Number.isFinite(world.latitude)
+      ) {
         next[gate.name] = null;
         continue;
       }
@@ -241,7 +258,11 @@ export function useWorldMarkerScreenPositions(
     const next: Record<string, WorldMarkerScreenPosition | null> = {};
 
     for (const marker of markerList) {
-      if (!map?.worldToScreen) {
+      if (
+        !map?.worldToScreen ||
+        !Number.isFinite(marker.longitude) ||
+        !Number.isFinite(marker.latitude)
+      ) {
         next[marker.key] = null;
         continue;
       }
