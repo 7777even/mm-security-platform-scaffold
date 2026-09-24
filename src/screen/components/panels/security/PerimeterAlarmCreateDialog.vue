@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue';
-import type { PerimeterAlarmCreatePayload } from '@/services/security';
+import {
+  fetchPatrolCameras,
+  type PatrolCameraItem,
+  type PerimeterAlarmCreatePayload,
+} from '@/services/security';
 
 const props = defineProps<{ open: boolean }>();
 
@@ -30,6 +34,51 @@ function toBackendDatetime(local: string): string {
 
 const alarmTypeOptions = ['周界入侵告警', '入侵检测告警', '异常徘徊告警', '翻越围栏告警'];
 const levelOptions = ['一级', '二级', '三级', '四级'];
+
+// 下拉选项口径：与库内种子/演示数据对齐（V29 种子 location/intrusionMethod、巡检摄像机 fixture），
+// 后续如需扩充口径改这里即可；提交值仍是自由字符串，后端无枚举校验，不影响契约。
+const locationOptions = [
+  '厂区南门西侧 200 米',
+  '厂区西门北侧 120 米',
+  '厂区东门',
+  '厂区北门',
+  '厂区围墙沿线',
+  '外围南门',
+  '外围北门',
+];
+const objectTypeOptions = ['人员', '车辆', '动物', '未知对象'];
+const intrusionPositionOptions = [
+  '栅栏中段',
+  '栅栏东段',
+  '栅栏西段',
+  '栅栏南段',
+  '栅栏北段',
+  '大门两侧',
+  '围墙拐角',
+];
+const intrusionMethodOptions = [
+  '翻越围栏',
+  '攀爬围栏',
+  '破坏围栏',
+  '剪断围栏',
+  '钻越围栏',
+  '徘徊逗留',
+];
+
+// 关联摄像机：拉后端 /security/patrol-cameras 真实数据（demo 模式自动降级内置 fixture）。
+// 列表为空（后端未连且非 demo）时回退为手填输入框，保证弹窗始终可用。
+const patrolCameras = ref<PatrolCameraItem[]>([]);
+
+watch(
+  () => props.open,
+  (open) => {
+    if (open) {
+      void fetchPatrolCameras().then((list) => {
+        patrolCameras.value = list;
+      });
+    }
+  },
+);
 
 interface FormState {
   title: string;
@@ -152,12 +201,10 @@ function handleSubmit(): void {
 
             <label class="pac-field pac-field--full">
               <span class="pac-label">告警位置</span>
-              <input
-                v-model="form.location"
-                class="pac-input"
-                type="text"
-                placeholder="如：厂区南门西侧 200 米"
-              />
+              <select v-model="form.location" class="pac-select">
+                <option value="">请选择告警位置</option>
+                <option v-for="opt in locationOptions" :key="opt" :value="opt">{{ opt }}</option>
+              </select>
             </label>
 
             <label class="pac-field pac-field--full">
@@ -182,39 +229,50 @@ function handleSubmit(): void {
               </label>
               <label class="pac-field">
                 <span class="pac-label">入侵对象类型</span>
-                <input
-                  v-model="form.objectType"
-                  class="pac-input"
-                  type="text"
-                  placeholder="如：人员"
-                />
+                <select v-model="form.objectType" class="pac-select">
+                  <option value="">请选择入侵对象类型</option>
+                  <option v-for="opt in objectTypeOptions" :key="opt" :value="opt">
+                    {{ opt }}
+                  </option>
+                </select>
               </label>
             </div>
 
             <div class="pac-grid pac-grid--2">
               <label class="pac-field">
                 <span class="pac-label">入侵位置</span>
-                <input
-                  v-model="form.intrusionPosition"
-                  class="pac-input"
-                  type="text"
-                  placeholder="如：栅栏中段"
-                />
+                <select v-model="form.intrusionPosition" class="pac-select">
+                  <option value="">请选择入侵位置</option>
+                  <option v-for="opt in intrusionPositionOptions" :key="opt" :value="opt">
+                    {{ opt }}
+                  </option>
+                </select>
               </label>
               <label class="pac-field">
                 <span class="pac-label">入侵方式</span>
-                <input
-                  v-model="form.intrusionMethod"
-                  class="pac-input"
-                  type="text"
-                  placeholder="如：翻越"
-                />
+                <select v-model="form.intrusionMethod" class="pac-select">
+                  <option value="">请选择入侵方式</option>
+                  <option v-for="opt in intrusionMethodOptions" :key="opt" :value="opt">
+                    {{ opt }}
+                  </option>
+                </select>
               </label>
             </div>
 
             <label class="pac-field pac-field--full">
               <span class="pac-label">关联摄像机</span>
+              <select
+                v-if="patrolCameras.length > 0"
+                v-model="form.relatedCamera"
+                class="pac-select"
+              >
+                <option value="">请选择关联摄像机</option>
+                <option v-for="cam in patrolCameras" :key="cam.id" :value="cam.name">
+                  {{ cam.name }}（{{ cam.zone }}）
+                </option>
+              </select>
               <input
+                v-else
                 v-model="form.relatedCamera"
                 class="pac-input"
                 type="text"
