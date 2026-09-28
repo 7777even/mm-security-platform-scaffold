@@ -202,7 +202,7 @@ const pieOption = computed(() => ({
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) minmax(0, 1fr);
   gap: 6px;
-  height: 100%;
+  flex: 1;
   min-height: 0;
 }
 
