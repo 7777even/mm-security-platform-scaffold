@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import VChart from 'vue-echarts';
 import { use } from 'echarts/core';
 import { LineChart, PieChart } from 'echarts/charts';
@@ -13,32 +13,90 @@ import {
   entrySummary,
   type EntryTab,
 } from '@/services/security';
+import { fetchSecurityEvents, type SecurityEvent } from '@/services/securityEventStore';
 import { openEntryCaptureList } from '../../../lib/composables/useEntryCaptureListView';
-import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 use([LineChart, PieChart, GridComponent, LegendComponent, TooltipComponent, CanvasRenderer]);
 
 const activeTab = ref<EntryTab>('person');
-const { scaleAreaCount } = usePlantArea();
 
-const summaryText = computed(() => {
-  const s = entrySummary[activeTab.value];
-  return `近24h 入厂：${scaleAreaCount(s.enter)}，出厂：${scaleAreaCount(s.exit)}`;
+// 与「出入明细」抽屉同一数据源（/security/events 门禁事件），统计由同一份事件实时聚合，保证两边数字一致。
+// events === null 表示离线演示（未配置 VITE_API_BASE），回落 securityMock 的 entry* fixture。
+const events = ref<SecurityEvent[] | null>(null);
+
+const modeOf = (e: SecurityEvent): EntryTab =>
+  e.vehicle && e.vehicle.trim().length > 0 ? 'vehicle' : 'person';
+
+onMounted(async () => {
+  if (!import.meta.env.VITE_API_BASE) {
+    events.value = null;
+    return;
+  }
+  try {
+    const list = await fetchSecurityEvents();
+    events.value = Array.isArray(list) ? list : [];
+  } catch {
+    events.value = [];
+  }
 });
 
-const breakdownItems = computed(() =>
-  entryBreakdown[activeTab.value].map((item) => ({
-    ...item,
-    value: scaleAreaCount(item.value),
-  })),
-);
+const tabEvents = computed(() => (events.value ?? []).filter((e) => modeOf(e) === activeTab.value));
+
+const summaryText = computed(() => {
+  if (events.value === null) {
+    const s = entrySummary[activeTab.value];
+    return `入厂：${s.enter}，出厂：${s.exit}`;
+  }
+  const enter = tabEvents.value.filter((e) => e.direction === '进').length;
+  return `入厂：${enter}，出厂：${tabEvents.value.length - enter}`;
+});
+
+const BREAKDOWN_PALETTE = ['#5b8cff', '#37cfff', '#3dd68c', '#ffb54d', '#b58cff', '#ff7d7d'];
+
+const breakdownItems = computed(() => {
+  if (events.value === null) return entryBreakdown[activeTab.value];
+  // 饼图按门岗（channel 前段，如「1#门」）聚合，与明细卡片展示的 gate 对应
+  const gateMap = new Map<string, number>();
+  for (const e of tabEvents.value) {
+    const gate = (e.channel || '未知闸口').split('-')[0];
+    gateMap.set(gate, (gateMap.get(gate) ?? 0) + 1);
+  }
+  return [...gateMap.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, value], i) => ({
+      label,
+      value,
+      color: BREAKDOWN_PALETTE[i % BREAKDOWN_PALETTE.length],
+    }));
+});
 
 const breakdownTotal = computed(() =>
   breakdownItems.value.reduce((sum, item) => sum + item.value, 0),
 );
 
 const lineOption = computed(() => {
+  const mock = events.value === null;
   const trend = entryLineTrend[activeTab.value];
+  // 真实数据：按小时聚合该 tab 的入厂/出厂事件，与明细记录的 time 同源一致
+  const hourBuckets = new Map<number, { enter: number; exit: number }>();
+  if (!mock) {
+    for (const e of tabEvents.value) {
+      const h = Number(e.ts.slice(11, 13));
+      if (!Number.isFinite(h)) continue;
+      const bucket = hourBuckets.get(h) ?? { enter: 0, exit: 0 };
+      if (e.direction === '进') bucket.enter += 1;
+      else bucket.exit += 1;
+      hourBuckets.set(h, bucket);
+    }
+  }
+  const hourKeys: number[] = mock ? [] : [...hourBuckets.keys()].sort((a, b) => a - b);
+  const labels: string[] = mock
+    ? [...entryLineHours]
+    : hourKeys.map((h) => `${String(h).padStart(2, '0')}:00`);
+  const enterData: number[] = mock
+    ? trend.enter
+    : hourKeys.map((h) => hourBuckets.get(h)?.enter ?? 0);
+  const exitData: number[] = mock ? trend.exit : hourKeys.map((h) => hourBuckets.get(h)?.exit ?? 0);
   return {
     animation: false,
     grid: { left: 36, right: 12, top: 28, bottom: 24 },
@@ -58,7 +116,7 @@ const lineOption = computed(() => {
     },
     xAxis: {
       type: 'category',
-      data: [...entryLineHours],
+      data: labels,
       boundaryGap: false,
       axisLine: { lineStyle: { color: 'rgba(83,103,132,0.5)' } },
       axisLabel: { color: '#8fa8c4', fontSize: 11 },
@@ -66,6 +124,7 @@ const lineOption = computed(() => {
     },
     yAxis: {
       type: 'value',
+      minInterval: 1,
       splitNumber: 4,
       splitLine: { lineStyle: { color: 'rgba(83,103,132,0.18)' } },
       axisLabel: { color: '#8fa8c4', fontSize: 11 },
@@ -77,7 +136,7 @@ const lineOption = computed(() => {
         smooth: true,
         symbol: 'circle',
         symbolSize: 5,
-        data: trend.enter.map(scaleAreaCount),
+        data: enterData,
         lineStyle: { color: '#00b4ff', width: 2 },
         itemStyle: { color: '#00b4ff' },
       },
@@ -87,7 +146,7 @@ const lineOption = computed(() => {
         smooth: true,
         symbol: 'circle',
         symbolSize: 5,
-        data: trend.exit.map(scaleAreaCount),
+        data: exitData,
         lineStyle: { color: '#37cfff', width: 2 },
         itemStyle: { color: '#37cfff' },
       },

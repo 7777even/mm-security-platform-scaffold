@@ -244,6 +244,7 @@ function toneClass(value?: number) {
 
 .capture-list__input {
   height: 30px;
+  min-width: 0;
   padding: 0 10px;
   border: 1px solid var(--btn-border);
   border-radius: 2px;
