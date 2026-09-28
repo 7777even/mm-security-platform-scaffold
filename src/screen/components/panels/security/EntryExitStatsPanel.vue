@@ -203,7 +203,7 @@ const pieOption = computed(() => ({
   flex-direction: column;
   gap: 6px;
   flex: 1;
-  min-height: 0;
+  min-height: 280px;
 }
 
 .entry-stats__tabs {
@@ -246,7 +246,7 @@ const pieOption = computed(() => ({
 }
 
 .entry-stats__chart--line {
-  flex: 1;
+  flex: 1 1 120px;
   min-height: 0;
 }
 
@@ -255,7 +255,7 @@ const pieOption = computed(() => ({
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  flex: 1;
+  flex: 1 1 120px;
   min-height: 0;
 }
 
