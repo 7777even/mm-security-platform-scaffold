@@ -61,8 +61,8 @@
       "get": {
         "tags": ["dashboard"],
         "operationId": "getAlarmTrend",
-        "summary": "报警趋势（按小时）",
-        "description": "返回近 24 小时每小时报警数。",
+        "summary": "报警趋势（按天）",
+        "description": "返回近 7 天每天报警数（含今天），点的高度=当天主告警(fac_alarm)+周界告警(fac_perimeter_alarm)的发生总数；今天新增报警即时计入「今天」。",
         "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
         "responses": {
           "200": {
@@ -87,8 +87,8 @@
                   "code": 0,
                   "message": "ok",
                   "data": [
-                    { "hour": "07:00", "count": 3 },
-                    { "hour": "08:00", "count": 12 }
+                    { "date": "09-22", "count": 3 },
+                    { "date": "09-23", "count": 12 }
                   ]
                 }
               }
@@ -366,8 +366,8 @@
       "AlarmTrendPoint": {
         "type": "object",
         "properties": {
-          "hour": { "type": "string", "description": "小时标签，如 '08:00'", "example": "08:00" },
-          "count": { "type": "integer", "description": "该小时报警数", "example": 12 }
+          "date": { "type": "string", "description": "日期标签，如 '09-22'", "example": "09-22" },
+          "count": { "type": "integer", "description": "当天报警数", "example": 12 }
         }
       },
       "RiskHeatItem": {

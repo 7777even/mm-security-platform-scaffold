@@ -27,8 +27,8 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * 报警趋势（按小时）
-     * @description 返回近 24 小时每小时报警数。
+     * 报警趋势（按天）
+     * @description 返回近 7 天每天报警数（含今天），点的高度=当天主告警(fac_alarm)+周界告警(fac_perimeter_alarm)的发生总数；今天新增报警即时计入「今天」。
      */
     get: operations['getAlarmTrend'];
     put?: never;
@@ -256,12 +256,12 @@ export interface components {
     };
     AlarmTrendPoint: {
       /**
-       * @description 小时标签，如 '08:00'
-       * @example 08:00
+       * @description 日期标签，如 '09-22'
+       * @example 09-22
        */
-      hour?: string;
+      date?: string;
       /**
-       * @description 该小时报警数
+       * @description 当天报警数
        * @example 12
        */
       count?: number;
@@ -394,11 +394,11 @@ export interface operations {
            *       "message": "ok",
            *       "data": [
            *         {
-           *           "hour": "07:00",
+           *           "date": "09-22",
            *           "count": 3
            *         },
            *         {
-           *           "hour": "08:00",
+           *           "date": "09-23",
            *           "count": 12
            *         }
            *       ]

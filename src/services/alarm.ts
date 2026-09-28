@@ -43,7 +43,7 @@ export interface DashboardOverview {
 }
 
 export interface AlarmTrendPoint {
-  hour: string;
+  date: string;
   count: number;
 }
 
