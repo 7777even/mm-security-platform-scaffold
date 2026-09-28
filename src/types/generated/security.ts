@@ -870,6 +870,11 @@ export interface components {
        * @example CAM-007
        */
       relatedCamera?: string;
+      /**
+       * @description 设备编号（可选，落库 device_id）
+       * @example CAM-PERI-07
+       */
+      deviceId?: string;
     };
   };
   responses: {
@@ -1549,7 +1554,8 @@ export interface operations {
          *       "location": "厂区南门西侧 200 米",
          *       "alarmTime": "2026-09-23 17:30:00",
          *       "description": "监控识别到人员翻越周界栅栏",
-         *       "objectName": "翻越人员"
+         *       "objectName": "翻越人员",
+         *       "deviceId": "CAM-PERI-07"
          *     }
          */
         'application/json': components['schemas']['PerimeterAlarmCreateRequest'];
