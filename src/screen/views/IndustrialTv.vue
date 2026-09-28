@@ -7,6 +7,7 @@ import TvMap from '../components/map/TvMap.vue';
 import VideoMonitoringManagementPanel from '../components/panels/tv/VideoMonitoringManagementPanel.vue';
 import EventAnalysisPanel from '../components/panels/tv/EventAnalysisPanel.vue';
 import ImportantVideoPanel from '../components/panels/tv/ImportantVideoPanel.vue';
+import TvSnapshotFeedPanel from '../components/panels/tv/TvSnapshotFeedPanel.vue';
 import VideoMonitorDetailPanel from '../components/panels/tv/VideoMonitorDetailPanel.vue';
 import {
   openTvVideoDetail,
@@ -65,6 +66,7 @@ watch(
 
       <aside class="sidebar sidebar--right" :class="{ 'sidebar--right--hidden': showVideoDetail }">
         <ImportantVideoPanel />
+        <TvSnapshotFeedPanel />
       </aside>
 
       <aside class="video-detail-drawer" :class="{ 'video-detail-drawer--open': showVideoDetail }">
@@ -109,7 +111,7 @@ watch(
 
 .sidebar--right {
   width: 419px;
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1.4fr) minmax(0, 1fr);
   height: 100%;
   transition:
     transform 0.38s cubic-bezier(0.4, 0, 0.2, 1),
