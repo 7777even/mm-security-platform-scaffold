@@ -18,12 +18,12 @@ describe('devMock：各接口路由匹配并返回契约数据', () => {
     expect(data.riskIndex).toBeGreaterThan(0);
   });
 
-  it('GET /dashboard/alarm-trend 返回 24 点', async () => {
-    const data = await request<{ hour: string; count: number }[]>({
+  it('GET /dashboard/alarm-trend 返回 7 天桶', async () => {
+    const data = await request<{ date: string; count: number }[]>({
       url: '/dashboard/alarm-trend',
       method: 'GET',
     });
-    expect(data).toHaveLength(24);
+    expect(data).toHaveLength(7);
   });
 
   it('GET /alarms 返回分页列表', async () => {

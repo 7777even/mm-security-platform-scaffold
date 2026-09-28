@@ -12,8 +12,8 @@ import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const { scaleAreaCount } = usePlantArea();
 
-// 真实告警趋势（后端 /dashboard/alarm-trend，按小时分桶）；null 时回落内置 mock
-const trendPoints = ref<Array<{ hour: string; count: number }> | null>(null);
+// 真实告警趋势（后端 /dashboard/alarm-trend，近 7 天按天分桶）；null 时回落内置 mock
+const trendPoints = ref<Array<{ date: string; count: number }> | null>(null);
 
 onMounted(async () => {
   try {
@@ -30,8 +30,8 @@ const chartOption = computed(() => ({
   xAxis: {
     type: 'category',
     data: trendPoints.value
-      ? trendPoints.value.map((p) => p.hour)
-      : ['4/6', '4/7', '4/8', '4/9', '4/10', '4/11', '4/12', '4/13', '4/14', '4/15'],
+      ? trendPoints.value.map((p) => p.date)
+      : ['9/22', '9/23', '9/24', '9/25', '9/26', '9/27', '9/28'],
     axisLine: { lineStyle: { color: 'rgba(83,103,132,0.5)' } },
     axisLabel: { color: '#8fa8c4', fontSize: 11 },
     axisTick: { show: false },

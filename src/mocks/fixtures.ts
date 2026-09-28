@@ -28,10 +28,16 @@ export const overviewFixture: DashboardOverview = {
   ts: new Date().toISOString(),
 };
 
-export const trendFixture: AlarmTrendPoint[] = Array.from({ length: 24 }, (_, h) => ({
-  hour: String(h).padStart(2, '0'),
-  count: Math.round(2 + Math.sin(h / 3) * 2 + Math.random() * 3),
-}));
+export const trendFixture: AlarmTrendPoint[] = Array.from({ length: 7 }, (_, i) => {
+  const d = new Date();
+  d.setDate(d.getDate() - (6 - i));
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return {
+    date: `${mm}-${dd}`,
+    count: Math.round(2 + Math.sin(i / 2) * 2 + Math.random() * 3),
+  };
+});
 
 const LOCATIONS = ['A 栋 1F', 'B 栋 3F', '罐区 02 区', '装置区 05 单元', '装卸区 01 泊位'];
 const TYPES: AlarmType[] = ['FIRE', 'GAS', 'TEMP', 'SOS'];

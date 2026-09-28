@@ -92,7 +92,7 @@ export const linkage5GItems: Linkage5GItem[] = [
   { label: '联动控制', status: '执行中', tone: 'orange' },
 ];
 
-export const alarmTrendData = [12, 18, 15, 22, 28, 24, 32, 26, 35, 30];
+export const alarmTrendData = [12, 18, 15, 22, 28, 24, 32];
 
 export const patrolAlarms: PatrolAlarmItem[] = [
   {
