@@ -28,6 +28,7 @@ import CommandActionDetailPanel from '../components/panels/accident-rescue/Comma
 import EmergencyAddressBookDialog from '../components/panels/accident-rescue/EmergencyAddressBookDialog.vue';
 import SandboxPanel from '../components/panels/accident-rescue/SandboxPanel.vue';
 import SandboxMapOverlay from '../components/map/SandboxMapOverlay.vue';
+import InfoDetailDialog from '../components/common/InfoDetailDialog.vue';
 import {
   resolveAccidentRescueIncident,
   eventCommandDetailTabs,
@@ -653,9 +654,34 @@ function exitSandboxScene() {
   void flyToIncident();
 }
 
+const monitoringDetailOpen = ref(false);
+const monitoringDetailTitle = ref('');
+const monitoringDetailFields = ref<{ label: string; value: string }[]>([]);
+
+function monitoringStatusLabel(status: MonitoringPoint['status']): string {
+  if (status === 'alarm') return '高高报（告警）';
+  if (status === 'warning') return '高报预警';
+  return '正常';
+}
+
 async function focusMonitoringPoint(p: MonitoringPoint) {
   focusedMonitoringId.value = p.id;
+  // 点击监测点位：飞入地图 + 弹出详情（与治安防恐「安全监测点位」一致，避免「只飞不弹」）
+  monitoringDetailTitle.value = p.name;
+  monitoringDetailFields.value = [
+    { label: '点位名称', value: p.name },
+    { label: '监测类别', value: p.category },
+    { label: '运行状态', value: monitoringStatusLabel(p.status) },
+    { label: '所属单位', value: p.org },
+    { label: '最近更新', value: p.lastTime },
+    { label: '经纬度', value: `${p.longitude.toFixed(4)}, ${p.latitude.toFixed(4)}` },
+  ];
+  monitoringDetailOpen.value = true;
   await getSharedMap()?.focusMonitoringPoint?.({ longitude: p.longitude, latitude: p.latitude });
+}
+
+function closeMonitoringDetail() {
+  monitoringDetailOpen.value = false;
 }
 
 async function focusPerson(p: EvacuationPerson) {
@@ -977,6 +1003,13 @@ onUnmounted(() => {
         :alarms="monitoringAlarms"
         @close="exitMonitoringScene"
         @focus="focusMonitoringPoint"
+      />
+
+      <InfoDetailDialog
+        :open="monitoringDetailOpen"
+        :title="monitoringDetailTitle"
+        :fields="monitoringDetailFields"
+        @close="closeMonitoringDetail"
       />
 
       <RescueRouteScenePanel
