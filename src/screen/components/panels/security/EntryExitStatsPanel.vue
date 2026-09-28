@@ -195,6 +195,7 @@ const pieOption = computed(() => ({
 <template>
   <PanelCard title="出入统计" variant="entryStats" module="security" :show-more="false">
     <template #header-extra>
+      <input v-model="selectedDate" type="date" class="entry-stats__date" aria-label="统计日期" />
       <a class="entry-stats__detail" href="#" @click.prevent="openEntryCaptureList(activeTab)">
         出入明细
       </a>
@@ -228,10 +229,7 @@ const pieOption = computed(() => ({
         </button>
       </div>
 
-      <div class="entry-stats__summary-row">
-        <div class="entry-stats__summary">{{ summaryText }}</div>
-        <input v-model="selectedDate" type="date" class="entry-stats__date" aria-label="统计日期" />
-      </div>
+      <div class="entry-stats__summary">{{ summaryText }}</div>
 
       <div class="entry-stats__chart entry-stats__chart--line">
         <VChart class="entry-stats__line" :option="lineOption" autoresize />
@@ -260,7 +258,7 @@ const pieOption = computed(() => ({
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: 8px 12px 10px;
+  padding: 6px 12px 8px;
 }
 
 .entry-stats__detail {
@@ -276,7 +274,7 @@ const pieOption = computed(() => ({
 .entry-stats {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   flex: 1;
   min-height: 0;
 }
@@ -314,17 +312,10 @@ const pieOption = computed(() => ({
   border-radius: 2px;
 }
 
-.entry-stats__summary-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
 .entry-stats__summary {
   font-size: 13px;
   color: #c8d8ec;
-  flex: 1;
+  flex-shrink: 0;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -393,7 +384,7 @@ const pieOption = computed(() => ({
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 }
 
 .entry-stats__legend li {

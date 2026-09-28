@@ -305,8 +305,8 @@ function setTrackSpeed(value: number) {
 
 .sidebar--left {
   width: 419px;
-  grid-template-rows: 350px 200px minmax(0, 1.3fr) minmax(0, 1fr);
-  gap: 11px;
+  grid-template-rows: 300px 170px minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 10px;
 }
 
 .sidebar--right {
