@@ -14,6 +14,7 @@ import {
   securityMapToolbarItems,
 } from '@/services/security';
 import { fetchAlarmPoints, fetchDevicePoints, type MapPoint } from '@/services/map';
+import { useMonitoringPointFocus } from '../../lib/composables/useMonitoringPointFocus';
 import { useMapControls, useMapControlActive } from '../../lib/composables/useMapControls';
 import { useMapPageSearch } from '../../lib/composables/useMapPageSearch';
 import type { SearchableMapMarker } from '../../lib/composables/useMapSearchRegistry';
@@ -342,6 +343,12 @@ const deviceMarkerTargets = () => {
 const { styleFor: deviceStyleFor } = useWorldMarkerScreenPositions(deviceMarkerTargets, {
   scaleWithZoom: false,
 });
+
+// —— 真实后端点位点击：飞入地图 + 弹出详情（与侧栏监测点位面板共享单例状态）——
+const { openDetail: openMonitoringDetail } = useMonitoringPointFocus();
+function onMonitoringActivate(p: MapPoint, kind: 'alarm' | 'device') {
+  openMonitoringDetail(p, kind);
+}
 </script>
 
 <template>
@@ -515,6 +522,8 @@ const { styleFor: deviceStyleFor } = useWorldMarkerScreenPositions(deviceMarkerT
       :tone="alarmLevelTone(p.level)"
       :title="p.name"
       :aria-label="p.name"
+      interactive
+      @activate="onMonitoringActivate(p, 'alarm')"
     />
 
     <!-- 真实后端设备点位落图（/map/devices） -->
@@ -527,6 +536,8 @@ const { styleFor: deviceStyleFor } = useWorldMarkerScreenPositions(deviceMarkerT
       :tone="deviceStatusTone(p.status)"
       :title="p.name"
       :aria-label="p.name"
+      interactive
+      @activate="onMonitoringActivate(p, 'device')"
     />
   </div>
 </template>

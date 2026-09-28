@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
+import InfoDetailDialog from '../../common/InfoDetailDialog.vue';
 import { fetchAlarmPoints, fetchDevicePoints, type MapPoint } from '@/services/map';
+import { useMonitoringPointFocus } from '../../../lib/composables/useMonitoringPointFocus';
+
+const { detailOpen, detailTitle, detailFields, openDetail, closeDetail } =
+  useMonitoringPointFocus();
 
 const loading = ref(true);
 const alarmPoints = ref<MapPoint[]>([]);
@@ -38,6 +43,7 @@ interface PointRow {
   kind: 'alarm' | 'device';
   tag: string;
   tone: 'danger' | 'warn' | 'ok' | 'muted';
+  point: MapPoint;
 }
 
 function alarmTag(p: MapPoint): { tag: string; tone: PointRow['tone'] } {
@@ -58,14 +64,18 @@ function deviceTag(p: MapPoint): { tag: string; tone: PointRow['tone'] } {
 const rows = computed<PointRow[]>(() => {
   const a: PointRow[] = alarmPoints.value.map((p) => {
     const { tag, tone } = alarmTag(p);
-    return { id: `a-${p.id}`, name: p.name, kind: 'alarm', tag, tone };
+    return { id: `a-${p.id}`, name: p.name, kind: 'alarm', tag, tone, point: p };
   });
   const d: PointRow[] = devicePoints.value.map((p) => {
     const { tag, tone } = deviceTag(p);
-    return { id: `d-${p.id}`, name: p.name, kind: 'device', tag, tone };
+    return { id: `d-${p.id}`, name: p.name, kind: 'device', tag, tone, point: p };
   });
   return [...a, ...d];
 });
+
+function onRowClick(row: PointRow) {
+  openDetail(row.point, row.kind);
+}
 
 onMounted(async () => {
   try {
@@ -110,13 +120,28 @@ onMounted(async () => {
       <div v-else-if="!rows.length" class="mp__state">暂无监测点位</div>
 
       <div v-else class="mp__list">
-        <div v-for="row in rows" :key="row.id" class="mp__row" :class="`mp__row--${row.kind}`">
+        <button
+          v-for="row in rows"
+          :key="row.id"
+          type="button"
+          class="mp__row"
+          :class="`mp__row--${row.kind}`"
+          :aria-label="`查看 ${row.name} 详情`"
+          @click="onRowClick(row)"
+        >
           <span class="mp__dot" :class="`mp__dot--${row.tone}`" />
           <span class="mp__name" :title="row.name">{{ row.name }}</span>
           <span class="mp__tag" :class="`mp__tag--${row.tone}`">{{ row.tag }}</span>
-        </div>
+        </button>
       </div>
     </div>
+
+    <InfoDetailDialog
+      :open="detailOpen"
+      :title="detailTitle"
+      :fields="detailFields"
+      @close="closeDetail"
+    />
   </PanelCard>
 </template>
 
@@ -206,6 +231,25 @@ onMounted(async () => {
   background: rgb(0 24 50 / 40%);
   font-size: 12px;
   color: #e8f2fc;
+  text-align: left;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.mp__row:hover {
+  border-color: rgb(0 180 255 / 50%);
+  background: rgb(0 55 100 / 55%);
+  box-shadow: inset 0 0 12px rgb(0 170 255 / 10%);
+}
+
+.mp__row:focus-visible {
+  outline: none;
+  border-color: rgb(0 180 255 / 70%);
+  box-shadow: 0 0 0 2px rgb(0 180 255 / 30%);
 }
 
 .mp__dot {
