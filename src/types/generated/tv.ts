@@ -304,6 +304,247 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/tv/snapshots': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 录像截图分页列表
+     * @description 返回工业电视录像截图采集入库记录的分页列表（最新在前）。前端订阅 tv.snapshot.changed 实时刷新。
+     */
+    get: {
+      parameters: {
+        query?: {
+          /**
+           * @description 页码（从 1 开始）
+           * @example 1
+           */
+          page?: number;
+          /**
+           * @description 每页条数
+           * @example 12
+           */
+          size?: number;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 录像截图分页列表 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "total": 1,
+             *         "page": 1,
+             *         "size": 12,
+             *         "pages": 1,
+             *         "list": [
+             *           {
+             *             "id": 1,
+             *             "monitorCode": "ar-01",
+             *             "monitorName": "高空AR-01",
+             *             "captureTime": "2026-09-28 10:00:00",
+             *             "eventType": "烟火检测",
+             *             "reviewStatus": "PENDING",
+             *             "source": "DEVICE",
+             *             "createdAt": "2026-09-28 10:00:01",
+             *             "hasImage": true
+             *           }
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['TvSnapshotPage'];
+          };
+        };
+      };
+    };
+    put?: never;
+    /**
+     * 录像截图采集入库
+     * @description 设备/采集端自助上报录像截图（base64 JPEG）→ 落库 fac_tv_snapshot（PENDING）→ 广播 tv.snapshot.changed。仅登录态即可（同 Uplink 口径）。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "monitorCode": "ar-01",
+           *       "monitorName": "高空AR-01",
+           *       "captureTime": "2026-09-28 10:00:00",
+           *       "eventType": "烟火检测",
+           *       "imageBase64": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDA...（省略 base64）",
+           *       "source": "DEVICE"
+           *     }
+           */
+          'application/json': components['schemas']['TvSnapshotIngestRequest'];
+        };
+      };
+      responses: {
+        /** @description 采集入库结果 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 1,
+             *         "monitorCode": "ar-01",
+             *         "captureTime": "2026-09-28 10:00:00",
+             *         "reviewStatus": "PENDING",
+             *         "createdAt": "2026-09-28 10:00:01"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['TvSnapshotIngestResult'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/tv/snapshots/{id}/snapshot': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 录像截图字节
+     * @description 返回指定截图记录的 JPEG 字节（含抓拍图）。无截图数据时 404。前端用带 token 的 http 客户端取 blob 后转 objectURL 渲染（原生 <img src> 无法带 Authorization 头）。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /**
+           * @description 截图记录 id
+           * @example 1
+           */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 截图 JPEG 字节 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/octet-stream': string;
+          };
+        };
+        /** @description 截图不存在或无字节（按设计返回 404） */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 404,
+             *       "message": "截图不存在",
+             *       "data": null
+             *     }
+             */
+            'application/json': unknown;
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/tv/snapshots/{id}/ack': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 确认录像截图
+     * @description 将截图审核状态由 PENDING 推进为 ACKED。需权限码 video:snapshot:ack（V79 已登记并授权 ADMIN 及岗位角色）。成功后广播 tv.snapshot.changed。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /**
+           * @description 截图记录 id
+           * @example 1
+           */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 确认结果 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 1,
+             *         "reviewStatus": "ACKED"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['TvSnapshotAckResult'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -596,6 +837,157 @@ export interface components {
       vehicles?: components['schemas']['TvInspectionItem'][];
       /** @description 人员记录列表 */
       persons?: components['schemas']['TvInspectionItem'][];
+    };
+    /** @description 工业电视录像截图采集入库请求（设备/采集端上报） */
+    TvSnapshotIngestRequest: {
+      /**
+       * @description 监控点位编码（关联 fac_tv_monitor.monitor_code）
+       * @example ar-01
+       */
+      monitorCode: string;
+      /**
+       * @description 点位名称（可选；缺省后端按 monitor_code 回查）
+       * @example 高空AR-01
+       */
+      monitorName?: string | null;
+      /**
+       * @description 采集时刻（设备上报，字符串避免时区/方言差异）；缺省用服务端入库时刻
+       * @example 2026-09-28 10:00:00
+       */
+      captureTime?: string | null;
+      /**
+       * @description 事件类型：人员闯入/烟火检测/区域入侵/手动抓拍；缺省=设备自动
+       * @example 烟火检测
+       */
+      eventType?: string | null;
+      /**
+       * @description base64 JPEG（可带 data:image/jpeg;base64, 前缀，后端自动剥离）
+       * @example /9j/4AAQSkZJRgABAQAAAQABAAD/2wBDA...（省略 base64）
+       */
+      imageBase64: string;
+      /**
+       * @description 来源：DEVICE 设备采集 / MANUAL 手工；缺省 DEVICE
+       * @example DEVICE
+       */
+      source?: string | null;
+    };
+    /** @description 录像截图采集入库结果 */
+    TvSnapshotIngestResult: {
+      /**
+       * Format: int64
+       * @description 截图记录 id
+       * @example 1
+       */
+      id?: number;
+      /**
+       * @description 监控点位编码
+       * @example ar-01
+       */
+      monitorCode?: string;
+      /**
+       * @description 采集时刻
+       * @example 2026-09-28 10:00:00
+       */
+      captureTime?: string;
+      /**
+       * @description 审核状态：PENDING 待确认（落库默认态）
+       * @example PENDING
+       */
+      reviewStatus?: string;
+      /**
+       * @description 服务端入库时刻
+       * @example 2026-09-28 10:00:01
+       */
+      createdAt?: string;
+    };
+    /** @description 录像截图列表项 */
+    TvSnapshotItem: {
+      /**
+       * Format: int64
+       * @description 截图记录 id
+       * @example 1
+       */
+      id?: number;
+      /**
+       * @description 监控点位编码
+       * @example ar-01
+       */
+      monitorCode?: string;
+      /**
+       * @description 点位名称
+       * @example 高空AR-01
+       */
+      monitorName?: string | null;
+      /**
+       * @description 采集时刻
+       * @example 2026-09-28 10:00:00
+       */
+      captureTime?: string | null;
+      /**
+       * @description 事件类型：人员闯入/烟火检测/区域入侵/手动抓拍
+       * @example 烟火检测
+       */
+      eventType?: string | null;
+      /**
+       * @description 审核状态：PENDING 待确认 / ACKED 已确认
+       * @example PENDING
+       */
+      reviewStatus?: string;
+      /**
+       * @description 来源：DEVICE 设备采集 / MANUAL 手工
+       * @example DEVICE
+       */
+      source?: string | null;
+      /**
+       * @description 服务端入库时刻
+       * @example 2026-09-28 10:00:01
+       */
+      createdAt?: string | null;
+      /**
+       * @description 是否含截图字节（供前端决定是否请求 blob 端点）
+       * @example true
+       */
+      hasImage?: boolean;
+    };
+    /** @description 录像截图分页列表 */
+    TvSnapshotPage: {
+      /**
+       * Format: int64
+       * @description 总条数
+       * @example 1
+       */
+      total?: number;
+      /**
+       * @description 当前页
+       * @example 1
+       */
+      page?: number;
+      /**
+       * @description 每页条数
+       * @example 12
+       */
+      size?: number;
+      /**
+       * @description 总页数
+       * @example 1
+       */
+      pages?: number;
+      /** @description 当前页数据 */
+      list?: components['schemas']['TvSnapshotItem'][];
+    };
+    /** @description 录像截图确认结果 */
+    TvSnapshotAckResult: {
+      /**
+       * Format: int64
+       * @description 截图记录 id
+       * @example 1
+       */
+      id?: number;
+      /**
+       * @description 审核状态：ACKED 已确认（PENDING→ACKED）
+       * @example ACKED
+       */
+      reviewStatus?: string;
     };
   };
   responses: {

@@ -189,6 +189,180 @@
           }
         }
       }
+    },
+    "/tv/snapshots": {
+      "get": {
+        "summary": "录像截图分页列表",
+        "description": "返回工业电视录像截图采集入库记录的分页列表（最新在前）。前端订阅 tv.snapshot.changed 实时刷新。",
+        "tags": ["tv"],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "页码（从 1 开始）",
+            "schema": { "type": "integer", "default": 1 },
+            "example": 1
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "description": "每页条数",
+            "schema": { "type": "integer", "default": 12 },
+            "example": 12
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "录像截图分页列表",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TvSnapshotPage" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "total": 1,
+                    "page": 1,
+                    "size": 12,
+                    "pages": 1,
+                    "list": [
+                      {
+                        "id": 1,
+                        "monitorCode": "ar-01",
+                        "monitorName": "高空AR-01",
+                        "captureTime": "2026-09-28 10:00:00",
+                        "eventType": "烟火检测",
+                        "reviewStatus": "PENDING",
+                        "source": "DEVICE",
+                        "createdAt": "2026-09-28 10:00:01",
+                        "hasImage": true
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "录像截图采集入库",
+        "description": "设备/采集端自助上报或后端采集器（TvCollector）主动拉取录像截图（base64 JPEG）→ 落库 fac_tv_snapshot（PENDING）→ 广播 tv.snapshot.changed。需权限码 video:snapshot:create（V80 已登记并授权 ADMIN 及岗位角色）。",
+        "tags": ["tv"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TvSnapshotIngestRequest" },
+              "example": {
+                "monitorCode": "ar-01",
+                "monitorName": "高空AR-01",
+                "captureTime": "2026-09-28 10:00:00",
+                "eventType": "烟火检测",
+                "imageBase64": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDA...（省略 base64）",
+                "source": "DEVICE"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "采集入库结果",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TvSnapshotIngestResult" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "monitorCode": "ar-01",
+                    "captureTime": "2026-09-28 10:00:00",
+                    "reviewStatus": "PENDING",
+                    "createdAt": "2026-09-28 10:00:01"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tv/snapshots/{id}/snapshot": {
+      "get": {
+        "summary": "录像截图字节",
+        "description": "返回指定截图记录的 JPEG 字节（含抓拍图）。无截图数据时 404。前端用带 token 的 http 客户端取 blob 后转 objectURL 渲染（原生 <img src> 无法带 Authorization 头）。",
+        "tags": ["tv"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "截图记录 id",
+            "schema": { "type": "integer", "format": "int64" },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "截图 JPEG 字节",
+            "content": {
+              "application/octet-stream": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          },
+          "404": {
+            "description": "截图不存在或无字节（按设计返回 404）",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 404,
+                  "message": "截图不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tv/snapshots/{id}/ack": {
+      "post": {
+        "summary": "确认录像截图",
+        "description": "将截图审核状态由 PENDING 推进为 ACKED。需权限码 video:snapshot:ack（V79 已登记并授权 ADMIN 及岗位角色）。成功后广播 tv.snapshot.changed。",
+        "tags": ["tv"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "截图记录 id",
+            "schema": { "type": "integer", "format": "int64" },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "确认结果",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TvSnapshotAckResult" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "reviewStatus": "ACKED"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -357,6 +531,176 @@
             "type": "array",
             "description": "人员记录列表",
             "items": { "$ref": "#/components/schemas/TvInspectionItem" }
+          }
+        }
+      },
+      "TvSnapshotIngestRequest": {
+        "type": "object",
+        "description": "工业电视录像截图采集入库请求（设备/采集端上报）",
+        "properties": {
+          "monitorCode": {
+            "type": "string",
+            "description": "监控点位编码（关联 fac_tv_monitor.monitor_code）",
+            "example": "ar-01"
+          },
+          "monitorName": {
+            "type": ["string", "null"],
+            "description": "点位名称（可选；缺省后端按 monitor_code 回查）",
+            "example": "高空AR-01"
+          },
+          "captureTime": {
+            "type": ["string", "null"],
+            "description": "采集时刻（设备上报，字符串避免时区/方言差异）；缺省用服务端入库时刻",
+            "example": "2026-09-28 10:00:00"
+          },
+          "eventType": {
+            "type": ["string", "null"],
+            "description": "事件类型：人员闯入/烟火检测/区域入侵/手动抓拍；缺省=设备自动",
+            "example": "烟火检测"
+          },
+          "imageBase64": {
+            "type": "string",
+            "description": "base64 JPEG（可带 data:image/jpeg;base64, 前缀，后端自动剥离）",
+            "example": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDA...（省略 base64）"
+          },
+          "source": {
+            "type": ["string", "null"],
+            "description": "来源：DEVICE 设备采集 / MANUAL 手工；缺省 DEVICE",
+            "example": "DEVICE"
+          }
+        },
+        "required": ["monitorCode", "imageBase64"]
+      },
+      "TvSnapshotIngestResult": {
+        "type": "object",
+        "description": "录像截图采集入库结果",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "截图记录 id",
+            "example": 1
+          },
+          "monitorCode": {
+            "type": "string",
+            "description": "监控点位编码",
+            "example": "ar-01"
+          },
+          "captureTime": {
+            "type": "string",
+            "description": "采集时刻",
+            "example": "2026-09-28 10:00:00"
+          },
+          "reviewStatus": {
+            "type": "string",
+            "description": "审核状态：PENDING 待确认（落库默认态）",
+            "example": "PENDING"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "服务端入库时刻",
+            "example": "2026-09-28 10:00:01"
+          }
+        }
+      },
+      "TvSnapshotItem": {
+        "type": "object",
+        "description": "录像截图列表项",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "截图记录 id",
+            "example": 1
+          },
+          "monitorCode": {
+            "type": "string",
+            "description": "监控点位编码",
+            "example": "ar-01"
+          },
+          "monitorName": {
+            "type": ["string", "null"],
+            "description": "点位名称",
+            "example": "高空AR-01"
+          },
+          "captureTime": {
+            "type": ["string", "null"],
+            "description": "采集时刻",
+            "example": "2026-09-28 10:00:00"
+          },
+          "eventType": {
+            "type": ["string", "null"],
+            "description": "事件类型：人员闯入/烟火检测/区域入侵/手动抓拍",
+            "example": "烟火检测"
+          },
+          "reviewStatus": {
+            "type": "string",
+            "description": "审核状态：PENDING 待确认 / ACKED 已确认",
+            "example": "PENDING"
+          },
+          "source": {
+            "type": ["string", "null"],
+            "description": "来源：DEVICE 设备采集 / MANUAL 手工",
+            "example": "DEVICE"
+          },
+          "createdAt": {
+            "type": ["string", "null"],
+            "description": "服务端入库时刻",
+            "example": "2026-09-28 10:00:01"
+          },
+          "hasImage": {
+            "type": "boolean",
+            "description": "是否含截图字节（供前端决定是否请求 blob 端点）",
+            "example": true
+          }
+        }
+      },
+      "TvSnapshotPage": {
+        "type": "object",
+        "description": "录像截图分页列表",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "description": "总条数",
+            "example": 1
+          },
+          "page": {
+            "type": "integer",
+            "description": "当前页",
+            "example": 1
+          },
+          "size": {
+            "type": "integer",
+            "description": "每页条数",
+            "example": 12
+          },
+          "pages": {
+            "type": "integer",
+            "description": "总页数",
+            "example": 1
+          },
+          "list": {
+            "type": "array",
+            "description": "当前页数据",
+            "items": { "$ref": "#/components/schemas/TvSnapshotItem" }
+          }
+        }
+      },
+      "TvSnapshotAckResult": {
+        "type": "object",
+        "description": "录像截图确认结果",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "截图记录 id",
+            "example": 1
+          },
+          "reviewStatus": {
+            "type": "string",
+            "description": "审核状态：ACKED 已确认（PENDING→ACKED）",
+            "example": "ACKED"
           }
         }
       }
