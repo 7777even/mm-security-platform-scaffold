@@ -92,6 +92,7 @@ interface FormState {
   intrusionPosition: string;
   intrusionMethod: string;
   relatedCamera: string;
+  deviceId: string;
 }
 
 function createDefaultForm(): FormState {
@@ -107,6 +108,7 @@ function createDefaultForm(): FormState {
     intrusionPosition: '',
     intrusionMethod: '',
     relatedCamera: '',
+    deviceId: '',
   };
 }
 
@@ -146,6 +148,7 @@ function handleSubmit(): void {
     intrusionPosition: form.intrusionPosition.trim() || undefined,
     intrusionMethod: form.intrusionMethod.trim() || undefined,
     relatedCamera: form.relatedCamera.trim() || undefined,
+    deviceId: form.deviceId.trim() || undefined,
   };
   emit('submit', payload);
   close();
@@ -277,6 +280,23 @@ function handleSubmit(): void {
                 class="pac-input"
                 type="text"
                 placeholder="如：CAM-007"
+              />
+            </label>
+
+            <label class="pac-field pac-field--full">
+              <span class="pac-label">设备编号</span>
+              <select v-if="patrolCameras.length > 0" v-model="form.deviceId" class="pac-select">
+                <option value="">请选择设备编号</option>
+                <option v-for="cam in patrolCameras" :key="cam.id" :value="cam.name">
+                  {{ cam.name }}（{{ cam.zone }}）
+                </option>
+              </select>
+              <input
+                v-else
+                v-model="form.deviceId"
+                class="pac-input"
+                type="text"
+                placeholder="如：CAM-PERI-07"
               />
             </label>
           </div>

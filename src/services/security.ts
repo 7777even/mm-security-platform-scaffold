@@ -267,6 +267,8 @@ export interface PerimeterAlarmCreatePayload {
   intrusionMethod?: string;
   /** 关联摄像机（可选）。 */
   relatedCamera?: string;
+  /** 设备编号（可选，落库 device_id；不传则与关联摄像机回落展示）。 */
+  deviceId?: string;
 }
 
 /**

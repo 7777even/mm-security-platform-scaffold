@@ -21,25 +21,29 @@ import {
 } from '@/services/security';
 import { subscribeDomainChange } from '@/services/realtime';
 
-// B6 去 mock：周界入侵告警改由后端 GET /security/perimeter-alarms/latest 提供，
+// B6 去 mock：周界入侵告警改由后端 /security/perimeter-alarms/latest 提供，
 // 现场抓拍走字节端点取 blob → objectURL（<img> 原生 src 无法带 Authorization 头）。
-const alarm = ref<PerimeterAlarmDetail | null>(null);
-const snapshotUrl = ref<string | null>(null);
-const alarmActive = ref(false);
-const handling = ref(false);
+// 同一会话内多次录入的告警按 id 累积到 alarms 数组，避免「新增第二条覆盖第一条」。
+const alarms = ref<PerimeterAlarmDetail[]>([]);
+const snapshotUrls = ref<Record<number, string | null>>({});
+/** 已知无抓拍的告警 id：快照端点对无抓拍告警按设计返 404，缓存负结果避免每次重拉都刷 404 噪声。 */
+const noSnapshotIds = new Set<number>();
 const createOpen = ref(false);
 const { closeAlarmDetail, openAlarmDetail } = useAlarmDetailPanel();
 
 /** 后端 @RealtimeSync 广播 security.perimeter-alarm.changed 的退订句柄，卸载时清理避免泄漏。 */
 let unsubscribePerimeter: (() => void) | null = null;
 
-const detail = computed(() =>
-  alarm.value ? perimeterAlarmToDetail(alarm.value, snapshotUrl.value) : null,
-);
+const hasAlarms = computed(() => alarms.value.length > 0);
+const activeCount = computed(() => alarms.value.filter((a) => a.status !== '已处理').length);
+const anyActive = computed(() => activeCount.value > 0);
 
-const videoAlarm = computed<AlarmItem | null>(() => {
-  const a = alarm.value;
-  if (!a) return null;
+/** 卡片时间列：取告警时间的钟点部分（后端格式为 yyyy-MM-dd HH:mm:ss）。 */
+function clockOf(a: PerimeterAlarmDetail): string {
+  return a.time ? a.time.slice(-8) : '—';
+}
+
+function buildVideoAlarm(a: PerimeterAlarmDetail): AlarmItem {
   return {
     id: a.id,
     title: a.title,
@@ -58,58 +62,87 @@ const videoAlarm = computed<AlarmItem | null>(() => {
     longitude: a.longitude,
     latitude: a.latitude,
   };
-});
-
-/** 卡片时间列：取告警时间的钟点部分（后端格式为 yyyy-MM-dd HH:mm:ss）。 */
-const clockText = computed(() => alarm.value?.time.slice(-8) ?? '—');
-
-async function loadPerimeterAlarm(): Promise<void> {
-  const data = await fetchLatestPerimeterAlarm();
-  alarm.value = data;
-  alarmActive.value = !!data && data.status !== '已处理';
-  handling.value = data?.status === '处理中';
-  if (snapshotUrl.value) {
-    URL.revokeObjectURL(snapshotUrl.value);
-    snapshotUrl.value = null;
-  }
-  snapshotUrl.value = data ? await fetchPerimeterAlarmSnapshotUrl(data.id) : null;
 }
 
-function openDetail(focus: 'disposal' | null = null) {
-  if (!detail.value) {
+/** 按 id 合并：已存在则原地更新（保留顺序），不存在则置顶（最新在前）。 */
+function addOrUpdateAlarm(a: PerimeterAlarmDetail): void {
+  const idx = alarms.value.findIndex((x) => x.id === a.id);
+  if (idx >= 0) {
+    const copy = alarms.value.slice();
+    copy[idx] = a;
+    alarms.value = copy;
+  } else {
+    alarms.value = [a, ...alarms.value];
+  }
+}
+
+/**
+ * 为每个尚未解析的告警拉取快照。
+ * 后端在 latest/detail/create 响应里已用 snapshotPath 区分有无抓拍：空串表示无现场图，
+ * 直接记 null 且不发请求，从根本上消除「无抓拍告警反复 404」的噪声（含新增/种子/实时推送）。
+ * 仅当 snapshotPath 非空（确有抓拍）才请求字节；即便如此仍用 noSnapshotIds 兜底防重。
+ */
+async function refreshSnapshots(): Promise<void> {
+  await Promise.all(
+    alarms.value.map(async (a) => {
+      if (snapshotUrls.value[a.id] !== undefined) return;
+      if (!a.snapshotPath) {
+        noSnapshotIds.add(a.id);
+        snapshotUrls.value = { ...snapshotUrls.value, [a.id]: null };
+        return;
+      }
+      if (noSnapshotIds.has(a.id)) {
+        snapshotUrls.value = { ...snapshotUrls.value, [a.id]: null };
+        return;
+      }
+      const url = await fetchPerimeterAlarmSnapshotUrl(a.id);
+      if (url === null) noSnapshotIds.add(a.id);
+      snapshotUrls.value = { ...snapshotUrls.value, [a.id]: url };
+    }),
+  );
+}
+
+/** 拉取最新一条并合并进列表（不覆盖历史），再补全快照。 */
+async function loadPerimeterAlarms(): Promise<void> {
+  const latest = await fetchLatestPerimeterAlarm();
+  if (latest) addOrUpdateAlarm(latest);
+  await refreshSnapshots();
+}
+
+function openDetailFor(a: PerimeterAlarmDetail, focus: 'disposal' | null = null) {
+  if (!a) {
     showToast('暂无周界入侵告警数据');
     return;
   }
   closeAllAlarmVideoPopups();
-  openAlarmDetail(detail.value, focus);
+  openAlarmDetail(perimeterAlarmToDetail(a, snapshotUrls.value[a.id] ?? null), focus);
 }
 
-function openMonitor() {
-  if (!videoAlarm.value) {
+function openMonitorFor(a: PerimeterAlarmDetail) {
+  if (!a) {
     showToast('暂无周界入侵告警数据');
     return;
   }
   closeAlarmDetail();
-  openAlarmVideoPopups(videoAlarm.value);
+  openAlarmVideoPopups(buildVideoAlarm(a));
 }
 
-function startDispatch() {
-  if (!alarm.value) return;
-  handling.value = true;
+function startDispatchFor(a: PerimeterAlarmDetail) {
+  if (!a) return;
   showToast('已下发安保核查任务，周界摄像机与巡查人员已联动');
-  openDetail('disposal');
+  openDetailFor(a, 'disposal');
 }
 
 function resetDemo() {
-  alarmActive.value = !!alarm.value;
-  handling.value = false;
-  showToast('已恢复周界入侵报警演示场景');
+  void loadPerimeterAlarms();
+  showToast('已刷新周界入侵报警');
 }
 
-/** 手工录入一条周界入侵告警：先落库后触发同端刷新（后端亦经 @RealtimeSync 广播多端）。 */
+/** 手工录入一条周界入侵告警：先落库，再把返回的新告警合并进列表，最后触发同端刷新。 */
 async function handleCreatePerimeterAlarm(payload: PerimeterAlarmCreatePayload) {
   try {
-    await createPerimeterAlarm(payload);
+    const created = await createPerimeterAlarm(payload);
+    if (created) addOrUpdateAlarm(created);
     touchPerimeterAlarmChanged();
     showToast('周界入侵告警已创建');
   } catch (e) {
@@ -118,82 +151,98 @@ async function handleCreatePerimeterAlarm(payload: PerimeterAlarmCreatePayload) 
 }
 
 onMounted(() => {
-  void loadPerimeterAlarm();
+  void loadPerimeterAlarms();
   // 实时联通：后端处置写回经 @RealtimeSync 广播 security.perimeter-alarm.changed，
-  // 本端（含其他标签页/实例）订阅后自动重拉最新周界告警，无需手动刷新。
+  // 本端（含其他标签页/实例）订阅后自动合并最新周界告警，无需手动刷新。
   unsubscribePerimeter = subscribeDomainChange('security.perimeter-alarm', () => {
-    void loadPerimeterAlarm();
+    void loadPerimeterAlarms();
   });
 });
 
 // 同端写回成功后 touchPerimeterAlarmChanged 置位，即时重拉（覆盖 ws 尚未连通/延迟场景）。
 watch(perimeterAlarmChanged, () => {
-  void loadPerimeterAlarm();
+  void loadPerimeterAlarms();
 });
 
 onUnmounted(() => {
-  if (snapshotUrl.value) URL.revokeObjectURL(snapshotUrl.value);
+  Object.values(snapshotUrls.value).forEach((u) => {
+    if (u) URL.revokeObjectURL(u);
+  });
   unsubscribePerimeter?.();
 });
 </script>
 
 <template>
-  <PanelCard title="当前厂区状态" variant="patrolAlarm" module="security">
+  <PanelCard title="当前厂区状态" variant="patrolAlarm" module="security" :show-more="false">
+    <!-- 「+ 新增治安报警」置于标题栏右上角（header-extra 槽），与其他模块标题栏新增按钮统一样式 -->
+    <template #header-extra>
+      <button type="button" class="create-btn" @click="createOpen = true">+ 新增治安报警</button>
+    </template>
+
     <div class="security-status">
-      <div class="panel-actions">
-        <button type="button" class="create-btn" @click="createOpen = true">+ 新增治安报警</button>
-      </div>
-      <section class="status-summary" :class="{ 'status-summary--normal': !alarmActive }">
-        <span class="status-summary__icon" aria-hidden="true">{{ alarmActive ? '!' : '✓' }}</span>
+      <section class="status-summary" :class="{ 'status-summary--normal': !anyActive }">
+        <span class="status-summary__icon" aria-hidden="true">{{ anyActive ? '!' : '✓' }}</span>
         <div class="status-summary__copy">
-          <strong>{{ alarmActive ? '存在待处置治安报警' : '厂区治安态势平稳' }}</strong>
+          <strong>{{ anyActive ? '存在待处置治安报警' : '厂区治安态势平稳' }}</strong>
           <span>{{
-            alarmActive
-              ? `${alarm?.objectName ?? '周界防控区'}触发 1 起入侵报警`
+            anyActive
+              ? `${alarms[0]?.objectName ?? '周界防控区'}触发 ${activeCount} 起入侵报警`
               : '周界、门禁及重点区域运行正常'
           }}</span>
         </div>
-        <span class="status-summary__badge">{{ alarmActive ? '1 起报警' : '运行正常' }}</span>
+        <span class="status-summary__badge">{{
+          anyActive ? `${activeCount} 起报警` : '运行正常'
+        }}</span>
       </section>
 
-      <section v-if="alarmActive" class="disposal-card" @click="openDetail()">
-        <button
-          type="button"
-          class="alarm-thumb"
-          aria-label="查看周界入侵现场监控"
-          @click.stop="openMonitor"
-        >
-          <img v-if="snapshotUrl" :src="snapshotUrl" alt="周界入侵现场抓拍" />
-          <span>▶ 现场监控</span>
-        </button>
-        <div class="disposal-card__body">
-          <header class="disposal-card__head">
-            <div>
-              <span class="pulse" /><strong>{{ alarm?.title ?? '周界入侵报警' }}</strong>
-            </div>
-            <span>{{ handling ? '核查中' : '待处置' }}</span>
-          </header>
-          <p>{{ alarm?.description ?? '—' }}</p>
-          <dl class="disposal-card__meta">
-            <div>
-              <dt>时间</dt>
-              <dd>{{ clockText }}</dd>
-            </div>
-            <div>
-              <dt>位置</dt>
-              <dd>{{ alarm?.objectName ?? '—' }}</dd>
-            </div>
-            <div>
-              <dt>设备</dt>
-              <dd>{{ alarm?.deviceId ?? '—' }}</dd>
-            </div>
-          </dl>
-          <footer>
-            <button type="button" @click.stop="openMonitor">现场监控</button>
-            <button type="button" class="primary" @click.stop="startDispatch">处置调度</button>
-          </footer>
-        </div>
-      </section>
+      <div v-if="hasAlarms" class="alarm-list">
+        <section v-for="a in alarms" :key="a.id" class="disposal-card" @click="openDetailFor(a)">
+          <button
+            type="button"
+            class="alarm-thumb"
+            aria-label="查看周界入侵现场监控"
+            @click.stop="openMonitorFor(a)"
+          >
+            <img
+              v-if="snapshotUrls[a.id]"
+              :src="snapshotUrls[a.id] ?? undefined"
+              alt="周界入侵现场抓拍"
+            />
+            <span>▶ 现场监控</span>
+          </button>
+          <div class="disposal-card__body">
+            <header class="disposal-card__head">
+              <div>
+                <span class="pulse" /><strong>{{ a.title ?? '周界入侵报警' }}</strong>
+              </div>
+              <span>{{
+                a.status === '处理中' ? '核查中' : a.status === '已处理' ? '已处置' : '待处置'
+              }}</span>
+            </header>
+            <p v-if="a.description">{{ a.description }}</p>
+            <dl class="disposal-card__meta">
+              <div>
+                <dt>时间</dt>
+                <dd>{{ clockOf(a) }}</dd>
+              </div>
+              <div>
+                <dt>位置</dt>
+                <dd>{{ a.location || a.objectName || '—' }}</dd>
+              </div>
+              <div>
+                <dt>设备</dt>
+                <dd>{{ a.deviceId || a.relatedCamera || '—' }}</dd>
+              </div>
+            </dl>
+            <footer>
+              <button type="button" @click.stop="openMonitorFor(a)">现场监控</button>
+              <button type="button" class="primary" @click.stop="startDispatchFor(a)">
+                处置调度
+              </button>
+            </footer>
+          </div>
+        </section>
+      </div>
 
       <button v-else type="button" class="reset-demo" @click="resetDemo">恢复报警演示</button>
     </div>
@@ -218,6 +267,16 @@ onUnmounted(() => {
   min-height: 0;
   flex-direction: column;
   gap: 10px;
+}
+
+.alarm-list {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  padding-right: 2px;
 }
 
 .status-summary {
@@ -300,8 +359,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: 112px minmax(0, 1fr);
   gap: 10px;
-  flex: 1;
-  min-height: 0;
+  flex: 0 0 auto;
   padding: 10px;
   border: 1px solid rgb(0 145 220 / 35%);
   border-radius: 4px;
@@ -440,26 +498,23 @@ onUnmounted(() => {
   cursor: pointer;
 }
 
-.panel-actions {
-  display: flex;
-  flex-shrink: 0;
-  justify-content: flex-end;
-}
-
+/* 标题栏「新增」按钮：与应急事件列表面板 .event-list-add-btn 保持同一表单样式（28px 高 / 2px 圆角 / 竖向蓝渐变）。 */
 .create-btn {
+  flex-shrink: 0;
   height: 28px;
-  padding: 0 12px;
-  border: 1px solid rgb(20 207 255 / 88%);
-  border-radius: 3px;
-  background: rgb(0 103 150 / 72%);
-  color: #dceeff;
-  font: 11px var(--font-body);
+  padding: 0 10px;
+  border: 1px solid rgb(0 150 230 / 50%);
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgb(0 130 220 / 92%), rgb(0 90 180 / 92%));
+  color: var(--color-text-strong);
+  font: 500 13px var(--font-body);
+  white-space: nowrap;
   cursor: pointer;
 }
 
 .create-btn:hover {
   border-color: rgb(62 211 255 / 95%);
-  background: rgb(0 124 178 / 85%);
+  background: linear-gradient(180deg, rgb(0 150 240 / 95%), rgb(0 105 195 / 95%));
 }
 
 .disposal-card button:hover,
