@@ -162,7 +162,7 @@ function closeDetail() {
 
   <PlanPanoramaDialog :event-title="eventTitle" :mode="mode" />
 
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="plan-detail-fade">
       <div v-if="detailOpen" class="plan-detail-overlay" @click="closeDetail">
         <section

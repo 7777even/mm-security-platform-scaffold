@@ -9,7 +9,7 @@ const roster = computed(() => process.dutyRoster.value);
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="guidance-fade">
       <div
         v-if="process.state.guidanceModal.show"

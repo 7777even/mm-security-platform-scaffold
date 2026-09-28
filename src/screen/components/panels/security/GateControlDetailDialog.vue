@@ -41,7 +41,7 @@ function handleAlwaysClose() {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="gate-detail-fade">
       <div v-if="open" class="gate-detail" @click.self="closeDialog">
         <section

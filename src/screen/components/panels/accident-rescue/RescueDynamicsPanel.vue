@@ -149,7 +149,7 @@ const scrollClass = computed(() => (props.theme === 'drill' ? 'dr-scroll' : 'ar-
         </article>
       </div>
     </div>
-    <Teleport to="body">
+    <Teleport to="#app">
       <div
         v-if="previewImage"
         class="dynamics-preview"

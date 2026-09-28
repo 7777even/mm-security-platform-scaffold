@@ -22,7 +22,7 @@ watch(
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="risk-video-wall-fade">
       <div
         v-if="open && point"

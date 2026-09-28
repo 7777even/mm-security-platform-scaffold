@@ -225,7 +225,7 @@ const emit = defineEmits<{
       </div>
     </AccidentRescueSidePanel>
 
-    <Teleport to="body">
+    <Teleport to="#app">
       <Transition name="incident-warning-fade">
         <div
           v-if="warningModalOpen"
@@ -293,7 +293,7 @@ const emit = defineEmits<{
       </Transition>
     </Teleport>
 
-    <Teleport to="body">
+    <Teleport to="#app">
       <div v-if="editOpen" class="incident-edit-overlay" @click.self="editOpen = false">
         <section
           class="incident-edit-dialog"

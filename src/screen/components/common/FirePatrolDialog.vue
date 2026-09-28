@@ -234,7 +234,7 @@ async function reportPatrol(record: FirePatrolRecord): Promise<void> {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="patrol-fade">
       <div v-if="open" class="patrol" @click.self="closeDialog">
         <section

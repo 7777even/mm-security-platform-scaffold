@@ -268,7 +268,7 @@ function closePreview() {
         </div>
       </div>
     </AccidentRescueSidePanel>
-    <Teleport to="body">
+    <Teleport to="#app">
       <div
         v-if="previewMedia"
         class="command-media-preview"

@@ -266,7 +266,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="pano-fade">
       <div v-if="planMatrixOpen" class="pano-mask" @click.self="closePlanMatrix">
         <section
@@ -528,7 +528,7 @@ onUnmounted(() => {
           </section>
         </div>
 
-        <Teleport to="body">
+        <Teleport to="#app">
           <div
             v-if="contextMenu.show"
             class="pano-ctx"

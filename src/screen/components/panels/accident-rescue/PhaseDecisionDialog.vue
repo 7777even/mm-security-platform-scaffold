@@ -5,7 +5,7 @@ const process = useEmergencyProcess();
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <div
       v-if="process.state.phaseDecision.show"
       class="pd-mask"

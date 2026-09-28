@@ -120,7 +120,7 @@ function isChildVisible(label: string): boolean {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="address-book-fade">
       <div v-if="open" class="address-book-overlay" @click.self="closeDialog">
         <section

@@ -2,6 +2,9 @@
 // 通用详情对话框：复用 FireAlarmListDialog 的暗色居中对话框视觉（Teleport + 遮罩 + 标题栏 + 关闭×）。
 // 用于大屏概览面板（近期结案 / 值班值守 / 应急救援力量 / 应急生产安全知识）点击列表项/卡片后
 // 原地展示该条数据的明细字段，避免「纯展示死数据」的不合理观感（与系统「更多=弹对话框」先例一致）。
+// ⚠️ Teleport 目标必须是 #app 而非 body：wujie 子应用 JS 跑在 display:none 的隐藏 iframe 里，
+// `to="body"` 会把弹窗挂进隐藏 iframe 文档（DOM 存在但用户永远看不见）；#app 经代理 document
+// 解析到可见 shadow 树，主应用直跑时 #app 同样存在。
 export interface DetailField {
   label: string;
   value: string;
@@ -30,7 +33,7 @@ function closeDialog() {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="info-detail-fade">
       <div v-if="open" class="info-detail" @click.self="closeDialog">
         <section

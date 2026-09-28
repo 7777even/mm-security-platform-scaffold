@@ -37,7 +37,7 @@ function handleTest() {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="bollard-detail-fade">
       <div v-if="open" class="bollard-detail" @click.self="closeDialog">
         <section

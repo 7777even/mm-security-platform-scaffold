@@ -142,7 +142,7 @@ function goToPage(page: number) {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="linkage-dialog-fade">
       <div v-if="linkageDialogOpen" class="linkage-dialog" @click.self="closeLinkageDialog">
         <section

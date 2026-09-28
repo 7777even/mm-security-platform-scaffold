@@ -20,7 +20,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="app-toast">
       <div v-if="toastMessage" class="app-toast" role="status">
         {{ toastMessage }}

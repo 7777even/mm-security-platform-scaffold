@@ -110,7 +110,7 @@ const nodeLabel = (id: string) => process.nodeConfigs.value[id]?.nodeName ?? id;
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="nodecfg-fade">
       <div
         v-if="process.state.nodeConfigOpen"

@@ -676,7 +676,7 @@ const currentWorkOrderDetail = computed(() => {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="ffm-fade">
       <div v-if="open" class="ffm" @click.self="closeDialog">
         <section

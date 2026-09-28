@@ -59,7 +59,7 @@ function handleLogout() {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <div v-if="open" ref="panelEl" class="user-menu" :style="panelStyle" @click.stop>
       <button type="button" class="user-menu__item" @click="handleSimPreview">模拟预览</button>
       <button type="button" class="user-menu__item" @click="handleProfile">个人中心</button>

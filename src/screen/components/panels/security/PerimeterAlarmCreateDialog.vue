@@ -156,7 +156,7 @@ function handleSubmit(): void {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="pac-fade">
       <div v-if="open" class="pac-overlay" @click.self="close">
         <div class="pac-dialog" role="dialog" aria-modal="true">

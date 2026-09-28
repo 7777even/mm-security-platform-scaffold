@@ -750,7 +750,7 @@ function onTimeRangeChange(range: '24h' | '6h' | 'current') {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="scm-fade">
       <div v-if="open" class="scm-overlay" @click.self="closeDialog">
         <section

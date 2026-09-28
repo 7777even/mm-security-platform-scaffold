@@ -25,7 +25,7 @@ function closeDialog() {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="camera-video-fade">
       <div v-if="open" class="camera-video" @click.self="closeDialog">
         <section

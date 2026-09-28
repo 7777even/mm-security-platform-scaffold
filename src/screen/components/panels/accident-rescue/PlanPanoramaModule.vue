@@ -819,7 +819,7 @@ watch([presentLevel, () => process.state.activePhaseId], () => {
     <NodeConfigDialog />
     <PhaseDecisionDialog />
 
-    <Teleport to="body">
+    <Teleport to="#app">
       <Transition name="ppm-plan-dialog">
         <div v-if="planDetailOpen" class="ppm-plan-overlay" @click.self="planDetailOpen = false">
           <section

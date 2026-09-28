@@ -82,7 +82,7 @@ watch(
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="action-detail-fade">
       <div v-if="card" class="action-detail-mask" @click.self="emit('close')">
         <Transition name="action-toast-slide">

@@ -77,7 +77,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="plan-switch-fade">
       <div v-if="open" class="plan-switch-overlay" @click.self="closeDialog">
         <section

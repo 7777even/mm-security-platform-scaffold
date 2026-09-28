@@ -65,7 +65,7 @@ const weeklyLowPoints = computed(() =>
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="weather-dialog">
       <div
         v-if="open && currentWeather"

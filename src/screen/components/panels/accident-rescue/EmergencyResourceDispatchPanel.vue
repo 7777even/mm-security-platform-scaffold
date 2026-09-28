@@ -208,7 +208,7 @@ async function confirmDispatch() {
       </button>
     </footer>
 
-    <Teleport to="body">
+    <Teleport to="#app">
       <div v-if="dispatchOpen" class="dispatch-dialog-mask" @click.self="dispatchOpen = false">
         <section class="dispatch-dialog" role="dialog" aria-modal="true">
           <header>

@@ -38,7 +38,7 @@ function submit() {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="broadcast-fade">
       <div v-if="open" class="single-broadcast" @click.self="emit('close')">
         <section

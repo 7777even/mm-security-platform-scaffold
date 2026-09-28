@@ -152,7 +152,7 @@ function onFilePick() {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="eem-fade">
       <div v-if="open" class="eem-overlay" @click.self="close">
         <div class="eem-dialog" role="dialog" aria-modal="true">

@@ -342,6 +342,8 @@ const baseConfig = defineConfig({
   },
   test: {
     environment: 'node',
+    // 组件测试统一注入 <div id="app">（Teleport to="#app" 的目标容器，见 vitest.setup.ts）。
+    setupFiles: ['./vitest.setup.ts'],
     // 全量套件在本机（Windows 慢机，collect 270s+/environment 220s+）下偶发单测 5s 超时，
     // 给动态 import 重模块图（含 PNG 资产）留合理余量，非掩盖逻辑缺陷。
     testTimeout: 15000,

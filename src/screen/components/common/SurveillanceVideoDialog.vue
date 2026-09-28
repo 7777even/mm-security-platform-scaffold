@@ -78,7 +78,7 @@ watch(
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="surveillance-dialog">
       <div
         v-if="open"

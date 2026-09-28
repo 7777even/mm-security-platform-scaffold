@@ -112,7 +112,7 @@ async function removePerson(item: BlacklistPersonItem) {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="blacklist-fade">
       <div v-if="open" class="blacklist" @click.self="emit('close')">
         <section class="blacklist__dialog" role="dialog" aria-modal="true" aria-label="黑名单">

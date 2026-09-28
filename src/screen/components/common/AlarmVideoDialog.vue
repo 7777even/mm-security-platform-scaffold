@@ -117,7 +117,7 @@ onBeforeUnmount(() => window.clearInterval(timer));
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="alarm-video-dialog">
       <div
         v-if="open"

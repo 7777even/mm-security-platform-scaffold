@@ -90,7 +90,7 @@ onBeforeUnmount(stopAlarmSound);
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="sound-light-alarm">
       <div v-if="open" class="sound-light-alarm" @click.self="closeDialog">
         <section

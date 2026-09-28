@@ -218,7 +218,7 @@ onMounted(loadAlarms);
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="fire-alarm-list-fade">
       <div v-if="open" class="fire-alarm-list" @click.self="closeDialog">
         <section

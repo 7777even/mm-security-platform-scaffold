@@ -65,7 +65,7 @@ function handleSave() {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="#app">
     <Transition name="addcard-fade">
       <div v-if="open" class="addcard-mask" @click.self="emit('close')">
         <section class="addcard-dialog" role="dialog" aria-modal="true">
