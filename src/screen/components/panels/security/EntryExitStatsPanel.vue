@@ -199,8 +199,8 @@ const pieOption = computed(() => ({
 }
 
 .entry-stats {
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 6px;
   flex: 1;
   min-height: 0;
@@ -246,8 +246,8 @@ const pieOption = computed(() => ({
 }
 
 .entry-stats__chart--line {
+  flex: 1;
   min-height: 0;
-  height: 100%;
 }
 
 .entry-stats__pie-wrap {
@@ -255,15 +255,14 @@ const pieOption = computed(() => ({
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
+  flex: 1;
   min-height: 0;
-  height: 100%;
 }
 
 .entry-stats__line,
 .entry-stats__pie {
   width: 100%;
   height: 100%;
-  min-height: 96px;
 }
 
 .entry-stats__pie-center {
