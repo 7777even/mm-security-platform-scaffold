@@ -20,6 +20,12 @@ use([LineChart, PieChart, GridComponent, LegendComponent, TooltipComponent, Canv
 
 const activeTab = ref<EntryTab>('person');
 
+// 统计口径：按日期筛选（默认今天），与「出入明细」抽屉的日期筛选同一语义；不再按近24h。
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const localDateStr = (d: Date) =>
+  `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+const selectedDate = ref(localDateStr(new Date()));
+
 // 与「出入明细」抽屉同一数据源（/security/events 门禁事件），统计由同一份事件实时聚合，保证两边数字一致。
 // events === null 表示离线演示（未配置 VITE_API_BASE），回落 securityMock 的 entry* fixture。
 const events = ref<SecurityEvent[] | null>(null);
@@ -42,13 +48,20 @@ onMounted(async () => {
 
 const tabEvents = computed(() => (events.value ?? []).filter((e) => modeOf(e) === activeTab.value));
 
+// 该 tab 下、选中日期当天的门禁事件（离线演示模式不按日期过滤，回落 mock）
+const dayEvents = computed(() =>
+  events.value === null
+    ? tabEvents.value
+    : tabEvents.value.filter((e) => e.ts.slice(0, 10) === selectedDate.value),
+);
+
 const summaryText = computed(() => {
   if (events.value === null) {
     const s = entrySummary[activeTab.value];
     return `入厂：${s.enter}，出厂：${s.exit}`;
   }
-  const enter = tabEvents.value.filter((e) => e.direction === '进').length;
-  return `入厂：${enter}，出厂：${tabEvents.value.length - enter}`;
+  const enter = dayEvents.value.filter((e) => e.direction === '进').length;
+  return `入厂：${enter}，出厂：${dayEvents.value.length - enter}`;
 });
 
 const BREAKDOWN_PALETTE = ['#5b8cff', '#37cfff', '#3dd68c', '#ffb54d', '#b58cff', '#ff7d7d'];
@@ -57,7 +70,7 @@ const breakdownItems = computed(() => {
   if (events.value === null) return entryBreakdown[activeTab.value];
   // 饼图按门岗（channel 前段，如「1#门」）聚合，与明细卡片展示的 gate 对应
   const gateMap = new Map<string, number>();
-  for (const e of tabEvents.value) {
+  for (const e of dayEvents.value) {
     const gate = (e.channel || '未知闸口').split('-')[0];
     gateMap.set(gate, (gateMap.get(gate) ?? 0) + 1);
   }
@@ -77,10 +90,10 @@ const breakdownTotal = computed(() =>
 const lineOption = computed(() => {
   const mock = events.value === null;
   const trend = entryLineTrend[activeTab.value];
-  // 真实数据：按小时聚合该 tab 的入厂/出厂事件，与明细记录的 time 同源一致
+  // 真实数据：选中日期当天，按 0..23 小时聚合该 tab 的入厂/出厂事件（固定 24 桶、无数据小时补 0）
   const hourBuckets = new Map<number, { enter: number; exit: number }>();
   if (!mock) {
-    for (const e of tabEvents.value) {
+    for (const e of dayEvents.value) {
       const h = Number(e.ts.slice(11, 13));
       if (!Number.isFinite(h)) continue;
       const bucket = hourBuckets.get(h) ?? { enter: 0, exit: 0 };
@@ -89,7 +102,7 @@ const lineOption = computed(() => {
       hourBuckets.set(h, bucket);
     }
   }
-  const hourKeys: number[] = mock ? [] : [...hourBuckets.keys()].sort((a, b) => a - b);
+  const hourKeys: number[] = mock ? [] : Array.from({ length: 24 }, (_, h) => h);
   const labels: string[] = mock
     ? [...entryLineHours]
     : hourKeys.map((h) => `${String(h).padStart(2, '0')}:00`);
@@ -215,7 +228,10 @@ const pieOption = computed(() => ({
         </button>
       </div>
 
-      <div class="entry-stats__summary">{{ summaryText }}</div>
+      <div class="entry-stats__summary-row">
+        <div class="entry-stats__summary">{{ summaryText }}</div>
+        <input v-model="selectedDate" type="date" class="entry-stats__date" aria-label="统计日期" />
+      </div>
 
       <div class="entry-stats__chart entry-stats__chart--line">
         <VChart class="entry-stats__line" :option="lineOption" autoresize />
@@ -262,7 +278,7 @@ const pieOption = computed(() => ({
   flex-direction: column;
   gap: 6px;
   flex: 1;
-  min-height: 280px;
+  min-height: 0;
 }
 
 .entry-stats__tabs {
@@ -298,10 +314,36 @@ const pieOption = computed(() => ({
   border-radius: 2px;
 }
 
+.entry-stats__summary-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .entry-stats__summary {
   font-size: 13px;
   color: #c8d8ec;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entry-stats__date {
   flex-shrink: 0;
+  min-width: 0;
+  height: 24px;
+  padding: 0 4px;
+  border: 1px solid var(--btn-border);
+  border-radius: 2px;
+  background: var(--btn-bg);
+  color: #c8d8ec;
+  font-size: 12px;
+  font-family: var(--font-body);
+  color-scheme: dark;
+  outline: none;
 }
 
 .entry-stats__chart--line {
