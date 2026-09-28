@@ -31,6 +31,10 @@ import {
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
 import {
+  alarmPointsVisible,
+  devicePointsVisible,
+} from '../../lib/composables/useMonitoringPointsLayer';
+import {
   patrolCameraPagedItems,
   patrolCameraDrawerActive,
   patrolCameraCurrentPage,
@@ -293,32 +297,39 @@ useMapPageSearch((): SearchableMapMarker[] => {
       }
     }
   }
-  for (const p of alarmPoints.value) {
-    if (Number.isFinite(p.lng) && Number.isFinite(p.lat)) {
-      out.push({
-        id: `sec-alarm-${p.id}`,
-        name: p.name,
-        type: '报警',
-        longitude: p.lng,
-        latitude: p.lat,
-      });
+  // 安全监测点位：仅在面板对应统计栏「点击展开」（alarmPointsVisible / devicePointsVisible）
+  // 后在地图底座显示，报警点 / 设备点 各自独立，与面板底部不再罗列条数、统一走地图落图的设计一致。
+  if (alarmPointsVisible.value) {
+    for (const p of alarmPoints.value) {
+      if (Number.isFinite(p.lng) && Number.isFinite(p.lat)) {
+        out.push({
+          id: `sec-alarm-${p.id}`,
+          name: p.name,
+          type: '报警',
+          longitude: p.lng,
+          latitude: p.lat,
+        });
+      }
     }
   }
-  for (const d of devicePoints.value) {
-    if (Number.isFinite(d.lng) && Number.isFinite(d.lat)) {
-      out.push({
-        id: `sec-device-${d.id}`,
-        name: d.name,
-        type: '设备',
-        longitude: d.lng,
-        latitude: d.lat,
-      });
+  if (devicePointsVisible.value) {
+    for (const d of devicePoints.value) {
+      if (Number.isFinite(d.lng) && Number.isFinite(d.lat)) {
+        out.push({
+          id: `sec-device-${d.id}`,
+          name: d.name,
+          type: '设备',
+          longitude: d.lng,
+          latitude: d.lat,
+        });
+      }
     }
   }
   return out;
 });
 
 const alarmMarkerTargets = () => {
+  if (!alarmPointsVisible.value) return [];
   const height = getSharedMap()?.getBoundaryModelTopHeight?.() ?? 72;
   return alarmPoints.value.map((p) => ({
     key: `real-alarm-${p.id}`,
@@ -332,6 +343,7 @@ const { styleFor: alarmStyleFor } = useWorldMarkerScreenPositions(alarmMarkerTar
 });
 
 const deviceMarkerTargets = () => {
+  if (!devicePointsVisible.value) return [];
   const height = getSharedMap()?.getBoundaryModelTopHeight?.() ?? 72;
   return devicePoints.value.map((p) => ({
     key: `real-device-${p.id}`,
@@ -512,9 +524,9 @@ function onMonitoringActivate(p: MapPoint, kind: 'alarm' | 'device') {
       </button>
     </MapPointMarker>
 
-    <!-- 真实后端报警点位落图（/map/alarms） -->
+    <!-- 真实后端报警点位落图（/map/alarms）：仅面板「报警点位」统计栏点击展开后显示 -->
     <MapPointMarker
-      v-for="p in alarmPoints"
+      v-for="p in alarmPointsVisible ? alarmPoints : []"
       :key="`real-alarm-${p.id}`"
       :style="alarmStyleFor(`real-alarm-${p.id}`)"
       layout="pulse"
@@ -526,9 +538,9 @@ function onMonitoringActivate(p: MapPoint, kind: 'alarm' | 'device') {
       @activate="onMonitoringActivate(p, 'alarm')"
     />
 
-    <!-- 真实后端设备点位落图（/map/devices） -->
+    <!-- 真实后端设备点位落图（/map/devices）：仅面板「设备点位」统计栏点击展开后显示 -->
     <MapPointMarker
-      v-for="p in devicePoints"
+      v-for="p in devicePointsVisible ? devicePoints : []"
       :key="`real-device-${p.id}`"
       :style="deviceStyleFor(`real-device-${p.id}`)"
       layout="pulse"

@@ -305,8 +305,14 @@ function setTrackSpeed(value: number) {
 
 .sidebar--left {
   width: 419px;
-  grid-template-rows: 300px 170px minmax(0, 1.6fr) minmax(0, 1fr);
+
+  /* 后两行必须带 min 高度：纯 minmax(0,1fr) 会在矮视口（浏览器窗口/系统缩放）下
+     把最后一个面板（安全监测点位）压成只剩标题的窄条，用户无行可点；
+     空间不足时靠侧栏自身 overflow-y 滚动露出完整面板。 */
+  grid-template-rows: 300px 170px minmax(200px, 1.6fr) minmax(240px, 1fr);
   gap: 10px;
+  overflow: hidden auto;
+  scrollbar-width: thin;
 }
 
 .sidebar--right {

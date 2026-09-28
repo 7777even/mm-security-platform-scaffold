@@ -1,12 +1,24 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
-import InfoDetailDialog from '../../common/InfoDetailDialog.vue';
 import { fetchAlarmPoints, fetchDevicePoints, type MapPoint } from '@/services/map';
-import { useMonitoringPointFocus } from '../../../lib/composables/useMonitoringPointFocus';
+import { useMonitoringPointsLayer } from '../../../lib/composables/useMonitoringPointsLayer';
 
-const { detailOpen, detailTitle, detailFields, openDetail, closeDetail } =
-  useMonitoringPointFocus();
+const {
+  alarmPointsVisible,
+  devicePointsVisible,
+  toggleAlarmPointsVisible,
+  toggleDevicePointsVisible,
+} = useMonitoringPointsLayer();
+
+const layerHint = computed(() => {
+  if (loading.value) return '正在加载实时监测点位…';
+  if (alarmPointsVisible.value && devicePointsVisible.value)
+    return `已在地图底座显示报警 ${alarmCount.value} + 设备 ${deviceCount.value} 个点位`;
+  if (alarmPointsVisible.value) return `已在地图底座显示 ${alarmCount.value} 个报警点位`;
+  if (devicePointsVisible.value) return `已在地图底座显示 ${deviceCount.value} 个设备点位`;
+  return '点击卡片，在地图底座查看对应点位';
+});
 
 const loading = ref(true);
 const alarmPoints = ref<MapPoint[]>([]);
@@ -37,46 +49,6 @@ const deviceByStatus = computed(() => {
   return { online, fault, offline };
 });
 
-interface PointRow {
-  id: string;
-  name: string;
-  kind: 'alarm' | 'device';
-  tag: string;
-  tone: 'danger' | 'warn' | 'ok' | 'muted';
-  point: MapPoint;
-}
-
-function alarmTag(p: MapPoint): { tag: string; tone: PointRow['tone'] } {
-  const lv = p.level ?? 0;
-  if (lv >= 3) return { tag: `三级报警`, tone: 'danger' };
-  if (lv === 2) return { tag: `二级报警`, tone: 'warn' };
-  if (lv === 1) return { tag: `一级报警`, tone: 'ok' };
-  return { tag: '监测报警', tone: 'muted' };
-}
-
-function deviceTag(p: MapPoint): { tag: string; tone: PointRow['tone'] } {
-  const s = (p.status ?? '').toUpperCase();
-  if (s === 'ONLINE') return { tag: '在线', tone: 'ok' };
-  if (s === 'FAULT' || s === 'ALARM') return { tag: '故障', tone: 'danger' };
-  return { tag: '离线', tone: 'muted' };
-}
-
-const rows = computed<PointRow[]>(() => {
-  const a: PointRow[] = alarmPoints.value.map((p) => {
-    const { tag, tone } = alarmTag(p);
-    return { id: `a-${p.id}`, name: p.name, kind: 'alarm', tag, tone, point: p };
-  });
-  const d: PointRow[] = devicePoints.value.map((p) => {
-    const { tag, tone } = deviceTag(p);
-    return { id: `d-${p.id}`, name: p.name, kind: 'device', tag, tone, point: p };
-  });
-  return [...a, ...d];
-});
-
-function onRowClick(row: PointRow) {
-  openDetail(row.point, row.kind);
-}
-
 onMounted(async () => {
   try {
     const [alarms, devices] = await Promise.all([fetchAlarmPoints(), fetchDevicePoints()]);
@@ -97,51 +69,40 @@ onMounted(async () => {
     </template>
 
     <div class="mp">
-      <div class="mp__stats">
-        <div class="mp__stat mp__stat--alarm">
-          <span class="mp__stat-num">{{ alarmCount }}</span>
-          <span class="mp__stat-label">报警点位</span>
-          <span class="mp__stat-sub"
-            >Ⅰ/Ⅱ/Ⅲ：{{ alarmByLevel[1] }}/{{ alarmByLevel[2] }}/{{ alarmByLevel[3] }}</span
-          >
-        </div>
-        <div class="mp__stat mp__stat--device">
-          <span class="mp__stat-num">{{ deviceCount }}</span>
-          <span class="mp__stat-label">设备点位</span>
-          <span class="mp__stat-sub"
-            >在线/故障/离线：{{ deviceByStatus.online }}/{{ deviceByStatus.fault }}/{{
-              deviceByStatus.offline
-            }}</span
-          >
-        </div>
-      </div>
-
-      <div v-if="loading" class="mp__state">正在加载实时监测点位…</div>
-      <div v-else-if="!rows.length" class="mp__state">暂无监测点位</div>
-
-      <div v-else class="mp__list">
-        <button
-          v-for="row in rows"
-          :key="row.id"
-          type="button"
-          class="mp__row"
-          :class="`mp__row--${row.kind}`"
-          :aria-label="`查看 ${row.name} 详情`"
-          @click="onRowClick(row)"
+      <button
+        type="button"
+        class="mp__toggle mp__toggle--alarm"
+        :class="{ 'mp__toggle--on': alarmPointsVisible }"
+        :aria-pressed="alarmPointsVisible"
+        @click="toggleAlarmPointsVisible"
+      >
+        <span class="mp__stat-num">{{ alarmCount }}</span>
+        <span class="mp__stat-label">报警点位</span>
+        <span class="mp__stat-sub"
+          >Ⅰ/Ⅱ/Ⅲ：{{ alarmByLevel[1] }}/{{ alarmByLevel[2] }}/{{ alarmByLevel[3] }}</span
         >
-          <span class="mp__dot" :class="`mp__dot--${row.tone}`" />
-          <span class="mp__name" :title="row.name">{{ row.name }}</span>
-          <span class="mp__tag" :class="`mp__tag--${row.tone}`">{{ row.tag }}</span>
-        </button>
-      </div>
-    </div>
+        <i class="mp__toggle-dot" />
+      </button>
 
-    <InfoDetailDialog
-      :open="detailOpen"
-      :title="detailTitle"
-      :fields="detailFields"
-      @close="closeDetail"
-    />
+      <button
+        type="button"
+        class="mp__toggle mp__toggle--device"
+        :class="{ 'mp__toggle--on': devicePointsVisible }"
+        :aria-pressed="devicePointsVisible"
+        @click="toggleDevicePointsVisible"
+      >
+        <span class="mp__stat-num">{{ deviceCount }}</span>
+        <span class="mp__stat-label">设备点位</span>
+        <span class="mp__stat-sub"
+          >在线/故障/离线：{{ deviceByStatus.online }}/{{ deviceByStatus.fault }}/{{
+            deviceByStatus.offline
+          }}</span
+        >
+        <i class="mp__toggle-dot" />
+      </button>
+
+      <span class="mp__hint"><i class="mp__hint-dot" />{{ layerHint }}</span>
+    </div>
   </PanelCard>
 </template>
 
@@ -152,44 +113,45 @@ onMounted(async () => {
 }
 
 .mp {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-  gap: 8px;
-}
-
-.mp__stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  flex-shrink: 0;
+  height: 100%;
+  min-height: 0;
 }
 
-.mp__stat {
+.mp__toggle {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  padding: 8px 4px;
+  padding: 10px 4px 8px;
   border: 1px solid rgb(0 100 180 / 18%);
   border-radius: 3px;
   background: rgb(0 24 50 / 40%);
+  font-family: var(--font-body);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.mp__toggle--alarm .mp__stat-num {
+  color: var(--color-danger);
+}
+
+.mp__toggle--device .mp__stat-num {
+  color: var(--color-success);
 }
 
 .mp__stat-num {
   font-size: 26px;
   font-weight: 600;
   line-height: 1;
-}
-
-.mp__stat--alarm .mp__stat-num {
-  color: var(--color-danger);
-}
-
-.mp__stat--device .mp__stat-num {
-  color: var(--color-success);
 }
 
 .mp__stat-label {
@@ -202,115 +164,55 @@ onMounted(async () => {
   color: var(--map-device-offline);
 }
 
-.mp__state {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--map-device-offline);
-  font-size: 13px;
-}
-
-.mp__list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.mp__row {
-  display: grid;
-  grid-template-columns: 10px 1fr auto;
-  gap: 8px;
-  align-items: center;
-  padding: 6px 8px;
-  border: 1px solid rgb(0 100 180 / 16%);
-  border-radius: 2px;
-  background: rgb(0 24 50 / 40%);
-  font-size: 12px;
-  color: #e8f2fc;
-  text-align: left;
-  font-family: var(--font-body);
-  cursor: pointer;
+.mp__toggle-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--map-device-offline);
+  box-shadow: 0 0 6px rgb(120 150 180 / 40%);
   transition:
-    border-color 0.18s ease,
     background 0.18s ease,
     box-shadow 0.18s ease;
 }
 
-.mp__row:hover {
-  border-color: rgb(0 180 255 / 50%);
-  background: rgb(0 55 100 / 55%);
-  box-shadow: inset 0 0 12px rgb(0 170 255 / 10%);
+.mp__toggle--on {
+  border-color: rgb(0 180 255 / 45%);
+  background: rgb(0 46 86 / 55%);
+  box-shadow: inset 0 0 14px rgb(0 170 255 / 10%);
 }
 
-.mp__row:focus-visible {
-  outline: none;
-  border-color: rgb(0 180 255 / 70%);
-  box-shadow: 0 0 0 2px rgb(0 180 255 / 30%);
-}
-
-.mp__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.mp__dot--danger {
-  background: var(--color-danger);
-  box-shadow: 0 0 6px rgb(255 77 79 / 60%);
-}
-
-.mp__dot--warn {
-  background: #ffa940;
-  box-shadow: 0 0 6px rgb(255 169 64 / 60%);
-}
-
-.mp__dot--ok {
+.mp__toggle--on .mp__toggle-dot {
   background: var(--color-success);
-  box-shadow: 0 0 6px rgb(46 204 113 / 60%);
+  box-shadow: 0 0 8px rgb(46 204 113 / 60%);
 }
 
-.mp__dot--muted {
-  background: var(--map-device-offline);
+.mp__toggle:hover {
+  border-color: rgb(0 180 255 / 45%);
+  background: rgb(0 55 100 / 55%);
 }
 
-.mp__name {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.mp__tag {
-  font-size: 11px;
-  padding: 1px 6px;
-  border-radius: 2px;
-  border: 1px solid transparent;
-}
-
-.mp__tag--danger {
-  color: var(--color-danger);
-  border-color: rgb(255 77 79 / 40%);
-  background: rgb(255 77 79 / 12%);
-}
-
-.mp__tag--warn {
-  color: #ffa940;
-  border-color: rgb(255 169 64 / 40%);
-  background: rgb(255 169 64 / 12%);
-}
-
-.mp__tag--ok {
-  color: var(--color-success);
-  border-color: rgb(46 204 113 / 40%);
-  background: rgb(46 204 113 / 12%);
-}
-
-.mp__tag--muted {
+.mp__hint {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px dashed rgb(0 120 200 / 28%);
+  border-radius: 3px;
+  background: rgb(0 24 50 / 30%);
   color: var(--map-device-offline);
-  border-color: rgb(120 150 180 / 30%);
-  background: rgb(120 150 180 / 10%);
+  font-size: 12px;
+}
+
+.mp__hint-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--map-device-offline);
+  box-shadow: 0 0 6px rgb(120 150 180 / 40%);
 }
 </style>
