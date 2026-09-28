@@ -15,6 +15,12 @@ export interface MapPoint {
   lat: number;
   status?: string;
   level?: number;
+  /** 监测点分类（如 液位 / 气体检测 / DCS），后端 fac_monitoring_point.category。 */
+  category?: string;
+  /** 所属单位/部门。 */
+  org?: string;
+  /** 最近更新时间（ISO）。 */
+  lastTime?: string;
 }
 
 export interface RiskZone {
@@ -84,6 +90,9 @@ export function normalizeFeature(f: GeoJsonFeature, kind: 'alarm' | 'device'): M
     lat,
     status: props.status !== undefined ? String(props.status) : undefined,
     level: typeof props.level === 'number' ? props.level : undefined,
+    category: props.category !== undefined ? String(props.category) : undefined,
+    org: props.org !== undefined ? String(props.org) : undefined,
+    lastTime: props.lastTime !== undefined ? String(props.lastTime) : undefined,
   };
 }
 
