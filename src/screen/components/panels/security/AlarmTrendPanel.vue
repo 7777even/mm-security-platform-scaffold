@@ -38,8 +38,14 @@ const chartOption = computed(() => ({
   },
   yAxis: {
     type: 'value',
+    min: 0,
+    minInterval: 1,
     splitLine: { lineStyle: { color: 'rgba(83,103,132,0.18)' } },
-    axisLabel: { color: '#8fa8c4', fontSize: 11 },
+    axisLabel: {
+      color: '#8fa8c4',
+      fontSize: 11,
+      formatter: (val: number) => String(Math.round(val)),
+    },
   },
   series: [
     {
