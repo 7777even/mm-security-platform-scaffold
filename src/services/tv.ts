@@ -468,3 +468,64 @@ export async function ackTvSnapshot(id: number): Promise<TvSnapshotAckResult> {
     method: 'POST',
   });
 }
+
+/** 监控点位新增/更新请求（设备/防区管理 CRUD，对齐 docs/api/tv.openapi.json 的 TvMonitorUpsertRequest） */
+export interface TvMonitorUpsertRequest {
+  /** 监控点位编码（新增必填，全局唯一） */
+  monitorCode?: string;
+  /** 监控名称 */
+  monitorName?: string | null;
+  /** 是否在线 */
+  online?: boolean | null;
+  /** 完好程度：良好 / 一般 / 损坏 */
+  integrity?: string | null;
+  /** 监控类型：球机 / 枪机 */
+  monitorType?: string | null;
+  /** 责任部门 */
+  department?: string | null;
+  /** 防区编码（关联 sys_zone.zone_code，防区归属编辑） */
+  zoneCode?: string | null;
+  /** 安装位置坐标描述 */
+  location?: string | null;
+  /** 挂高（如 24m） */
+  height?: string | null;
+  /** 安装角度（如 56°） */
+  angle?: string | null;
+}
+
+/**
+ * 新增监控点位（设备/防区管理 CRUD）。需权限码 tv:monitor:create。
+ * monitorCode 全局唯一，重复后端返 PARAM_INVALID；成功后广播 tv.monitor.changed。
+ */
+export async function createTvMonitor(payload: TvMonitorUpsertRequest): Promise<TvMonitorSummary> {
+  return request<TvMonitorSummary>({
+    url: '/tv/monitors',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+/**
+ * 更新监控点位（仅覆盖非空字段，含防区归属 zoneCode 编辑）。需权限码 tv:monitor:update。
+ * 成功后广播 tv.monitor.changed。
+ */
+export async function updateTvMonitor(
+  code: string,
+  payload: TvMonitorUpsertRequest,
+): Promise<TvMonitorSummary> {
+  return request<TvMonitorSummary>({
+    url: `/tv/monitors/${code}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+/**
+ * 删除监控点位。需权限码 tv:monitor:delete。成功后广播 tv.monitor.changed。
+ */
+export async function deleteTvMonitor(code: string): Promise<void> {
+  return request<void>({
+    url: `/tv/monitors/${code}`,
+    method: 'DELETE',
+  });
+}
