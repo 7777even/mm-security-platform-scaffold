@@ -135,61 +135,6 @@
         }
       }
     },
-    "/tv/monitors/{code}": {
-      "get": {
-        "summary": "视频监控点位档案",
-        "description": "按点位编码返回视频监控档案（名称、在线状态、完好程度、类型、责任部门、坐标描述、挂高、角度）。数据来自 V24 fac_tv_monitor 真实表，取代前端硬编码 tvVideoMonitorDetails 与默认档案。",
-        "tags": ["tv"],
-        "parameters": [
-          {
-            "name": "code",
-            "in": "path",
-            "required": true,
-            "description": "监控点位编码（与地图撒点 point_code 一致，如 ar-01）",
-            "schema": { "type": "string" },
-            "example": "ar-01"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "视频监控点位档案",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/TvMonitorDetail" },
-                "example": {
-                  "code": 0,
-                  "message": "ok",
-                  "data": {
-                    "id": "ar-01",
-                    "name": "高空AR-01",
-                    "online": true,
-                    "integrity": "良好",
-                    "monitorType": "球机",
-                    "department": "安环部",
-                    "location": "110.881979, 21.685692",
-                    "height": "24m",
-                    "angle": "56°"
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "点位档案不存在",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/TvMonitorDetail" },
-                "example": {
-                  "code": 404,
-                  "message": "监控点位不存在",
-                  "data": null
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/tv/snapshots": {
       "get": {
         "summary": "录像截图分页列表",
@@ -404,6 +349,178 @@
             }
           }
         }
+      },
+      "post": {
+        "summary": "新增监控点位",
+        "description": "设备/防区管理：新增视频监控点位（含防区归属 zoneCode）。需权限码 tv:monitor:create（V87 已登记授权）。成功后广播 tv.monitor.changed。",
+        "tags": ["tv"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TvMonitorUpsertRequest" },
+              "example": {
+                "monitorCode": "ar-09",
+                "monitorName": "高空AR-09",
+                "online": true,
+                "integrity": "良好",
+                "monitorType": "球机",
+                "department": "安环部",
+                "zoneCode": "YIXI",
+                "location": "乙烯区东北角",
+                "height": "24m",
+                "angle": "56°"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "新增后的监控点位摘要",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TvMonitorSummary" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "code": "ar-09",
+                    "name": "高空AR-09",
+                    "online": true,
+                    "department": "安环部",
+                    "zoneCode": "YIXI",
+                    "zoneName": "乙烯区"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tv/monitors/{code}": {
+      "get": {
+        "summary": "视频监控点位档案",
+        "description": "按点位编码返回视频监控档案（名称、在线状态、完好程度、类型、责任部门、坐标描述、挂高、角度）。数据来自 V24 fac_tv_monitor 真实表，取代前端硬编码 tvVideoMonitorDetails 与默认档案。",
+        "tags": ["tv"],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "description": "监控点位编码（与地图撒点 point_code 一致，如 ar-01）",
+            "schema": { "type": "string" },
+            "example": "ar-01"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "视频监控点位档案",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TvMonitorDetail" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": "ar-01",
+                    "name": "高空AR-01",
+                    "online": true,
+                    "integrity": "良好",
+                    "monitorType": "球机",
+                    "department": "安环部",
+                    "location": "110.881979, 21.685692",
+                    "height": "24m",
+                    "angle": "56°"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "点位档案不存在",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TvMonitorDetail" },
+                "example": {
+                  "code": 404,
+                  "message": "监控点位不存在",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "更新监控点位",
+        "description": "设备/防区管理：更新监控点位（含防区归属 zoneCode 编辑）。仅覆盖非空字段。需权限码 tv:monitor:update（V87 已登记授权）。成功后广播 tv.monitor.changed。",
+        "tags": ["tv"],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "description": "监控点位编码",
+            "schema": { "type": "string" },
+            "example": "ar-09"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TvMonitorUpsertRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新后的监控点位摘要",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TvMonitorSummary" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "code": "ar-09",
+                    "name": "高空AR-09",
+                    "online": true,
+                    "department": "安环部",
+                    "zoneCode": "YIXI",
+                    "zoneName": "乙烯区"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除监控点位",
+        "description": "设备/防区管理：删除监控点位。需权限码 tv:monitor:delete（V87 已登记授权）。成功后广播 tv.monitor.changed。",
+        "tags": ["tv"],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "description": "监控点位编码",
+            "schema": { "type": "string" },
+            "example": "ar-09"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": { "code": 0, "message": "ok", "data": null }
+              }
+            }
+          }
+        }
       }
     },
     "/tv/monitors/{code}/snapshots": {
@@ -579,6 +696,58 @@
             "type": ["string", "null"],
             "description": "防区名称（由 zone_code 解析，如 乙烯区）",
             "example": "乙烯区"
+          }
+        }
+      },
+      "TvMonitorUpsertRequest": {
+        "type": "object",
+        "description": "监控点位新增/更新请求（设备/防区管理 CRUD）",
+        "properties": {
+          "monitorCode": {
+            "type": "string",
+            "description": "监控点位编码（新增必填，全局唯一）",
+            "example": "ar-09"
+          },
+          "monitorName": {
+            "type": ["string", "null"],
+            "description": "监控名称",
+            "example": "高空AR-09"
+          },
+          "online": { "type": ["boolean", "null"], "description": "是否在线", "example": true },
+          "integrity": {
+            "type": ["string", "null"],
+            "description": "完好程度：良好 / 一般 / 损坏",
+            "example": "良好"
+          },
+          "monitorType": {
+            "type": ["string", "null"],
+            "description": "监控类型：球机 / 枪机",
+            "example": "球机"
+          },
+          "department": {
+            "type": ["string", "null"],
+            "description": "责任部门",
+            "example": "安环部"
+          },
+          "zoneCode": {
+            "type": ["string", "null"],
+            "description": "防区编码（关联 sys_zone.zone_code，防区归属编辑）",
+            "example": "YIXI"
+          },
+          "location": {
+            "type": ["string", "null"],
+            "description": "安装位置坐标描述",
+            "example": "乙烯区东北角"
+          },
+          "height": {
+            "type": ["string", "null"],
+            "description": "挂高（如 24m）",
+            "example": "24m"
+          },
+          "angle": {
+            "type": ["string", "null"],
+            "description": "安装角度（如 56°）",
+            "example": "56°"
           }
         }
       },
