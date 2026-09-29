@@ -7,6 +7,6 @@
 - [x] apps/mgmt/router.ts 注册 /tv-monitor-mgmt（SERVICE_PATHS + serviceRoutes）
 - [x] src/data/mgmtMenus.ts 设备管理组加「工业电视监控点管理」叶子
 - [x] useDomainAutoRefresh('tv.monitor', load) 实时刷新
-- [ ] vue-tsc 类型检查通过
-- [ ] npm run lint 通过
-- [ ] 按 scope 拆分提交（frontend: contract / mgmt / docs(openspec)）+ 推送
+- [x] vue-tsc 类型检查通过
+- [x] npm run lint 通过
+- [x] 按 scope 拆分提交（frontend: contract / mgmt / docs(openspec)）+ 推送
