@@ -21,6 +21,8 @@ import AccidentInfoPanel from '../components/panels/accident-rescue/AccidentInfo
 import PlanPanoramaModule from '../components/panels/accident-rescue/PlanPanoramaModule.vue';
 import RescueDutyPanel from '../components/panels/accident-rescue/RescueDutyPanel.vue';
 import RescueAuxiliaryPanel from '../components/panels/accident-rescue/RescueAuxiliaryPanel.vue';
+import AuxiliaryKnowledgeMapOverlay from '../components/map/AuxiliaryKnowledgeMapOverlay.vue';
+import { closeAuxiliaryKnowledgeScatter } from '../lib/composables/useAuxiliaryKnowledgeMapView';
 import RescueDynamicsPanel from '../components/panels/accident-rescue/RescueDynamicsPanel.vue';
 import RescueBottomToolbar from '../components/panels/accident-rescue/RescueBottomToolbar.vue';
 import FacilityDetailPanel from '../components/panels/accident-rescue/FacilityDetailPanel.vue';
@@ -319,6 +321,7 @@ watch(
     responseStartedLocal.value = false;
     responseStartedAt.value = undefined;
     closeCommandActionDetail();
+    closeAuxiliaryKnowledgeScatter();
     void flyToIncident();
   },
 );
@@ -705,6 +708,7 @@ onUnmounted(() => {
   clearAccidentRescueFlyTarget();
   closeFacilityDetail();
   closeCommandActionDetail();
+  closeAuxiliaryKnowledgeScatter();
   getSharedMap()?.clearEvacuationRoute?.();
   getSharedMap()?.setMonitoringFocusArea?.(false);
   sandbox.exitSandbox();
@@ -725,6 +729,8 @@ onUnmounted(() => {
         :fire-status="incident.mapStatus"
         :incident-status="displayIncidentStatus"
       />
+
+      <AuxiliaryKnowledgeMapOverlay v-if="sceneMode === 'default'" :theme="panelTheme" />
 
       <AccidentRescueMap
         v-else-if="sceneMode === 'rescueRoute'"

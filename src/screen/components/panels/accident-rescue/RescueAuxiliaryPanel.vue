@@ -16,6 +16,7 @@ import {
 } from '@element-plus/icons-vue';
 import { fetchEmergencyStrength } from '@/services/emergency';
 import { fetchEmergencyKnowledge } from '@/services/knowledge';
+import { openAuxiliaryKnowledgeScatter } from '../../../lib/composables/useAuxiliaryKnowledgeMapView';
 
 const props = withDefaults(
   defineProps<{
@@ -113,7 +114,9 @@ const detailOpen = ref(false);
 function openItem(item: AuxItem): void {
   if (props.layout !== 'eventCommand') return;
   selectedItem.value = item;
-  detailOpen.value = true;
+  detailOpen.value = true; // 保留详情（skill 先例：纯展示卡可点开 InfoDetailDialog）
+  // 追加地图落图浮层：替代「仅面板展示」，点击类别即在 Cesium 地图以位置示意散布
+  openAuxiliaryKnowledgeScatter(item.label, Number(item.value));
 }
 
 const itemFields = computed(() =>
