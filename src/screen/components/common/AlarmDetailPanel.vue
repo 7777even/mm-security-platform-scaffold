@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { type AlarmDetailItem } from '../../lib/data/alarmDetailMock';
 import { fetchDispatchPersonnel, type DispatchPersonnelOption } from '@/services/emergency';
@@ -17,6 +17,12 @@ import {
   type ProductionAlarmUpdatePayload,
   touchProductionAlarmChanged,
 } from '@/services/production';
+import {
+  fetchProductionAlarmSnapshots,
+  fetchTvSnapshotUrl,
+  tvSnapshotChanged,
+  type TvSnapshotItem,
+} from '@/services/tv';
 import type { AlarmDetailStatus, FalseAlarmStatus } from '../../lib/data/alarmDetailMock';
 import { touchFireAlarmChanged } from '../../lib/composables/useScreenAlarmFeed';
 
@@ -402,6 +408,71 @@ watch(
   { flush: 'post' },
 );
 
+// —— 生产告警详情内嵌「现场工业电视抓拍」联通区块（tv ↔ production 数据联通） ——
+// 仅生产报警（productionAlarmId 存在）时加载，按告警 id 精准拉取工业电视关联抓拍
+// （后端 GET /production/alarms/{id}/snapshots，按 alarmId + alarmType=PRODUCTION 过滤）。
+// 数据级关联，不再依赖前端 location 软匹配；无关联抓拍时渲染空态，绝不编造关联。
+const tvSnapshots = ref<(TvSnapshotItem & { url: string | null })[]>([]);
+const tvSnapshotsLoading = ref(false);
+const tvPreviewUrl = ref<string | null>(null);
+
+function revokeTvSnapshotUrls(): void {
+  for (const s of tvSnapshots.value) {
+    if (s.url) {
+      try {
+        URL.revokeObjectURL(s.url);
+      } catch {
+        /* 已释放则忽略 */
+      }
+    }
+  }
+}
+
+async function loadTvSnapshotsForProduction(): Promise<void> {
+  const item = detail.value;
+  if (!item || item.productionAlarmId == null) {
+    tvSnapshots.value = [];
+    return;
+  }
+  tvSnapshotsLoading.value = true;
+  try {
+    const page = await fetchProductionAlarmSnapshots(item.productionAlarmId, 1, 12);
+    const withUrl = await Promise.all(
+      page.list.slice(0, 8).map(async (s) => ({
+        ...s,
+        url: (await fetchTvSnapshotUrl(s.id)) as string | null,
+      })),
+    );
+    revokeTvSnapshotUrls();
+    tvSnapshots.value = withUrl;
+  } catch {
+    tvSnapshots.value = [];
+  } finally {
+    tvSnapshotsLoading.value = false;
+  }
+}
+
+function openTvPreview(id: number): void {
+  const found = tvSnapshots.value.find((s) => s.id === id);
+  tvPreviewUrl.value = found?.url ?? null;
+}
+
+function closeTvPreview(): void {
+  tvPreviewUrl.value = null;
+}
+
+watch(
+  () => detail.value?.productionAlarmId,
+  () => {
+    void loadTvSnapshotsForProduction();
+  },
+  { immediate: true },
+);
+watch(tvSnapshotChanged, () => {
+  if (detail.value?.productionAlarmId != null) void loadTvSnapshotsForProduction();
+});
+onUnmounted(revokeTvSnapshotUrls);
+
 function openWorkOrder() {
   const item = detail.value;
   if (!item?.workOrderNo) return;
@@ -747,6 +818,51 @@ function trendX(item: AlarmDetailItem, index: number): number {
             </li>
           </ol>
         </section>
+
+        <section
+          v-if="detail?.productionAlarmId != null"
+          class="alarm-detail__card alarm-detail__card--tv"
+        >
+          <h4 class="alarm-detail__section-title">现场工业电视抓拍</h4>
+          <p class="alarm-detail__tv-hint">
+            来自工业电视域实时抓拍，按告警精准关联（告警 ID {{ detail?.productionAlarmId }}）
+          </p>
+          <div v-if="tvSnapshotsLoading" class="alarm-detail__tv-empty">加载中…</div>
+          <div v-else-if="!tvSnapshots.length" class="alarm-detail__tv-empty">暂无关联抓拍</div>
+          <div v-else class="alarm-detail__images">
+            <figure
+              v-for="snap in tvSnapshots"
+              :key="snap.id"
+              class="alarm-detail__image"
+              @click="openTvPreview(snap.id)"
+            >
+              <img v-if="snap.url" :src="snap.url" :alt="snap.monitorName || '现场抓拍'" />
+              <figcaption>
+                {{ snap.monitorName || snap.monitorCode }}<br />{{ snap.captureTime || '' }}
+              </figcaption>
+            </figure>
+          </div>
+          <button
+            type="button"
+            class="alarm-detail__link alarm-detail__tv-more"
+            @click="openMonitor"
+          >
+            前往工业电视查看全部
+          </button>
+        </section>
+
+        <Teleport to="#app">
+          <div v-if="tvPreviewUrl" class="alarm-detail__tv-preview" @click="closeTvPreview">
+            <img :src="tvPreviewUrl" alt="现场抓拍大图" />
+            <button
+              type="button"
+              class="alarm-detail__tv-preview-close"
+              @click.stop="closeTvPreview"
+            >
+              ×
+            </button>
+          </div>
+        </Teleport>
 
         <section class="alarm-detail__card alarm-detail__card--links">
           <h4 class="alarm-detail__section-title">关联操作</h4>
@@ -1320,6 +1436,62 @@ function trendX(item: AlarmDetailItem, index: number): number {
   color: var(--color-danger);
   border-color: rgb(255 90 74 / 45%);
   background: rgb(120 30 20 / 25%);
+}
+
+.alarm-detail__card--tv {
+  gap: 6px;
+}
+
+.alarm-detail__tv-hint {
+  margin: 0;
+  font-size: 11px;
+  color: #7d95b3;
+  line-height: 1.4;
+}
+
+.alarm-detail__tv-empty {
+  font-size: 12px;
+  color: #7d95b3;
+  padding: 6px 0;
+}
+
+.alarm-detail__image {
+  cursor: pointer;
+}
+
+.alarm-detail__tv-more {
+  margin-top: 4px;
+}
+
+.alarm-detail__tv-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 80%);
+  cursor: zoom-out;
+}
+
+.alarm-detail__tv-preview img {
+  max-width: 86vw;
+  max-height: 86vh;
+  border: 1px solid rgb(0 180 255 / 50%);
+}
+
+.alarm-detail__tv-preview-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgb(0 180 255 / 50%);
+  border-radius: 50%;
+  background: rgb(0 30 60 / 80%);
+  color: #c8d8ec;
+  font-size: 22px;
+  cursor: pointer;
 }
 
 .alarm-detail-slide-enter-active,

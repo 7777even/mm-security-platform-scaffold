@@ -9,6 +9,7 @@ import FacilitiesOverview from '../components/panels/production/FacilitiesOvervi
 import DeviceOverview from '../components/panels/production/DeviceOverview.vue';
 import ProductionAlarmPanel from '../components/panels/production/ProductionAlarmPanel.vue';
 import RiskControlPanel from '../components/panels/production/RiskControlPanel.vue';
+import ProductionPlanPanel from '../components/panels/production/ProductionPlanPanel.vue';
 import StatsOverviewBar from '../components/panels/production/StatsOverviewBar.vue';
 import ProductionDeviceListPanel from '../components/panels/production/ProductionDeviceListPanel.vue';
 import ProductionDeviceLedgerPanel from '../components/panels/production/ProductionDeviceLedgerPanel.vue';
@@ -85,6 +86,7 @@ const shellDrawerActive = computed(() => productionDeviceDrawerActive.value);
         <aside class="sidebar sidebar--right sidebar--primary-right">
           <ProductionAlarmPanel />
           <RiskControlPanel />
+          <ProductionPlanPanel />
         </aside>
 
         <StatsOverviewBar class="production-body__stats" />
@@ -196,7 +198,7 @@ const shellDrawerActive = computed(() => productionDeviceDrawerActive.value);
  */
 .sidebar--right {
   width: var(--sidebar-width);
-  grid-template-rows: minmax(0, 592fr) minmax(0, 295fr);
+  grid-template-rows: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr);
   gap: 10px;
 }
 
