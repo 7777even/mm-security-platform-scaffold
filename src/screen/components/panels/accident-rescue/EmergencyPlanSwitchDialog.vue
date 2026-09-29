@@ -8,6 +8,7 @@ import {
   usePlanMatrix,
   type SelectableEmergencyPlan,
 } from '../../../lib/composables/usePlanMatrix';
+import { fetchEmergencyPlanOptions } from '@/services/emergencyPlan';
 
 const { loadOptions } = usePlanMatrix();
 
@@ -15,6 +16,8 @@ const props = defineProps<{
   open: boolean;
   incidentFields: IncidentDetailField[];
   selectedPlanId?: string | null;
+  /** 业务域限定（如 production）：只列该域预案，避免越域暴露 fire/superior 等预案 */
+  domain?: string;
 }>();
 
 const emit = defineEmits<{
@@ -28,17 +31,40 @@ const accidentType = ref(emergencyPlanSwitchOptions.value.accidentTypes[0]);
 const facility = ref(emergencyPlanSwitchOptions.value.facilities[0]);
 const localSelectedId = ref<string | null>(null);
 
-const tabPlans = computed(() => resolvePlansByTab(activeTab.value));
+// 业务域限定：domain 非空时直接从后端取该域预案（绕过全局静态矩阵），避免越域暴露
+const domainPlans = ref<SelectableEmergencyPlan[]>([]);
+const domainLoading = ref(false);
+
+async function ensureDomainOptions() {
+  if (!props.domain) return;
+  if (domainPlans.value.length) return;
+  domainLoading.value = true;
+  try {
+    const opt = await fetchEmergencyPlanOptions(props.domain);
+    domainPlans.value = opt.plans ?? [];
+  } catch {
+    domainPlans.value = [];
+  } finally {
+    domainLoading.value = false;
+  }
+}
+
+const tabPlans = computed(() =>
+  props.domain ? domainPlans.value : resolvePlansByTab(activeTab.value),
+);
 
 const filteredPlans = computed(() => {
   const q = keyword.value.trim().toLowerCase();
   return tabPlans.value.filter((plan) => {
     if (q && !plan.name.toLowerCase().includes(q)) return false;
-    if (accidentType.value !== '全部类型' && plan.accidentType !== accidentType.value) {
-      return false;
-    }
-    if (facility.value !== '全部装置' && plan.facility !== facility.value) {
-      return false;
+    // 业务域模式下选项已限定，忽略通用事故类型/装置筛选
+    if (!props.domain) {
+      if (accidentType.value !== '全部类型' && plan.accidentType !== accidentType.value) {
+        return false;
+      }
+      if (facility.value !== '全部装置' && plan.facility !== facility.value) {
+        return false;
+      }
     }
     return true;
   });
@@ -50,13 +76,18 @@ watch(
   () => props.open,
   (visible) => {
     if (!visible) return;
-    loadOptions().then(() => {
+    const apply = () => {
       activeTab.value = emergencyPlanSwitchTabs.value[0]?.key ?? '';
       keyword.value = '';
       accidentType.value = emergencyPlanSwitchOptions.value.accidentTypes[0];
       facility.value = emergencyPlanSwitchOptions.value.facilities[0];
       localSelectedId.value = props.selectedPlanId ?? null;
-    });
+    };
+    if (props.domain) {
+      void ensureDomainOptions().then(apply);
+    } else {
+      void loadOptions().then(apply);
+    }
   },
 );
 
@@ -110,7 +141,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
             <section class="plan-switch__plans">
               <h4 class="plan-switch__section-title">预案选择</h4>
 
-              <div class="plan-switch__tabs">
+              <div v-if="!domain" class="plan-switch__tabs">
                 <button
                   v-for="tab in emergencyPlanSwitchTabs"
                   :key="tab.key"
@@ -130,7 +161,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
                   type="search"
                   placeholder="请输入预案名称"
                 />
-                <select v-model="accidentType" class="plan-switch__select">
+                <select v-if="!domain" v-model="accidentType" class="plan-switch__select">
                   <option
                     v-for="opt in emergencyPlanSwitchOptions.accidentTypes"
                     :key="opt"
@@ -139,7 +170,7 @@ function handleSelect(plan: SelectableEmergencyPlan) {
                     {{ opt === '全部类型' ? '适用事故类型' : opt }}
                   </option>
                 </select>
-                <select v-model="facility" class="plan-switch__select">
+                <select v-if="!domain" v-model="facility" class="plan-switch__select">
                   <option
                     v-for="opt in emergencyPlanSwitchOptions.facilities"
                     :key="opt"

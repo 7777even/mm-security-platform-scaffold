@@ -3,7 +3,7 @@
 // - 按业务域过滤（domain=production）拉取生产域预案，核预案高亮标记；
 // - 每条预案支持「一键调用」（激活 + 广播 + 留痕，不触达物理设备，符合零下行控制红线）；
 // - 「升级/更换预案」复用应急指挥域的 EmergencyPlanSwitchDialog 提供预案切换入口。
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import EmergencyPlanSwitchDialog from '../accident-rescue/EmergencyPlanSwitchDialog.vue';
 import {
@@ -11,6 +11,7 @@ import {
   invokeEmergencyPlan,
   type SelectableEmergencyPlan,
 } from '@/services/emergencyPlan';
+import { subscribeDomainChange } from '@/services/realtime';
 
 withDefaults(defineProps<{ eventTitle?: string }>(), {
   eventTitle: '茂名石化生产装置区突发事件应急处置',
@@ -90,10 +91,25 @@ async function confirmInvoke() {
 function openSwitch() {
   switchOpen.value = true;
 }
-function handlePlanSelect(plan: SelectableEmergencyPlan) {
+async function handlePlanSelect(plan: SelectableEmergencyPlan) {
   activePlanId.value = plan.id;
-  const row = plans.value.find((p) => p.id === plan.id);
-  if (row) row.isActive = true;
+  try {
+    // 「升级/更换预案」= 对该预案发起一键调用（激活 + 广播 + 留痕），写后端持久化，避免仅本地置位丢失
+    const res = await invokeEmergencyPlan(plan.id, { note: '升级/更换预案' });
+    const planIdStr = String(res.planId);
+    plans.value.forEach((p) => (p.isActive = p.id === planIdStr));
+    const target = plans.value.find((p) => p.id === planIdStr);
+    if (target) {
+      target.invokeCount = res.invokeCount;
+      target.lastInvokedAt = res.invokedAt;
+    }
+    activePlanId.value = planIdStr;
+    showToast('ok', `已切换至「${res.planName}」并完成广播`);
+  } catch (e) {
+    showToast('err', e instanceof Error ? e.message : '切换预案失败');
+  } finally {
+    switchOpen.value = false;
+  }
 }
 
 function formatTime(iso?: string | null) {
@@ -104,7 +120,19 @@ function formatTime(iso?: string | null) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-onMounted(loadPlans);
+let unsubscribePlan: (() => void) | undefined;
+
+onMounted(async () => {
+  await loadPlans();
+  // 后端 @RealtimeSync(emergency.plan) 广播（他人/他端调用预案）→ 本面板实时刷新，对齐 ProductionAlarmPanel
+  unsubscribePlan = subscribeDomainChange('emergency.plan', () => {
+    void loadPlans();
+  });
+});
+
+onUnmounted(() => {
+  unsubscribePlan?.();
+});
 </script>
 
 <template>
@@ -151,6 +179,7 @@ onMounted(loadPlans);
     :open="switchOpen"
     :incident-fields="[]"
     :selected-plan-id="activePlanId"
+    domain="production"
     @close="switchOpen = false"
     @select="handlePlanSelect"
   />
