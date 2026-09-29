@@ -986,6 +986,14 @@ const mgmtMenusRaw: MgmtGroupRaw[] = [
         [['MP-01', 'PI-301', '罐顶压力', '工艺', '压力', '0.12MPa', '0.20MPa', ok('是')]],
       ),
       L(
+        '工业电视监控点管理',
+        '/tv-monitor-mgmt',
+        'video',
+        ['点位编码', '名称', '在线', '责任部门', '防区归属'],
+        [['AR-09', '高空AR-09', ok('在线'), '安环部', '乙烯区']],
+        { action: '新增监控点', searchPlaceholder: '搜索编码 / 名称' },
+      ),
+      L(
         '电话设备管理',
         '/phone-management',
         'phone',

@@ -66,6 +66,7 @@ const SERVICE_PATHS = [
   '/video-mgmt',
   '/video-health',
   '/monitor-point',
+  '/tv-monitor-mgmt',
   '/phone-management',
   '/radio-management',
   '/broadcast-device',
@@ -283,6 +284,11 @@ const serviceRoutes: RouteRecordRaw[] = [
     path: '/monitor-point',
     component: () => import('./views/monitor/MonitorPointView.vue'),
     meta: routeMeta('/monitor-point', '监测点位管理'),
+  },
+  {
+    path: '/tv-monitor-mgmt',
+    component: () => import('./views/monitor/TvMonitorMgmtView.vue'),
+    meta: routeMeta('/tv-monitor-mgmt', '工业电视监控点管理'),
   },
   {
     path: '/phone-management',
