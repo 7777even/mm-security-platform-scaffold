@@ -22,6 +22,7 @@ export const FM_SOURCE_ROUTE_TO_SHELL_PATH: Record<string, string> = {
   majorHazardDetail: '/production/hazards/:hazardId',
   tvVideoControl: '/tv/video-control',
   tvVideoWall: '/tv/video-wall',
+  tvPlayback: '/tv/playback',
 };
 
 export interface DelegatedLocation {

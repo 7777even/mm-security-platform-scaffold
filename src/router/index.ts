@@ -154,6 +154,12 @@ const SECONDARY_ROUTES: RouteRecordRaw[] = [
       subappUrl: '/subapps/fm-video-wall/',
     },
   },
+  {
+    path: '/tv/playback',
+    name: 'fm-tv-playback',
+    component: () => import('@/views/tv/playback.vue'),
+    meta: { title: '设备/防区筛选与历史回放', perm: 'video:view', hidden: true },
+  },
 ];
 
 const routes: RouteRecordRaw[] = [

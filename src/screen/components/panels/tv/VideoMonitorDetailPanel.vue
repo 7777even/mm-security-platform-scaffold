@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import SurveillanceVideoDialog from '../../common/SurveillanceVideoDialog.vue';
 import { tvAssets } from '@/utils/designAssets';
 import { TV_VIDEO_DETAIL_LAYOUT } from '../../../utils/tvVideoDetailLayout';
-import type { TvVideoMonitorDetail } from '../../../lib/data/tvMock';
+import {
+  fetchTvSnapshots,
+  fetchTvSnapshotUrl,
+  type TvMonitorDetail,
+  type TvSnapshotItem,
+} from '@/services/tv';
 
 const props = defineProps<{
-  monitor: TvVideoMonitorDetail;
+  monitor: TvMonitorDetail;
 }>();
 
 const emit = defineEmits<{
@@ -20,32 +25,71 @@ const tabs = [
 ] as const;
 
 const activeTab = ref<(typeof tabs)[number]['key']>('basic');
-const isPlaying = ref(false);
 const videoDialogOpen = ref(false);
 
-const videoPreview = new URL(
-  '../../../assets/mock-cameras/outdoor_storage_tanks_1782731405157.png',
-  import.meta.url,
-).href;
+/**
+ * 真实抓拍回放：按本监控 monitorCode 过滤工业电视录像截图（fac_tv_snapshot 真实表），
+ * 不再展示写死的仿真图。无真实媒体网关（NoOpTvSourceAdapter 返回空），故用真实抓拍帧
+ * 时间轴替代视频流——不造假数据。
+ */
+const monitorSnapshots = ref<TvSnapshotItem[]>([]);
+const snapshotUrls = ref<Record<number, string | null>>({});
+const lightboxId = ref<number | null>(null);
+
+const latestSnapshot = computed(
+  () =>
+    [...monitorSnapshots.value].sort((a, b) =>
+      (b.captureTime ?? '').localeCompare(a.captureTime ?? ''),
+    )[0] ?? null,
+);
+
+const lightboxItem = computed(
+  () => monitorSnapshots.value.find((s) => s.id === lightboxId.value) ?? null,
+);
+const lightboxUrl = computed(() =>
+  lightboxId.value != null ? (snapshotUrls.value[lightboxId.value] ?? null) : null,
+);
 
 watch(
   () => props.monitor.id,
-  () => {
+  (code) => {
     activeTab.value = 'basic';
-    isPlaying.value = false;
     videoDialogOpen.value = false;
+    lightboxId.value = null;
+    void loadMonitorSnapshots(code);
   },
+  { immediate: true },
 );
 
-function toggleVideoPlayback() {
-  if (!props.monitor.online) return;
-  activeTab.value = 'playback';
-  isPlaying.value = !isPlaying.value;
+async function loadMonitorSnapshots(code: string) {
+  monitorSnapshots.value = [];
+  snapshotUrls.value = {};
+  try {
+    const page = await fetchTvSnapshots(1, 200);
+    const filtered = (page.list ?? []).filter((s) => s.monitorCode === code);
+    monitorSnapshots.value = filtered;
+    await Promise.all(
+      filtered.map(async (s) => {
+        snapshotUrls.value[s.id] = s.hasImage ? await fetchTvSnapshotUrl(s.id) : null;
+      }),
+    );
+  } catch {
+    monitorSnapshots.value = [];
+  }
 }
 
 function openVideoDialog() {
   if (!props.monitor.online) return;
+  if (!latestSnapshot.value) return;
   videoDialogOpen.value = true;
+}
+
+function openLightbox(id: number) {
+  lightboxId.value = id;
+}
+
+function closeLightbox() {
+  lightboxId.value = null;
 }
 
 const infoRows = computed(() => [
@@ -62,6 +106,12 @@ const infoRows = computed(() => [
   { label: '安装高度', value: props.monitor.height },
   { label: '安装角度', value: props.monitor.angle },
 ]);
+
+onUnmounted(() => {
+  Object.values(snapshotUrls.value).forEach((u) => {
+    if (u) URL.revokeObjectURL(u);
+  });
+});
 </script>
 
 <template>
@@ -140,21 +190,29 @@ const infoRows = computed(() => [
       </div>
 
       <div v-else-if="activeTab === 'alarm'" class="detail-placeholder">暂无告警记录</div>
-      <div v-else class="detail-video">
-        <img class="detail-video__preview" :src="videoPreview" :alt="`${monitor.name}监控画面`" />
-        <div class="detail-video__overlay" :class="{ 'detail-video__overlay--paused': !isPlaying }">
-          <span v-if="isPlaying" class="detail-video__live">实时预览（仿真）</span>
+
+      <div v-else class="detail-playback">
+        <div v-if="monitorSnapshots.length" class="playback-grid">
           <button
-            v-else
+            v-for="snap in monitorSnapshots"
+            :key="snap.id"
             type="button"
-            class="detail-video__resume"
-            :disabled="!monitor.online"
-            @click="toggleVideoPlayback"
+            class="playback-thumb"
+            :title="`${snap.captureTime || snap.createdAt || ''} · ${snap.eventType || '抓拍'}`"
+            @click="openLightbox(snap.id)"
           >
-            {{ monitor.online ? '继续播放' : '当前监控离线' }}
+            <img
+              v-if="snapshotUrls[snap.id]"
+              :src="snapshotUrls[snap.id] ?? undefined"
+              :alt="snap.monitorName ?? '抓拍'"
+            />
+            <span v-else class="playback-thumb__placeholder">无图</span>
+            <span class="playback-thumb__meta">{{
+              snap.captureTime || snap.createdAt || '—'
+            }}</span>
           </button>
         </div>
-        <footer class="detail-video__footer">{{ monitor.name }}</footer>
+        <div v-else class="detail-placeholder">该监控暂无抓拍记录</div>
       </div>
     </div>
 
@@ -166,20 +224,54 @@ const infoRows = computed(() => [
         height: `${TV_VIDEO_DETAIL_LAYOUT.playHeight}px`,
         bottom: `${TV_VIDEO_DETAIL_LAYOUT.playBottom}px`,
       }"
-      :disabled="!monitor.online"
+      :disabled="!monitor.online || !latestSnapshot"
       @click="openVideoDialog"
     >
-      {{ !monitor.online ? '监控离线' : '播放视频' }}
+      {{ !monitor.online ? '监控离线' : !latestSnapshot ? '暂无抓拍' : '播放最新抓拍' }}
     </button>
 
     <SurveillanceVideoDialog
       :open="videoDialogOpen"
-      :title="monitor.name"
-      :image-url="videoPreview"
+      :title="`${monitor.name} · 最新抓拍`"
+      :image-url="
+        latestSnapshot && snapshotUrls[latestSnapshot.id]
+          ? (snapshotUrls[latestSnapshot.id] as string)
+          : ''
+      "
       scene-mode="single"
       :online="monitor.online"
       @close="videoDialogOpen = false"
     />
+
+    <Teleport to="#app">
+      <Transition name="playback-lightbox-fade">
+        <div v-if="lightboxItem" class="playback-lightbox" @click="closeLightbox">
+          <figure class="playback-lightbox__dialog" role="dialog" aria-modal="true" @click.stop>
+            <header class="playback-lightbox__header">
+              <h3 class="playback-lightbox__title">
+                {{ lightboxItem.monitorName || monitor.name }} 抓拍详情
+              </h3>
+              <button type="button" class="playback-lightbox__close" @click="closeLightbox">
+                ×
+              </button>
+            </header>
+            <div class="playback-lightbox__body">
+              <img
+                v-if="lightboxUrl"
+                :src="lightboxUrl"
+                :alt="lightboxItem.monitorName ?? '抓拍'"
+              />
+              <span v-else class="playback-lightbox__placeholder">无图</span>
+            </div>
+            <footer class="playback-lightbox__meta">
+              <span>时间：{{ lightboxItem.captureTime || lightboxItem.createdAt || '—' }}</span>
+              <span>事件：{{ lightboxItem.eventType || '—' }}</span>
+              <span>来源：{{ lightboxItem.source === 'MANUAL' ? '手工' : '设备' }}</span>
+            </footer>
+          </figure>
+        </div>
+      </Transition>
+    </Teleport>
   </section>
 </template>
 
@@ -386,105 +478,70 @@ const infoRows = computed(() => [
   color: #8eb6e8;
 }
 
-.detail-video {
-  position: relative;
+.detail-playback {
   flex: 1;
-  min-height: 260px;
-  overflow: hidden;
-  border: 1px solid rgb(0 130 210 / 28%);
-  background: #020810;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.detail-video__preview {
+.playback-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: min-content;
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.playback-thumb {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border: 1px solid rgb(0 130 210 / 30%);
+  border-radius: 3px;
+  background: #001b31;
+  overflow: hidden;
+  cursor: pointer;
+  aspect-ratio: 16 / 10;
+}
+
+.playback-thumb:hover {
+  border-color: rgb(0 200 255 / 70%);
+  box-shadow: 0 0 8px rgb(0 174 255 / 25%);
+}
+
+.playback-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
-.detail-video__overlay {
-  position: absolute;
-  inset: 0 0 30px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  padding: 10px;
-  box-sizing: border-box;
-}
-
-.detail-video__overlay--paused {
-  align-items: center;
-  justify-content: center;
-  background: rgb(0 8 20 / 62%);
-}
-
-.detail-video__live {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 24px;
-  padding: 0 10px;
-  border: 1px solid rgb(61 214 140 / 45%);
-  background: rgb(0 10 24 / 58%);
-  color: var(--color-success);
+.playback-thumb__placeholder {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  color: #6f91aa;
   font-size: 12px;
-  font-weight: 600;
 }
 
-.detail-video__live::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: currentcolor;
-  box-shadow: 0 0 8px rgb(61 214 140 / 80%);
-  animation: detail-video-live 1.2s ease-in-out infinite;
-}
-
-.detail-video__resume {
-  height: 34px;
-  padding: 0 18px;
-  border: 1px solid rgb(0 180 255 / 55%);
-  border-radius: 2px;
-  background: rgb(0 70 145 / 72%);
-  color: var(--color-text-strong);
-  font-family: var(--font-body);
-  cursor: pointer;
-}
-
-.detail-video__resume:disabled {
-  border-color: rgb(135 149 176 / 35%);
-  background: rgb(45 52 65 / 62%);
-  color: var(--color-text-muted);
-  cursor: not-allowed;
-}
-
-.detail-video__footer {
+.playback-thumb__meta {
   position: absolute;
+  left: 0;
   right: 0;
   bottom: 0;
-  left: 0;
-  height: 30px;
-  padding: 0 10px;
-  box-sizing: border-box;
-  border-top: 1px solid rgb(0 100 180 / 26%);
-  background: rgb(0 18 40 / 88%);
-  color: var(--map-popup-text-blue);
-  font-size: 12px;
-  line-height: 29px;
+  padding: 2px 5px;
+  font-size: 10px;
+  line-height: 1.3;
+  color: #dcefff;
+  background: linear-gradient(180deg, transparent, rgb(0 12 28 / 82%));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-@keyframes detail-video-live {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.35;
-  }
 }
 
 .video-monitor-detail__play {
@@ -501,5 +558,108 @@ const infoRows = computed(() => [
   color: var(--color-text-muted);
   cursor: not-allowed;
   box-shadow: none;
+}
+
+:global(.playback-lightbox) {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-toast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: rgb(0 12 28 / 74%);
+}
+
+:global(.playback-lightbox__dialog) {
+  width: min(880px, 100%);
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(180deg, rgb(5 36 62 / 96%) 0%, rgb(4 24 44 / 96%) 100%),
+    radial-gradient(circle at 25% 20%, rgb(0 148 236 / 16%), transparent 52%);
+  border: 1px solid rgb(0 148 236 / 45%);
+  border-radius: 10px;
+  box-shadow:
+    0 16px 38px rgb(0 0 0 / 44%),
+    inset 0 0 24px rgb(0 120 210 / 18%);
+  overflow: hidden;
+}
+
+:global(.playback-lightbox__header) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 38px;
+  padding: 0 14px;
+  border-bottom: 1px solid rgb(0 120 210 / 36%);
+  background: rgb(2 28 52 / 84%);
+}
+
+:global(.playback-lightbox__title) {
+  margin: 0;
+  color: #e6f3ff;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+:global(.playback-lightbox__close) {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 2px;
+  background: transparent;
+  color: #a8b8cc;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+:global(.playback-lightbox__close:hover) {
+  color: var(--color-text-strong);
+  background: rgb(0 120 210 / 25%);
+}
+
+:global(.playback-lightbox__body) {
+  flex: 1;
+  min-height: 320px;
+  max-height: calc(100vh - 200px);
+  display: grid;
+  place-items: center;
+  background: #020810;
+  overflow: hidden;
+}
+
+:global(.playback-lightbox__body img) {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+:global(.playback-lightbox__placeholder) {
+  color: #6f91aa;
+  font-size: 13px;
+}
+
+:global(.playback-lightbox__meta) {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-top: 1px solid rgb(0 120 210 / 28%);
+  color: #9fd6ff;
+  font-size: 12px;
+}
+
+:global(.playback-lightbox-fade-enter-active),
+:global(.playback-lightbox-fade-leave-active) {
+  transition: opacity 0.22s ease;
+}
+
+:global(.playback-lightbox-fade-enter-from),
+:global(.playback-lightbox-fade-leave-to) {
+  opacity: 0;
 }
 </style>

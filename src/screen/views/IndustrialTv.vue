@@ -6,6 +6,7 @@ import MapPageShell from '../components/map/MapPageShell.vue';
 import TvMap from '../components/map/TvMap.vue';
 import VideoMonitoringManagementPanel from '../components/panels/tv/VideoMonitoringManagementPanel.vue';
 import EventAnalysisPanel from '../components/panels/tv/EventAnalysisPanel.vue';
+import VideoMonitorBrowserPanel from '../components/panels/tv/VideoMonitorBrowserPanel.vue';
 import ImportantVideoPanel from '../components/panels/tv/ImportantVideoPanel.vue';
 import TvSnapshotFeedPanel from '../components/panels/tv/TvSnapshotFeedPanel.vue';
 import VideoMonitorDetailPanel from '../components/panels/tv/VideoMonitorDetailPanel.vue';
@@ -62,6 +63,7 @@ watch(
       <aside class="sidebar sidebar--left">
         <VideoMonitoringManagementPanel />
         <EventAnalysisPanel />
+        <VideoMonitorBrowserPanel />
       </aside>
 
       <aside class="sidebar sidebar--right" :class="{ 'sidebar--right--hidden': showVideoDetail }">
@@ -105,7 +107,7 @@ watch(
 
 .sidebar--left {
   width: 419px;
-  grid-template-rows: 605px 289px;
+  grid-template-rows: minmax(0, 2.1fr) minmax(0, 0.9fr) minmax(0, 0.9fr);
   gap: 7px;
 }
 
