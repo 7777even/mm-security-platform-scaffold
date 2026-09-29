@@ -223,6 +223,157 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/production/alarms/{id}/snapshots': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 生产报警关联抓拍列表
+     * @description 按 alarmId + alarmType=PRODUCTION 精准取工业电视关联抓拍，供生产告警详情「现场工业电视抓拍」区块数据级关联（取代前端 location 软匹配）。无关联抓拍返回空列表（total=0），前端渲染空态，绝不编造关联。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 生产报警 id（fac_production_alarm.id） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 关联抓拍分页列表 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "total": 1,
+             *         "page": 1,
+             *         "size": 50,
+             *         "pages": 1,
+             *         "list": [
+             *           {
+             *             "id": 1,
+             *             "monitorCode": "ar-01",
+             *             "monitorName": "高空AR-01",
+             *             "captureTime": "2026-09-28 10:00:00",
+             *             "eventType": "烟火检测",
+             *             "reviewStatus": "PENDING",
+             *             "source": "DEVICE",
+             *             "createdAt": "2026-09-28 10:00:01",
+             *             "hasImage": true,
+             *             "alarmId": 1,
+             *             "alarmType": "PRODUCTION"
+             *           }
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': {
+              /**
+               * Format: int64
+               * @description 总条数
+               * @example 1
+               */
+              total?: number;
+              /**
+               * @description 当前页
+               * @example 1
+               */
+              page?: number;
+              /**
+               * @description 每页条数
+               * @example 50
+               */
+              size?: number;
+              /**
+               * @description 总页数
+               * @example 1
+               */
+              pages?: number;
+              /** @description 关联抓拍列表（录像截图列表项） */
+              list?: {
+                /**
+                 * Format: int64
+                 * @description 截图记录 id
+                 * @example 1
+                 */
+                id?: number;
+                /**
+                 * @description 监控点位编码
+                 * @example ar-01
+                 */
+                monitorCode?: string;
+                /**
+                 * @description 点位名称
+                 * @example 高空AR-01
+                 */
+                monitorName?: string | null;
+                /**
+                 * @description 采集时刻
+                 * @example 2026-09-28 10:00:00
+                 */
+                captureTime?: string | null;
+                /**
+                 * @description 事件类型：人员闯入/烟火检测/区域入侵/手动抓拍
+                 * @example 烟火检测
+                 */
+                eventType?: string | null;
+                /**
+                 * @description 审核状态：PENDING 待确认 / ACKED 已确认
+                 * @example PENDING
+                 */
+                reviewStatus?: string;
+                /**
+                 * @description 来源：DEVICE 设备采集 / MANUAL 手工
+                 * @example DEVICE
+                 */
+                source?: string | null;
+                /**
+                 * @description 服务端入库时刻
+                 * @example 2026-09-28 10:00:01
+                 */
+                createdAt?: string | null;
+                /**
+                 * @description 是否含截图字节
+                 * @example true
+                 */
+                hasImage?: boolean;
+                /**
+                 * Format: int64
+                 * @description 关联告警 id
+                 * @example 1
+                 */
+                alarmId?: number | null;
+                /**
+                 * @description 关联告警类型：PRODUCTION 生产 / FIRE 消防 / PERIMETER 周界
+                 * @example PRODUCTION
+                 */
+                alarmType?: string | null;
+              }[];
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/production/risk-warnings': {
     parameters: {
       query?: never;

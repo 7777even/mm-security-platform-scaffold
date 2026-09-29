@@ -157,6 +157,138 @@
         }
       }
     },
+    "/production/alarms/{id}/snapshots": {
+      "get": {
+        "summary": "生产报警关联抓拍列表",
+        "description": "按 alarmId + alarmType=PRODUCTION 精准取工业电视关联抓拍，供生产告警详情「现场工业电视抓拍」区块数据级关联（取代前端 location 软匹配）。无关联抓拍返回空列表（total=0），前端渲染空态，绝不编造关联。",
+        "tags": ["production"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "生产报警 id（fac_production_alarm.id）",
+            "schema": { "type": "integer", "format": "int64", "example": 1 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "关联抓拍分页列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "生产报警关联抓拍分页列表（结构与工业电视 TvSnapshotPage 一致，由后端 TvService 返回）",
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "format": "int64",
+                      "description": "总条数",
+                      "example": 1
+                    },
+                    "page": { "type": "integer", "description": "当前页", "example": 1 },
+                    "size": { "type": "integer", "description": "每页条数", "example": 50 },
+                    "pages": { "type": "integer", "description": "总页数", "example": 1 },
+                    "list": {
+                      "type": "array",
+                      "description": "关联抓拍列表（录像截图列表项）",
+                      "items": {
+                        "type": "object",
+                        "description": "录像截图列表项",
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "format": "int64",
+                            "description": "截图记录 id",
+                            "example": 1
+                          },
+                          "monitorCode": {
+                            "type": "string",
+                            "description": "监控点位编码",
+                            "example": "ar-01"
+                          },
+                          "monitorName": {
+                            "type": ["string", "null"],
+                            "description": "点位名称",
+                            "example": "高空AR-01"
+                          },
+                          "captureTime": {
+                            "type": ["string", "null"],
+                            "description": "采集时刻",
+                            "example": "2026-09-28 10:00:00"
+                          },
+                          "eventType": {
+                            "type": ["string", "null"],
+                            "description": "事件类型：人员闯入/烟火检测/区域入侵/手动抓拍",
+                            "example": "烟火检测"
+                          },
+                          "reviewStatus": {
+                            "type": "string",
+                            "description": "审核状态：PENDING 待确认 / ACKED 已确认",
+                            "example": "PENDING"
+                          },
+                          "source": {
+                            "type": ["string", "null"],
+                            "description": "来源：DEVICE 设备采集 / MANUAL 手工",
+                            "example": "DEVICE"
+                          },
+                          "createdAt": {
+                            "type": ["string", "null"],
+                            "description": "服务端入库时刻",
+                            "example": "2026-09-28 10:00:01"
+                          },
+                          "hasImage": {
+                            "type": "boolean",
+                            "description": "是否含截图字节",
+                            "example": true
+                          },
+                          "alarmId": {
+                            "type": ["integer", "null"],
+                            "format": "int64",
+                            "description": "关联告警 id",
+                            "example": 1
+                          },
+                          "alarmType": {
+                            "type": ["string", "null"],
+                            "description": "关联告警类型：PRODUCTION 生产 / FIRE 消防 / PERIMETER 周界",
+                            "example": "PRODUCTION"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "total": 1,
+                    "page": 1,
+                    "size": 50,
+                    "pages": 1,
+                    "list": [
+                      {
+                        "id": 1,
+                        "monitorCode": "ar-01",
+                        "monitorName": "高空AR-01",
+                        "captureTime": "2026-09-28 10:00:00",
+                        "eventType": "烟火检测",
+                        "reviewStatus": "PENDING",
+                        "source": "DEVICE",
+                        "createdAt": "2026-09-28 10:00:01",
+                        "hasImage": true,
+                        "alarmId": 1,
+                        "alarmType": "PRODUCTION"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/production/risk-warnings": {
       "get": {
         "summary": "风险预警列表",

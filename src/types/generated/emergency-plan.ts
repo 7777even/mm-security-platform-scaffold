@@ -8,11 +8,14 @@ export interface paths {
     };
     /**
      * 应急预案选项聚合
-     * @description 返回应急指挥大屏预案切换所需的全部选项：顶部 Tab、事故类型、设施列表，以及可选预案清单（含所属 Tab/名称/事故类型/设施）。用于预案切换面板的下拉与筛选。
+     * @description 返回应急指挥大屏预案切换所需的全部选项：顶部 Tab、事故类型、设施列表，以及可选预案清单（含所属 Tab/名称/事故类型/设施/业务域/核预案标记/激活态/调用次数）。用于预案切换面板的下拉与筛选。domain 非空时仅返回该业务域预案（如 production=生产域核预案浏览）。
      */
     get: {
       parameters: {
-        query?: never;
+        query?: {
+          /** @description 业务域过滤：production / fire / perimeter / superior；不传返回全部预案 */
+          domain?: string;
+        };
         header?: never;
         path?: never;
         cookie?: never;
@@ -55,7 +58,12 @@ export interface paths {
              *             "tab": "flood",
              *             "name": "炼油一部防汛预案",
              *             "accidentType": "泄漏",
-             *             "facility": "炼油一部"
+             *             "facility": "炼油一部",
+             *             "domain": "production",
+             *             "nuclear": true,
+             *             "isActive": false,
+             *             "invokeCount": 0,
+             *             "lastInvokedAt": null
              *           }
              *         ]
              *       }
@@ -172,6 +180,67 @@ export interface paths {
     };
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/emergency-plans/{id}/invoke': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 一键调用预案
+     * @description 激活 + 广播 + 留痕：将指定预案在其业务域内置为唯一激活预案，写入调用留痕（操作人取自登录态），并通过 emergency.plan 域实时广播。不向任何物理设备下发控制指令（零下行控制红线）。未命中预案时 data 为 null。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 预案 id（fac_emergency_plan.id） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          'application/json': components['schemas']['PlanInvokeRequest'];
+        };
+      };
+      responses: {
+        /** @description 调用结果（含激活态、调用次数与留痕） */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "planId": 1,
+             *         "planName": "乙烯储罐火灾处置方案",
+             *         "domain": "production",
+             *         "isActive": true,
+             *         "invokeCount": 3,
+             *         "invokedAt": "2026-09-29T09:12:00",
+             *         "operator": "admin"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['PlanInvokeResult'];
+          };
+        };
+      };
+    };
     delete?: never;
     options?: never;
     head?: never;
@@ -603,6 +672,32 @@ export interface components {
        * @example 炼油一部
        */
       facility?: string;
+      /**
+       * @description 业务域：production=生产域 / fire=消防域 / perimeter=周界域 / superior=上级单位域
+       * @example production
+       */
+      domain?: string;
+      /**
+       * @description 核预案标记（重点核生化/核管控类预案）
+       * @example true
+       */
+      nuclear?: boolean;
+      /**
+       * @description 当前是否激活（同域内唯一）
+       * @example false
+       */
+      isActive?: boolean;
+      /**
+       * @description 累计一键调用次数
+       * @example 0
+       */
+      invokeCount?: number;
+      /**
+       * Format: date-time
+       * @description 最近一次调用时间（ISO8601，可空）
+       * @example null
+       */
+      lastInvokedAt?: string;
     };
     /** @description 应急预案选项聚合 */
     EmergencyPlanOptions: {
@@ -911,6 +1006,54 @@ export interface components {
        * @example false
        */
       isGlobal?: boolean;
+    };
+    /** @description 一键调用预案入参（激活+广播+留痕，不触达物理设备） */
+    PlanInvokeRequest: {
+      /**
+       * @description 调用备注（可选，如调用场景/指挥员批示）
+       * @example 生产装置区乙烯储罐火情，启动专项处置预案
+       */
+      note?: string;
+    };
+    /** @description 一键调用预案结果 */
+    PlanInvokeResult: {
+      /**
+       * Format: int64
+       * @description 预案 id
+       * @example 1
+       */
+      planId?: number;
+      /**
+       * @description 预案名称
+       * @example 乙烯储罐火灾处置方案
+       */
+      planName?: string;
+      /**
+       * @description 业务域
+       * @example production
+       */
+      domain?: string;
+      /**
+       * @description 调用后是否激活（同域内唯一）
+       * @example true
+       */
+      isActive?: boolean;
+      /**
+       * @description 调用后累计次数
+       * @example 3
+       */
+      invokeCount?: number;
+      /**
+       * Format: date-time
+       * @description 本次调用时间（ISO8601）
+       * @example 2026-09-29T09:12:00
+       */
+      invokedAt?: string;
+      /**
+       * @description 操作人（来自登录态）
+       * @example admin
+       */
+      operator?: string;
     };
     /** @description 应急预案目录行 */
     EmergencyPlanCatalogItem: {

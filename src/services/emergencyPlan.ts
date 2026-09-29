@@ -19,6 +19,32 @@ export interface SelectableEmergencyPlan {
   name: string;
   accidentType: string;
   facility: string;
+  /** 业务域：production / fire / perimeter / superior */
+  domain?: string;
+  /** 核预案标记 */
+  nuclear?: boolean;
+  /** 当前是否激活 */
+  isActive?: boolean;
+  /** 累计一键调用次数 */
+  invokeCount?: number;
+  /** 最近一次调用时间（ISO8601，可空） */
+  lastInvokedAt?: string | null;
+}
+
+/** 一键调用预案入参 */
+export interface PlanInvokeRequest {
+  note?: string;
+}
+
+/** 一键调用预案结果 */
+export interface PlanInvokeResult {
+  planId: number;
+  planName: string;
+  domain?: string;
+  isActive: boolean;
+  invokeCount: number;
+  invokedAt: string;
+  operator?: string;
 }
 
 export interface EmergencyPlanOptions {
@@ -87,9 +113,25 @@ export interface PlanInstance {
   actionCards: PlanActionCard[];
 }
 
-/** 应急预案选项聚合：Tab / 事故类型 / 设施 / 可选预案清单。 */
-export async function fetchEmergencyPlanOptions(): Promise<EmergencyPlanOptions> {
-  return request<EmergencyPlanOptions>({ url: '/emergency-plans/options', method: 'GET' });
+/** 应急预案选项聚合：Tab / 事故类型 / 设施 / 可选预案清单。domain 非空时仅返回该业务域预案。 */
+export async function fetchEmergencyPlanOptions(domain?: string): Promise<EmergencyPlanOptions> {
+  return request<EmergencyPlanOptions>({
+    url: '/emergency-plans/options',
+    method: 'GET',
+    params: domain != null ? { domain } : undefined,
+  });
+}
+
+/** 一键调用预案：激活 + 广播 + 留痕（不触达物理设备）。 */
+export async function invokeEmergencyPlan(
+  id: number | string,
+  body?: PlanInvokeRequest,
+): Promise<PlanInvokeResult> {
+  return request<PlanInvokeResult>({
+    url: `/emergency-plans/${encodeURIComponent(String(id))}/invoke`,
+    method: 'POST',
+    data: body ?? {},
+  });
 }
 
 /** 预案矩阵实例；planId 不传时返回默认（首个）预案矩阵。 */

@@ -374,7 +374,7 @@ export interface paths {
     put?: never;
     /**
      * 录像截图采集入库
-     * @description 设备/采集端自助上报录像截图（base64 JPEG）→ 落库 fac_tv_snapshot（PENDING）→ 广播 tv.snapshot.changed。仅登录态即可（同 Uplink 口径）。
+     * @description 设备/采集端自助上报或后端采集器（TvCollector）主动拉取录像截图（base64 JPEG）→ 落库 fac_tv_snapshot（PENDING）→ 广播 tv.snapshot.changed。需权限码 video:snapshot:create（V80 已登记并授权 ADMIN 及岗位角色）。
      */
     post: {
       parameters: {
@@ -545,6 +545,163 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/tv/monitors': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 视频监控点位摘要列表
+     * @description 返回全部工业电视监控点位摘要（含防区），供「设备/防区筛选」二级页设备维度下拉使用。数据来自 V24 fac_tv_monitor 真实表，防区由 V86 zone_code 关联 sys_zone 解析。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 监控点位摘要列表 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": [
+             *         {
+             *           "code": "ar-01",
+             *           "name": "高空AR-01",
+             *           "online": true,
+             *           "department": "安环部",
+             *           "zoneCode": "YIXI",
+             *           "zoneName": "乙烯区"
+             *         },
+             *         {
+             *           "code": "cs-03",
+             *           "name": "储罐区球机-03",
+             *           "online": true,
+             *           "department": "储运车间",
+             *           "zoneCode": "GUANQU",
+             *           "zoneName": "罐区"
+             *         }
+             *       ]
+             *     }
+             */
+            'application/json': components['schemas']['TvMonitorSummary'][];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/tv/monitors/{code}/snapshots': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 设备级历史回放
+     * @description 按监控点位编码（monitorCode）返回其录像截图分页列表（最新在前），支持按采集时间区间 startTime~endTime 过滤。供「设备/防区筛选」二级页按设备维度回放历史抓拍。
+     */
+    get: {
+      parameters: {
+        query?: {
+          /**
+           * @description 页码（从 1 开始）
+           * @example 1
+           */
+          page?: number;
+          /**
+           * @description 每页条数
+           * @example 12
+           */
+          size?: number;
+          /**
+           * @description 采集时间区间起点（含），格式 yyyy-MM-dd HH:mm:ss
+           * @example 2026-09-01 00:00:00
+           */
+          startTime?: string;
+          /**
+           * @description 采集时间区间终点（含），格式 yyyy-MM-dd HH:mm:ss
+           * @example 2026-09-30 23:59:59
+           */
+          endTime?: string;
+        };
+        header?: never;
+        path: {
+          /**
+           * @description 监控点位编码（与 /tv/monitors 返回的 code 一致，如 ar-01）
+           * @example ar-01
+           */
+          code: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 设备级录像截图分页列表 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "total": 1,
+             *         "page": 1,
+             *         "size": 12,
+             *         "pages": 1,
+             *         "list": [
+             *           {
+             *             "id": 1,
+             *             "monitorCode": "ar-01",
+             *             "monitorName": "高空AR-01",
+             *             "captureTime": "2026-09-28 10:00:00",
+             *             "eventType": "烟火检测",
+             *             "reviewStatus": "PENDING",
+             *             "source": "DEVICE",
+             *             "createdAt": "2026-09-28 10:00:01",
+             *             "hasImage": true,
+             *             "alarmId": null,
+             *             "alarmType": null,
+             *             "zoneCode": "YIXI"
+             *           }
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['TvSnapshotPage'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -678,6 +835,49 @@ export interface components {
        * @example 56°
        */
       angle?: string;
+      /**
+       * @description 防区编码（关联 sys_zone.zone_code，V86 建立防区维度；空表示未划分防区）
+       * @example YIXI
+       */
+      zoneCode?: string | null;
+      /**
+       * @description 防区名称（由 zone_code 解析，如 乙烯区）
+       * @example 乙烯区
+       */
+      zoneName?: string | null;
+    };
+    /** @description 工业电视监控点位摘要（设备下拉/筛选用） */
+    TvMonitorSummary: {
+      /**
+       * @description 点位编码
+       * @example ar-01
+       */
+      code?: string;
+      /**
+       * @description 监控名称
+       * @example 高空AR-01
+       */
+      name?: string;
+      /**
+       * @description 是否在线
+       * @example true
+       */
+      online?: boolean;
+      /**
+       * @description 责任部门
+       * @example 安环部
+       */
+      department?: string | null;
+      /**
+       * @description 防区编码（关联 sys_zone.zone_code，V86 建立防区维度；空表示未划分防区）
+       * @example YIXI
+       */
+      zoneCode?: string | null;
+      /**
+       * @description 防区名称（由 zone_code 解析，如 乙烯区）
+       * @example 乙烯区
+       */
+      zoneName?: string | null;
     };
     /** @description 视频概览卡片项 */
     TvOverviewItem: {
@@ -870,6 +1070,17 @@ export interface components {
        * @example DEVICE
        */
       source?: string | null;
+      /**
+       * Format: int64
+       * @description 关联告警 id（可选，跨域联动：将该抓拍绑定到具体告警，使生产告警详情可精准内嵌关联抓拍）
+       * @example 1024
+       */
+      alarmId?: number | null;
+      /**
+       * @description 关联告警类型（可选）：PRODUCTION 生产 / FIRE 消防 / PERIMETER 周界，与 alarmId 配套区分多告警域来源
+       * @example PRODUCTION
+       */
+      alarmType?: string | null;
     };
     /** @description 录像截图采集入库结果 */
     TvSnapshotIngestResult: {
@@ -948,6 +1159,27 @@ export interface components {
        * @example true
        */
       hasImage?: boolean;
+      /**
+       * Format: int64
+       * @description 关联告警 id（跨域联动；空表示未关联）
+       * @example null
+       */
+      alarmId?: number | null;
+      /**
+       * @description 关联告警类型：PRODUCTION 生产 / FIRE 消防 / PERIMETER 周界；空表示未关联
+       * @example null
+       */
+      alarmType?: string | null;
+      /**
+       * @description 防区编码（关联 sys_zone.zone_code，V86 建立防区维度；空表示未划分防区）
+       * @example YIXI
+       */
+      zoneCode?: string | null;
+      /**
+       * @description 防区名称（由 zone_code 解析，如 乙烯区）
+       * @example 乙烯区
+       */
+      zoneName?: string | null;
     };
     /** @description 录像截图分页列表 */
     TvSnapshotPage: {

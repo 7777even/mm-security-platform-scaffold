@@ -77,6 +77,12 @@ export interface TvSnapshotItem {
   createdAt?: string | null;
   /** 是否含截图字节（供前端决定是否请求 blob 端点） */
   hasImage?: boolean;
+  /** 关联告警 id（跨域联动；空表示未关联） */
+  alarmId?: number | null;
+  /** 关联告警类型：PRODUCTION 生产 / FIRE 消防 / PERIMETER 周界；空表示未关联 */
+  alarmType?: string | null;
+  /** 防区编码（关联 sys_zone.zone_code，V86 建立防区维度；空表示未划分防区） */
+  zoneCode?: string | null;
 }
 
 /** 录像截图分页列表。 */
@@ -193,6 +199,22 @@ export interface TvMonitorDetail {
   location: string;
   height: string;
   angle: string;
+  /** 防区编码（关联 sys_zone.zone_code，V86 建立防区维度；空表示未划分防区） */
+  zoneCode?: string | null;
+  /** 防区名称（由 zone_code 解析） */
+  zoneName?: string | null;
+}
+
+/** 工业电视监控点位摘要（设备下拉/筛选用）。 */
+export interface TvMonitorSummary {
+  code: string;
+  name: string;
+  online: boolean;
+  department?: string | null;
+  /** 防区编码（关联 sys_zone.zone_code，V86 建立防区维度；空表示未划分防区） */
+  zoneCode?: string | null;
+  /** 防区名称（由 zone_code 解析） */
+  zoneName?: string | null;
 }
 
 /** 首屏聚合：概览卡片 + 运行统计 + 维保工单 + 事件分析。 */
@@ -256,12 +278,33 @@ export async function fetchTvMonitor(code: string): Promise<TvMonitorDetail> {
 }
 
 /** 录像截图分页列表：GET /tv/snapshots?page=&size=。前端订阅 tv.snapshot.changed 实时刷新。 */
-export async function fetchTvSnapshots(page = 1, size = 20): Promise<TvSnapshotPage> {
+/** 录像截图列表过滤条件（设备/防区/时间区间）。 */
+export interface TvSnapshotQuery {
+  /** 监控点位编码（按设备维度筛选） */
+  monitorCode?: string;
+  /** 防区编码（关联 sys_zone.zone_code，如 YIXI 乙烯区 / GUANQU 罐区） */
+  zone?: string;
+  /** 采集时间区间起点（含），yyyy-MM-dd HH:mm:ss */
+  startTime?: string;
+  /** 采集时间区间终点（含），yyyy-MM-dd HH:mm:ss */
+  endTime?: string;
+}
+
+export async function fetchTvSnapshots(
+  page = 1,
+  size = 20,
+  query?: TvSnapshotQuery,
+): Promise<TvSnapshotPage> {
   try {
+    const params: Record<string, unknown> = { page, size };
+    if (query?.monitorCode) params.monitorCode = query.monitorCode;
+    if (query?.zone) params.zone = query.zone;
+    if (query?.startTime) params.startTime = query.startTime;
+    if (query?.endTime) params.endTime = query.endTime;
     const data = await request<TvSnapshotPage>({
       url: '/tv/snapshots',
       method: 'GET',
-      params: { page, size },
+      params,
     });
     if (!data || !Array.isArray(data.list)) {
       backendUnavailableWarn('tv', '/tv/snapshots', REASON_CONTRACT_MISMATCH);
@@ -270,6 +313,117 @@ export async function fetchTvSnapshots(page = 1, size = 20): Promise<TvSnapshotP
     return data;
   } catch {
     backendUnavailableWarn('tv', '/tv/snapshots');
+    return EMPTY_TV_SNAPSHOT_PAGE;
+  }
+}
+
+/**
+ * 视频监控点位摘要列表（设备下拉 / 筛选维度）：GET /tv/monitors。
+ * 返回全部点位（含防区），供「设备/防区筛选」二级页设备维度下拉使用。
+ */
+export async function fetchTvMonitors(): Promise<TvMonitorSummary[]> {
+  try {
+    const data = await request<TvMonitorSummary[]>({
+      url: '/tv/monitors',
+      method: 'GET',
+    });
+    if (!data || !Array.isArray(data)) {
+      backendUnavailableWarn('tv', '/tv/monitors', REASON_CONTRACT_MISMATCH);
+      return [];
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('tv', '/tv/monitors');
+    return [];
+  }
+}
+
+/**
+ * 设备级历史回放：GET /tv/monitors/{code}/snapshots。
+ * 返回指定监控点位的录像截图分页列表（最新在前），支持按采集时间区间过滤。
+ */
+export async function fetchTvMonitorSnapshots(
+  code: string,
+  page = 1,
+  size = 20,
+  query?: Pick<TvSnapshotQuery, 'startTime' | 'endTime'>,
+): Promise<TvSnapshotPage> {
+  try {
+    const params: Record<string, unknown> = { page, size };
+    if (query?.startTime) params.startTime = query.startTime;
+    if (query?.endTime) params.endTime = query.endTime;
+    const data = await request<TvSnapshotPage>({
+      url: `/tv/monitors/${code}/snapshots`,
+      method: 'GET',
+      params,
+    });
+    if (!data || !Array.isArray(data.list)) {
+      backendUnavailableWarn('tv', `/tv/monitors/${code}/snapshots`, REASON_CONTRACT_MISMATCH);
+      return EMPTY_TV_SNAPSHOT_PAGE;
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('tv', `/tv/monitors/${code}/snapshots`);
+    return EMPTY_TV_SNAPSHOT_PAGE;
+  }
+}
+
+/**
+ * 按关联告警反向查询录像截图：GET /tv/snapshots?alarmId=&alarmType=（跨域联动精准取数）。
+ * 返回绑定到指定告警的抓拍列表（无则空列表）。
+ */
+export async function fetchTvSnapshotsByAlarm(
+  alarmId: number,
+  alarmType?: string,
+  page = 1,
+  size = 50,
+): Promise<TvSnapshotPage> {
+  try {
+    const params: Record<string, unknown> = { page, size, alarmId };
+    if (alarmType) params.alarmType = alarmType;
+    const data = await request<TvSnapshotPage>({
+      url: '/tv/snapshots',
+      method: 'GET',
+      params,
+    });
+    if (!data || !Array.isArray(data.list)) {
+      backendUnavailableWarn('tv', '/tv/snapshots', REASON_CONTRACT_MISMATCH);
+      return EMPTY_TV_SNAPSHOT_PAGE;
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('tv', '/tv/snapshots');
+    return EMPTY_TV_SNAPSHOT_PAGE;
+  }
+}
+
+/**
+ * 生产报警关联抓拍列表：GET /production/alarms/{id}/snapshots（跨域联动精准取数）。
+ * 供生产告警详情「现场工业电视抓拍」区块使用——数据级关联，取代前端 location 软匹配。
+ * 无关联抓拍返回空列表（total=0），由调用方渲染空态，绝不编造关联。
+ */
+export async function fetchProductionAlarmSnapshots(
+  alarmId: number,
+  page = 1,
+  size = 50,
+): Promise<TvSnapshotPage> {
+  try {
+    const data = await request<TvSnapshotPage>({
+      url: `/production/alarms/${alarmId}/snapshots`,
+      method: 'GET',
+      params: { page, size },
+    });
+    if (!data || !Array.isArray(data.list)) {
+      backendUnavailableWarn(
+        'production',
+        `/production/alarms/${alarmId}/snapshots`,
+        REASON_CONTRACT_MISMATCH,
+      );
+      return EMPTY_TV_SNAPSHOT_PAGE;
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('production', `/production/alarms/${alarmId}/snapshots`);
     return EMPTY_TV_SNAPSHOT_PAGE;
   }
 }

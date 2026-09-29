@@ -10,8 +10,17 @@
     "/emergency-plans/options": {
       "get": {
         "summary": "应急预案选项聚合",
-        "description": "返回应急指挥大屏预案切换所需的全部选项：顶部 Tab、事故类型、设施列表，以及可选预案清单（含所属 Tab/名称/事故类型/设施）。用于预案切换面板的下拉与筛选。",
+        "description": "返回应急指挥大屏预案切换所需的全部选项：顶部 Tab、事故类型、设施列表，以及可选预案清单（含所属 Tab/名称/事故类型/设施/业务域/核预案标记/激活态/调用次数）。用于预案切换面板的下拉与筛选。domain 非空时仅返回该业务域预案（如 production=生产域核预案浏览）。",
         "tags": ["emergency-plan"],
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "description": "业务域过滤：production / fire / perimeter / superior；不传返回全部预案",
+            "schema": { "type": "string", "example": "production" }
+          }
+        ],
         "responses": {
           "200": {
             "description": "应急预案选项聚合数据",
@@ -34,7 +43,12 @@
                         "tab": "flood",
                         "name": "炼油一部防汛预案",
                         "accidentType": "泄漏",
-                        "facility": "炼油一部"
+                        "facility": "炼油一部",
+                        "domain": "production",
+                        "nuclear": true,
+                        "isActive": false,
+                        "invokeCount": 0,
+                        "lastInvokedAt": null
                       }
                     ]
                   }
@@ -117,6 +131,53 @@
                         "isGlobal": false
                       }
                     ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/emergency-plans/{id}/invoke": {
+      "post": {
+        "summary": "一键调用预案",
+        "description": "激活 + 广播 + 留痕：将指定预案在其业务域内置为唯一激活预案，写入调用留痕（操作人取自登录态），并通过 emergency.plan 域实时广播。不向任何物理设备下发控制指令（零下行控制红线）。未命中预案时 data 为 null。",
+        "tags": ["emergency-plan"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "预案 id（fac_emergency_plan.id）",
+            "schema": { "type": "integer", "format": "int64", "example": 1 }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PlanInvokeRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "调用结果（含激活态、调用次数与留痕）",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PlanInvokeResult" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "planId": 1,
+                    "planName": "乙烯储罐火灾处置方案",
+                    "domain": "production",
+                    "isActive": true,
+                    "invokeCount": 3,
+                    "invokedAt": "2026-09-29T09:12:00",
+                    "operator": "admin"
                   }
                 }
               }
@@ -379,7 +440,29 @@
           "tab": { "type": "string", "description": "所属 Tab 键", "example": "flood" },
           "name": { "type": "string", "description": "预案名称", "example": "炼油一部防汛预案" },
           "accidentType": { "type": "string", "description": "事故类型", "example": "泄漏" },
-          "facility": { "type": "string", "description": "关联设施", "example": "炼油一部" }
+          "facility": { "type": "string", "description": "关联设施", "example": "炼油一部" },
+          "domain": {
+            "type": "string",
+            "description": "业务域：production=生产域 / fire=消防域 / perimeter=周界域 / superior=上级单位域",
+            "example": "production"
+          },
+          "nuclear": {
+            "type": "boolean",
+            "description": "核预案标记（重点核生化/核管控类预案）",
+            "example": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "当前是否激活（同域内唯一）",
+            "example": false
+          },
+          "invokeCount": { "type": "integer", "description": "累计一键调用次数", "example": 0 },
+          "lastInvokedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "最近一次调用时间（ISO8601，可空）",
+            "example": null
+          }
         }
       },
       "EmergencyPlanOptions": {
@@ -654,6 +737,52 @@
             "type": "boolean",
             "description": "是否跨阶段全局卡（可选）",
             "example": false
+          }
+        }
+      },
+      "PlanInvokeRequest": {
+        "type": "object",
+        "description": "一键调用预案入参（激活+广播+留痕，不触达物理设备）",
+        "properties": {
+          "note": {
+            "type": "string",
+            "description": "调用备注（可选，如调用场景/指挥员批示）",
+            "example": "生产装置区乙烯储罐火情，启动专项处置预案"
+          }
+        }
+      },
+      "PlanInvokeResult": {
+        "type": "object",
+        "description": "一键调用预案结果",
+        "properties": {
+          "planId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "预案 id",
+            "example": 1
+          },
+          "planName": {
+            "type": "string",
+            "description": "预案名称",
+            "example": "乙烯储罐火灾处置方案"
+          },
+          "domain": { "type": "string", "description": "业务域", "example": "production" },
+          "isActive": {
+            "type": "boolean",
+            "description": "调用后是否激活（同域内唯一）",
+            "example": true
+          },
+          "invokeCount": { "type": "integer", "description": "调用后累计次数", "example": 3 },
+          "invokedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "本次调用时间（ISO8601）",
+            "example": "2026-09-29T09:12:00"
+          },
+          "operator": {
+            "type": "string",
+            "description": "操作人（来自登录态）",
+            "example": "admin"
           }
         }
       },
