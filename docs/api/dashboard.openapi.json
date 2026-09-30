@@ -140,6 +140,56 @@
         }
       }
     },
+    "/dashboard/workstations/{id}": {
+      "get": {
+        "tags": ["dashboard"],
+        "operationId": "getWorkstationById",
+        "summary": "值守工位单条明细",
+        "description": "返回指定工位的明细（前端页内浮层使用）。工位主键为业务字符串（如 WS-01）；未命中返回 NOT_FOUND 业务码（B3 code!=0）。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "工位主键（业务字符串，如 WS-01）"
+          },
+          { "$ref": "./_shared.json#/components/parameters/lang" }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=Workstation）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/Workstation" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": "WS-01",
+                    "name": "中控室工位-01",
+                    "zone": "罐区A",
+                    "online": true
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
     "/dashboard/risk-heatmap": {
       "get": {
         "tags": ["dashboard"],

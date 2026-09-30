@@ -59,6 +59,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/dashboard/workstations/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 值守工位单条明细
+     * @description 返回指定工位的明细（前端页内浮层使用）。工位主键为业务字符串（如 WS-01）；未命中返回 NOT_FOUND 业务码（B3 code!=0）。
+     */
+    get: operations['getWorkstationById'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/dashboard/risk-heatmap': {
     parameters: {
       query?: never;
@@ -447,6 +467,48 @@ export interface operations {
            */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['Workstation'][];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  getWorkstationById: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path: {
+        /** @description 工位主键（业务字符串，如 WS-01） */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=Workstation） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": "WS-01",
+           *         "name": "中控室工位-01",
+           *         "zone": "罐区A",
+           *         "online": true
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['Workstation'];
           };
         };
       };

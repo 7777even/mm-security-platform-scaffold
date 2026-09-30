@@ -431,6 +431,64 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/production/risk-warnings/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 风险预警单条明细
+     * @description 返回指定风险预警的明细（前端页内浮层使用）。id 未命中返回 NOT_FOUND 业务码（B3 code!=0）。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 预警 id */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 风险预警单条明细 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 1,
+             *         "location": "化工区乙烯装置",
+             *         "type": "可燃气体泄漏",
+             *         "time": "2026-03-17 14:05:00",
+             *         "person": "张伟",
+             *         "phone": "13800138000",
+             *         "level": "red",
+             *         "levelLabel": "重大风险"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['RiskWarningItem'];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/production/personnel': {
     parameters: {
       query?: never;
