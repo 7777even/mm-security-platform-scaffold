@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
@@ -10,6 +10,7 @@ import {
 } from '@/services/production';
 import { openProductionDeviceList } from '../../../lib/composables/useProductionDeviceListView';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
+import type { OverviewItemAction } from '../../../lib/overviewItemAction';
 
 const router = useRouter();
 const { scaleAreaCount } = usePlantArea();
@@ -29,6 +30,12 @@ onMounted(async () => {
    同时作为「分组」与「点击行为」的单一事实源，避免按 name 散落写死。 */
 const COMMUNICATION_DEVICE_NAMES = ['广播', '电话'];
 
+/* 交互语义角标与点击分支共用同一判定，保证「角标写什么就真的做什么」：
+   通讯设备 → navigate（跳独立子应用页）；其余生产设备 → expand（就地开左侧清单抽屉）。 */
+function deviceAction(item: OverviewGridItemType): OverviewItemAction {
+  return COMMUNICATION_DEVICE_NAMES.includes(item.name) ? 'navigate' : 'expand';
+}
+
 const productionDevices = computed(() =>
   deviceItems.value.filter((i) => !COMMUNICATION_DEVICE_NAMES.includes(i.name)),
 );
@@ -37,7 +44,7 @@ const communicationDevices = computed(() =>
 );
 
 function openDevice(item: OverviewGridItemType) {
-  if (COMMUNICATION_DEVICE_NAMES.includes(item.name)) {
+  if (deviceAction(item) === 'navigate') {
     const tab = item.name === '广播' ? 'broadcast' : 'phone';
     void router.push({ name: 'productionCommunication', query: { tab } });
     return;
@@ -63,6 +70,7 @@ function openDevice(item: OverviewGridItemType) {
               :image="item.image"
               :name="item.name"
               :count="scaleAreaCount(item.count)"
+              :action="deviceAction(item)"
             />
           </button>
         </div>
@@ -75,13 +83,14 @@ function openDevice(item: OverviewGridItemType) {
             v-for="item in communicationDevices"
             :key="item.id"
             type="button"
-            class="overview-grid__btn overview-grid__btn--link"
+            class="overview-grid__btn"
             @click="openDevice(item)"
           >
             <OverviewGridItem
               :image="item.image"
               :name="item.name"
               :count="scaleAreaCount(item.count)"
+              :action="deviceAction(item)"
             />
           </button>
         </div>
@@ -121,7 +130,9 @@ function openDevice(item: OverviewGridItemType) {
 .overview-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-auto-rows: 70px;
+
+  /* 与「生产设施总览」共用同一行高令牌，避免两面板卡片高度不一致。 */
+  grid-auto-rows: var(--overview-item-h, 70px);
   gap: 12px;
   align-content: start;
 }
@@ -139,20 +150,6 @@ function openDevice(item: OverviewGridItemType) {
   height: 100%;
 }
 
-.overview-grid__btn:hover :deep(.overview-item) {
-  border-color: var(--c-0-180-255-50);
-  background: var(--c-0-35-70-55);
-}
-
-/* 通讯设备点击会跳转到独立页，用角标提前暗示「前往」行为 */
-.overview-grid__btn--link::after {
-  content: '›';
-  position: absolute;
-  top: 4px;
-  right: 7px;
-  font-size: 15px;
-  line-height: 1;
-  color: var(--color-accent);
-  opacity: 0.85;
-}
+/* 悬停态与「前往 / 展开」角标均由 OverviewGridItem 统一提供：
+   原先此处自写「通讯设备 › 角标」，只有它一类卡有提示、其余跨页卡漏标，故已移除。 */
 </style>

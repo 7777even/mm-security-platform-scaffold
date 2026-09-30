@@ -19,4 +19,8 @@
   --sidebar-width-right: 419px;
   --font-display: 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
   --font-body: 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans SC', sans-serif;
+
+  /* 总览网格卡片行高（生产应急「生产设施总览 / 设备总览」共用的唯一规格源）：
+     曾一处用 1fr 拉伸、另一处写死 70px，造成相邻两面板卡片实测 48.9px vs 70px 不一致。 */
+  --overview-item-h: 70px;
 }

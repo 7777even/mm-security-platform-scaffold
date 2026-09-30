@@ -177,14 +177,18 @@ const shellDrawerActive = computed(() => productionDeviceDrawerActive.value);
 /*
  * 左栏四段比例：设备台账需 ≥1.5 段才能露出数据行（表头 30px + 行高 38px），
  * 原来「1fr」仅余 34px 可视区 → 一行数据都看不见（表格像空的）；值守工位在
- * 0.9 段时其内容刚好完整容纳（实测 clientHeight === scrollHeight），故让出高度。
+ * 0.9 段时其内容刚好完整容纳，故让出高度。
+ *
+ * 「生产设施总览」原为 1.15 段：其 5 张卡（3 行 × 70px）在该高度下第 2 行会被裁掉 13px。
+ * 调成与「设备总览」同为 1.25 段后，两个总览面板等高（实测各 226px），前两行卡片
+ * 完整可见、第 5 张「储罐」经面板内滚动条可达；设备台账 / 值守工位高度仅各降 ≈6/3px。
  */
 .sidebar--left {
   /* 与其余大屏页签同宽（消防/治安/电视/应急指挥侧栏均 414–419px）：
      原写死 338px（--layout-aside-w-narrow）是全大屏唯一一例，视觉上左右不对称、面板比别页窄一圈。 */
   width: var(--sidebar-width);
   grid-template-rows:
-    minmax(0, 1.15fr)
+    minmax(0, 1.25fr)
     minmax(0, 1.25fr)
     minmax(0, 1.6fr)
     minmax(0, 0.9fr);
