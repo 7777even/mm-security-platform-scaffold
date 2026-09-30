@@ -28,6 +28,13 @@ const visibleEventTotal = computed(() => {
 use([PieChart, CanvasRenderer]);
 const alarmListOpen = ref(false);
 
+/** 报警时间范围（天）：绑定下拉，传入 FireAlarmListDialog 真实裁剪列表窗口。null=全部。 */
+const rangeDays = ref<number | null>(null);
+function onRangeChange(e: Event) {
+  const v = (e.target as HTMLSelectElement).value;
+  rangeDays.value = v ? Number(v) : null;
+}
+
 const pieOption = computed(() => ({
   series: [
     {
@@ -59,10 +66,16 @@ const pieOption = computed(() => ({
       </button>
     </template>
     <template #header-extra>
-      <select class="event-analysis__range">
-        <option>7天</option>
-        <option>30天</option>
-        <option>90天</option>
+      <select
+        class="event-analysis__range"
+        :value="rangeDays ?? ''"
+        aria-label="报警时间范围"
+        @change="onRangeChange"
+      >
+        <option value="">全部</option>
+        <option value="7">7天</option>
+        <option value="30">30天</option>
+        <option value="90">90天</option>
       </select>
     </template>
 
@@ -85,6 +98,7 @@ const pieOption = computed(() => ({
     <FireAlarmListDialog
       :open="alarmListOpen"
       initial-source="视频识别"
+      :initial-range-days="rangeDays"
       @close="alarmListOpen = false"
     />
   </PanelCard>

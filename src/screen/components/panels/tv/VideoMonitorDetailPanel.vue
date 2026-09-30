@@ -11,6 +11,7 @@ import {
 } from '@/services/tv';
 
 const props = defineProps<{
+  /** 单监控点模式（基础信息/告警信息/视频回放）。 */
   monitor: TvMonitorDetail;
 }>();
 
@@ -28,9 +29,9 @@ const activeTab = ref<(typeof tabs)[number]['key']>('basic');
 const videoDialogOpen = ref(false);
 
 /**
- * 真实抓拍回放：按本监控 monitorCode 过滤工业电视录像截图（fac_tv_snapshot 真实表），
- * 不再展示写死的仿真图。无真实媒体网关（NoOpTvSourceAdapter 返回空），故用真实抓拍帧
- * 时间轴替代视频流——不造假数据。
+ * 真实抓拍：按本监控 monitorCode 服务端过滤（fac_tv_snapshot 真实表）。
+ * 无真实媒体网关（NoOpTvSourceAdapter 返回空），故用真实抓拍帧时间轴替代视频流——
+ * 不造假数据。同一份 monitorSnapshots 同时驱动「告警信息」(列表) 与「视频回放」(网格) 两个 Tab。
  */
 const monitorSnapshots = ref<TvSnapshotItem[]>([]);
 const snapshotUrls = ref<Record<number, string | null>>({});
@@ -50,26 +51,28 @@ const lightboxUrl = computed(() =>
   lightboxId.value != null ? (snapshotUrls.value[lightboxId.value] ?? null) : null,
 );
 
+const loadKey = computed(() => `m:${props.monitor.id}`);
+
 watch(
-  () => props.monitor.id,
-  (code) => {
+  loadKey,
+  () => {
     activeTab.value = 'basic';
     videoDialogOpen.value = false;
     lightboxId.value = null;
-    void loadMonitorSnapshots(code);
+    void loadSnapshots();
   },
   { immediate: true },
 );
 
-async function loadMonitorSnapshots(code: string) {
+async function loadSnapshots() {
   monitorSnapshots.value = [];
   snapshotUrls.value = {};
   try {
-    const page = await fetchTvSnapshots(1, 200);
-    const filtered = (page.list ?? []).filter((s) => s.monitorCode === code);
-    monitorSnapshots.value = filtered;
+    const page = await fetchTvSnapshots(1, 200, { monitorCode: props.monitor.id });
+    const list = page.list ?? [];
+    monitorSnapshots.value = list;
     await Promise.all(
-      filtered.map(async (s) => {
+      list.map(async (s) => {
         snapshotUrls.value[s.id] = s.hasImage ? await fetchTvSnapshotUrl(s.id) : null;
       }),
     );
@@ -91,6 +94,8 @@ function openLightbox(id: number) {
 function closeLightbox() {
   lightboxId.value = null;
 }
+
+const headerTitle = computed(() => props.monitor.name);
 
 const infoRows = computed(() => [
   { label: '监控名称', value: props.monitor.name },
@@ -128,7 +133,7 @@ onUnmounted(() => {
         :src="tvAssets.videoMonitorDetail.icon"
         alt=""
       />
-      <h3 class="video-monitor-detail__title">监控详情</h3>
+      <h3 class="video-monitor-detail__title">{{ headerTitle }}</h3>
       <button
         type="button"
         class="video-monitor-detail__back"
@@ -189,7 +194,27 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <div v-else-if="activeTab === 'alarm'" class="detail-placeholder">暂无告警记录</div>
+      <div v-else-if="activeTab === 'alarm'" class="detail-alarm">
+        <ul v-if="monitorSnapshots.length" class="alarm-list">
+          <li
+            v-for="snap in monitorSnapshots"
+            :key="snap.id"
+            type="button"
+            class="alarm-list__item"
+            :title="`${snap.captureTime || snap.createdAt || ''} · ${snap.eventType || '抓拍'}`"
+            @click="openLightbox(snap.id)"
+          >
+            <span
+              class="alarm-list__dot"
+              :class="{ 'alarm-list__dot--manual': snap.source === 'MANUAL' }"
+            />
+            <span class="alarm-list__event">{{ snap.eventType || '抓拍' }}</span>
+            <span class="alarm-list__monitor">{{ snap.monitorName || '—' }}</span>
+            <span class="alarm-list__time">{{ snap.captureTime || snap.createdAt || '—' }}</span>
+          </li>
+        </ul>
+        <div v-else class="detail-placeholder">该监控暂无关联抓拍记录</div>
+      </div>
 
       <div v-else class="detail-playback">
         <div v-if="monitorSnapshots.length" class="playback-grid">
@@ -232,7 +257,7 @@ onUnmounted(() => {
 
     <SurveillanceVideoDialog
       :open="videoDialogOpen"
-      :title="`${monitor.name} · 最新抓拍`"
+      :title="`${headerTitle} · 最新抓拍`"
       :image-url="
         latestSnapshot && snapshotUrls[latestSnapshot.id]
           ? (snapshotUrls[latestSnapshot.id] as string)
@@ -249,7 +274,7 @@ onUnmounted(() => {
           <figure class="playback-lightbox__dialog" role="dialog" aria-modal="true" @click.stop>
             <header class="playback-lightbox__header">
               <h3 class="playback-lightbox__title">
-                {{ lightboxItem.monitorName || monitor.name }} 抓拍详情
+                {{ lightboxItem.monitorName || monitor.name || '抓拍' }} 抓拍详情
               </h3>
               <button type="button" class="playback-lightbox__close" @click="closeLightbox">
                 ×
@@ -476,6 +501,74 @@ onUnmounted(() => {
   min-height: 200px;
   font-size: 14px;
   color: #8eb6e8;
+}
+
+.detail-alarm {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.alarm-list {
+  flex: 1;
+  min-height: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0 2px 0 0;
+  overflow-y: auto;
+}
+
+.alarm-list__item {
+  display: grid;
+  grid-template-columns: auto 88px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 8px;
+  border-bottom: 1px solid rgb(0 110 190 / 14%);
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.alarm-list__item:hover {
+  background: rgb(0 45 88 / 45%);
+}
+
+.alarm-list__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  box-shadow: 0 0 6px rgb(255 90 90 / 55%);
+  flex-shrink: 0;
+}
+
+.alarm-list__dot--manual {
+  background: #7cdbff;
+  box-shadow: 0 0 6px rgb(124 219 255 / 55%);
+}
+
+.alarm-list__event {
+  font-size: 13px;
+  color: var(--color-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alarm-list__monitor {
+  font-size: 12px;
+  color: #8eb6e8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alarm-list__time {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 .detail-playback {

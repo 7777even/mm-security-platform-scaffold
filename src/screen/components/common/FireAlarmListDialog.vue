@@ -13,7 +13,20 @@ import { fireAlarmChanged } from '../../lib/composables/useScreenAlarmFeed';
 const props = defineProps<{
   open: boolean;
   initialSource?: string;
+  /** 报警时间范围（天）：非空时按「采集时间 >= now-N天」真实裁剪列表；null/0=全部。 */
+  initialRangeDays?: number | null;
 }>();
+
+/** 时间范围下限（YYYY-MM-DD HH:mm:ss），与 item.time 同格式做字符串比较。 */
+const rangeCutoff = computed(() => {
+  const days = props.initialRangeDays;
+  if (!days || days <= 0) return null;
+  const d = new Date(Date.now() - days * 86400000);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(
+    d.getMinutes(),
+  )}:${pad(d.getSeconds())}`;
+});
 
 const emit = defineEmits<{
   close: [];
@@ -106,6 +119,7 @@ const filteredItems = computed(() =>
       return false;
     if (statusFilter.value !== SENTINEL_STATUS && item.status !== statusFilter.value) return false;
     if (timeRange.value.trim() && !item.time.includes(timeRange.value.trim())) return false;
+    if (rangeCutoff.value && item.time < rangeCutoff.value) return false;
     return true;
   }),
 );

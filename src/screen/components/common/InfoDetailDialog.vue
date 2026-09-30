@@ -21,14 +21,28 @@ defineProps<{
   fields: DetailField[];
   /** 可选：真实明细列表（如应急力量各类别台账前若干项），渲染在字段区下方。 */
   items?: DetailListItem[];
+  /** 可选：明细条目可点击（如监控点位点击打开视频详情抽屉），点击时 emit itemClick。 */
+  itemsClickable?: boolean;
+  /** 可选：底部操作按钮文案；提供则渲染按钮并 emit action（如「跳真实数据」）。 */
+  actionLabel?: string;
 }>();
 
 const emit = defineEmits<{
   close: [];
+  itemClick: [item: DetailListItem, index: number];
+  action: [];
 }>();
 
 function closeDialog() {
   emit('close');
+}
+
+function onItemClick(item: DetailListItem, index: number) {
+  emit('itemClick', item, index);
+}
+
+function onAction() {
+  emit('action');
 }
 </script>
 
@@ -67,6 +81,11 @@ function closeDialog() {
                 v-for="(item, i) in items"
                 :key="`${item.primary}-${i}`"
                 class="info-detail__item"
+                :class="{ 'info-detail__item--clickable': itemsClickable }"
+                :role="itemsClickable ? 'button' : undefined"
+                :tabindex="itemsClickable ? 0 : undefined"
+                @click="onItemClick(item, i)"
+                @keydown.enter="onItemClick(item, i)"
               >
                 <span class="info-detail__item-name">{{ item.primary }}</span>
                 <span v-if="item.secondary" class="info-detail__item-meta">{{
@@ -79,6 +98,12 @@ function closeDialog() {
               暂无可展示的明细
             </p>
           </div>
+
+          <footer v-if="actionLabel" class="info-detail__footer">
+            <button type="button" class="info-detail__action" @click="onAction">
+              {{ actionLabel }}
+            </button>
+          </footer>
         </section>
       </div>
     </Transition>
@@ -205,6 +230,20 @@ function closeDialog() {
   border-bottom: none;
 }
 
+/* 明细条目可点态（如监控点位 → 视频详情抽屉），与 aux-item--clickable 同款悬停反馈 */
+.info-detail__item--clickable {
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.info-detail__item--clickable:hover,
+.info-detail__item--clickable:focus-visible {
+  background: rgb(0 40 80 / 55%);
+  outline: none;
+}
+
 .info-detail__item-name {
   font-size: 14px;
   color: var(--color-text-strong);
@@ -222,6 +261,33 @@ function closeDialog() {
   color: var(--color-text-muted, #9aadc4);
   font-size: 13px;
   text-align: center;
+}
+
+.info-detail__footer {
+  flex-shrink: 0;
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--panel-head-line, rgb(0 110 190 / 28%));
+}
+
+.info-detail__action {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgb(0 160 255 / 45%);
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgb(0 60 120 / 70%), rgb(0 36 78 / 70%));
+  color: #d6ecff;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.info-detail__action:hover,
+.info-detail__action:focus-visible {
+  background: linear-gradient(180deg, rgb(0 84 160 / 78%), rgb(0 52 104 / 78%));
+  border-color: rgb(0 190 255 / 65%);
+  outline: none;
 }
 
 .info-detail-fade-enter-active,
