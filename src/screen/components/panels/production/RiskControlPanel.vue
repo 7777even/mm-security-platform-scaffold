@@ -1,19 +1,21 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
-import InfoDetailDialog, { type DetailListItem } from '../../common/InfoDetailDialog.vue';
+import InfoDetailDialog, {
+  type DetailListItem,
+  type DetailField,
+} from '../../common/InfoDetailDialog.vue';
 import { Warning } from '@element-plus/icons-vue';
 import {
   fetchProductionOverview,
   fetchProductionRiskWarnings,
+  fetchRiskWarningById,
   type RiskSummary,
   type RiskWarningItem,
 } from '@/services/production';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const { filterByPlantArea, scaleAreaCount } = usePlantArea();
-const router = useRouter();
 const riskSummary = ref<RiskSummary>({ red: 0, orange: 0, yellow: 0 });
 const riskWarnings = ref<RiskWarningItem[]>([]);
 
@@ -51,10 +53,39 @@ function openAllList() {
   listOpen.value = true;
 }
 
-// —— 风险卡 / 列表项点击 → 跳转风险预警详情页（真实后端 GET /production/risk-warnings/{id}）——
-function goRiskWarningDetail(item: RiskWarningItem) {
-  void router.push({ name: 'productionRiskWarningDetail', params: { warningId: item.id } });
+// —— 风险卡 / 列表项点击 → 页内浮层展示单条预警明细（真实后端 GET /production/risk-warnings/{id}，与 /tv 视频监控概览同范式，不跳页）——
+const detailOpen = ref(false);
+const detailLoading = ref(false);
+const detailWarning = ref<RiskWarningItem | null>(null);
+
+async function openRiskDetail(item: RiskWarningItem) {
+  listOpen.value = false;
+  detailOpen.value = true;
+  detailLoading.value = true;
+  detailWarning.value = null;
+  try {
+    detailWarning.value = await fetchRiskWarningById(item.id);
+  } catch {
+    detailWarning.value = null;
+  } finally {
+    detailLoading.value = false;
+  }
 }
+
+const detailFields = computed<DetailField[]>(() => {
+  const w = detailWarning.value;
+  if (!w) {
+    return [{ label: '状态', value: detailLoading.value ? '加载中…' : '未获取到预警明细' }];
+  }
+  return [
+    { label: '风险等级', value: w.levelLabel },
+    { label: '预警类型', value: w.type },
+    { label: '预警位置', value: w.location },
+    { label: '预警时间', value: w.time },
+    { label: '责任人', value: w.person },
+    { label: '联系方式', value: w.phone },
+  ];
+});
 
 const listFields = computed(() => [
   { label: '实时预警', value: `${listSource.value.length} 条` },
@@ -70,7 +101,7 @@ const listItems = computed<DetailListItem[]>(() =>
 
 function handleListItemClick(_item: DetailListItem, index: number) {
   const w = listSource.value[index];
-  if (w) goRiskWarningDetail(w);
+  if (w) openRiskDetail(w);
 }
 </script>
 
@@ -120,8 +151,8 @@ function handleListItemClick(_item: DetailListItem, index: number) {
           class="risk-card risk-card--clickable"
           role="button"
           tabindex="0"
-          @click="goRiskWarningDetail(item)"
-          @keydown.enter="goRiskWarningDetail(item)"
+          @click="openRiskDetail(item)"
+          @keydown.enter="openRiskDetail(item)"
         >
           <div class="risk-card__head">
             <div class="risk-card__tag" :class="`risk-card__tag--${item.level}`">
@@ -154,6 +185,15 @@ function handleListItemClick(_item: DetailListItem, index: number) {
       items-clickable
       @close="listOpen = false"
       @item-click="handleListItemClick"
+    />
+
+    <InfoDetailDialog
+      :open="detailOpen"
+      :title="
+        detailWarning?.levelLabel ? `风险预警详情 · ${detailWarning.levelLabel}` : '风险预警详情'
+      "
+      :fields="detailFields"
+      @close="detailOpen = false"
     />
   </PanelCard>
 </template>

@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
-import { fetchDevicePage, type DeviceItem } from '@/services/device';
+import InfoDetailDialog, { type DetailField } from '../../common/InfoDetailDialog.vue';
+import { fetchDevicePage, fetchDeviceByCode, type DeviceItem } from '@/services/device';
 import { backendUnavailableWarn } from '@/services/backendFallback';
-import { toDeviceLedgerItem, type DeviceLedgerItem } from '../../../lib/adapters/deviceAdapter';
+import {
+  toDeviceLedgerItem,
+  type DeviceLedgerItem,
+  deviceTypeLabel,
+  deviceStatusLabel,
+} from '../../../lib/adapters/deviceAdapter';
 
 const loading = ref(true);
 const failed = ref(false);
@@ -63,12 +68,39 @@ const visiblePages = computed(() => {
   return pages;
 });
 
-// —— 行点击 → 跳转设备台账详情页（真实后端 GET /devices/{code}，落图独立子应用）——
-const router = useRouter();
+// —— 行点击 → 页内浮层展示设备明细（真实后端 GET /devices/{code}，与 /tv 视频监控概览同范式，不跳页）——
+const detailOpen = ref(false);
+const detailLoading = ref(false);
+const detailDevice = ref<DeviceItem | null>(null);
 
-function goDeviceDetail(item: DeviceLedgerItem) {
-  void router.push({ name: 'productionDeviceDetail', params: { deviceCode: item.deviceCode } });
+async function openDeviceDetail(item: DeviceLedgerItem) {
+  detailOpen.value = true;
+  detailLoading.value = true;
+  detailDevice.value = null;
+  try {
+    detailDevice.value = await fetchDeviceByCode(item.deviceCode);
+  } catch {
+    detailDevice.value = null;
+  } finally {
+    detailLoading.value = false;
+  }
 }
+
+const detailFields = computed<DetailField[]>(() => {
+  const d = detailDevice.value;
+  if (!d) {
+    return [{ label: '状态', value: detailLoading.value ? '加载中…' : '未获取到设备明细' }];
+  }
+  return [
+    { label: '设备编码', value: d.deviceCode },
+    { label: '设备名称', value: d.deviceName },
+    { label: '设备类型', value: deviceTypeLabel(d.deviceType) },
+    { label: '所属区域', value: d.zone },
+    { label: '运行状态', value: deviceStatusLabel(d.status) },
+    { label: '经度', value: d.lon != null ? String(d.lon) : '—' },
+    { label: '纬度', value: d.lat != null ? String(d.lat) : '—' },
+  ];
+});
 
 onMounted(async () => {
   try {
@@ -127,8 +159,8 @@ onMounted(async () => {
             class="ledger__row ledger__row--clickable"
             role="button"
             tabindex="0"
-            @click="goDeviceDetail(item)"
-            @keydown.enter="goDeviceDetail(item)"
+            @click="openDeviceDetail(item)"
+            @keydown.enter="openDeviceDetail(item)"
           >
             <span class="ledger__code" :title="item.deviceCode">{{ item.deviceCode }}</span>
             <span class="ledger__name" :title="item.name">{{ item.name }}</span>
@@ -170,6 +202,13 @@ onMounted(async () => {
         </div>
       </template>
     </div>
+
+    <InfoDetailDialog
+      :open="detailOpen"
+      :title="detailDevice?.deviceName ? `设备详情 · ${detailDevice.deviceName}` : '设备详情'"
+      :fields="detailFields"
+      @close="detailOpen = false"
+    />
   </PanelCard>
 </template>
 

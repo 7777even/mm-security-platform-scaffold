@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
-import { fetchWorkstations, type Workstation } from '@/services/dashboard';
+import InfoDetailDialog, { type DetailField } from '../../common/InfoDetailDialog.vue';
+import { fetchWorkstations, fetchWorkstationById, type Workstation } from '@/services/dashboard';
 import { backendUnavailableWarn } from '@/services/backendFallback';
 
 const loading = ref(true);
@@ -11,12 +11,36 @@ const workstations = ref<Workstation[]>([]);
 
 const onlineCount = computed(() => workstations.value.filter((w) => w.online).length);
 
-// —— 条目点击 → 跳转值守工位详情页（真实后端 GET /dashboard/workstations/{id}）——
-const router = useRouter();
+// —— 条目点击 → 页内浮层展示值守工位明细（真实后端 GET /dashboard/workstations/{id}，与 /tv 视频监控概览同范式，不跳页）——
+const detailOpen = ref(false);
+const detailLoading = ref(false);
+const detailWs = ref<Workstation | null>(null);
 
-function goWorkstationDetail(item: Workstation) {
-  void router.push({ name: 'productionWorkstationDetail', params: { workstationId: item.id } });
+async function openWorkstationDetail(item: Workstation) {
+  detailOpen.value = true;
+  detailLoading.value = true;
+  detailWs.value = null;
+  try {
+    detailWs.value = await fetchWorkstationById(item.id);
+  } catch {
+    detailWs.value = null;
+  } finally {
+    detailLoading.value = false;
+  }
 }
+
+const detailFields = computed<DetailField[]>(() => {
+  const w = detailWs.value;
+  if (!w) {
+    return [{ label: '状态', value: detailLoading.value ? '加载中…' : '未获取到工位明细' }];
+  }
+  return [
+    { label: '工位名称', value: w.name },
+    { label: '工位编号', value: w.id },
+    { label: '所属区域', value: w.zone },
+    { label: '运行状态', value: w.online ? '在线' : '离线' },
+  ];
+});
 
 // 按区域分组，组内保持后端返回顺序
 const grouped = computed(() => {
@@ -68,8 +92,8 @@ onMounted(async () => {
               class="ws__item ws__item--clickable"
               role="button"
               tabindex="0"
-              @click="goWorkstationDetail(item)"
-              @keydown.enter="goWorkstationDetail(item)"
+              @click="openWorkstationDetail(item)"
+              @keydown.enter="openWorkstationDetail(item)"
             >
               <span class="ws__dot" :class="item.online ? 'ws__dot--on' : 'ws__dot--off'" />
               <span class="ws__name">{{ item.name }}</span>
@@ -81,6 +105,13 @@ onMounted(async () => {
         </div>
       </div>
     </div>
+
+    <InfoDetailDialog
+      :open="detailOpen"
+      :title="detailWs?.name ? `值守工位详情 · ${detailWs.name}` : '值守工位详情'"
+      :fields="detailFields"
+      @close="detailOpen = false"
+    />
   </PanelCard>
 </template>
 
