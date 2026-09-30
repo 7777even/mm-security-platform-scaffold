@@ -652,8 +652,8 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
 
 .video-point-selector {
   position: absolute;
-  top: calc(var(--header-height) + 66px);
-  left: calc(var(--sidebar-width) + 208px);
+  top: calc(var(--header-height) + 108px);
+  left: calc(var(--sidebar-width) + 28px);
   z-index: var(--z-marker);
   pointer-events: auto;
   display: flex;
@@ -715,6 +715,6 @@ const { anchorStyle: alarmAnchorStyle } = useCesiumScreenAnchor(() => {
 }
 
 :global(.map-page-shell--clean) .video-point-selector {
-  left: 204px;
+  left: 24px;
 }
 </style>
