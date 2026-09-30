@@ -97,6 +97,149 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/tv/maintenance-orders': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 维修工单明细列表
+     * @description 返回维修工单明细（V88 新建 fac_tv_maintenance_order 真实台账）。可按 order_status 过滤（PENDING 未接单 / PROCESSING 处理中 / OVERTIME 已超时），不传返回全部。供概览工单卡片下钻真实工单（与重大危险源列出真实清单同构）。
+     */
+    get: {
+      parameters: {
+        query?: {
+          /**
+           * @description 工单状态过滤：PENDING 未接单 / PROCESSING 处理中 / OVERTIME 已超时；空=全部
+           * @example PENDING
+           */
+          status?: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 维修工单明细列表 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": [
+             *         {
+             *           "id": 1,
+             *           "orderNo": "WO-2026-0901",
+             *           "deviceName": "乙烯装置球机-01",
+             *           "deviceCode": "CAM-YX-01",
+             *           "faultDesc": "画面持续模糊",
+             *           "status": "PENDING",
+             *           "statusLabel": "未接单",
+             *           "assignee": null,
+             *           "department": "储运车间",
+             *           "zoneCode": "YIXI",
+             *           "createdAt": "2026-09-28 08:12:33",
+             *           "planFinishTime": null,
+             *           "actualFinishTime": null,
+             *           "handleDesc": null
+             *         }
+             *       ]
+             *     }
+             */
+            'application/json': components['schemas']['TvMaintenanceOrderItem'][];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/tv/maintenance-orders/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 单个维修工单明细
+     * @description 按工单 id 返回维修工单明细（V88 新建 fac_tv_maintenance_order 真实台账）。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /**
+           * @description 工单 id
+           * @example 1
+           */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 维修工单明细 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 1,
+             *         "orderNo": "WO-2026-0901",
+             *         "deviceName": "乙烯装置球机-01",
+             *         "deviceCode": "CAM-YX-01",
+             *         "faultDesc": "画面持续模糊",
+             *         "status": "PENDING",
+             *         "statusLabel": "未接单",
+             *         "assignee": null,
+             *         "department": "储运车间",
+             *         "zoneCode": "YIXI",
+             *         "createdAt": "2026-09-28 08:12:33",
+             *         "planFinishTime": null,
+             *         "actualFinishTime": null,
+             *         "handleDesc": null
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['TvMaintenanceOrderItem'];
+          };
+        };
+        /** @description 工单不存在 */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/tv/inspections': {
     parameters: {
       query?: never;
@@ -684,6 +827,20 @@ export interface paths {
             [name: string]: unknown;
           };
           content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "code": "ar-09",
+             *         "name": "高空AR-09",
+             *         "online": true,
+             *         "department": "安环部",
+             *         "zoneCode": "YIXI",
+             *         "zoneName": "乙烯区"
+             *       }
+             *     }
+             */
             'application/json': components['schemas']['TvMonitorSummary'];
           };
         };
@@ -1002,6 +1159,11 @@ export interface components {
        * @example 乙烯区
        */
       zoneName?: string | null;
+      /**
+       * @description 监控分类 code（V87）：PRODUCTION 生产设施 / BOUNDARY 厂界 / CLOSED_GATE 封闭入口 / OTHER_GATE 其他入口 / OTHER 其它；空表示未分类
+       * @example PRODUCTION
+       */
+      monitorCategory?: string | null;
     };
     /** @description 监控点位新增/更新请求（设备/防区管理 CRUD） */
     TvMonitorUpsertRequest: {
@@ -1041,6 +1203,11 @@ export interface components {
        */
       zoneCode?: string | null;
       /**
+       * @description 监控分类 code：PRODUCTION/BOUNDARY/CLOSED_GATE/OTHER_GATE/OTHER。落库 fac_tv_monitor.monitor_category，用于概览实时聚合与下钻
+       * @example PRODUCTION
+       */
+      monitorCategory?: string | null;
+      /**
        * @description 安装位置坐标描述
        * @example 乙烯区东北角
        */
@@ -1079,6 +1246,11 @@ export interface components {
        * @example 0
        */
       iconIndex?: number;
+      /**
+       * @description 分类 code：重大危险源=MAJOR_HAZARD；其余类=PRODUCTION/BOUNDARY/CLOSED_GATE/OTHER_GATE/OTHER。前端据此下钻到对应分类的真实监控点位（fac_tv_monitor.monitor_category）；空表示无下钻
+       * @example PRODUCTION
+       */
+      category?: string | null;
     };
     /** @description 运行统计（含事件总数） */
     TvOperationStats: {
@@ -1130,6 +1302,80 @@ export interface components {
        * @example grey
        */
       tone?: string;
+    };
+    /** @description 维修工单明细项（按状态下钻真实工单） */
+    TvMaintenanceOrderItem: {
+      /**
+       * Format: int64
+       * @description 工单 id
+       * @example 1
+       */
+      id?: number;
+      /**
+       * @description 工单编号（如 WO-2026-0901）
+       * @example WO-2026-0901
+       */
+      orderNo?: string;
+      /**
+       * @description 设备/点位名称
+       * @example 乙烯装置球机-01
+       */
+      deviceName?: string;
+      /**
+       * @description 设备编码
+       * @example CAM-YX-01
+       */
+      deviceCode?: string | null;
+      /**
+       * @description 故障描述
+       * @example 画面持续模糊
+       */
+      faultDesc?: string | null;
+      /**
+       * @description 状态 code：PENDING 未接单 / PROCESSING 处理中 / OVERTIME 已超时
+       * @example PENDING
+       */
+      status?: string | null;
+      /**
+       * @description 状态中文（未接单/处理中/已超时）
+       * @example 未接单
+       */
+      statusLabel?: string | null;
+      /**
+       * @description 派单人/负责人
+       * @example 李伟
+       */
+      assignee?: string | null;
+      /**
+       * @description 责任部门
+       * @example 电仪车间
+       */
+      department?: string | null;
+      /**
+       * @description 防区编码（关联 sys_zone.zone_code）
+       * @example YIXI
+       */
+      zoneCode?: string | null;
+      /**
+       * @description 创建时间
+       * @example 2026-09-28 08:12:33
+       */
+      createdAt?: string | null;
+      /**
+       * @description 计划完成时间
+       * @example 2026-09-30 18:00:00
+       */
+      planFinishTime?: string | null;
+      /**
+       * @description 实际完成时间（进行中/已超时为空）
+       * @example null
+       */
+      actualFinishTime?: string | null;
+      /**
+       * @description 处理说明
+       * @example 已派单，等待备件
+       */
+      handleDesc?: string | null;
     };
     /** @description 事件分析构成项 */
     TvEventBreakdownItem: {

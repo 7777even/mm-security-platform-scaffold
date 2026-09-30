@@ -51,6 +51,106 @@
         }
       }
     },
+    "/tv/maintenance-orders": {
+      "get": {
+        "summary": "维修工单明细列表",
+        "description": "返回维修工单明细（V88 新建 fac_tv_maintenance_order 真实台账）。可按 order_status 过滤（PENDING 未接单 / PROCESSING 处理中 / OVERTIME 已超时），不传返回全部。供概览工单卡片下钻真实工单（与重大危险源列出真实清单同构）。",
+        "tags": ["tv"],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "工单状态过滤：PENDING 未接单 / PROCESSING 处理中 / OVERTIME 已超时；空=全部",
+            "schema": { "type": "string" },
+            "example": "PENDING"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "维修工单明细列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/TvMaintenanceOrderItem" }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "orderNo": "WO-2026-0901",
+                      "deviceName": "乙烯装置球机-01",
+                      "deviceCode": "CAM-YX-01",
+                      "faultDesc": "画面持续模糊",
+                      "status": "PENDING",
+                      "statusLabel": "未接单",
+                      "assignee": null,
+                      "department": "储运车间",
+                      "zoneCode": "YIXI",
+                      "createdAt": "2026-09-28 08:12:33",
+                      "planFinishTime": null,
+                      "actualFinishTime": null,
+                      "handleDesc": null
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tv/maintenance-orders/{id}": {
+      "get": {
+        "summary": "单个维修工单明细",
+        "description": "按工单 id 返回维修工单明细（V88 新建 fac_tv_maintenance_order 真实台账）。",
+        "tags": ["tv"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "工单 id",
+            "schema": { "type": "integer", "format": "int64" },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "维修工单明细",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TvMaintenanceOrderItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "orderNo": "WO-2026-0901",
+                    "deviceName": "乙烯装置球机-01",
+                    "deviceCode": "CAM-YX-01",
+                    "faultDesc": "画面持续模糊",
+                    "status": "PENDING",
+                    "statusLabel": "未接单",
+                    "assignee": null,
+                    "department": "储运车间",
+                    "zoneCode": "YIXI",
+                    "createdAt": "2026-09-28 08:12:33",
+                    "planFinishTime": null,
+                    "actualFinishTime": null,
+                    "handleDesc": null
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "工单不存在" }
+        }
+      }
+    },
     "/tv/inspections": {
       "get": {
         "summary": "入厂巡检记录聚合",
@@ -696,6 +796,11 @@
             "type": ["string", "null"],
             "description": "防区名称（由 zone_code 解析，如 乙烯区）",
             "example": "乙烯区"
+          },
+          "monitorCategory": {
+            "type": ["string", "null"],
+            "description": "监控分类 code（V87）：PRODUCTION 生产设施 / BOUNDARY 厂界 / CLOSED_GATE 封闭入口 / OTHER_GATE 其他入口 / OTHER 其它；空表示未分类",
+            "example": "PRODUCTION"
           }
         }
       },
@@ -734,6 +839,11 @@
             "description": "防区编码（关联 sys_zone.zone_code，防区归属编辑）",
             "example": "YIXI"
           },
+          "monitorCategory": {
+            "type": ["string", "null"],
+            "description": "监控分类 code：PRODUCTION/BOUNDARY/CLOSED_GATE/OTHER_GATE/OTHER。落库 fac_tv_monitor.monitor_category，用于概览实时聚合与下钻",
+            "example": "PRODUCTION"
+          },
           "location": {
             "type": ["string", "null"],
             "description": "安装位置坐标描述",
@@ -758,7 +868,12 @@
           "id": { "type": "integer", "format": "int64", "description": "卡片 id", "example": 1 },
           "label": { "type": "string", "description": "卡片名称", "example": "重大危险源" },
           "value": { "type": "integer", "description": "数量", "example": 665 },
-          "iconIndex": { "type": "integer", "description": "图标索引", "example": 0 }
+          "iconIndex": { "type": "integer", "description": "图标索引", "example": 0 },
+          "category": {
+            "type": ["string", "null"],
+            "description": "分类 code：重大危险源=MAJOR_HAZARD；其余类=PRODUCTION/BOUNDARY/CLOSED_GATE/OTHER_GATE/OTHER。前端据此下钻到对应分类的真实监控点位（fac_tv_monitor.monitor_category）；空表示无下钻",
+            "example": "PRODUCTION"
+          }
         }
       },
       "TvOperationStats": {
@@ -780,6 +895,78 @@
           "label": { "type": "string", "description": "工单状态名", "example": "未接单" },
           "value": { "type": "integer", "description": "数量", "example": 12 },
           "tone": { "type": "string", "description": "着色基调：grey/blue/red", "example": "grey" }
+        }
+      },
+      "TvMaintenanceOrderItem": {
+        "type": "object",
+        "description": "维修工单明细项（按状态下钻真实工单）",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "工单 id", "example": 1 },
+          "orderNo": {
+            "type": "string",
+            "description": "工单编号（如 WO-2026-0901）",
+            "example": "WO-2026-0901"
+          },
+          "deviceName": {
+            "type": "string",
+            "description": "设备/点位名称",
+            "example": "乙烯装置球机-01"
+          },
+          "deviceCode": {
+            "type": ["string", "null"],
+            "description": "设备编码",
+            "example": "CAM-YX-01"
+          },
+          "faultDesc": {
+            "type": ["string", "null"],
+            "description": "故障描述",
+            "example": "画面持续模糊"
+          },
+          "status": {
+            "type": ["string", "null"],
+            "description": "状态 code：PENDING 未接单 / PROCESSING 处理中 / OVERTIME 已超时",
+            "example": "PENDING"
+          },
+          "statusLabel": {
+            "type": ["string", "null"],
+            "description": "状态中文（未接单/处理中/已超时）",
+            "example": "未接单"
+          },
+          "assignee": {
+            "type": ["string", "null"],
+            "description": "派单人/负责人",
+            "example": "李伟"
+          },
+          "department": {
+            "type": ["string", "null"],
+            "description": "责任部门",
+            "example": "电仪车间"
+          },
+          "zoneCode": {
+            "type": ["string", "null"],
+            "description": "防区编码（关联 sys_zone.zone_code）",
+            "example": "YIXI"
+          },
+          "createdAt": {
+            "type": ["string", "null"],
+            "description": "创建时间",
+            "example": "2026-09-28 08:12:33"
+          },
+          "planFinishTime": {
+            "type": ["string", "null"],
+            "description": "计划完成时间",
+            "example": "2026-09-30 18:00:00"
+          },
+          "actualFinishTime": {
+            "type": ["string", "null"],
+            "description": "实际完成时间（进行中/已超时为空）",
+            "example": null
+          },
+          "handleDesc": {
+            "type": ["string", "null"],
+            "description": "处理说明",
+            "example": "已派单，等待备件"
+          }
         }
       },
       "TvEventBreakdownItem": {

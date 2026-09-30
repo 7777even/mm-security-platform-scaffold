@@ -125,6 +125,8 @@ export interface TvOverviewItem {
   label: string;
   value: number;
   iconIndex: number;
+  /** 分类 code：MAJOR_HAZARD 或 PRODUCTION/BOUNDARY/CLOSED_GATE/OTHER_GATE/OTHER；空表示无下钻 */
+  category?: string | null;
 }
 
 export interface TvOperationStats {
@@ -140,6 +142,37 @@ export interface TvMaintenanceOrder {
   label: string;
   value: number;
   tone: 'grey' | 'blue' | 'red';
+}
+
+/** 维修工单明细项（按状态下钻真实工单，对齐 docs/api/tv.openapi.json 的 TvMaintenanceOrderItem）。 */
+export interface TvMaintenanceOrderItem {
+  id: number;
+  /** 工单编号（如 WO-2026-0901） */
+  orderNo: string;
+  /** 设备/点位名称 */
+  deviceName: string;
+  /** 设备编码 */
+  deviceCode?: string | null;
+  /** 故障描述 */
+  faultDesc?: string | null;
+  /** PENDING 未接单 / PROCESSING 处理中 / OVERTIME 已超时 */
+  status?: string | null;
+  /** 状态中文（未接单/处理中/已超时） */
+  statusLabel?: string | null;
+  /** 派单人/负责人 */
+  assignee?: string | null;
+  /** 责任部门 */
+  department?: string | null;
+  /** 防区编码 */
+  zoneCode?: string | null;
+  /** 创建时间 */
+  createdAt?: string | null;
+  /** 计划完成时间 */
+  planFinishTime?: string | null;
+  /** 实际完成时间 */
+  actualFinishTime?: string | null;
+  /** 处理说明 */
+  handleDesc?: string | null;
 }
 
 export interface TvEventBreakdownItem {
@@ -215,6 +248,8 @@ export interface TvMonitorSummary {
   zoneCode?: string | null;
   /** 防区名称（由 zone_code 解析） */
   zoneName?: string | null;
+  /** 监控分类 code（V87）：PRODUCTION/BOUNDARY/CLOSED_GATE/OTHER_GATE/OTHER，空表示未分类 */
+  monitorCategory?: string | null;
 }
 
 /** 首屏聚合：概览卡片 + 运行统计 + 维保工单 + 事件分析。 */
@@ -335,6 +370,50 @@ export async function fetchTvMonitors(): Promise<TvMonitorSummary[]> {
   } catch {
     backendUnavailableWarn('tv', '/tv/monitors');
     return [];
+  }
+}
+
+/**
+ * 维修工单明细列表：GET /tv/maintenance-orders?status=（按状态过滤，空=全部）。
+ * 概览工单卡片下钻真实工单明细（与重大危险源列出真实清单同构）。
+ */
+export async function fetchTvMaintenanceOrders(status?: string): Promise<TvMaintenanceOrderItem[]> {
+  try {
+    const params: Record<string, unknown> = {};
+    if (status) params.status = status;
+    const data = await request<TvMaintenanceOrderItem[]>({
+      url: '/tv/maintenance-orders',
+      method: 'GET',
+      params,
+    });
+    if (!data || !Array.isArray(data)) {
+      backendUnavailableWarn('tv', '/tv/maintenance-orders', REASON_CONTRACT_MISMATCH);
+      return [];
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('tv', '/tv/maintenance-orders');
+    return [];
+  }
+}
+
+/**
+ * 单个维修工单明细：GET /tv/maintenance-orders/{id}。
+ */
+export async function fetchTvMaintenanceOrder(id: number): Promise<TvMaintenanceOrderItem | null> {
+  try {
+    const data = await request<TvMaintenanceOrderItem>({
+      url: `/tv/maintenance-orders/${id}`,
+      method: 'GET',
+    });
+    if (!data || !data.id) {
+      backendUnavailableWarn('tv', `/tv/maintenance-orders/${id}`, REASON_CONTRACT_MISMATCH);
+      return null;
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('tv', `/tv/maintenance-orders/${id}`);
+    return null;
   }
 }
 
