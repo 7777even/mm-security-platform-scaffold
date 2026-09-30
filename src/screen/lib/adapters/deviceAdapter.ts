@@ -18,6 +18,10 @@ export interface DeviceLedgerItem {
   /** 中文状态标签：在线 / 离线 / 告警 */
   status: string;
   statusTone: DeviceLedgerStatusTone;
+  /** 设备经度（可空）——列表不展示，供点击行后的详情弹窗增量展示 */
+  lon?: number;
+  /** 设备纬度（可空） */
+  lat?: number;
 }
 
 const DEVICE_TYPE_LABEL: Record<DeviceType, string> = {
@@ -68,5 +72,7 @@ export function toDeviceLedgerItem(device: DeviceItem, index: number): DeviceLed
     zone: device.zone,
     status: deviceStatusLabel(device.status),
     statusTone: deviceStatusTone(device.status),
+    lon: device.lon,
+    lat: device.lat,
   };
 }

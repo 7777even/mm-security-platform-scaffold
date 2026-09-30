@@ -1,6 +1,7 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
+import InfoDetailDialog, { type DetailListItem } from '../../common/InfoDetailDialog.vue';
 import { Warning } from '@element-plus/icons-vue';
 import {
   fetchProductionOverview,
@@ -29,23 +30,97 @@ onMounted(async () => {
 });
 
 const visibleRiskWarnings = computed(() => filterByPlantArea(riskWarnings.value));
+
+// —— 两级下钻：汇总卡（红/橙/黄）→ 该等级真实预警列表 → 单条风险详情；风险卡 / 「更多」直达。——
+// 数据来源为真实风险预警台账，弹窗仅做业务化描述，不暴露底层表名（与 /tv 维修工单同范式）。
+const listOpen = ref(false);
+const listTitle = ref('');
+const listSource = ref<RiskWarningItem[]>([]);
+const detailOpen = ref(false);
+const selected = ref<RiskWarningItem | null>(null);
+
+function openLevelList(level: RiskWarningItem['level'], label: string) {
+  listSource.value = visibleRiskWarnings.value.filter((w) => w.level === level);
+  listTitle.value = `重大风险管控 · ${label}`;
+  listOpen.value = true;
+}
+
+function openAllList() {
+  listSource.value = visibleRiskWarnings.value;
+  listTitle.value = '重大风险管控 · 全部预警';
+  listOpen.value = true;
+}
+
+function openRiskDetail(item: RiskWarningItem) {
+  selected.value = item;
+  listOpen.value = false;
+  detailOpen.value = true;
+}
+
+const listFields = computed(() => [
+  { label: '实时预警', value: `${listSource.value.length} 条` },
+  { label: '数据来源', value: '实时风险预警台账（按红/橙/黄三级实时统计）' },
+]);
+
+const listItems = computed<DetailListItem[]>(() =>
+  listSource.value.map((w) => ({
+    primary: w.location ?? '--',
+    secondary: [w.levelLabel, w.type, w.time].filter(Boolean).join(' · '),
+  })),
+);
+
+function handleListItemClick(_item: DetailListItem, index: number) {
+  const w = listSource.value[index];
+  if (w) openRiskDetail(w);
+}
+
+const detailFields = computed(() => {
+  const w = selected.value;
+  if (!w) return [];
+  return [
+    { label: '风险等级', value: w.levelLabel ?? '--' },
+    { label: '风险位置', value: w.location ?? '--' },
+    { label: '风险类型', value: w.type ?? '--' },
+    { label: '发生时间', value: w.time ?? '--' },
+    { label: '责任人', value: w.person ?? '--' },
+    { label: '联系方式', value: w.phone ?? '--' },
+  ];
+});
 </script>
 
 <template>
-  <PanelCard title="重大风险管控" variant="risk" module="production">
+  <PanelCard title="重大风险管控" variant="risk" module="production" @more="openAllList">
     <div class="risk-panel">
       <div class="risk-panel__summary">
-        <div class="risk-summary-item risk-summary-item--red">
+        <div
+          class="risk-summary-item risk-summary-item--red risk-summary-item--clickable"
+          role="button"
+          tabindex="0"
+          @click="openLevelList('red', '红色预警')"
+          @keydown.enter="openLevelList('red', '红色预警')"
+        >
           <span class="risk-summary-item__icon" aria-hidden="true"><Warning /></span>
           <span class="risk-summary-item__label">红色预警</span>
           <span class="risk-summary-item__value">{{ scaleAreaCount(riskSummary.red) }}</span>
         </div>
-        <div class="risk-summary-item risk-summary-item--orange">
+        <div
+          class="risk-summary-item risk-summary-item--orange risk-summary-item--clickable"
+          role="button"
+          tabindex="0"
+          @click="openLevelList('orange', '橙色预警')"
+          @keydown.enter="openLevelList('orange', '橙色预警')"
+        >
           <span class="risk-summary-item__icon" aria-hidden="true"><Warning /></span>
           <span class="risk-summary-item__label">橙色预警</span>
           <span class="risk-summary-item__value">{{ scaleAreaCount(riskSummary.orange) }}</span>
         </div>
-        <div class="risk-summary-item risk-summary-item--yellow">
+        <div
+          class="risk-summary-item risk-summary-item--yellow risk-summary-item--clickable"
+          role="button"
+          tabindex="0"
+          @click="openLevelList('yellow', '黄色预警')"
+          @keydown.enter="openLevelList('yellow', '黄色预警')"
+        >
           <span class="risk-summary-item__icon" aria-hidden="true"><Warning /></span>
           <span class="risk-summary-item__label">黄色预警</span>
           <span class="risk-summary-item__value">{{ scaleAreaCount(riskSummary.yellow) }}</span>
@@ -53,7 +128,15 @@ const visibleRiskWarnings = computed(() => filterByPlantArea(riskWarnings.value)
       </div>
 
       <div class="risk-panel__list">
-        <div v-for="item in visibleRiskWarnings" :key="item.id" class="risk-card">
+        <div
+          v-for="item in visibleRiskWarnings"
+          :key="item.id"
+          class="risk-card risk-card--clickable"
+          role="button"
+          tabindex="0"
+          @click="openRiskDetail(item)"
+          @keydown.enter="openRiskDetail(item)"
+        >
           <div class="risk-card__head">
             <div class="risk-card__tag" :class="`risk-card__tag--${item.level}`">
               <span class="risk-card__tag-icon" aria-hidden="true"><Warning /></span>
@@ -76,6 +159,23 @@ const visibleRiskWarnings = computed(() => filterByPlantArea(riskWarnings.value)
         </div>
       </div>
     </div>
+
+    <InfoDetailDialog
+      :open="listOpen"
+      :title="listTitle"
+      :fields="listFields"
+      :items="listItems"
+      items-clickable
+      @close="listOpen = false"
+      @item-click="handleListItemClick"
+    />
+
+    <InfoDetailDialog
+      :open="detailOpen"
+      :title="selected ? `重大风险 · ${selected.location}` : '风险详情'"
+      :fields="detailFields"
+      @close="detailOpen = false"
+    />
   </PanelCard>
 </template>
 
@@ -112,6 +212,20 @@ const visibleRiskWarnings = computed(() => filterByPlantArea(riskWarnings.value)
   border: 1px solid rgb(0 130 210 / 28%);
   border-radius: 2px;
   box-sizing: border-box;
+}
+
+.risk-summary-item--clickable {
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    filter 0.2s ease;
+}
+
+.risk-summary-item--clickable:hover,
+.risk-summary-item--clickable:focus-visible {
+  border-color: rgb(0 190 255 / 65%);
+  filter: brightness(1.15);
+  outline: none;
 }
 
 .risk-summary-item__label {
@@ -178,6 +292,20 @@ const visibleRiskWarnings = computed(() => filterByPlantArea(riskWarnings.value)
   border: 1px solid rgb(0 130 210 / 32%);
   border-radius: 2px;
   box-sizing: border-box;
+}
+
+.risk-card--clickable {
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.risk-card--clickable:hover,
+.risk-card--clickable:focus-visible {
+  border-color: rgb(0 190 255 / 62%);
+  background: rgb(0 34 70 / 78%);
+  outline: none;
 }
 
 .risk-card__head {

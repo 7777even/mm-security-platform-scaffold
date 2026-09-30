@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
+import InfoDetailDialog from '../../common/InfoDetailDialog.vue';
 import { fetchWorkstations, type Workstation } from '@/services/dashboard';
 import { backendUnavailableWarn } from '@/services/backendFallback';
 
@@ -9,6 +10,26 @@ const failed = ref(false);
 const workstations = ref<Workstation[]>([]);
 
 const onlineCount = computed(() => workstations.value.filter((w) => w.online).length);
+
+// —— 条目点击 → 工位详情弹窗（真实字段：名称 / 编号 / 区域 / 运行状态；后端契约仅此四字段，如实展示不编造）——
+const detailOpen = ref(false);
+const selected = ref<Workstation | null>(null);
+
+function openDetail(item: Workstation) {
+  selected.value = item;
+  detailOpen.value = true;
+}
+
+const detailFields = computed(() => {
+  const w = selected.value;
+  if (!w) return [];
+  return [
+    { label: '工位名称', value: w.name },
+    { label: '工位编号', value: w.id },
+    { label: '所属区域', value: w.zone },
+    { label: '运行状态', value: w.online ? '在线' : '离线' },
+  ];
+});
 
 // 按区域分组，组内保持后端返回顺序
 const grouped = computed(() => {
@@ -54,7 +75,15 @@ onMounted(async () => {
             <span class="ws__zone-count">{{ group.items.length }} 个</span>
           </div>
           <ul class="ws__items">
-            <li v-for="item in group.items" :key="item.id" class="ws__item">
+            <li
+              v-for="item in group.items"
+              :key="item.id"
+              class="ws__item ws__item--clickable"
+              role="button"
+              tabindex="0"
+              @click="openDetail(item)"
+              @keydown.enter="openDetail(item)"
+            >
               <span class="ws__dot" :class="item.online ? 'ws__dot--on' : 'ws__dot--off'" />
               <span class="ws__name">{{ item.name }}</span>
               <span class="ws__status" :class="item.online ? 'ws__status--on' : 'ws__status--off'">
@@ -65,6 +94,13 @@ onMounted(async () => {
         </div>
       </div>
     </div>
+
+    <InfoDetailDialog
+      :open="detailOpen"
+      :title="selected ? `值守工位 · ${selected.name}` : '值守工位'"
+      :fields="detailFields"
+      @close="detailOpen = false"
+    />
   </PanelCard>
 </template>
 
@@ -141,6 +177,20 @@ onMounted(async () => {
   background: rgb(0 24 50 / 40%);
   font-size: 12px;
   color: #e8f2fc;
+}
+
+.ws__item--clickable {
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.ws__item--clickable:hover,
+.ws__item--clickable:focus-visible {
+  border-color: rgb(0 180 255 / 55%);
+  background: rgb(0 40 80 / 55%);
+  outline: none;
 }
 
 .ws__dot {

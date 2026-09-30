@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
+import InfoDetailDialog from '../../common/InfoDetailDialog.vue';
 import { fetchDevicePage, type DeviceItem } from '@/services/device';
 import { backendUnavailableWarn } from '@/services/backendFallback';
 import { toDeviceLedgerItem, type DeviceLedgerItem } from '../../../lib/adapters/deviceAdapter';
@@ -62,6 +63,30 @@ const visiblePages = computed(() => {
   return pages;
 });
 
+// —— 行点击 → 设备详情弹窗（真实台账字段；经纬度为列表未展示的增量信息）——
+const detailOpen = ref(false);
+const selected = ref<DeviceLedgerItem | null>(null);
+
+function openDetail(item: DeviceLedgerItem) {
+  selected.value = item;
+  detailOpen.value = true;
+}
+
+const detailFields = computed(() => {
+  const d = selected.value;
+  if (!d) return [];
+  const hasCoord = typeof d.lon === 'number' && typeof d.lat === 'number';
+  return [
+    { label: '设备编码', value: d.deviceCode },
+    { label: '设备名称', value: d.name },
+    { label: '设备类型', value: d.type },
+    { label: '所属区域', value: d.zone },
+    { label: '运行状态', value: d.status },
+    { label: '经度', value: hasCoord ? String(d.lon) : '--' },
+    { label: '纬度', value: hasCoord ? String(d.lat) : '--' },
+  ];
+});
+
 onMounted(async () => {
   try {
     const page = await fetchDevicePage({ page: 1, size: 200 });
@@ -113,7 +138,15 @@ onMounted(async () => {
             <span>区域</span>
             <span>状态</span>
           </div>
-          <div v-for="item in pagedDevices" :key="item.id" class="ledger__row">
+          <div
+            v-for="item in pagedDevices"
+            :key="item.id"
+            class="ledger__row ledger__row--clickable"
+            role="button"
+            tabindex="0"
+            @click="openDetail(item)"
+            @keydown.enter="openDetail(item)"
+          >
             <span class="ledger__code" :title="item.deviceCode">{{ item.deviceCode }}</span>
             <span class="ledger__name" :title="item.name">{{ item.name }}</span>
             <span>{{ item.type }}</span>
@@ -154,6 +187,13 @@ onMounted(async () => {
         </div>
       </template>
     </div>
+
+    <InfoDetailDialog
+      :open="detailOpen"
+      :title="selected ? `设备台账 · ${selected.name}` : '设备信息'"
+      :fields="detailFields"
+      @close="detailOpen = false"
+    />
   </PanelCard>
 </template>
 
@@ -258,6 +298,20 @@ onMounted(async () => {
   background: var(--c-0-24-50-40);
   color: var(--c-e8f2fc);
   font-size: 12px;
+}
+
+.ledger__row--clickable {
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.ledger__row--clickable:hover,
+.ledger__row--clickable:focus-visible {
+  border-color: rgb(0 180 255 / 55%);
+  background: rgb(0 40 80 / 55%);
+  outline: none;
 }
 
 .ledger__code,
