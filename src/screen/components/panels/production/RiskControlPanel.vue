@@ -1,5 +1,6 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
 import InfoDetailDialog, { type DetailListItem } from '../../common/InfoDetailDialog.vue';
 import { Warning } from '@element-plus/icons-vue';
@@ -12,6 +13,7 @@ import {
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const { filterByPlantArea, scaleAreaCount } = usePlantArea();
+const router = useRouter();
 const riskSummary = ref<RiskSummary>({ red: 0, orange: 0, yellow: 0 });
 const riskWarnings = ref<RiskWarningItem[]>([]);
 
@@ -36,8 +38,6 @@ const visibleRiskWarnings = computed(() => filterByPlantArea(riskWarnings.value)
 const listOpen = ref(false);
 const listTitle = ref('');
 const listSource = ref<RiskWarningItem[]>([]);
-const detailOpen = ref(false);
-const selected = ref<RiskWarningItem | null>(null);
 
 function openLevelList(level: RiskWarningItem['level'], label: string) {
   listSource.value = visibleRiskWarnings.value.filter((w) => w.level === level);
@@ -51,10 +51,9 @@ function openAllList() {
   listOpen.value = true;
 }
 
-function openRiskDetail(item: RiskWarningItem) {
-  selected.value = item;
-  listOpen.value = false;
-  detailOpen.value = true;
+// —— 风险卡 / 列表项点击 → 跳转风险预警详情页（真实后端 GET /production/risk-warnings/{id}）——
+function goRiskWarningDetail(item: RiskWarningItem) {
+  void router.push({ name: 'productionRiskWarningDetail', params: { warningId: item.id } });
 }
 
 const listFields = computed(() => [
@@ -71,21 +70,8 @@ const listItems = computed<DetailListItem[]>(() =>
 
 function handleListItemClick(_item: DetailListItem, index: number) {
   const w = listSource.value[index];
-  if (w) openRiskDetail(w);
+  if (w) goRiskWarningDetail(w);
 }
-
-const detailFields = computed(() => {
-  const w = selected.value;
-  if (!w) return [];
-  return [
-    { label: '风险等级', value: w.levelLabel ?? '--' },
-    { label: '风险位置', value: w.location ?? '--' },
-    { label: '风险类型', value: w.type ?? '--' },
-    { label: '发生时间', value: w.time ?? '--' },
-    { label: '责任人', value: w.person ?? '--' },
-    { label: '联系方式', value: w.phone ?? '--' },
-  ];
-});
 </script>
 
 <template>
@@ -134,8 +120,8 @@ const detailFields = computed(() => {
           class="risk-card risk-card--clickable"
           role="button"
           tabindex="0"
-          @click="openRiskDetail(item)"
-          @keydown.enter="openRiskDetail(item)"
+          @click="goRiskWarningDetail(item)"
+          @keydown.enter="goRiskWarningDetail(item)"
         >
           <div class="risk-card__head">
             <div class="risk-card__tag" :class="`risk-card__tag--${item.level}`">
@@ -168,13 +154,6 @@ const detailFields = computed(() => {
       items-clickable
       @close="listOpen = false"
       @item-click="handleListItemClick"
-    />
-
-    <InfoDetailDialog
-      :open="detailOpen"
-      :title="selected ? `重大风险 · ${selected.location}` : '风险详情'"
-      :fields="detailFields"
-      @close="detailOpen = false"
     />
   </PanelCard>
 </template>

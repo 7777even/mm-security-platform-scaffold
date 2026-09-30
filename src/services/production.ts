@@ -386,6 +386,18 @@ export async function fetchProductionRiskWarnings(): Promise<RiskWarningItem[]> 
   }
 }
 
+/** 风险预警单条明细：GET /production/risk-warnings/{id}（后端未命中抛 B3 NOT_FOUND，此处收口为 null） */
+export async function fetchRiskWarningById(id: number): Promise<RiskWarningItem | null> {
+  try {
+    const data = await request<unknown>({ url: `/production/risk-warnings/${id}`, method: 'GET' });
+    if (!isRiskWarningItem(data)) return null;
+    return data;
+  } catch {
+    backendUnavailableWarn('production', `/production/risk-warnings/${id}`);
+    return null;
+  }
+}
+
 /** 人员定位标记：GET /production/personnel */
 export async function fetchProductionPersonnel(): Promise<PersonnelMarker[]> {
   // demo 模式(VITE_USE_DEV_MOCK=true)才走本地 fixture；未连后端则显式报错 + 空态

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
-import InfoDetailDialog from '../../common/InfoDetailDialog.vue';
 import { fetchWorkstations, type Workstation } from '@/services/dashboard';
 import { backendUnavailableWarn } from '@/services/backendFallback';
 
@@ -11,25 +11,12 @@ const workstations = ref<Workstation[]>([]);
 
 const onlineCount = computed(() => workstations.value.filter((w) => w.online).length);
 
-// —— 条目点击 → 工位详情弹窗（真实字段：名称 / 编号 / 区域 / 运行状态；后端契约仅此四字段，如实展示不编造）——
-const detailOpen = ref(false);
-const selected = ref<Workstation | null>(null);
+// —— 条目点击 → 跳转值守工位详情页（真实后端 GET /dashboard/workstations/{id}）——
+const router = useRouter();
 
-function openDetail(item: Workstation) {
-  selected.value = item;
-  detailOpen.value = true;
+function goWorkstationDetail(item: Workstation) {
+  void router.push({ name: 'productionWorkstationDetail', params: { workstationId: item.id } });
 }
-
-const detailFields = computed(() => {
-  const w = selected.value;
-  if (!w) return [];
-  return [
-    { label: '工位名称', value: w.name },
-    { label: '工位编号', value: w.id },
-    { label: '所属区域', value: w.zone },
-    { label: '运行状态', value: w.online ? '在线' : '离线' },
-  ];
-});
 
 // 按区域分组，组内保持后端返回顺序
 const grouped = computed(() => {
@@ -81,8 +68,8 @@ onMounted(async () => {
               class="ws__item ws__item--clickable"
               role="button"
               tabindex="0"
-              @click="openDetail(item)"
-              @keydown.enter="openDetail(item)"
+              @click="goWorkstationDetail(item)"
+              @keydown.enter="goWorkstationDetail(item)"
             >
               <span class="ws__dot" :class="item.online ? 'ws__dot--on' : 'ws__dot--off'" />
               <span class="ws__name">{{ item.name }}</span>
@@ -94,13 +81,6 @@ onMounted(async () => {
         </div>
       </div>
     </div>
-
-    <InfoDetailDialog
-      :open="detailOpen"
-      :title="selected ? `值守工位 · ${selected.name}` : '值守工位'"
-      :fields="detailFields"
-      @close="detailOpen = false"
-    />
   </PanelCard>
 </template>
 

@@ -119,6 +119,42 @@ const SECONDARY_ROUTES: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/production/device/:deviceCode',
+    name: 'productionDeviceDetail',
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    meta: {
+      title: '设备台账详情',
+      perm: 'ops:view',
+      hidden: true,
+      subapp: true,
+      subappUrl: '/subapps/fm-production-device/',
+    },
+  },
+  {
+    path: '/production/risk-warning/:warningId',
+    name: 'productionRiskWarningDetail',
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    meta: {
+      title: '风险预警详情',
+      perm: 'ops:view',
+      hidden: true,
+      subapp: true,
+      subappUrl: '/subapps/fm-production-risk-warning/',
+    },
+  },
+  {
+    path: '/production/workstation/:workstationId',
+    name: 'productionWorkstationDetail',
+    component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
+    meta: {
+      title: '值守工位详情',
+      perm: 'ops:view',
+      hidden: true,
+      subapp: true,
+      subappUrl: '/subapps/fm-production-workstation/',
+    },
+  },
+  {
     path: '/production/communication',
     name: 'fm-communication',
     component: () => import('@/shell/WujieHost.vue').then((m) => m.default),
