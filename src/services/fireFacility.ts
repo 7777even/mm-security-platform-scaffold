@@ -212,6 +212,22 @@ export interface FireFacilityFaultTimelineCreate {
 export interface FireFacilityFaultUpdatePayload {
   /** 故障状态：待确认/已确认/已派单/维修中/待验收/已闭环。不传则不更新。 */
   faultStatus?: string;
+  /** 关联设施名称。不传则不更新。 */
+  facilityName?: string;
+  /** 设施类型。不传则不更新。 */
+  facilityType?: string;
+  /** 故障类型：硬件故障/通信故障/误报/其他。不传则不更新。 */
+  faultType?: string;
+  /** 故障级别：紧急/重要/一般。不传则不更新。 */
+  faultLevel?: string;
+  /** 发现时间（yyyy-MM-dd HH:mm:ss）。不传则不更新。 */
+  discoverTime?: string;
+  /** 发现方式。不传则不更新。 */
+  discoverMethod?: string;
+  /** 故障现象。不传则不更新。 */
+  phenomenon?: string;
+  /** 故障原因。不传则不更新。 */
+  cause?: string;
   /** 工单号（派单时生成）。不传则不更新。 */
   workOrderNo?: string;
   /** 维修人/派单人员。不传则不更新。 */
@@ -257,6 +273,124 @@ export async function updateFireFacilityFault(
     url: `/fire-facility/faults/${encodeURIComponent(faultId)}`,
     method: 'PUT',
     data: payload,
+  });
+}
+
+/**
+ * 消防故障新增请求体：管理端台账录入，落库 fac_fire_facility_fault。
+ * 必填：faultCode / facilityCode / faultType / faultLevel / discoverTime。
+ */
+export interface FireFacilityFaultCreatePayload {
+  /** 故障编号（必填，全局唯一）。 */
+  faultCode: string;
+  /** 关联设施编码（必填）。 */
+  facilityCode: string;
+  /** 关联设施名称。 */
+  facilityName?: string;
+  /** 设施类型。 */
+  facilityType?: string;
+  /** 故障类型（必填：硬件故障/通信故障/误报/其他）。 */
+  faultType: string;
+  /** 故障级别（必填：紧急/重要/一般）。 */
+  faultLevel: string;
+  /** 发现时间（必填，yyyy-MM-dd HH:mm:ss）。 */
+  discoverTime: string;
+  /** 发现方式。 */
+  discoverMethod?: string;
+  /** 故障现象。 */
+  phenomenon?: string;
+  /** 故障原因。 */
+  cause?: string;
+  /** 故障状态，不传后端默认 待确认。 */
+  faultStatus?: string;
+  /** 工单号。 */
+  workOrderNo?: string;
+  /** 维修责任人。 */
+  repairPerson?: string;
+  /** 预计完成时间（yyyy-MM-dd HH:mm:ss）。 */
+  estimatedFinish?: string;
+  /** 实际完成时间（yyyy-MM-dd HH:mm:ss）。 */
+  actualFinish?: string;
+  /** 维修措施说明。 */
+  repairMeasures?: string;
+  /** 验收人。 */
+  acceptancePerson?: string;
+  /** 验收结论。 */
+  acceptanceResult?: string;
+}
+
+/** 故障级别枚举选项（与后端 VALID_FAULT_LEVEL 及字典一致）。 */
+export const FIRE_FAULT_LEVEL_OPTIONS: { label: string; value: string }[] = [
+  { label: '紧急', value: '紧急' },
+  { label: '重要', value: '重要' },
+  { label: '一般', value: '一般' },
+];
+
+/** 故障类型枚举选项（与契约 FireFacilityFaultCreateRequest 枚举一致）。 */
+export const FIRE_FAULT_TYPE_OPTIONS: { label: string; value: string }[] = [
+  { label: '硬件故障', value: '硬件故障' },
+  { label: '通信故障', value: '通信故障' },
+  { label: '误报', value: '误报' },
+  { label: '其他', value: '其他' },
+];
+
+/** 故障状态枚举选项（与后端 VALID_FAULT_STATUS 一致，用于新增/编辑下拉）。 */
+export const FIRE_FAULT_STATUS_OPTIONS: { label: string; value: string }[] = [
+  { label: '待确认', value: '待确认' },
+  { label: '已确认', value: '已确认' },
+  { label: '已派单', value: '已派单' },
+  { label: '维修中', value: '维修中' },
+  { label: '待验收', value: '待验收' },
+  { label: '已闭环', value: '已闭环' },
+];
+
+/**
+ * 消防故障新增（管理端台账录入）：POST /fire-facility/faults，落库 fac_fire_facility_fault。
+ * 三态与 updateFireFacilityFault 对齐：
+ * - 离线演示（VITE_USE_DEV_MOCK=true）仅本地成功、不落库，返回 null；
+ * - 未连后端（无 VITE_API_BASE 且未开演示）显式报错并抛异常；
+ * - 连后端 → 真实 POST，成功返回新建条目（含空时间线）供即时回填。
+ */
+export async function createFireFacilityFault(
+  payload: FireFacilityFaultCreatePayload,
+): Promise<FireFacilityFaultItem | null> {
+  if (isDemoMode()) {
+    return Promise.resolve(null);
+  }
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'fireFacility',
+      '/fire-facility/faults',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法新增消防设施故障');
+  }
+  return request<FireFacilityFaultItem>({
+    url: '/fire-facility/faults',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+/**
+ * 消防故障删除（真删除，后端级联清理故障时间线）：DELETE /fire-facility/faults/{faultId}。
+ * 三态与 createFireFacilityFault 对齐：离线演示仅本地成功；未连后端显式报错并抛异常。
+ */
+export async function deleteFireFacilityFault(faultId: number): Promise<void> {
+  if (isDemoMode()) {
+    return Promise.resolve();
+  }
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'fireFacility',
+      `/fire-facility/faults/${faultId}`,
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法删除消防设施故障');
+  }
+  await request<void>({
+    url: `/fire-facility/faults/${encodeURIComponent(faultId)}`,
+    method: 'DELETE',
   });
 }
 

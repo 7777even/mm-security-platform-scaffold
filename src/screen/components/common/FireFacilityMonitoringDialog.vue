@@ -15,6 +15,7 @@ import {
 } from '@/services/map-data/fireFacilityMonitoringMock';
 import { updateFireFacilityFault, type FireFacilityFaultItem } from '@/services/fireFacility';
 import { facilityAlarmToDetail } from '../../lib/data/alarmDetailMock';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import {
   useFireFacilityMonitoringDialog,
   type FireFacilityDialogTab,
@@ -55,6 +56,9 @@ async function loadFacilityData() {
   faults.value = cloneFaults(flt);
   typeOptions.value = ['全部类型', ...Array.from(new Set(mon.map((s) => s.facilityType)))];
 }
+
+// 三端实时联通：管理端新增/编辑/删除故障后（fire-facility.fault 域变更），大屏即时重拉。
+useDomainAutoRefresh('fire-facility.fault', () => void loadFacilityData());
 
 type DetailView =
   | { kind: 'facility'; facilityType: string }

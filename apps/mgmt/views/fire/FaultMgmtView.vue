@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { Warning } from '@element-plus/icons-vue';
 import MgmtPageHead from '../../components/MgmtPageHead.vue';
+import FireFacilityFaultEditDialog from '../../components/FireFacilityFaultEditDialog.vue';
 import { toastErr } from '../../utils/feedback';
-import { fetchFireFacilityFaults } from '@/services/fireFacility';
+import { fetchFireFacilityFaults, deleteFireFacilityFault } from '@/services/fireFacility';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import type { FireFacilityFaultItem } from '@/services/fireFacility';
 
 // 消防设施故障管理（/fault-mgmt）：接后端 GET /api/v1/fire-facility/faults。
-// 只读（后端无故障写端点），支持级别 / 状态筛选；后端不可用时显式报错 + 空态。
+// V91 起支持全量 CRUD：新增 POST /faults、编辑 PUT /faults/{id}、删除 DELETE /faults/{id}。
+// 三端实时联通：订阅 fire-facility.fault 域变更，任一端写入后本列表自动重拉。
 
 const rows = ref<FireFacilityFaultItem[]>([]);
 const loading = ref(false);
@@ -60,7 +64,43 @@ function statusTag(status?: string): string {
   return 'tag-info';
 }
 
+// ---- CRUD：新增 / 编辑 / 删除 ----
+const dialogVisible = ref(false);
+const editRow = ref<Partial<FireFacilityFaultItem> | null>(null);
+
+function openCreate(): void {
+  editRow.value = null;
+  dialogVisible.value = true;
+}
+function openEdit(row: FireFacilityFaultItem): void {
+  editRow.value = row;
+  dialogVisible.value = true;
+}
+async function onSaved(): Promise<void> {
+  await load();
+}
+async function onDelete(row: FireFacilityFaultItem): Promise<void> {
+  try {
+    await ElMessageBox.confirm(
+      `确认删除消防设施故障「${row.faultCode || String(row.id)}」？删除后不可恢复。`,
+      '删除确认',
+      { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
+    );
+  } catch {
+    return; // 用户取消
+  }
+  try {
+    await deleteFireFacilityFault(row.id);
+    ElMessage.success('已删除');
+    await load();
+  } catch (err) {
+    toastErr(err, '删除失败：');
+  }
+}
+
 onMounted(load);
+// 三端实时联通：fire-facility.fault 域变更（新增/编辑/删除）到达即重拉，卸载自动退订。
+useDomainAutoRefresh('fire-facility.fault', () => void load());
 </script>
 
 <template>
@@ -84,6 +124,7 @@ onMounted(load);
         </el-select>
         <el-button type="primary" @click="load">查询</el-button>
         <el-button @click="resetFilters">重置</el-button>
+        <el-button type="primary" @click="openCreate">新增</el-button>
       </div>
 
       <el-table v-loading="loading" :data="rows" stripe style="width: 100%">
@@ -110,8 +151,16 @@ onMounted(load);
         </el-table-column>
         <el-table-column prop="discoverTime" label="发现时间" min-width="170" />
         <el-table-column prop="repairPerson" label="维修责任人" min-width="120" />
+        <el-table-column label="操作" width="150" fixed="right">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="openEdit(asFault(row))">编辑</el-button>
+            <el-button link type="danger" @click="onDelete(asFault(row))">删除</el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </section>
+
+    <FireFacilityFaultEditDialog v-model="dialogVisible" :edit-row="editRow" @saved="onSaved" />
   </div>
 </template>
 
