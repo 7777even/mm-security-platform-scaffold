@@ -12,7 +12,11 @@ export interface paths {
      */
     get: operations['getFireAlarmPage'];
     put?: never;
-    post?: never;
+    /**
+     * 消防报警新增
+     * @description 新增一条消防报警记录。需权限码 fire-alarm:create。成功后返回创建后的 FireAlarmItem（B3 包络），并通过 @RealtimeSync(domain="fire-alarm.alarm") 广播 fire-alarm.alarm 实时变更（大屏/地图/列表即时刷新）。必填：title（报警名称）、time（报警时间）；其余可选，status 不传默认 ACTIVE。
+     */
+    post: operations['createFireAlarm'];
     delete?: never;
     options?: never;
     head?: never;
@@ -28,12 +32,16 @@ export interface paths {
     };
     get?: never;
     /**
-     * 消防报警写回（确认/派单/闭环 + 误报标记）
-     * @description 对单条消防报警做处置状态流转或误报标记，落 fac_fire_alarm 真实表（乐观锁 version 自动并发防护）。需权限码 fire-alarm:ack。成功返回更新后的 FireAlarmItem（B3 包络），并广播 fire-alarm.alarm 实时变更。状态枚举对齐字典 fire_alarm_status：ACTIVE 待处理 / ACKED 已确认 / DISPATCHED 已派单 / CLOSED 已闭环；误报对齐 fire_alarm_false：是 / 否 / 未核实。处置字段（handleResult 处置情况文本 / handleTime 处置时间 / dispatchPersonnel 派单人员 / notifyMethod 通知方式）为可选自由文本，仅在传入非空时覆盖，不传不更新。
+     * 消防报警全字段更新 + 写回
+     * @description 对单条消防报警做全字段局部更新（仅传入需变更的字段，未传字段不更新），落 fac_fire_alarm 真实表（乐观锁 version 自动并发防护）。需权限码 fire-alarm:ack。成功返回更新后的 FireAlarmItem（B3 包络），并广播 fire-alarm.alarm 实时变更。状态枚举对齐字典 fire_alarm_status：ACTIVE 待处理 / ACKED 已确认 / DISPATCHED 已派单 / CLOSED 已闭环；误报对齐 fire_alarm_false：是 / 否 / 未核实。向后兼容：大屏 AlarmDetailPanel 仅传 status/falseAlarm/handle* 6 字段仍可正常工作。
      */
     put: operations['updateFireAlarm'];
     post?: never;
-    delete?: never;
+    /**
+     * 消防报警删除（真删除）
+     * @description 真删除（物理删除）单条消防报警记录。需权限码 fire-alarm:delete。成功后返回 B3 包络（data 为 null），并广播 fire-alarm.alarm 实时变更（大屏/地图/列表即时移除）。
+     */
+    delete: operations['deleteFireAlarm'];
     options?: never;
     head?: never;
     patch?: never;
@@ -132,19 +140,220 @@ export interface components {
       /** @description 通知方式（APP/SMS，多个以英文逗号分隔，如 APP,SMS，可空） */
       notifyMethod?: string;
     };
-    /** @description 消防报警写回请求（局部更新，仅传入需变更的字段）。状态枚举对齐 fire_alarm_status，误报对齐 fire_alarm_false。 */
+    /** @description 消防报警全字段更新请求（局部更新，仅传入需变更的字段，未传字段不更新）。状态枚举对齐字典 fire_alarm_status，误报对齐 fire_alarm_false。向后兼容：大屏 AlarmDetailPanel 仅传 status/falseAlarm/handle* 6 字段仍可正常工作。 */
     FireAlarmUpdateRequest: {
-      /** @description 处置状态：ACTIVE 待处理 / ACKED 已确认 / DISPATCHED 已派单 / CLOSED 已闭环。不传则不更新状态。 */
-      status?: string;
-      /** @description 是否误报：是 / 否 / 未核实。不传则不更新。 */
+      /**
+       * @description 类型标签（火灾报警/烟雾报警/GDS报警/设备故障）
+       * @example 火灾报警
+       */
+      typeLabel?: string;
+      /**
+       * @description 类型色调（fire/smoke/gds/muted）
+       * @example fire
+       */
+      typeTone?: string;
+      /**
+       * @description 报警来源（火灾报警/DCS·GDS/视频识别/人工上报）
+       * @example 火灾报警
+       */
+      source?: string;
+      /**
+       * @description 对象类型（装置/储罐/仓库/管网）
+       * @example 装置
+       */
+      objectType?: string;
+      /**
+       * @description 对象名称
+       * @example 蜡油加氢装置
+       */
+      objectName?: string;
+      /**
+       * @description 报警等级（-/高报/高高报等）
+       * @example 高报
+       */
+      level?: string;
+      /**
+       * @description 报警描述
+       * @example 蜡油加氢装置区疑似出现明火，请核实。
+       */
+      description?: string;
+      /**
+       * @description 报警位置
+       * @example 化工区-蜡油加氢装置区
+       */
+      location?: string;
+      /**
+       * @description 报警时间（格式 yyyy-MM-dd HH:mm:ss）
+       * @example 2026-05-31 10:14:12
+       */
+      time?: string;
+      /**
+       * @description 是否误报：是 / 否 / 未核实
+       * @example 未核实
+       */
       falseAlarm?: string;
-      /** @description 处置情况文本。不传则不更新。 */
+      /**
+       * @description 处置状态：ACTIVE 待处理 / ACKED 已确认 / DISPATCHED 已派单 / CLOSED 已闭环。不传则不更新状态。
+       * @example ACTIVE
+       */
+      status?: string;
+      /**
+       * @description 关联救援事件 id（可空）
+       * @example 1
+       */
+      rescueEventId?: string;
+      /**
+       * @description 监控点 id（可空）
+       * @example cam-a-east
+       */
+      monitorId?: string;
+      /**
+       * @description 监控点名称（可空）
+       * @example 蜡油加氢东侧监控
+       */
+      monitorLabel?: string;
+      /**
+       * @description 现场监控点 id（可空）
+       * @example cam-a-site
+       */
+      onsiteMonitorId?: string;
+      /**
+       * @description 现场监控点名称（可空）
+       * @example 蜡油加氢现场监控
+       */
+      onsiteMonitorLabel?: string;
+      /**
+       * @description 报警标题（报警名称）
+       * @example 蜡油加氢装置火灾
+       */
+      title?: string;
+      /**
+       * @description 处置情况文本。不传则不更新。
+       * @example 已现场核实现场无明火，持续观察
+       */
       handleResult?: string;
-      /** @description 处置时间（格式 yyyy-MM-dd HH:mm:ss）。不传则不更新。 */
+      /**
+       * @description 处置时间（格式 yyyy-MM-dd HH:mm:ss）。不传则不更新。
+       * @example 2026-08-20 10:30:00
+       */
       handleTime?: string;
-      /** @description 派单人员（多个以英文逗号分隔）。不传则不更新。 */
+      /**
+       * @description 派单人员（多个以英文逗号分隔）。不传则不更新。
+       * @example 张三,李四
+       */
       dispatchPersonnel?: string;
-      /** @description 通知方式（APP/SMS，多个以英文逗号分隔，如 APP,SMS）。不传则不更新。 */
+      /**
+       * @description 通知方式（APP/SMS，多个以英文逗号分隔，如 APP,SMS）。不传则不更新。
+       * @example APP,SMS
+       */
+      notifyMethod?: string;
+    };
+    /** @description 消防报警新增请求（业务事实字段 + 处置字段）。必填：title（报警名称）、time（报警时间）；其余可选；status 不传默认 ACTIVE。 */
+    FireAlarmCreateRequest: {
+      /**
+       * @description 报警标题（报警名称），必填
+       * @example 蜡油加氢装置火灾
+       */
+      title: string;
+      /**
+       * @description 报警时间（格式 yyyy-MM-dd HH:mm:ss），必填
+       * @example 2026-05-31 10:14:12
+       */
+      time: string;
+      /**
+       * @description 类型标签（火灾报警/烟雾报警/GDS报警/设备故障）
+       * @example 火灾报警
+       */
+      typeLabel?: string;
+      /**
+       * @description 类型色调（fire/smoke/gds/muted）
+       * @example fire
+       */
+      typeTone?: string;
+      /**
+       * @description 报警来源（火灾报警/DCS·GDS/视频识别/人工上报）
+       * @example 火灾报警
+       */
+      source?: string;
+      /**
+       * @description 对象类型（装置/储罐/仓库/管网）
+       * @example 装置
+       */
+      objectType?: string;
+      /**
+       * @description 对象名称
+       * @example 蜡油加氢装置
+       */
+      objectName?: string;
+      /**
+       * @description 报警等级（-/高报/高高报等）
+       * @example 高报
+       */
+      level?: string;
+      /**
+       * @description 报警描述
+       * @example 蜡油加氢装置区疑似出现明火，请核实。
+       */
+      description?: string;
+      /**
+       * @description 报警位置
+       * @example 化工区-蜡油加氢装置区
+       */
+      location?: string;
+      /**
+       * @description 是否误报：是 / 否 / 未核实（默认未核实）
+       * @example 未核实
+       */
+      falseAlarm?: string;
+      /**
+       * @description 处置状态：ACTIVE 待处理 / ACKED 已确认 / DISPATCHED 已派单 / CLOSED 已闭环（不传默认 ACTIVE）
+       * @example ACTIVE
+       */
+      status?: string;
+      /**
+       * @description 关联救援事件 id（可空）
+       * @example 1
+       */
+      rescueEventId?: string;
+      /**
+       * @description 监控点 id（可空）
+       * @example cam-a-east
+       */
+      monitorId?: string;
+      /**
+       * @description 监控点名称（可空）
+       * @example 蜡油加氢东侧监控
+       */
+      monitorLabel?: string;
+      /**
+       * @description 现场监控点 id（可空）
+       * @example cam-a-site
+       */
+      onsiteMonitorId?: string;
+      /**
+       * @description 现场监控点名称（可空）
+       * @example 蜡油加氢现场监控
+       */
+      onsiteMonitorLabel?: string;
+      /**
+       * @description 处置情况文本（可空）
+       * @example 已现场核实现场无明火，持续观察
+       */
+      handleResult?: string;
+      /**
+       * @description 处置时间（格式 yyyy-MM-dd HH:mm:ss，可空）
+       * @example 2026-08-20 10:30:00
+       */
+      handleTime?: string;
+      /**
+       * @description 派单人员（多个以英文逗号分隔，可空）
+       * @example 张三,李四
+       */
+      dispatchPersonnel?: string;
+      /**
+       * @description 通知方式（APP/SMS，多个以英文逗号分隔，如 APP,SMS，可空）
+       * @example APP,SMS
+       */
       notifyMethod?: string;
     };
   };
@@ -265,6 +474,60 @@ export interface operations {
       403: components['responses']['Forbidden'];
     };
   };
+  createFireAlarm: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description 新增消防报警请求体（业务事实字段 + 处置字段） */
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "title": "蜡油加氢装置火灾",
+         *       "time": "2026-05-31 10:14:12",
+         *       "typeLabel": "火灾报警",
+         *       "typeTone": "fire",
+         *       "location": "化工区-蜡油加氢装置区",
+         *       "status": "ACTIVE"
+         *     }
+         */
+        'application/json': components['schemas']['FireAlarmCreateRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=新建后的 FireAlarmItem） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "alarmId": "FA-20260907-002",
+           *         "title": "蜡油加氢装置火灾",
+           *         "time": "2026-05-31 10:14:12",
+           *         "typeLabel": "火灾报警",
+           *         "typeTone": "fire",
+           *         "location": "化工区-蜡油加氢装置区",
+           *         "status": "ACTIVE"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['FireAlarmItem'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
   updateFireAlarm: {
     parameters: {
       query?: never;
@@ -315,6 +578,39 @@ export interface operations {
         };
       };
       400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['BadRequest'];
+    };
+  };
+  deleteFireAlarm: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 报警编号（主键，如 FA-20260907-001） */
+        alarmId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=null） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'];
+        };
+      };
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['BadRequest'];

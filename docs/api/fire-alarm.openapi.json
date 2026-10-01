@@ -88,14 +88,72 @@
           "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
           "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
         }
+      },
+      "post": {
+        "tags": ["fire-alarm"],
+        "operationId": "createFireAlarm",
+        "summary": "消防报警新增",
+        "description": "新增一条消防报警记录。需权限码 fire-alarm:create。成功后返回创建后的 FireAlarmItem（B3 包络），并通过 @RealtimeSync(domain=\"fire-alarm.alarm\") 广播 fire-alarm.alarm 实时变更（大屏/地图/列表即时刷新）。必填：title（报警名称）、time（报警时间）；其余可选，status 不传默认 ACTIVE。",
+        "requestBody": {
+          "required": true,
+          "description": "新增消防报警请求体（业务事实字段 + 处置字段）",
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/FireAlarmCreateRequest" },
+              "example": {
+                "title": "蜡油加氢装置火灾",
+                "time": "2026-05-31 10:14:12",
+                "typeLabel": "火灾报警",
+                "typeTone": "fire",
+                "location": "化工区-蜡油加氢装置区",
+                "status": "ACTIVE"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=新建后的 FireAlarmItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/FireAlarmItem" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "alarmId": "FA-20260907-002",
+                    "title": "蜡油加氢装置火灾",
+                    "time": "2026-05-31 10:14:12",
+                    "typeLabel": "火灾报警",
+                    "typeTone": "fire",
+                    "location": "化工区-蜡油加氢装置区",
+                    "status": "ACTIVE"
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
       }
     },
     "/fire-alarms/{alarmId}": {
       "put": {
         "tags": ["fire-alarm"],
         "operationId": "updateFireAlarm",
-        "summary": "消防报警写回（确认/派单/闭环 + 误报标记）",
-        "description": "对单条消防报警做处置状态流转或误报标记，落 fac_fire_alarm 真实表（乐观锁 version 自动并发防护）。需权限码 fire-alarm:ack。成功返回更新后的 FireAlarmItem（B3 包络），并广播 fire-alarm.alarm 实时变更。状态枚举对齐字典 fire_alarm_status：ACTIVE 待处理 / ACKED 已确认 / DISPATCHED 已派单 / CLOSED 已闭环；误报对齐 fire_alarm_false：是 / 否 / 未核实。处置字段（handleResult 处置情况文本 / handleTime 处置时间 / dispatchPersonnel 派单人员 / notifyMethod 通知方式）为可选自由文本，仅在传入非空时覆盖，不传不更新。",
+        "summary": "消防报警全字段更新 + 写回",
+        "description": "对单条消防报警做全字段局部更新（仅传入需变更的字段，未传字段不更新），落 fac_fire_alarm 真实表（乐观锁 version 自动并发防护）。需权限码 fire-alarm:ack。成功返回更新后的 FireAlarmItem（B3 包络），并广播 fire-alarm.alarm 实时变更。状态枚举对齐字典 fire_alarm_status：ACTIVE 待处理 / ACKED 已确认 / DISPATCHED 已派单 / CLOSED 已闭环；误报对齐 fire_alarm_false：是 / 否 / 未核实。向后兼容：大屏 AlarmDetailPanel 仅传 status/falseAlarm/handle* 6 字段仍可正常工作。",
         "parameters": [
           {
             "name": "alarmId",
@@ -153,6 +211,35 @@
           "403": { "$ref": "./_shared.json#/components/responses/Forbidden" },
           "404": { "$ref": "./_shared.json#/components/responses/BadRequest" }
         }
+      },
+      "delete": {
+        "tags": ["fire-alarm"],
+        "operationId": "deleteFireAlarm",
+        "summary": "消防报警删除（真删除）",
+        "description": "真删除（物理删除）单条消防报警记录。需权限码 fire-alarm:delete。成功后返回 B3 包络（data 为 null），并广播 fire-alarm.alarm 实时变更（大屏/地图/列表即时移除）。",
+        "parameters": [
+          {
+            "name": "alarmId",
+            "in": "path",
+            "required": true,
+            "description": "报警编号（主键，如 FA-20260907-001）",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=null）",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                "example": { "code": 0, "message": "ok", "data": null }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" },
+          "404": { "$ref": "./_shared.json#/components/responses/BadRequest" }
+        }
       }
     }
   },
@@ -206,31 +293,224 @@
       },
       "FireAlarmUpdateRequest": {
         "type": "object",
-        "description": "消防报警写回请求（局部更新，仅传入需变更的字段）。状态枚举对齐 fire_alarm_status，误报对齐 fire_alarm_false。",
+        "description": "消防报警全字段更新请求（局部更新，仅传入需变更的字段，未传字段不更新）。状态枚举对齐字典 fire_alarm_status，误报对齐 fire_alarm_false。向后兼容：大屏 AlarmDetailPanel 仅传 status/falseAlarm/handle* 6 字段仍可正常工作。",
         "properties": {
-          "status": {
+          "typeLabel": {
             "type": "string",
-            "description": "处置状态：ACTIVE 待处理 / ACKED 已确认 / DISPATCHED 已派单 / CLOSED 已闭环。不传则不更新状态。"
+            "description": "类型标签（火灾报警/烟雾报警/GDS报警/设备故障）",
+            "example": "火灾报警"
+          },
+          "typeTone": {
+            "type": "string",
+            "description": "类型色调（fire/smoke/gds/muted）",
+            "example": "fire"
+          },
+          "source": {
+            "type": "string",
+            "description": "报警来源（火灾报警/DCS·GDS/视频识别/人工上报）",
+            "example": "火灾报警"
+          },
+          "objectType": {
+            "type": "string",
+            "description": "对象类型（装置/储罐/仓库/管网）",
+            "example": "装置"
+          },
+          "objectName": {
+            "type": "string",
+            "description": "对象名称",
+            "example": "蜡油加氢装置"
+          },
+          "level": {
+            "type": "string",
+            "description": "报警等级（-/高报/高高报等）",
+            "example": "高报"
+          },
+          "description": {
+            "type": "string",
+            "description": "报警描述",
+            "example": "蜡油加氢装置区疑似出现明火，请核实。"
+          },
+          "location": {
+            "type": "string",
+            "description": "报警位置",
+            "example": "化工区-蜡油加氢装置区"
+          },
+          "time": {
+            "type": "string",
+            "description": "报警时间（格式 yyyy-MM-dd HH:mm:ss）",
+            "example": "2026-05-31 10:14:12"
           },
           "falseAlarm": {
             "type": "string",
-            "description": "是否误报：是 / 否 / 未核实。不传则不更新。"
+            "description": "是否误报：是 / 否 / 未核实",
+            "example": "未核实"
+          },
+          "status": {
+            "type": "string",
+            "description": "处置状态：ACTIVE 待处理 / ACKED 已确认 / DISPATCHED 已派单 / CLOSED 已闭环。不传则不更新状态。",
+            "example": "ACTIVE"
+          },
+          "rescueEventId": {
+            "type": "string",
+            "description": "关联救援事件 id（可空）",
+            "example": "1"
+          },
+          "monitorId": {
+            "type": "string",
+            "description": "监控点 id（可空）",
+            "example": "cam-a-east"
+          },
+          "monitorLabel": {
+            "type": "string",
+            "description": "监控点名称（可空）",
+            "example": "蜡油加氢东侧监控"
+          },
+          "onsiteMonitorId": {
+            "type": "string",
+            "description": "现场监控点 id（可空）",
+            "example": "cam-a-site"
+          },
+          "onsiteMonitorLabel": {
+            "type": "string",
+            "description": "现场监控点名称（可空）",
+            "example": "蜡油加氢现场监控"
+          },
+          "title": {
+            "type": "string",
+            "description": "报警标题（报警名称）",
+            "example": "蜡油加氢装置火灾"
           },
           "handleResult": {
             "type": "string",
-            "description": "处置情况文本。不传则不更新。"
+            "description": "处置情况文本。不传则不更新。",
+            "example": "已现场核实现场无明火，持续观察"
           },
           "handleTime": {
             "type": "string",
-            "description": "处置时间（格式 yyyy-MM-dd HH:mm:ss）。不传则不更新。"
+            "description": "处置时间（格式 yyyy-MM-dd HH:mm:ss）。不传则不更新。",
+            "example": "2026-08-20 10:30:00"
           },
           "dispatchPersonnel": {
             "type": "string",
-            "description": "派单人员（多个以英文逗号分隔）。不传则不更新。"
+            "description": "派单人员（多个以英文逗号分隔）。不传则不更新。",
+            "example": "张三,李四"
           },
           "notifyMethod": {
             "type": "string",
-            "description": "通知方式（APP/SMS，多个以英文逗号分隔，如 APP,SMS）。不传则不更新。"
+            "description": "通知方式（APP/SMS，多个以英文逗号分隔，如 APP,SMS）。不传则不更新。",
+            "example": "APP,SMS"
+          }
+        }
+      },
+      "FireAlarmCreateRequest": {
+        "type": "object",
+        "description": "消防报警新增请求（业务事实字段 + 处置字段）。必填：title（报警名称）、time（报警时间）；其余可选；status 不传默认 ACTIVE。",
+        "required": ["title", "time"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "报警标题（报警名称），必填",
+            "example": "蜡油加氢装置火灾"
+          },
+          "time": {
+            "type": "string",
+            "description": "报警时间（格式 yyyy-MM-dd HH:mm:ss），必填",
+            "example": "2026-05-31 10:14:12"
+          },
+          "typeLabel": {
+            "type": "string",
+            "description": "类型标签（火灾报警/烟雾报警/GDS报警/设备故障）",
+            "example": "火灾报警"
+          },
+          "typeTone": {
+            "type": "string",
+            "description": "类型色调（fire/smoke/gds/muted）",
+            "example": "fire"
+          },
+          "source": {
+            "type": "string",
+            "description": "报警来源（火灾报警/DCS·GDS/视频识别/人工上报）",
+            "example": "火灾报警"
+          },
+          "objectType": {
+            "type": "string",
+            "description": "对象类型（装置/储罐/仓库/管网）",
+            "example": "装置"
+          },
+          "objectName": {
+            "type": "string",
+            "description": "对象名称",
+            "example": "蜡油加氢装置"
+          },
+          "level": {
+            "type": "string",
+            "description": "报警等级（-/高报/高高报等）",
+            "example": "高报"
+          },
+          "description": {
+            "type": "string",
+            "description": "报警描述",
+            "example": "蜡油加氢装置区疑似出现明火，请核实。"
+          },
+          "location": {
+            "type": "string",
+            "description": "报警位置",
+            "example": "化工区-蜡油加氢装置区"
+          },
+          "falseAlarm": {
+            "type": "string",
+            "description": "是否误报：是 / 否 / 未核实（默认未核实）",
+            "example": "未核实"
+          },
+          "status": {
+            "type": "string",
+            "description": "处置状态：ACTIVE 待处理 / ACKED 已确认 / DISPATCHED 已派单 / CLOSED 已闭环（不传默认 ACTIVE）",
+            "example": "ACTIVE"
+          },
+          "rescueEventId": {
+            "type": "string",
+            "description": "关联救援事件 id（可空）",
+            "example": "1"
+          },
+          "monitorId": {
+            "type": "string",
+            "description": "监控点 id（可空）",
+            "example": "cam-a-east"
+          },
+          "monitorLabel": {
+            "type": "string",
+            "description": "监控点名称（可空）",
+            "example": "蜡油加氢东侧监控"
+          },
+          "onsiteMonitorId": {
+            "type": "string",
+            "description": "现场监控点 id（可空）",
+            "example": "cam-a-site"
+          },
+          "onsiteMonitorLabel": {
+            "type": "string",
+            "description": "现场监控点名称（可空）",
+            "example": "蜡油加氢现场监控"
+          },
+          "handleResult": {
+            "type": "string",
+            "description": "处置情况文本（可空）",
+            "example": "已现场核实现场无明火，持续观察"
+          },
+          "handleTime": {
+            "type": "string",
+            "description": "处置时间（格式 yyyy-MM-dd HH:mm:ss，可空）",
+            "example": "2026-08-20 10:30:00"
+          },
+          "dispatchPersonnel": {
+            "type": "string",
+            "description": "派单人员（多个以英文逗号分隔，可空）",
+            "example": "张三,李四"
+          },
+          "notifyMethod": {
+            "type": "string",
+            "description": "通知方式（APP/SMS，多个以英文逗号分隔，如 APP,SMS，可空）",
+            "example": "APP,SMS"
           }
         }
       }
