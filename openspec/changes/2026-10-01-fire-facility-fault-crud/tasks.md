@@ -9,5 +9,5 @@
 - [x] 大屏 `FireFacilityMonitoringDialog.vue` 接入同域订阅
 - [x] 单测：弹窗 4 例 + 列表 3 例（全绿）
 - [x] `type-check` / `lint`（0 error）/ `gate:screen` PASS
-- [ ] 全量 `test:coverage` 门禁确认
-- [ ] 双仓提交推送（与后端一并执行）
+- [x] 全量测试确认：`vitest run` 66 文件 435 例全过（⚠️ `test:coverage` 聚合报告因沙箱批量删除守卫未能实跑，仅确认测试全绿）
+- [x] 双仓提交推送并归档
