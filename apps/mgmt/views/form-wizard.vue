@@ -2,11 +2,13 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { EditPen, View } from '@element-plus/icons-vue';
 import { useAuthStore } from '@/stores/auth';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import MgmtProTable from '../components/MgmtProTable.vue';
 import MgmtPageHead from '../components/MgmtPageHead.vue';
 import { confirm, toastErr, toastOk } from '../utils/feedback';
 import {
   createFormRecord,
+  deleteFormRecord,
   fetchFormRecords,
   FORM_TYPES,
   updateFormRecord,
@@ -184,7 +186,22 @@ async function review(row: FormRecordItem): Promise<void> {
   }
 }
 
+// —— ADMIN 删除 ——
+async function remove(row: FormRecordItem): Promise<void> {
+  if (!(await confirm(`确认删除填报记录「${row.formNo}」？删除后不可恢复。`))) return;
+  try {
+    await deleteFormRecord(row.id as number);
+    toastOk('已删除');
+    await load();
+  } catch (err) {
+    toastErr(err, '删除失败：');
+  }
+}
+
 onMounted(load);
+
+// 实时刷新：任一端新增/审核/删除填报，本列表自动重拉（form.record 域）
+useDomainAutoRefresh('form.record', load, { immediate: false });
 </script>
 
 <template>
@@ -212,7 +229,7 @@ onMounted(load);
           <el-tag :type="statusMeta(row.status).type">{{ statusMeta(row.status).label }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="170" fixed="right">
+      <el-table-column label="操作" width="230" fixed="right">
         <template #default="{ row }">
           <el-button link type="primary" :icon="View" @click="openDetail(row)">查看</el-button>
           <el-button
@@ -222,6 +239,7 @@ onMounted(load);
             @click="review(row)"
             >审核通过</el-button
           >
+          <el-button v-if="isAdmin" link type="danger" @click="remove(row)">删除</el-button>
         </template>
       </el-table-column>
     </MgmtProTable>

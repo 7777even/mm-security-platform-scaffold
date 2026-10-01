@@ -237,3 +237,42 @@ export async function startEmergencyResponse(id: number): Promise<EmergencyEvent
     method: 'POST',
   });
 }
+
+/** 编辑应急事件入参（对齐后端 dto.EmergencyEventUpdateRequest，由契约生成）。
+ * 局部更新语义：字段为 undefined/null 表示不修改该字段。 */
+export type EmergencyEventUpdateRequest =
+  EmergencyEvent.components['schemas']['EmergencyEventUpdateRequest'];
+
+/** 事件状态下拉选项（后端 status 枚举，与 service 校验白名单同源）。 */
+export const EMERGENCY_EVENT_STATUS_OPTIONS: { label: string; value: string }[] = [
+  { label: '未处置', value: 'pending' },
+  { label: '处置中', value: 'processing' },
+  { label: '已处置', value: 'done' },
+];
+
+/**
+ * 编辑应急事件（局部更新，需权限码 emergency:event:write）。
+ * 后端同事务同步 fac_accident_incident 与事故详情字段，返回更新后的事件项。
+ */
+export async function updateEmergencyEvent(
+  id: number,
+  payload: EmergencyEventUpdateRequest,
+): Promise<EmergencyEventItem> {
+  return request<EmergencyEventItem>({
+    url: `/emergency-events/${id}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+/**
+ * 删除应急事件（需权限码 emergency:event:write）。
+ * 后端同事务清理关联的事故救援详情字段与事故救援行后删除事件本体；
+ * 记录不存在（含重复删除）返回业务码 404，由调用方 toastErr 提示。
+ */
+export async function deleteEmergencyEvent(id: number): Promise<void> {
+  await request<null>({
+    url: `/emergency-events/${id}`,
+    method: 'DELETE',
+  });
+}

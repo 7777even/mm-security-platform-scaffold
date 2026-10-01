@@ -45,3 +45,12 @@ export async function updateFormRecord(
 ): Promise<FormRecordItem> {
   return request<FormRecordItem>({ url: `/form-records/${id}`, method: 'PUT', data: payload });
 }
+
+/**
+ * 删除流程填报记录（需 ADMIN，与 update 同口径）。
+ * 后端为物理删除（fac_form_record 无 deleted 列）；记录不存在（含重复删除）返回业务码 404，
+ * 由调用方 toastErr 提示。成功触发 form.record 实时广播。
+ */
+export async function deleteFormRecord(id: number): Promise<void> {
+  await request<null>({ url: `/form-records/${id}`, method: 'DELETE' });
+}
