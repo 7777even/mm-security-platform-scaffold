@@ -169,6 +169,36 @@
           }
         }
       },
+      "delete": {
+        "summary": "删除流程填报记录",
+        "description": "物理删除单条流程填报记录（fac_form_record 无 deleted 列，真删除）。记录不存在（含重复删除）返回业务码 404（HTTP 200 + B3 包络）。需 ADMIN 角色，与 update 同口径。成功触发 form.record 实时广播。",
+        "tags": ["form-records"],
+        "operationId": "deleteFormRecord",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "记录主键 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      },
       "put": {
         "summary": "更新流程填报（审核/状态流转）",
         "description": "局部更新流程填报记录（状态流转/审核结论等，需 ADMIN 角色）。未传字段不更新；version 不一致返回 409。",

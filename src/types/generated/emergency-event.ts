@@ -23,6 +23,30 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/emergency-events/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 编辑应急事件
+     * @description 局部更新应急事件（字段为 null 表示不修改）。同一事务内同步 fac_accident_incident 与事故详情字段（事故时间/事发地点/事件描述/事件名称/事件级别/涉事区域），避免事件与救援详情双源漂移。需权限码 emergency:event:write（V92 已登记并授权 ADMIN/COMMANDER/SCHEDULER）；事件不存在返回 B3 NOT_FOUND，status 取值非法返回 B3 PARAM_INVALID。成功触发 emergency.event 实时广播。
+     */
+    put: operations['updateEmergencyEvent'];
+    post?: never;
+    /**
+     * 删除应急事件
+     * @description 同事务清理关联的事故救援详情字段（fac_accident_detail_field）与事故救援行（fac_accident_incident）后物理删除事件本体（真删除）。记录不存在（含重复删除）返回 B3 NOT_FOUND。需权限码 emergency:event:write（V92 已登记并授权）。成功触发 emergency.event 实时广播。
+     */
+    delete: operations['deleteEmergencyEvent'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/emergency-events/{id}/report': {
     parameters: {
       query?: never;
@@ -128,6 +152,80 @@ export interface components {
       data?: unknown;
       /** @example a1b2c3d4 */
       traceId?: string;
+    };
+    /** @description 编辑应急事件入参（局部更新：字段为 null 表示不修改该字段）。status 与 statusLabel 可只传其一，只传 status 时后端按枚举推导中文标签。 */
+    EmergencyEventUpdateRequest: {
+      /**
+       * @description 事件标题
+       * @example 催化裂化装置泄漏起火
+       */
+      title?: string;
+      /**
+       * @description 事件位置（装置/区域）
+       * @example 炼油一部 1#催化装置
+       */
+      location?: string;
+      /**
+       * @description 事件描述
+       * @example 催化裂化装置法兰泄漏引发起火，已启动消防响应。
+       */
+      description?: string;
+      /**
+       * @description 事件发生时间，格式 yyyy-MM-dd HH:mm:ss
+       * @example 2026-04-12 09:32:10
+       */
+      eventTime?: string;
+      /**
+       * @description 事件状态：pending 未处置 / processing 处置中 / done 已处置
+       * @example processing
+       * @enum {string}
+       */
+      status?: 'pending' | 'processing' | 'done';
+      /**
+       * @description 状态中文标签（可选，缺省随 status 推导）
+       * @example 处置中
+       */
+      statusLabel?: string;
+      /**
+       * @description 是否已预警（报送）
+       * @example true
+       */
+      reported?: boolean;
+      /**
+       * @description 所属区域编码
+       * @example refinery
+       */
+      areaCode?: string;
+      /**
+       * @description 危险源等级
+       * @example 重大
+       */
+      hazardSourceLevel?: string;
+      /**
+       * @description 地图撒点左偏移（百分比）
+       * @example 42%
+       */
+      leftPercent?: string;
+      /**
+       * @description 地图撒点上偏移（百分比）
+       * @example 31%
+       */
+      topPercent?: string;
+      /**
+       * @description 经度
+       * @example 110.123456
+       */
+      longitude?: number;
+      /**
+       * @description 纬度
+       * @example 21.654321
+       */
+      latitude?: number;
+      /**
+       * @description 结束时间，格式 yyyy-MM-dd HH:mm:ss
+       * @example 2026-04-12 11:05:00
+       */
+      endedAt?: string;
     };
     /** @description 应急事件分组列表 */
     EmergencyEventGroups: components['schemas']['EmergencyEventGroup'][];
@@ -600,6 +698,97 @@ export interface operations {
            *     }
            */
           'application/json': components['schemas']['EmergencyEventItem'];
+        };
+      };
+    };
+  };
+  updateEmergencyEvent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 应急事件 id（fac_emergency_event.id） */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "title": "催化裂化装置泄漏起火（已复核）",
+         *       "location": "炼油一部 1#催化装置",
+         *       "status": "processing",
+         *       "hazardSourceLevel": "重大"
+         *     }
+         */
+        'application/json': components['schemas']['EmergencyEventUpdateRequest'];
+      };
+    };
+    responses: {
+      /** @description 更新后的事件项 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 12,
+           *         "areaCode": "refinery",
+           *         "title": "催化裂化装置泄漏起火",
+           *         "location": "炼油一部 1#催化装置",
+           *         "description": "催化裂化装置法兰泄漏引发起火，已启动消防响应。",
+           *         "time": "2026-04-12 09:32:10",
+           *         "reported": true,
+           *         "status": "processing",
+           *         "statusLabel": "处置中",
+           *         "left": "42%",
+           *         "top": "31%",
+           *         "longitude": 110.123456,
+           *         "latitude": 21.654321,
+           *         "kind": "event",
+           *         "eventCategory": "default",
+           *         "hazardSourceLevel": "重大",
+           *         "endedAt": null,
+           *         "weatherMeta": null
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['EmergencyEventItem'];
+        };
+      };
+    };
+  };
+  deleteEmergencyEvent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 应急事件 id（fac_emergency_event.id） */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description 删除成功 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
+          'application/json': unknown;
         };
       };
     };

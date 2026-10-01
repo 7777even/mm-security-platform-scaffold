@@ -251,7 +251,11 @@ export interface paths {
       };
     };
     post?: never;
-    delete?: never;
+    /**
+     * 删除流程填报记录
+     * @description 物理删除单条流程填报记录（fac_form_record 无 deleted 列，真删除）。记录不存在（含重复删除）返回业务码 404（HTTP 200 + B3 包络）。需 ADMIN 角色，与 update 同口径。成功触发 form.record 实时广播。
+     */
+    delete: operations['deleteFormRecord'];
     options?: never;
     head?: never;
     patch?: never;
@@ -449,4 +453,35 @@ export interface components {
   pathItems: never;
 }
 export type $defs = Record<string, never>;
-export type operations = Record<string, never>;
+export interface operations {
+  deleteFormRecord: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 记录主键 id */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description 删除成功 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
+          'application/json': unknown;
+        };
+      };
+    };
+  };
+}
