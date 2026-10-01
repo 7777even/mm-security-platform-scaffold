@@ -334,7 +334,74 @@ export interface paths {
       };
     };
     put?: never;
-    post?: never;
+    /**
+     * 消防设施故障新增
+     * @description 管理端台账录入：落库 fac_fire_facility_fault，返回新建故障明细（含空时间线）。必填字段缺失或级别非法返回 B3 PARAM_INVALID（HTTP 200 + code!=0），故障编号重复返回 B3 CONFLICT。需权限码 fire-facility:fault-create（V91 已登记并授权）。成功触发 fire-facility.fault 实时广播。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "faultCode": "FLT-2026-0001",
+           *       "facilityCode": "XF-002",
+           *       "facilityName": "消火栓系统-2#罐区",
+           *       "facilityType": "消火栓系统",
+           *       "faultType": "硬件故障",
+           *       "faultLevel": "紧急",
+           *       "discoverTime": "2026-10-01 09:15:00",
+           *       "discoverMethod": "系统报警"
+           *     }
+           */
+          'application/json': components['schemas']['FireFacilityFaultCreateRequest'];
+        };
+      };
+      responses: {
+        /** @description 新增成功，返回新建故障明细 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 1001,
+             *         "faultCode": "FLT-2026-0001",
+             *         "facilityCode": "XF-002",
+             *         "facilityName": "消火栓系统-2#罐区",
+             *         "facilityType": "消火栓系统",
+             *         "faultType": "硬件故障",
+             *         "faultLevel": "紧急",
+             *         "discoverTime": "2026-10-01 09:15:00",
+             *         "discoverMethod": "系统报警",
+             *         "phenomenon": "2#罐区消火栓压力不足",
+             *         "cause": "管网阀门泄漏",
+             *         "status": "待确认",
+             *         "workOrderNo": null,
+             *         "repairPerson": null,
+             *         "estimatedFinish": null,
+             *         "actualFinish": null,
+             *         "repairMeasures": null,
+             *         "acceptancePerson": null,
+             *         "acceptanceResult": null,
+             *         "timeline": []
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['FireFacilityFaultItem'];
+          };
+        };
+      };
+    };
     delete?: never;
     options?: never;
     head?: never;
@@ -421,7 +488,40 @@ export interface paths {
       };
     };
     post?: never;
-    delete?: never;
+    /**
+     * 消防设施故障删除
+     * @description 级联清理 fac_fire_facility_fault_timeline 后物理删除故障记录（真删除）。记录不存在返回 B3 NOT_FOUND，id 非法返回 B3 PARAM_INVALID。需权限码 fire-facility:fault-delete（V91 已登记并授权）。成功触发 fire-facility.fault 实时广播。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 故障记录 id（fac_fire_facility_fault.id） */
+          faultId: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除成功 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": null
+             *     }
+             */
+            'application/json': unknown;
+          };
+        };
+      };
+    };
     options?: never;
     head?: never;
     patch?: never;
@@ -875,6 +975,48 @@ export interface components {
        */
       faultStatus?: string;
       /**
+       * @description 关联设施名称。不传则不更新。
+       * @example 消火栓系统-2#罐区
+       */
+      facilityName?: string;
+      /**
+       * @description 设施类型，如 火灾自动报警系统 / 消火栓系统。不传则不更新。
+       * @example 消火栓系统
+       */
+      facilityType?: string;
+      /**
+       * @description 故障类型。不传则不更新。
+       * @example 硬件故障
+       * @enum {string}
+       */
+      faultType?: '硬件故障' | '通信故障' | '误报' | '其他';
+      /**
+       * @description 故障级别。不传则不更新；非法级别返回 B3 PARAM_INVALID。
+       * @example 紧急
+       * @enum {string}
+       */
+      faultLevel?: '紧急' | '重要' | '一般';
+      /**
+       * @description 发现时间（格式 yyyy-MM-dd HH:mm:ss）。不传则不更新。
+       * @example 2026-10-01 09:15:00
+       */
+      discoverTime?: string;
+      /**
+       * @description 发现方式，如 巡检发现 / 系统报警 / 人工上报。不传则不更新。
+       * @example 系统报警
+       */
+      discoverMethod?: string;
+      /**
+       * @description 故障现象描述。不传则不更新。
+       * @example 2#罐区消火栓压力不足
+       */
+      phenomenon?: string;
+      /**
+       * @description 故障原因（cause_text）。不传则不更新。
+       * @example 管网阀门泄漏
+       */
+      cause?: string;
+      /**
        * @description 工单号（派单时生成）
        * @example WO-20260922-001
        */
@@ -911,6 +1053,102 @@ export interface components {
       acceptanceResult?: string;
       /** @description 随本次写回追加的故障时间线（可选） */
       timelines?: components['schemas']['FireFacilityFaultTimelineCreate'][];
+    };
+    /** @description 消防设施故障新增请求（管理端台账录入，落库 fac_fire_facility_fault）。 */
+    FireFacilityFaultCreateRequest: {
+      /**
+       * @description 故障编号（必填，全局唯一，如 FLT-2026-0001）
+       * @example FLT-2026-0001
+       */
+      faultCode: string;
+      /**
+       * @description 关联消防设施编码（必填）
+       * @example XF-002
+       */
+      facilityCode: string;
+      /**
+       * @description 关联消防设施名称
+       * @example 消火栓系统-2#罐区
+       */
+      facilityName?: string;
+      /**
+       * @description 设施类型，如 火灾自动报警系统 / 消火栓系统
+       * @example 消火栓系统
+       */
+      facilityType?: string;
+      /**
+       * @description 故障类型（必填）
+       * @example 硬件故障
+       * @enum {string}
+       */
+      faultType: '硬件故障' | '通信故障' | '误报' | '其他';
+      /**
+       * @description 故障级别（必填）
+       * @example 紧急
+       * @enum {string}
+       */
+      faultLevel: '紧急' | '重要' | '一般';
+      /**
+       * @description 发现时间（必填，格式 yyyy-MM-dd HH:mm:ss）
+       * @example 2026-10-01 09:15:00
+       */
+      discoverTime: string;
+      /**
+       * @description 发现方式，如 巡检发现 / 系统报警 / 人工上报
+       * @example 系统报警
+       */
+      discoverMethod?: string;
+      /**
+       * @description 故障现象描述
+       * @example 2#罐区消火栓压力不足
+       */
+      phenomenon?: string;
+      /**
+       * @description 故障原因分析
+       * @example 管网阀门泄漏
+       */
+      cause?: string;
+      /**
+       * @description 故障状态，不传默认 待确认
+       * @example 待确认
+       * @enum {string}
+       */
+      faultStatus?: '待确认' | '已确认' | '已派单' | '维修中' | '待验收' | '已闭环';
+      /**
+       * @description 工单号
+       * @example WO-20261001-001
+       */
+      workOrderNo?: string;
+      /**
+       * @description 维修责任人
+       * @example 李维修
+       */
+      repairPerson?: string;
+      /**
+       * @description 预计完成时间（格式 yyyy-MM-dd HH:mm:ss）
+       * @example 2026-10-02 18:00:00
+       */
+      estimatedFinish?: string;
+      /**
+       * @description 实际完成时间（格式 yyyy-MM-dd HH:mm:ss）
+       * @example 2026-10-02 17:20:00
+       */
+      actualFinish?: string;
+      /**
+       * @description 维修措施说明
+       * @example 更换泄漏阀门并复压测试
+       */
+      repairMeasures?: string;
+      /**
+       * @description 验收人
+       * @example 王验收
+       */
+      acceptancePerson?: string;
+      /**
+       * @description 验收结论，如 合格 / 不合格
+       * @example 合格
+       */
+      acceptanceResult?: string;
     };
     /** @description 设施故障明细项 */
     FireFacilityFaultItem: {

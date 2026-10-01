@@ -5,7 +5,11 @@
     "description": "覆盖消防设施分项监测大屏的监测概览、台账、故障、报警、维保工单五类数据，取代前端硬编码的 fireFacilityMonitoringMock 业务数据（地图撒点、扫描动画等纯前端几何仍留在 mock）。",
     "version": "1.0.0"
   },
-  "servers": [{ "url": "/api/v1" }],
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
   "paths": {
     "/fire-facility/monitors": {
       "get": {
@@ -17,7 +21,9 @@
             "name": "facilityType",
             "in": "query",
             "required": false,
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "设施类型筛选（可空字符串表示全部）"
           }
         ],
@@ -26,7 +32,9 @@
             "description": "消防设施监测概览数据",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/FireFacilityMonitorResult" },
+                "schema": {
+                  "$ref": "#/components/schemas/FireFacilityMonitorResult"
+                },
                 "example": {
                   "code": 0,
                   "message": "ok",
@@ -42,9 +50,21 @@
                         "fault": 1,
                         "status": "fault",
                         "params": [
-                          { "label": "CPU", "value": "45%", "tone": "green" },
-                          { "label": "内存", "value": "60%", "tone": "green" },
-                          { "label": "温度", "value": "78℃", "tone": "red" }
+                          {
+                            "label": "CPU",
+                            "value": "45%",
+                            "tone": "green"
+                          },
+                          {
+                            "label": "内存",
+                            "value": "60%",
+                            "tone": "green"
+                          },
+                          {
+                            "label": "温度",
+                            "value": "78℃",
+                            "tone": "red"
+                          }
                         ],
                         "lastReportTime": "2026-03-17 10:22:23"
                       }
@@ -66,7 +86,9 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/FireFacilityMonitorReportRequest" },
+              "schema": {
+                "$ref": "#/components/schemas/FireFacilityMonitorReportRequest"
+              },
               "example": {
                 "items": [
                   {
@@ -79,8 +101,16 @@
                     "status": "告警",
                     "lastReportTime": "2026-09-23 08:50:00",
                     "params": [
-                      { "label": "水泵运行", "value": "运行", "tone": "normal" },
-                      { "label": "水位", "value": "32%", "tone": "warning" }
+                      {
+                        "label": "水泵运行",
+                        "value": "运行",
+                        "tone": "normal"
+                      },
+                      {
+                        "label": "水位",
+                        "value": "32%",
+                        "tone": "warning"
+                      }
                     ]
                   }
                 ]
@@ -93,7 +123,9 @@
             "description": "上报成功，返回刷新后的全量监测概览",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/FireFacilityMonitorResult" },
+                "schema": {
+                  "$ref": "#/components/schemas/FireFacilityMonitorResult"
+                },
                 "example": {
                   "code": 0,
                   "message": "ok",
@@ -108,7 +140,13 @@
                         "offline": 1,
                         "fault": 1,
                         "status": "告警",
-                        "params": [{ "label": "水泵运行", "value": "运行", "tone": "normal" }],
+                        "params": [
+                          {
+                            "label": "水泵运行",
+                            "value": "运行",
+                            "tone": "normal"
+                          }
+                        ],
                         "lastReportTime": "2026-09-23 08:50:00"
                       }
                     ]
@@ -130,7 +168,9 @@
             "name": "facilityType",
             "in": "query",
             "required": false,
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "设施类型筛选（可空字符串表示全部）"
           }
         ],
@@ -139,7 +179,9 @@
             "description": "消防设施台账数据",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/FireFacilityLedgerResult" },
+                "schema": {
+                  "$ref": "#/components/schemas/FireFacilityLedgerResult"
+                },
                 "example": {
                   "code": 0,
                   "message": "ok",
@@ -182,14 +224,18 @@
             "name": "faultLevel",
             "in": "query",
             "required": false,
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "故障等级筛选（可空字符串表示全部）"
           },
           {
             "name": "faultStatus",
             "in": "query",
             "required": false,
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "故障状态筛选（可空字符串表示全部）"
           }
         ],
@@ -198,7 +244,9 @@
             "description": "消防设施故障数据",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/FireFacilityFaultResult" },
+                "schema": {
+                  "$ref": "#/components/schemas/FireFacilityFaultResult"
+                },
                 "example": {
                   "code": 0,
                   "message": "ok",
@@ -240,6 +288,69 @@
             }
           }
         }
+      },
+      "post": {
+        "summary": "消防设施故障新增",
+        "description": "管理端台账录入：落库 fac_fire_facility_fault，返回新建故障明细（含空时间线）。必填字段缺失或级别非法返回 B3 PARAM_INVALID（HTTP 200 + code!=0），故障编号重复返回 B3 CONFLICT。需权限码 fire-facility:fault-create（V91 已登记并授权）。成功触发 fire-facility.fault 实时广播。",
+        "tags": ["fire-facility"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FireFacilityFaultCreateRequest"
+              },
+              "example": {
+                "faultCode": "FLT-2026-0001",
+                "facilityCode": "XF-002",
+                "facilityName": "消火栓系统-2#罐区",
+                "facilityType": "消火栓系统",
+                "faultType": "硬件故障",
+                "faultLevel": "紧急",
+                "discoverTime": "2026-10-01 09:15:00",
+                "discoverMethod": "系统报警"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "新增成功，返回新建故障明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FireFacilityFaultItem"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1001,
+                    "faultCode": "FLT-2026-0001",
+                    "facilityCode": "XF-002",
+                    "facilityName": "消火栓系统-2#罐区",
+                    "facilityType": "消火栓系统",
+                    "faultType": "硬件故障",
+                    "faultLevel": "紧急",
+                    "discoverTime": "2026-10-01 09:15:00",
+                    "discoverMethod": "系统报警",
+                    "phenomenon": "2#罐区消火栓压力不足",
+                    "cause": "管网阀门泄漏",
+                    "status": "待确认",
+                    "workOrderNo": null,
+                    "repairPerson": null,
+                    "estimatedFinish": null,
+                    "actualFinish": null,
+                    "repairMeasures": null,
+                    "acceptancePerson": null,
+                    "acceptanceResult": null,
+                    "timeline": []
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/fire-facility/faults/{faultId}": {
@@ -252,7 +363,9 @@
             "name": "faultId",
             "in": "path",
             "required": true,
-            "schema": { "type": "integer" },
+            "schema": {
+              "type": "integer"
+            },
             "description": "故障记录 id（fac_fire_facility_fault.id）"
           }
         ],
@@ -260,7 +373,9 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/FireFacilityFaultUpdateRequest" },
+              "schema": {
+                "$ref": "#/components/schemas/FireFacilityFaultUpdateRequest"
+              },
               "example": {
                 "faultStatus": "已确认",
                 "timelines": [
@@ -280,7 +395,9 @@
             "description": "写回成功，返回更新后的故障明细",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/FireFacilityFaultItem" },
+                "schema": {
+                  "$ref": "#/components/schemas/FireFacilityFaultItem"
+                },
                 "example": {
                   "code": 0,
                   "message": "ok",
@@ -310,6 +427,36 @@
             }
           }
         }
+      },
+      "delete": {
+        "summary": "消防设施故障删除",
+        "description": "级联清理 fac_fire_facility_fault_timeline 后物理删除故障记录（真删除）。记录不存在返回 B3 NOT_FOUND，id 非法返回 B3 PARAM_INVALID。需权限码 fire-facility:fault-delete（V91 已登记并授权）。成功触发 fire-facility.fault 实时广播。",
+        "tags": ["fire-facility"],
+        "parameters": [
+          {
+            "name": "faultId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "故障记录 id（fac_fire_facility_fault.id）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/fire-facility/alarms": {
@@ -322,14 +469,18 @@
             "name": "level",
             "in": "query",
             "required": false,
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "报警等级筛选（可空字符串表示全部）"
           },
           {
             "name": "status",
             "in": "query",
             "required": false,
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "报警处理状态筛选（可空字符串表示全部）"
           }
         ],
@@ -338,7 +489,9 @@
             "description": "消防设施报警数据",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/FireFacilityAlarmResult" },
+                "schema": {
+                  "$ref": "#/components/schemas/FireFacilityAlarmResult"
+                },
                 "example": {
                   "code": 0,
                   "message": "ok",
@@ -374,7 +527,9 @@
             "name": "status",
             "in": "query",
             "required": false,
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "工单状态筛选（可空字符串表示全部）"
           }
         ],
@@ -383,7 +538,9 @@
             "description": "消防设施维保工单数据",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/FireFacilityWorkOrderResult" },
+                "schema": {
+                  "$ref": "#/components/schemas/FireFacilityWorkOrderResult"
+                },
                 "example": {
                   "code": 0,
                   "message": "ok",
@@ -428,8 +585,16 @@
         "type": "object",
         "description": "监测参数明细项",
         "properties": {
-          "label": { "type": "string", "description": "参数名称", "example": "CPU" },
-          "value": { "type": "string", "description": "参数取值", "example": "45%" },
+          "label": {
+            "type": "string",
+            "description": "参数名称",
+            "example": "CPU"
+          },
+          "value": {
+            "type": "string",
+            "description": "参数取值",
+            "example": "45%"
+          },
           "tone": {
             "type": "string",
             "description": "着色基调：green/blue/red/grey",
@@ -441,12 +606,36 @@
         "type": "object",
         "description": "单个设施类型的监测概览",
         "properties": {
-          "key": { "type": "string", "description": "分项唯一键", "example": "pump-01" },
-          "facilityType": { "type": "string", "description": "设施类型", "example": "消防水泵" },
-          "total": { "type": "integer", "description": "设施总数", "example": 12 },
-          "online": { "type": "integer", "description": "在线数", "example": 10 },
-          "offline": { "type": "integer", "description": "离线数", "example": 1 },
-          "fault": { "type": "integer", "description": "故障数", "example": 1 },
+          "key": {
+            "type": "string",
+            "description": "分项唯一键",
+            "example": "pump-01"
+          },
+          "facilityType": {
+            "type": "string",
+            "description": "设施类型",
+            "example": "消防水泵"
+          },
+          "total": {
+            "type": "integer",
+            "description": "设施总数",
+            "example": 12
+          },
+          "online": {
+            "type": "integer",
+            "description": "在线数",
+            "example": 10
+          },
+          "offline": {
+            "type": "integer",
+            "description": "离线数",
+            "example": 1
+          },
+          "fault": {
+            "type": "integer",
+            "description": "故障数",
+            "example": 1
+          },
           "status": {
             "type": "string",
             "description": "状态基调：normal/online/offline/fault",
@@ -455,7 +644,9 @@
           "params": {
             "type": "array",
             "description": "参数明细列表",
-            "items": { "$ref": "#/components/schemas/FireFacilityMonitorParam" }
+            "items": {
+              "$ref": "#/components/schemas/FireFacilityMonitorParam"
+            }
           },
           "lastReportTime": {
             "type": "string",
@@ -471,12 +662,16 @@
           "typeOptions": {
             "type": "array",
             "description": "设施类型下拉选项",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
           "items": {
             "type": "array",
             "description": "各设施类型监测概览列表",
-            "items": { "$ref": "#/components/schemas/FireFacilityMonitorSummary" }
+            "items": {
+              "$ref": "#/components/schemas/FireFacilityMonitorSummary"
+            }
           }
         }
       },
@@ -484,8 +679,16 @@
         "type": "object",
         "description": "监测运行数据上报 - 监控参数项",
         "properties": {
-          "label": { "type": "string", "description": "参数名称", "example": "水泵运行" },
-          "value": { "type": "string", "description": "参数取值", "example": "运行" },
+          "label": {
+            "type": "string",
+            "description": "参数名称",
+            "example": "水泵运行"
+          },
+          "value": {
+            "type": "string",
+            "description": "参数取值",
+            "example": "运行"
+          },
           "tone": {
             "type": "string",
             "description": "着色基调：green/blue/red/grey/normal/warning/danger",
@@ -507,10 +710,26 @@
             "description": "设施类型（新建分项时必填）",
             "example": "消防水源"
           },
-          "total": { "type": "integer", "description": "设施总数", "example": 46 },
-          "online": { "type": "integer", "description": "在线数", "example": 44 },
-          "offline": { "type": "integer", "description": "离线数", "example": 1 },
-          "fault": { "type": "integer", "description": "故障数", "example": 1 },
+          "total": {
+            "type": "integer",
+            "description": "设施总数",
+            "example": 46
+          },
+          "online": {
+            "type": "integer",
+            "description": "在线数",
+            "example": 44
+          },
+          "offline": {
+            "type": "integer",
+            "description": "离线数",
+            "example": 1
+          },
+          "fault": {
+            "type": "integer",
+            "description": "故障数",
+            "example": 1
+          },
           "status": {
             "type": "string",
             "description": "监测状态：正常/告警/离线/在线",
@@ -524,7 +743,9 @@
           "params": {
             "type": "array",
             "description": "监控参数明细（传入即整体替换）",
-            "items": { "$ref": "#/components/schemas/FireFacilityMonitorReportParam" }
+            "items": {
+              "$ref": "#/components/schemas/FireFacilityMonitorReportParam"
+            }
           }
         }
       },
@@ -535,7 +756,9 @@
           "items": {
             "type": "array",
             "description": "上报的分项列表（按 key upsert）",
-            "items": { "$ref": "#/components/schemas/FireFacilityMonitorReportItem" }
+            "items": {
+              "$ref": "#/components/schemas/FireFacilityMonitorReportItem"
+            }
           }
         }
       },
@@ -543,8 +766,16 @@
         "type": "object",
         "description": "设施维保记录项",
         "properties": {
-          "date": { "type": "string", "description": "维保日期", "example": "2026-02-20" },
-          "content": { "type": "string", "description": "维保内容", "example": "更换密封圈" },
+          "date": {
+            "type": "string",
+            "description": "维保日期",
+            "example": "2026-02-20"
+          },
+          "content": {
+            "type": "string",
+            "description": "维保内容",
+            "example": "更换密封圈"
+          },
           "reportFile": {
             "type": ["string", "null"],
             "description": "维保报告文件地址",
@@ -556,22 +787,52 @@
         "type": "object",
         "description": "设施台账明细项",
         "properties": {
-          "facilityCode": { "type": "string", "description": "设施编码", "example": "FP-001" },
-          "facilityName": { "type": "string", "description": "设施名称", "example": "1#消防水泵" },
-          "facilityType": { "type": "string", "description": "设施类型", "example": "消防水泵" },
-          "location": { "type": "string", "description": "安装位置", "example": "炼油一部泵房" },
-          "device": { "type": "string", "description": "关联设备型号", "example": "XBD8/30-150L" },
-          "maintainerName": { "type": "string", "description": "维护人姓名", "example": "张伟" },
+          "facilityCode": {
+            "type": "string",
+            "description": "设施编码",
+            "example": "FP-001"
+          },
+          "facilityName": {
+            "type": "string",
+            "description": "设施名称",
+            "example": "1#消防水泵"
+          },
+          "facilityType": {
+            "type": "string",
+            "description": "设施类型",
+            "example": "消防水泵"
+          },
+          "location": {
+            "type": "string",
+            "description": "安装位置",
+            "example": "炼油一部泵房"
+          },
+          "device": {
+            "type": "string",
+            "description": "关联设备型号",
+            "example": "XBD8/30-150L"
+          },
+          "maintainerName": {
+            "type": "string",
+            "description": "维护人姓名",
+            "example": "张伟"
+          },
           "maintainerPhone": {
             "type": "string",
             "description": "维护人电话",
             "example": "13800000001"
           },
-          "enabled": { "type": "boolean", "description": "是否启用", "example": true },
+          "enabled": {
+            "type": "boolean",
+            "description": "是否启用",
+            "example": true
+          },
           "maintenanceRecords": {
             "type": "array",
             "description": "历史维保记录",
-            "items": { "$ref": "#/components/schemas/FireFacilityMaintenanceRecord" }
+            "items": {
+              "$ref": "#/components/schemas/FireFacilityMaintenanceRecord"
+            }
           }
         }
       },
@@ -582,12 +843,16 @@
           "typeOptions": {
             "type": "array",
             "description": "设施类型下拉选项",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
           "items": {
             "type": "array",
             "description": "设施台账明细列表",
-            "items": { "$ref": "#/components/schemas/FireFacilityLedgerItem" }
+            "items": {
+              "$ref": "#/components/schemas/FireFacilityLedgerItem"
+            }
           }
         }
       },
@@ -595,9 +860,21 @@
         "type": "object",
         "description": "故障/工单时间线条目",
         "properties": {
-          "time": { "type": "string", "description": "发生时间", "example": "2026-03-17 09:30:00" },
-          "operator": { "type": "string", "description": "操作人/系统", "example": "系统" },
-          "action": { "type": "string", "description": "操作动作", "example": "发现故障" },
+          "time": {
+            "type": "string",
+            "description": "发生时间",
+            "example": "2026-03-17 09:30:00"
+          },
+          "operator": {
+            "type": "string",
+            "description": "操作人/系统",
+            "example": "系统"
+          },
+          "action": {
+            "type": "string",
+            "description": "操作动作",
+            "example": "发现故障"
+          },
           "detail": {
             "type": "string",
             "description": "操作详情",
@@ -614,13 +891,21 @@
             "description": "发生时间（yyyy-MM-dd HH:mm:ss）",
             "example": "2026-09-22 10:30:00"
           },
-          "operator": { "type": "string", "description": "操作人", "example": "值班员" },
+          "operator": {
+            "type": "string",
+            "description": "操作人",
+            "example": "值班员"
+          },
           "action": {
             "type": "string",
             "description": "操作动作（如 确认故障 / 生成工单并派发 / 开始维修 / 提交验收 / 验收合格 / 验收不合格）",
             "example": "确认故障"
           },
-          "detail": { "type": "string", "description": "操作详情", "example": "确认为故障，待派单" }
+          "detail": {
+            "type": "string",
+            "description": "操作详情",
+            "example": "确认为故障，待派单"
+          }
         }
       },
       "FireFacilityFaultUpdateRequest": {
@@ -631,6 +916,48 @@
             "type": "string",
             "description": "故障状态：待确认/已确认/已派单/维修中/待验收/已闭环",
             "example": "已确认"
+          },
+          "facilityName": {
+            "type": "string",
+            "description": "关联设施名称。不传则不更新。",
+            "example": "消火栓系统-2#罐区"
+          },
+          "facilityType": {
+            "type": "string",
+            "description": "设施类型，如 火灾自动报警系统 / 消火栓系统。不传则不更新。",
+            "example": "消火栓系统"
+          },
+          "faultType": {
+            "type": "string",
+            "description": "故障类型。不传则不更新。",
+            "enum": ["硬件故障", "通信故障", "误报", "其他"],
+            "example": "硬件故障"
+          },
+          "faultLevel": {
+            "type": "string",
+            "description": "故障级别。不传则不更新；非法级别返回 B3 PARAM_INVALID。",
+            "enum": ["紧急", "重要", "一般"],
+            "example": "紧急"
+          },
+          "discoverTime": {
+            "type": "string",
+            "description": "发现时间（格式 yyyy-MM-dd HH:mm:ss）。不传则不更新。",
+            "example": "2026-10-01 09:15:00"
+          },
+          "discoverMethod": {
+            "type": "string",
+            "description": "发现方式，如 巡检发现 / 系统报警 / 人工上报。不传则不更新。",
+            "example": "系统报警"
+          },
+          "phenomenon": {
+            "type": "string",
+            "description": "故障现象描述。不传则不更新。",
+            "example": "2#罐区消火栓压力不足"
+          },
+          "cause": {
+            "type": "string",
+            "description": "故障原因（cause_text）。不传则不更新。",
+            "example": "管网阀门泄漏"
           },
           "workOrderNo": {
             "type": "string",
@@ -657,7 +984,11 @@
             "description": "维修措施说明",
             "example": "更换密封圈并校准"
           },
-          "acceptancePerson": { "type": "string", "description": "验收人", "example": "值班员" },
+          "acceptancePerson": {
+            "type": "string",
+            "description": "验收人",
+            "example": "值班员"
+          },
           "acceptanceResult": {
             "type": "string",
             "description": "验收结论（如 合格/不合格）",
@@ -666,7 +997,109 @@
           "timelines": {
             "type": "array",
             "description": "随本次写回追加的故障时间线（可选）",
-            "items": { "$ref": "#/components/schemas/FireFacilityFaultTimelineCreate" }
+            "items": {
+              "$ref": "#/components/schemas/FireFacilityFaultTimelineCreate"
+            }
+          }
+        }
+      },
+      "FireFacilityFaultCreateRequest": {
+        "type": "object",
+        "description": "消防设施故障新增请求（管理端台账录入，落库 fac_fire_facility_fault）。",
+        "required": ["faultCode", "facilityCode", "faultType", "faultLevel", "discoverTime"],
+        "properties": {
+          "faultCode": {
+            "type": "string",
+            "description": "故障编号（必填，全局唯一，如 FLT-2026-0001）",
+            "example": "FLT-2026-0001"
+          },
+          "facilityCode": {
+            "type": "string",
+            "description": "关联消防设施编码（必填）",
+            "example": "XF-002"
+          },
+          "facilityName": {
+            "type": "string",
+            "description": "关联消防设施名称",
+            "example": "消火栓系统-2#罐区"
+          },
+          "facilityType": {
+            "type": "string",
+            "description": "设施类型，如 火灾自动报警系统 / 消火栓系统",
+            "example": "消火栓系统"
+          },
+          "faultType": {
+            "type": "string",
+            "description": "故障类型（必填）",
+            "enum": ["硬件故障", "通信故障", "误报", "其他"],
+            "example": "硬件故障"
+          },
+          "faultLevel": {
+            "type": "string",
+            "description": "故障级别（必填）",
+            "enum": ["紧急", "重要", "一般"],
+            "example": "紧急"
+          },
+          "discoverTime": {
+            "type": "string",
+            "description": "发现时间（必填，格式 yyyy-MM-dd HH:mm:ss）",
+            "example": "2026-10-01 09:15:00"
+          },
+          "discoverMethod": {
+            "type": "string",
+            "description": "发现方式，如 巡检发现 / 系统报警 / 人工上报",
+            "example": "系统报警"
+          },
+          "phenomenon": {
+            "type": "string",
+            "description": "故障现象描述",
+            "example": "2#罐区消火栓压力不足"
+          },
+          "cause": {
+            "type": "string",
+            "description": "故障原因分析",
+            "example": "管网阀门泄漏"
+          },
+          "faultStatus": {
+            "type": "string",
+            "description": "故障状态，不传默认 待确认",
+            "enum": ["待确认", "已确认", "已派单", "维修中", "待验收", "已闭环"],
+            "example": "待确认"
+          },
+          "workOrderNo": {
+            "type": "string",
+            "description": "工单号",
+            "example": "WO-20261001-001"
+          },
+          "repairPerson": {
+            "type": "string",
+            "description": "维修责任人",
+            "example": "李维修"
+          },
+          "estimatedFinish": {
+            "type": "string",
+            "description": "预计完成时间（格式 yyyy-MM-dd HH:mm:ss）",
+            "example": "2026-10-02 18:00:00"
+          },
+          "actualFinish": {
+            "type": "string",
+            "description": "实际完成时间（格式 yyyy-MM-dd HH:mm:ss）",
+            "example": "2026-10-02 17:20:00"
+          },
+          "repairMeasures": {
+            "type": "string",
+            "description": "维修措施说明",
+            "example": "更换泄漏阀门并复压测试"
+          },
+          "acceptancePerson": {
+            "type": "string",
+            "description": "验收人",
+            "example": "王验收"
+          },
+          "acceptanceResult": {
+            "type": "string",
+            "description": "验收结论，如 合格 / 不合格",
+            "example": "合格"
           }
         }
       },
@@ -674,26 +1107,66 @@
         "type": "object",
         "description": "设施故障明细项",
         "properties": {
-          "id": { "type": "integer", "description": "故障记录 id", "example": 1001 },
-          "faultCode": { "type": "string", "description": "故障单号", "example": "F-20260317-001" },
-          "facilityCode": { "type": "string", "description": "设施编码", "example": "FP-001" },
-          "facilityName": { "type": "string", "description": "设施名称", "example": "1#消防水泵" },
-          "facilityType": { "type": "string", "description": "设施类型", "example": "消防水泵" },
-          "faultType": { "type": "string", "description": "故障类型", "example": "机械故障" },
-          "faultLevel": { "type": "string", "description": "故障等级", "example": "严重" },
+          "id": {
+            "type": "integer",
+            "description": "故障记录 id",
+            "example": 1001
+          },
+          "faultCode": {
+            "type": "string",
+            "description": "故障单号",
+            "example": "F-20260317-001"
+          },
+          "facilityCode": {
+            "type": "string",
+            "description": "设施编码",
+            "example": "FP-001"
+          },
+          "facilityName": {
+            "type": "string",
+            "description": "设施名称",
+            "example": "1#消防水泵"
+          },
+          "facilityType": {
+            "type": "string",
+            "description": "设施类型",
+            "example": "消防水泵"
+          },
+          "faultType": {
+            "type": "string",
+            "description": "故障类型",
+            "example": "机械故障"
+          },
+          "faultLevel": {
+            "type": "string",
+            "description": "故障等级",
+            "example": "严重"
+          },
           "discoverTime": {
             "type": "string",
             "description": "发现时间",
             "example": "2026-03-17 09:30:00"
           },
-          "discoverMethod": { "type": "string", "description": "发现方式", "example": "自动巡检" },
+          "discoverMethod": {
+            "type": "string",
+            "description": "发现方式",
+            "example": "自动巡检"
+          },
           "phenomenon": {
             "type": "string",
             "description": "故障现象",
             "example": "泵体异响、压力不足"
           },
-          "cause": { "type": "string", "description": "故障原因", "example": "轴承磨损" },
-          "status": { "type": "string", "description": "故障状态", "example": "处理中" },
+          "cause": {
+            "type": "string",
+            "description": "故障原因",
+            "example": "轴承磨损"
+          },
+          "status": {
+            "type": "string",
+            "description": "故障状态",
+            "example": "处理中"
+          },
           "workOrderNo": {
             "type": ["string", "null"],
             "description": "关联工单号",
@@ -732,7 +1205,9 @@
           "timeline": {
             "type": "array",
             "description": "故障处置时间线",
-            "items": { "$ref": "#/components/schemas/FireFacilityFaultTimelineItem" }
+            "items": {
+              "$ref": "#/components/schemas/FireFacilityFaultTimelineItem"
+            }
           }
         }
       },
@@ -743,7 +1218,9 @@
           "items": {
             "type": "array",
             "description": "故障明细列表",
-            "items": { "$ref": "#/components/schemas/FireFacilityFaultItem" }
+            "items": {
+              "$ref": "#/components/schemas/FireFacilityFaultItem"
+            }
           }
         }
       },
@@ -756,17 +1233,41 @@
             "description": "报警记录 id（形如 AL-<故障单号>，后端按字符串下发）",
             "example": "AL-20260317001"
           },
-          "source": { "type": "string", "description": "报警来源", "example": "火灾报警控制器" },
+          "source": {
+            "type": "string",
+            "description": "报警来源",
+            "example": "火灾报警控制器"
+          },
           "facilityType": {
             "type": "string",
             "description": "设施类型",
             "example": "火灾报警控制器"
           },
-          "level": { "type": "string", "description": "报警等级", "example": "一级" },
-          "category": { "type": "string", "description": "报警类别", "example": "烟感报警" },
-          "content": { "type": "string", "description": "报警内容", "example": "3#装置区烟感触发" },
-          "time": { "type": "string", "description": "报警时间", "example": "2026-03-17 08:15:00" },
-          "status": { "type": "string", "description": "处理状态", "example": "已处理" },
+          "level": {
+            "type": "string",
+            "description": "报警等级",
+            "example": "一级"
+          },
+          "category": {
+            "type": "string",
+            "description": "报警类别",
+            "example": "烟感报警"
+          },
+          "content": {
+            "type": "string",
+            "description": "报警内容",
+            "example": "3#装置区烟感触发"
+          },
+          "time": {
+            "type": "string",
+            "description": "报警时间",
+            "example": "2026-03-17 08:15:00"
+          },
+          "status": {
+            "type": "string",
+            "description": "处理状态",
+            "example": "已处理"
+          },
           "faultCode": {
             "type": ["string", "null"],
             "description": "关联故障单号",
@@ -781,7 +1282,9 @@
           "items": {
             "type": "array",
             "description": "报警明细列表",
-            "items": { "$ref": "#/components/schemas/FireFacilityAlarmItem" }
+            "items": {
+              "$ref": "#/components/schemas/FireFacilityAlarmItem"
+            }
           }
         }
       },
@@ -789,7 +1292,11 @@
         "type": "object",
         "description": "维保工单明细项",
         "properties": {
-          "id": { "type": "integer", "description": "工单记录 id", "example": 3001 },
+          "id": {
+            "type": "integer",
+            "description": "工单记录 id",
+            "example": 3001
+          },
           "workOrderNo": {
             "type": "string",
             "description": "工单号",
@@ -825,7 +1332,11 @@
             "description": "工单描述",
             "example": "泵体异响、压力不足"
           },
-          "status": { "type": "string", "description": "工单状态", "example": "处理中" },
+          "status": {
+            "type": "string",
+            "description": "工单状态",
+            "example": "处理中"
+          },
           "dispatchTime": {
             "type": ["string", "null"],
             "description": "派工时间",
@@ -849,7 +1360,9 @@
           "timeline": {
             "type": "array",
             "description": "工单处置时间线",
-            "items": { "$ref": "#/components/schemas/FireFacilityFaultTimelineItem" }
+            "items": {
+              "$ref": "#/components/schemas/FireFacilityFaultTimelineItem"
+            }
           }
         }
       },
@@ -860,7 +1373,9 @@
           "items": {
             "type": "array",
             "description": "维保工单明细列表",
-            "items": { "$ref": "#/components/schemas/FireFacilityWorkOrderItem" }
+            "items": {
+              "$ref": "#/components/schemas/FireFacilityWorkOrderItem"
+            }
           }
         }
       }
