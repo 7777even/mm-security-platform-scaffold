@@ -286,7 +286,13 @@ onMounted(load);
               <el-input v-model="wizard.department" placeholder="选填" />
             </el-form-item>
             <el-form-item label="填报时间">
-              <el-input v-model="wizard.fillAt" placeholder="缺省取当前时间" />
+              <el-date-picker
+                v-model="wizard.fillAt"
+                type="datetime"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                placeholder="缺省取当前时间"
+                style="width: 100%"
+              />
             </el-form-item>
             <el-divider content-position="left">结构化内容（按类型）</el-divider>
             <el-form-item v-for="f in currentFields" :key="f.key" :label="f.label">
