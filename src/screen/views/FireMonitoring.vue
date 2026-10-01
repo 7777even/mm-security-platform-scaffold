@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import DashboardLayout from '../components/layout/DashboardLayout.vue';
 import MapPageShell from '../components/map/MapPageShell.vue';
@@ -46,6 +46,7 @@ import { rescueDrawerActive } from '../lib/composables/useRescueDrawerActive';
 import { useAlarmDetailPanel } from '../lib/composables/useAlarmDetailPanel';
 import { fireAlarmToDetail } from '../lib/data/alarmDetailMock';
 import { refreshScreenFireAlarms, screenFireAlarms } from '../lib/composables/useScreenAlarmFeed';
+import { subscribeDomainChange } from '@/services/realtime';
 import { showToast } from '../lib/composables/useToast';
 import fireAlarmSnapshot from '../assets/semantic-scenes/fire-alarm-pipe-rack.png';
 
@@ -67,6 +68,13 @@ async function openSoundLightAlarm() {
 
 // 进入消防监控页即预热消防报警源，避免点击声光报警时才首次请求。
 onMounted(() => void refreshScreenFireAlarms());
+
+// 三端实时联通：后台消防报警增删改后，经 WS 广播 fire-alarm.alarm.changed，大屏自动重拉消防报警源。
+const unsubFireAlarm = subscribeDomainChange(
+  'fire-alarm.alarm',
+  () => void refreshScreenFireAlarms(),
+);
+onUnmounted(() => unsubFireAlarm());
 
 function closeSoundLightAlarm() {
   soundLightAlarmOpen.value = false;
