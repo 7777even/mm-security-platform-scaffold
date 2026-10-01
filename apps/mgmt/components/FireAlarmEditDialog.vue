@@ -4,6 +4,14 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
 import {
   createFireAlarm,
   updateFireAlarm,
+  FIRE_ALARM_TYPE_LABEL_OPTIONS,
+  FIRE_ALARM_SOURCE_OPTIONS,
+  FIRE_ALARM_OBJECT_TYPE_OPTIONS,
+  FIRE_ALARM_LEVEL_OPTIONS,
+  FIRE_ALARM_FALSE_OPTIONS,
+  FIRE_ALARM_NOTIFY_OPTIONS,
+  FIRE_ALARM_TYPE_TONE_OPTIONS,
+  FIRE_ALARM_STATUS_OPTIONS,
   type AlarmStatus,
   type FireAlarmEditPayload,
   type FireAlarmItem,
@@ -18,18 +26,20 @@ const emit = defineEmits<{
 
 const formRef = ref<FormInstance>();
 const saving = ref(false);
+// 通知方式（APP/SMS）多选：表单内部用数组，提交时拼成逗号串。
+const notifyMethods = ref<string[]>([]);
 
 function emptyForm(): FireAlarmEditPayload & { alarmId?: string } {
   return {
     alarmId: '',
     title: '',
     time: '',
-    typeLabel: '',
+    typeLabel: '火灾报警',
     typeTone: 'fire' as FireAlarmTypeTone,
-    source: '',
-    objectType: '',
+    source: '火灾报警',
+    objectType: '装置',
     objectName: '',
-    level: '',
+    level: '-',
     description: '',
     location: '',
     falseAlarm: '未核实',
@@ -50,16 +60,21 @@ const form = reactive<FireAlarmEditPayload & { alarmId?: string }>(emptyForm());
 
 const rules: FormRules = {
   title: [{ required: true, message: '请输入报警名称', trigger: 'blur' }],
-  time: [{ required: true, message: '请输入报警时间', trigger: 'blur' }],
+  time: [{ required: true, message: '请选择报警时间', trigger: 'change' }],
 };
 
 watch(
   () => props.editRow,
   (row) => {
+    const base = emptyForm();
     if (row) {
-      Object.assign(form, emptyForm(), row);
+      Object.assign(form, base, row);
+      notifyMethods.value = row.notifyMethod
+        ? String(row.notifyMethod).split(',').filter(Boolean)
+        : [];
     } else {
-      Object.assign(form, emptyForm());
+      Object.assign(form, base);
+      notifyMethods.value = [];
     }
   },
   { immediate: true },
@@ -72,7 +87,10 @@ async function submit(): Promise<void> {
     saving.value = true;
     try {
       // 表单含 alarmId（仅编辑态有值），后端按已知字段局部更新，alarmId 会被忽略，无需剔除。
-      const payload: FireAlarmEditPayload = { ...form };
+      const payload: FireAlarmEditPayload = {
+        ...form,
+        notifyMethod: notifyMethods.value.join(','),
+      };
       if (form.alarmId) {
         await updateFireAlarm(form.alarmId, payload);
       } else {
@@ -86,6 +104,8 @@ async function submit(): Promise<void> {
     }
   });
 }
+
+defineExpose({ form, notifyMethods });
 </script>
 
 <template>
@@ -100,57 +120,131 @@ async function submit(): Promise<void> {
         <el-input v-model="form.title" placeholder="如：蜡油加氢装置火灾" />
       </el-form-item>
       <el-form-item label="报警时间" prop="time">
-        <el-input v-model="form.time" placeholder="yyyy-MM-dd HH:mm:ss" />
+        <el-date-picker
+          v-model="form.time"
+          type="datetime"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          format="YYYY-MM-DD HH:mm:ss"
+          placeholder="选择报警时间"
+          style="width: 100%"
+        />
       </el-form-item>
-      <el-form-item label="类型">
-        <el-input v-model="form.typeLabel" placeholder="火灾报警/烟雾报警/GDS报警/设备故障" />
+      <el-form-item label="报警类型">
+        <el-select v-model="form.typeLabel" placeholder="请选择报警类型">
+          <el-option
+            v-for="opt in FIRE_ALARM_TYPE_LABEL_OPTIONS"
+            :key="opt"
+            :label="opt"
+            :value="opt"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="类型色调">
-        <el-select v-model="form.typeTone">
-          <el-option label="fire" value="fire" />
-          <el-option label="smoke" value="smoke" />
-          <el-option label="gds" value="gds" />
-          <el-option label="muted" value="muted" />
+        <el-select v-model="form.typeTone" placeholder="请选择类型色调">
+          <el-option
+            v-for="opt in FIRE_ALARM_TYPE_TONE_OPTIONS"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="报警来源">
+        <el-select v-model="form.source" placeholder="请选择报警来源">
+          <el-option
+            v-for="opt in FIRE_ALARM_SOURCE_OPTIONS"
+            :key="opt"
+            :label="opt"
+            :value="opt"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="对象类型">
+        <el-select v-model="form.objectType" placeholder="请选择对象类型">
+          <el-option
+            v-for="opt in FIRE_ALARM_OBJECT_TYPE_OPTIONS"
+            :key="opt"
+            :label="opt"
+            :value="opt"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="对象名称">
+        <el-input v-model="form.objectName" placeholder="如：蜡油加氢装置" />
+      </el-form-item>
+      <el-form-item label="报警等级">
+        <el-select v-model="form.level" placeholder="请选择报警等级">
+          <el-option v-for="opt in FIRE_ALARM_LEVEL_OPTIONS" :key="opt" :label="opt" :value="opt" />
         </el-select>
       </el-form-item>
       <el-form-item label="事发位置">
-        <el-input v-model="form.location" />
+        <el-input v-model="form.location" placeholder="如：化工区-蜡油加氢装置区" />
       </el-form-item>
-      <el-form-item label="对象类型">
-        <el-input v-model="form.objectType" placeholder="装置/储罐/仓库/管网" />
+      <el-form-item label="报警描述">
+        <el-input
+          v-model="form.description"
+          type="textarea"
+          :rows="2"
+          placeholder="请描述报警现场情况"
+        />
       </el-form-item>
-      <el-form-item label="对象名称">
-        <el-input v-model="form.objectName" />
-      </el-form-item>
-      <el-form-item label="状态">
-        <el-select v-model="form.status">
-          <el-option label="活动" value="ACTIVE" />
-          <el-option label="已确认" value="ACKED" />
-          <el-option label="已派单" value="DISPATCHED" />
-          <el-option label="已闭环" value="CLOSED" />
+      <el-form-item label="处置状态">
+        <el-select v-model="form.status" placeholder="请选择处置状态">
+          <el-option
+            v-for="opt in FIRE_ALARM_STATUS_OPTIONS"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="误报核实">
-        <el-select v-model="form.falseAlarm">
-          <el-option label="未核实" value="未核实" />
-          <el-option label="是" value="是" />
-          <el-option label="否" value="否" />
+        <el-select v-model="form.falseAlarm" placeholder="请选择误报核实结果">
+          <el-option v-for="opt in FIRE_ALARM_FALSE_OPTIONS" :key="opt" :label="opt" :value="opt" />
         </el-select>
       </el-form-item>
       <el-form-item label="监控点名称">
-        <el-input v-model="form.monitorLabel" />
+        <el-input v-model="form.monitorLabel" placeholder="如：蜡油加氢东侧监控" />
       </el-form-item>
       <el-form-item label="处置情况">
-        <el-input v-model="form.handleResult" type="textarea" :rows="2" />
+        <el-input
+          v-model="form.handleResult"
+          type="textarea"
+          :rows="2"
+          placeholder="如：已现场核实现场无明火，持续观察"
+        />
       </el-form-item>
       <el-form-item label="处置时间">
-        <el-input v-model="form.handleTime" placeholder="yyyy-MM-dd HH:mm:ss" />
+        <el-date-picker
+          v-model="form.handleTime"
+          type="datetime"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          format="YYYY-MM-DD HH:mm:ss"
+          placeholder="选择处置时间（可空）"
+          style="width: 100%"
+        />
       </el-form-item>
       <el-form-item label="派单人员">
-        <el-input v-model="form.dispatchPersonnel" placeholder="张三,李四" />
+        <el-input
+          v-model="form.dispatchPersonnel"
+          placeholder="多人以英文逗号分隔，如：张三,李四"
+        />
       </el-form-item>
       <el-form-item label="通知方式">
-        <el-input v-model="form.notifyMethod" placeholder="APP,SMS" />
+        <el-select
+          v-model="notifyMethods"
+          multiple
+          collapse-tags
+          placeholder="可多选，如 APP + SMS"
+          style="width: 100%"
+        >
+          <el-option
+            v-for="opt in FIRE_ALARM_NOTIFY_OPTIONS"
+            :key="opt"
+            :label="opt"
+            :value="opt"
+          />
+        </el-select>
       </el-form-item>
     </el-form>
     <template #footer>

@@ -143,6 +143,37 @@ export async function deleteEmergencyEvent(id: string): Promise<boolean> {
 // type/level 分类体系待后端契约 #TODO-确认，脚手架以 fire 富模型为临时真源，dev 降级保留当前行为。
 export type FireAlarmTypeTone = 'fire' | 'smoke' | 'gds' | 'muted';
 
+/**
+ * 消防报警固定字典选项：对齐后端 fire_alarm_status / fire_alarm_false 字典与契约 example。
+ * 管理端新增/编辑弹窗统一用下拉，避免用户在这些枚举字段上手填自由文本。
+ */
+export const FIRE_ALARM_TYPE_LABEL_OPTIONS = [
+  '火灾报警',
+  '烟雾报警',
+  'GDS报警',
+  '设备故障',
+] as const;
+export const FIRE_ALARM_SOURCE_OPTIONS = ['火灾报警', 'DCS·GDS', '视频识别', '人工上报'] as const;
+export const FIRE_ALARM_OBJECT_TYPE_OPTIONS = ['装置', '储罐', '仓库', '管网'] as const;
+export const FIRE_ALARM_LEVEL_OPTIONS = ['-', '高报', '高高报'] as const;
+export const FIRE_ALARM_FALSE_OPTIONS = ['未核实', '是', '否'] as const;
+export const FIRE_ALARM_NOTIFY_OPTIONS = ['APP', 'SMS'] as const;
+export const FIRE_ALARM_TYPE_TONE_OPTIONS: ReadonlyArray<{
+  label: string;
+  value: FireAlarmTypeTone;
+}> = [
+  { label: '火灾', value: 'fire' },
+  { label: '烟雾', value: 'smoke' },
+  { label: 'GDS', value: 'gds' },
+  { label: '静默/其他', value: 'muted' },
+];
+export const FIRE_ALARM_STATUS_OPTIONS: ReadonlyArray<{ label: string; value: AlarmStatus }> = [
+  { label: '待处理', value: 'ACTIVE' },
+  { label: '已确认', value: 'ACKED' },
+  { label: '已派单', value: 'DISPATCHED' },
+  { label: '已闭环', value: 'CLOSED' },
+];
+
 export interface FireAlarmItem {
   alarmId: string;
   typeLabel: string;

@@ -8,10 +8,15 @@ const { createFireAlarm, updateFireAlarm } = vi.hoisted(() => ({
   updateFireAlarm: vi.fn(),
 }));
 
-vi.mock('@/services/alarm', () => ({
-  createFireAlarm: (...args: unknown[]) => createFireAlarm(...args),
-  updateFireAlarm: (...args: unknown[]) => updateFireAlarm(...args),
-}));
+// 保留真实模块（含下拉选项常量），仅覆盖两个写接口
+vi.mock('@/services/alarm', async () => {
+  const actual = await vi.importActual<typeof import('@/services/alarm')>('@/services/alarm');
+  return {
+    ...actual,
+    createFireAlarm: (...args: unknown[]) => createFireAlarm(...args),
+    updateFireAlarm: (...args: unknown[]) => updateFireAlarm(...args),
+  };
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -40,10 +45,10 @@ describe('FireAlarmEditDialog', () => {
       props: { modelValue: true, editRow: null },
     });
     await flushPromises();
-    const inputs = wrapper.findAll('input');
-    // 表单顺序：title(0) / time(1) 为必填；其余 el-select 也渲染 input，但前两个必为 title/time。
-    await inputs[0]!.setValue('联动测试报警');
-    await inputs[1]!.setValue('2026-10-01 21:00:00');
+    // 直接驱动表单（时间已改为 el-date-picker，靠 DOM 索引不可靠）
+    wrapper.vm.form.title = '联动测试报警';
+    wrapper.vm.form.time = '2026-10-01 21:00:00';
+    await flushPromises();
     await findSave(wrapper).trigger('click');
     await flushPromises();
     await new Promise((r) => setTimeout(r, 0));
@@ -64,7 +69,8 @@ describe('FireAlarmEditDialog', () => {
       },
     });
     await flushPromises();
-    // watch(editRow, immediate) 已把表单预填，校验可通过
+    // watch(editRow, immediate) 已把表单预填
+    expect(wrapper.vm.form.alarmId).toBe('FA-1');
     await findSave(wrapper).trigger('click');
     await flushPromises();
     await new Promise((r) => setTimeout(r, 0));
@@ -78,13 +84,29 @@ describe('FireAlarmEditDialog', () => {
       props: { modelValue: true, editRow: null },
     });
     await flushPromises();
-    const inputs = wrapper.findAll('input');
-    await inputs[0]!.setValue('联动测试报警');
-    await inputs[1]!.setValue('2026-10-01 21:00:00');
+    wrapper.vm.form.title = '联动测试报警';
+    wrapper.vm.form.time = '2026-10-01 21:00:00';
+    await flushPromises();
     await findSave(wrapper).trigger('click');
     await flushPromises();
     await new Promise((r) => setTimeout(r, 0));
     expect(wrapper.emitted('saved')).toBeTruthy();
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([false]);
+  });
+
+  it('通知方式多选拼成逗号串写入 payload', async () => {
+    const wrapper = mount(FireAlarmEditDialog, {
+      props: { modelValue: true, editRow: null },
+    });
+    await flushPromises();
+    wrapper.vm.form.title = '联动测试报警';
+    wrapper.vm.form.time = '2026-10-01 21:00:00';
+    wrapper.vm.notifyMethods = ['APP', 'SMS'];
+    await flushPromises();
+    await findSave(wrapper).trigger('click');
+    await flushPromises();
+    await new Promise((r) => setTimeout(r, 0));
+    const payload = createFireAlarm.mock.calls[0]?.[0] as { notifyMethod?: string };
+    expect(payload?.notifyMethod).toBe('APP,SMS');
   });
 });
