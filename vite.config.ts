@@ -247,6 +247,15 @@ const baseConfig = defineConfig({
     CESIUM_BASE_URL: JSON.stringify(CESIUM_BASE_URL),
   },
   optimizeDeps: {
+    // 显式声明 dev 期由 Vite 直接服务的 HTML 入口（主壳 + 独立应用 apps/mgmt、apps/mobile）。
+    // 默认 optimizeDeps.entries 仅爬 index.html，会漏掉 apps/mgmt 按需引入的
+    // element-plus message/message-box 等 style/css 依赖 → 首次进入 /apps/mgmt/ 时
+    // Vite 运行时发现「新依赖」触发重优化、标记旧依赖 outdated，对飞行中的依赖请求返回
+    // 504(Outdated Optimize Dep) 且可能陷入重优化循环（本仓库曾因依赖缓存清理崩溃）。
+    // 显式列出入口后，这些依赖在启动时一次性预构建，避免运行期重优化。
+    // 注意：wujie 子应用(fm-*) 走 build:subapps 预打 IIFE、dev 由 serveSubappDist 中间件直传 dist，
+    // 不经 Vite 优化，故不列入 entries（列入反而会把 cesium/zip.js 拉进重优化）。
+    entries: ['index.html', 'apps/mgmt/index.html', 'apps/mobile/index.html'],
     // Cesium 含 ES2018 以上语法，预构建排除避免 esbuild 降级失败；
     // @zip.js/zip.js 同时排除：其子路径（含 zip-no-worker alias 目标）若被 vite 运行时重优化，
     // 会触发依赖缓存清理，在受限环境下导致 dev server 崩溃（本仓库已两次因此中断）
