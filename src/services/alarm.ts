@@ -400,9 +400,36 @@ export async function fetchFireAlarmPage(page = 1, size = 10): Promise<PageResul
   }
 }
 
-/** 消防报警写回请求体：局部更新，仅传需变更的字段。 */
+/** 消防报警新增 / 全字段编辑请求体（对齐后端 FireAlarmCreateRequest ∪ 全字段 FireAlarmUpdateRequest）。
+ *  title / time 必填（新增时后端校验）；其余字段可选，全字段局部更新（未传字段不更新）。 */
+export interface FireAlarmEditPayload {
+  title: string;
+  time: string;
+  typeLabel?: string;
+  typeTone?: FireAlarmTypeTone;
+  source?: string;
+  objectType?: string;
+  objectName?: string;
+  level?: string;
+  description?: string;
+  location?: string;
+  falseAlarm?: string;
+  status?: AlarmStatus;
+  rescueEventId?: string;
+  monitorId?: string;
+  monitorLabel?: string;
+  onsiteMonitorId?: string;
+  onsiteMonitorLabel?: string;
+  handleResult?: string;
+  handleTime?: string;
+  dispatchPersonnel?: string;
+  notifyMethod?: string;
+}
+
+/** 消防报警写回请求体（局部更新，仅传需变更的字段）：兼容大屏 AlarmDetailPanel 既有调用（6 字段）。
+ *  管理端全字段新增 / 编辑请用 FireAlarmEditPayload。 */
 export interface FireAlarmUpdatePayload {
-  status?: FireAlarmItem['status'];
+  status?: AlarmStatus;
   falseAlarm?: string;
   /** 处置情况文本。不传则不更新。 */
   handleResult?: string;
@@ -415,7 +442,10 @@ export interface FireAlarmUpdatePayload {
 }
 
 /**
- * 消防报警写回（确认/派单/闭环 + 误报标记）：PUT /fire-alarms/{alarmId}，落 fac_fire_alarm。
+ * 消防报警写回 / 全字段编辑（确认/派单/闭环 + 误报标记 + 业务字段）：PUT /fire-alarms/{alarmId}，
+ * 落 fac_fire_alarm（@Version 乐观锁）。局部更新：仅传入字段被写入，未传字段保持原值。
+ * 入参为 FireAlarmUpdatePayload（6 字段，大屏 AlarmDetailPanel 用）；管理端全字段编辑传 FireAlarmEditPayload
+ * （其字段集为超集，可赋值传入，运行时照发全字段）。
  * 离线演示（VITE_USE_DEV_MOCK=true）仅本地成功、不落库；未连后端显式报错。
  * 成功返回更新后的 FireAlarmItem，供调用方即时回填。
  */
@@ -450,4 +480,47 @@ export async function updateFireAlarm(
     method: 'PUT',
     data: payload,
   });
+}
+
+/**
+ * 消防报警新增：POST /fire-alarms，落 fac_fire_alarm。
+ * 离线演示（VITE_USE_DEV_MOCK=true）返回 FA-MOCK-* 假对象、不落库；未连后端显式报错。
+ * 成功返回创建后的 FireAlarmItem，供调用方即时回填。
+ */
+export async function createFireAlarm(
+  payload: FireAlarmEditPayload,
+): Promise<FireAlarmItem | null> {
+  if (useDevMock()) {
+    return Promise.resolve({
+      ...FIRE_ALARM_FIXTURE[0],
+      alarmId: `FA-MOCK-${Date.now()}`,
+      ...payload,
+    } as FireAlarmItem);
+  }
+  if (isAlarmOffline()) {
+    notifyBackendOffline(
+      'alarm',
+      '/fire-alarms',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法新增消防报警');
+  }
+  return request<FireAlarmItem>({ url: '/fire-alarms', method: 'POST', data: payload });
+}
+
+/**
+ * 消防报警删除（真删除）：DELETE /fire-alarms/{alarmId}。
+ * 离线演示（VITE_USE_DEV_MOCK=true）仅本地成功、不落库；未连后端显式报错。
+ */
+export async function deleteFireAlarm(alarmId: string): Promise<void> {
+  if (useDevMock()) return Promise.resolve();
+  if (isAlarmOffline()) {
+    notifyBackendOffline(
+      'alarm',
+      `/fire-alarms/${alarmId}`,
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法删除消防报警');
+  }
+  await request<void>({ url: `/fire-alarms/${encodeURIComponent(alarmId)}`, method: 'DELETE' });
 }
