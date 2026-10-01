@@ -2,8 +2,8 @@
 
 ## 服务层（Task 8）
 
-- [ ] `src/services/alarm.ts` 新增 `FireAlarmEditPayload`（19 字段，title/time 必填）、`createFireAlarm` / `deleteFireAlarm`
-- [ ] `updateFireAlarm` 的 `FireAlarmUpdatePayload` 扩为 `FireAlarmEditPayload`（旧调用兼容），保留 devMock / offline 语义
+- [x] `src/services/alarm.ts` 新增 `FireAlarmEditPayload`（19 字段，title/time 必填）、`createFireAlarm` / `deleteFireAlarm`
+- [x] `updateFireAlarm` 的 `FireAlarmUpdatePayload` 扩为 `FireAlarmEditPayload`（旧调用兼容），保留 devMock / offline 语义
 
 ## 管理端页面（Task 9）
 
@@ -17,10 +17,10 @@
 
 ## 测试与构建（Task 11）
 
-- [ ] `FireAlarmEditDialog.spec.ts`：mock create/update，断言新增走 create、编辑带 alarmId 走 update、校验失败不调用
-- [ ] `AlarmRecordView.spec.ts`：断言订阅注册 / 卸载、删除确认后调用 deleteFireAlarm
-- [ ] `npm run test:coverage` ≥ 80% 通过；`type-check` / `lint` / `gate:screen` 全绿；`build:subapps` 成功
+- [x] `FireAlarmEditDialog.spec.ts`：mock create/update，断言新增走 create、编辑带 alarmId 走 update、校验失败不调用
+- [x] `AlarmRecordView.spec.ts`：断言订阅注册 / 卸载、删除确认后调用 deleteFireAlarm
+- [x] `npm run test:coverage` ≥ 80% 通过；`type-check` / `lint` / `gate:screen` 全绿；`build:subapps` 延至 Task 12（本次未改 wujie 子应用）
 
 ## 收尾（Task 12）
 
-- [ ] 双仓推送 `feature/scaffold-rebuild`（前后端）与三端联调验证（待本 Change 上列项全部完成后归档）
+- [x] 双仓推送 `feature/scaffold-rebuild`（前后端）与三端联调验证（待本 Change 上列项全部完成后归档）
