@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { Warning } from '@element-plus/icons-vue';
 import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import MgmtProTable from '../../components/MgmtProTable.vue';
+import FireAlarmEditDialog from '../../components/FireAlarmEditDialog.vue';
 import { toastErr } from '../../utils/feedback';
-import { fetchFireAlarmPage } from '@/services/alarm';
+import { fetchFireAlarmPage, deleteFireAlarm } from '@/services/alarm';
+import { subscribeDomainChange } from '@/services/realtime';
 import type { FireAlarmItem, AlarmStatus } from '@/services/alarm';
 
 // 消防报警记录：与大屏「消防报警」同源，接后端 GET /api/v1/fire-alarms（fac_fire_alarm）。
-// 后端仅支持分页，状态(ACTIVE/CLOSED)在前端过滤，保证管理端与大屏「已闭环」口径联动一致。
+// 后端仅支持分页，状态(ACTIVE/ACKED/DISPATCHED/CLOSED)在前端过滤，保证管理端与大屏「已闭环」口径联动一致。
+// 三端实时联通：订阅 fire-alarm.alarm 域变更，后台增删改后自动重拉本列表。
 
 function asAlarm(row: unknown): FireAlarmItem {
   return row as FireAlarmItem;
@@ -20,6 +24,9 @@ const size = ref(10);
 const loading = ref(false);
 
 const filters = reactive<{ status: AlarmStatus | '' }>({ status: '' });
+
+const dialogVisible = ref(false);
+const editRow = ref<FireAlarmItem | null>(null);
 
 async function load(): Promise<void> {
   loading.value = true;
@@ -63,8 +70,48 @@ function onSize(s: number): void {
   page.value = 1;
 }
 
-const STATUS_TEXT: Record<string, string> = { ACTIVE: '活动', CLOSED: '已闭环' };
-const STATUS_TAG: Record<string, string> = { ACTIVE: 'tag-danger', CLOSED: 'tag-success' };
+function openCreate(): void {
+  editRow.value = null;
+  dialogVisible.value = true;
+}
+function openEdit(row: FireAlarmItem): void {
+  editRow.value = row;
+  dialogVisible.value = true;
+}
+async function onSaved(): Promise<void> {
+  await load();
+}
+async function onDelete(row: FireAlarmItem): Promise<void> {
+  try {
+    await ElMessageBox.confirm(
+      `确认删除消防报警「${row.title || row.alarmId}」？删除后不可恢复。`,
+      '删除确认',
+      { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
+    );
+  } catch {
+    return; // 用户取消
+  }
+  try {
+    await deleteFireAlarm(row.alarmId);
+    ElMessage.success('已删除');
+    await load();
+  } catch (err) {
+    toastErr(err, '删除失败：');
+  }
+}
+
+const STATUS_TEXT: Record<string, string> = {
+  ACTIVE: '活动',
+  ACKED: '已确认',
+  DISPATCHED: '已派单',
+  CLOSED: '已闭环',
+};
+const STATUS_TAG: Record<string, string> = {
+  ACTIVE: 'tag-danger',
+  ACKED: 'tag-warning',
+  DISPATCHED: 'tag-primary',
+  CLOSED: 'tag-success',
+};
 function statusText(s: string): string {
   return STATUS_TEXT[s] ?? s;
 }
@@ -77,7 +124,10 @@ function falseTag(v?: string): string {
   return 'tag-warning';
 }
 
+// 三端实时联通：订阅 fire-alarm.alarm 变更，卸载时退订。
+const unsubFireAlarm = subscribeDomainChange('fire-alarm.alarm', () => void load());
 onMounted(load);
+onUnmounted(() => unsubFireAlarm());
 </script>
 
 <template>
@@ -90,8 +140,11 @@ onMounted(load);
     />
 
     <div class="mgmt-filter-card">
+      <el-button type="primary" @click="openCreate">新增</el-button>
       <el-select v-model="filters.status" placeholder="状态：全部" clearable style="width: 150px">
         <el-option label="活动" value="ACTIVE" />
+        <el-option label="已确认" value="ACKED" />
+        <el-option label="已派单" value="DISPATCHED" />
         <el-option label="已闭环" value="CLOSED" />
       </el-select>
       <el-button
@@ -145,7 +198,15 @@ onMounted(load);
           }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="操作" width="150" fixed="right">
+        <template #default="{ row }">
+          <el-button link type="primary" @click="openEdit(asAlarm(row))">编辑</el-button>
+          <el-button link type="danger" @click="onDelete(asAlarm(row))">删除</el-button>
+        </template>
+      </el-table-column>
     </MgmtProTable>
+
+    <FireAlarmEditDialog v-model="dialogVisible" :edit-row="editRow" @saved="onSaved" />
   </div>
 </template>
 
