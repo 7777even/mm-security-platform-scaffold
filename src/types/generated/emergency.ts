@@ -542,6 +542,222 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/emergency/command-records/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 修改应急指令记录
+     * @description 管理端台账编辑：按 id 局部更新应急指令记录，仅覆盖传入的非空字段（read-modify-write）。currStatus 为推进后状态（必填）；本端点仅覆盖传入的非空字段。需权限码 `emergency:command:write`。记录不存在返回 B3 NOT_FOUND。成功触发 emergency.command 实时广播。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 应急指令记录 id（数据库主键） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "commandCode": "w1",
+           *       "commandName": "发布防台防汛预警",
+           *       "commandKind": "固定指令",
+           *       "currStatus": "执行中",
+           *       "dispatchMode": "系统下发",
+           *       "target": "各生产单位、承包商",
+           *       "remark": "要求停止露天高处及吊装作业"
+           *     }
+           */
+          'application/json': components['schemas']['EmergencyCommandRecordWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 修改成功，返回更新后的应急指令记录 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 1,
+             *         "commandCode": "w1",
+             *         "commandName": "发布防台防汛预警",
+             *         "commandKind": "固定指令",
+             *         "prevStatus": "待执行",
+             *         "currStatus": "执行中",
+             *         "dispatchMode": "系统下发",
+             *         "target": "各生产单位、承包商",
+             *         "remark": "要求停止露天高处及吊装作业",
+             *         "operator": "admin",
+             *         "createdAt": "2026-09-13T09:20:11"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['EmergencyCommandRecordView'];
+          };
+        };
+      };
+    };
+    post?: never;
+    /**
+     * 删除应急指令记录
+     * @description 按 id 物理删除应急指令记录（真删除，无回收站）。记录不存在返回 B3 NOT_FOUND。需权限码 `emergency:command:write`。成功触发 emergency.command 实时广播。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 应急指令记录 id（数据库主键） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除成功 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": null
+             *     }
+             */
+            'application/json': unknown;
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/emergency/duty-sign-ins/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 修改值班签到记录
+     * @description 管理端台账编辑：按 id 局部更新值班签到记录，仅覆盖传入的非空字段（read-modify-write）。signAction 取 SIGN_IN / SIGN_OUT；本端点仅覆盖传入的非空字段。需权限码 `emergency:duty:write`。记录不存在返回 B3 NOT_FOUND。成功触发 emergency.duty 实时广播。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 值班签到记录 id（数据库主键） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "dutyDate": "2026-09-13",
+           *       "shiftName": "白班",
+           *       "department": "应急指挥中心",
+           *       "personName": "杨恒朋",
+           *       "signAction": "SIGN_IN",
+           *       "remark": ""
+           *     }
+           */
+          'application/json': components['schemas']['DutySignInWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 修改成功，返回更新后的值班签到记录 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 1,
+             *         "dutyDate": "2026-09-13",
+             *         "shiftName": "白班",
+             *         "department": "应急指挥中心",
+             *         "personName": "杨恒朋",
+             *         "signAction": "SIGN_IN",
+             *         "signTime": "2026-09-13 08:00:00",
+             *         "remark": "",
+             *         "operator": "admin",
+             *         "createdAt": "2026-09-13T08:00:03"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['DutySignInView'];
+          };
+        };
+      };
+    };
+    post?: never;
+    /**
+     * 删除值班签到记录
+     * @description 按 id 物理删除值班签到记录（真删除，无回收站）。记录不存在返回 B3 NOT_FOUND。需权限码 `emergency:duty:write`。成功触发 emergency.duty 实时广播。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 值班签到记录 id（数据库主键） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除成功 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": null
+             *     }
+             */
+            'application/json': unknown;
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {

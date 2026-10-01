@@ -67,15 +67,26 @@
                         "count": 47,
                         "icon": "UserFilled",
                         "items": [
-                          { "name": "张伟", "meta": "救援专家 · 一中队" },
-                          { "name": "李强", "meta": "工艺专家 · 二中队" }
+                          {
+                            "name": "张伟",
+                            "meta": "救援专家 · 一中队"
+                          },
+                          {
+                            "name": "李强",
+                            "meta": "工艺专家 · 二中队"
+                          }
                         ]
                       },
                       {
                         "kind": "应急物资",
                         "count": 3510,
                         "icon": "Box",
-                        "items": [{ "name": "正压式空气呼吸器", "meta": "RHZK6.8 · 应急器材库" }]
+                        "items": [
+                          {
+                            "name": "正压式空气呼吸器",
+                            "meta": "RHZK6.8 · 应急器材库"
+                          }
+                        ]
                       }
                     ]
                   }
@@ -1137,6 +1148,196 @@
           }
         }
       }
+    },
+    "/emergency/command-records/{id}": {
+      "put": {
+        "summary": "修改应急指令记录",
+        "description": "管理端台账编辑：按 id 局部更新应急指令记录，仅覆盖传入的非空字段（read-modify-write）。currStatus 为推进后状态（必填）；本端点仅覆盖传入的非空字段。需权限码 `emergency:command:write`。记录不存在返回 B3 NOT_FOUND。成功触发 emergency.command 实时广播。",
+        "tags": ["emergency"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "应急指令记录 id（数据库主键）"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmergencyCommandRecordWriteRequest"
+              },
+              "example": {
+                "commandCode": "w1",
+                "commandName": "发布防台防汛预警",
+                "commandKind": "固定指令",
+                "currStatus": "执行中",
+                "dispatchMode": "系统下发",
+                "target": "各生产单位、承包商",
+                "remark": "要求停止露天高处及吊装作业"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "修改成功，返回更新后的应急指令记录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmergencyCommandRecordView"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "commandCode": "w1",
+                    "commandName": "发布防台防汛预警",
+                    "commandKind": "固定指令",
+                    "prevStatus": "待执行",
+                    "currStatus": "执行中",
+                    "dispatchMode": "系统下发",
+                    "target": "各生产单位、承包商",
+                    "remark": "要求停止露天高处及吊装作业",
+                    "operator": "admin",
+                    "createdAt": "2026-09-13T09:20:11"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除应急指令记录",
+        "description": "按 id 物理删除应急指令记录（真删除，无回收站）。记录不存在返回 B3 NOT_FOUND。需权限码 `emergency:command:write`。成功触发 emergency.command 实时广播。",
+        "tags": ["emergency"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "应急指令记录 id（数据库主键）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/emergency/duty-sign-ins/{id}": {
+      "put": {
+        "summary": "修改值班签到记录",
+        "description": "管理端台账编辑：按 id 局部更新值班签到记录，仅覆盖传入的非空字段（read-modify-write）。signAction 取 SIGN_IN / SIGN_OUT；本端点仅覆盖传入的非空字段。需权限码 `emergency:duty:write`。记录不存在返回 B3 NOT_FOUND。成功触发 emergency.duty 实时广播。",
+        "tags": ["emergency"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "值班签到记录 id（数据库主键）"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DutySignInWriteRequest"
+              },
+              "example": {
+                "dutyDate": "2026-09-13",
+                "shiftName": "白班",
+                "department": "应急指挥中心",
+                "personName": "杨恒朋",
+                "signAction": "SIGN_IN",
+                "remark": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "修改成功，返回更新后的值班签到记录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DutySignInView"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "dutyDate": "2026-09-13",
+                    "shiftName": "白班",
+                    "department": "应急指挥中心",
+                    "personName": "杨恒朋",
+                    "signAction": "SIGN_IN",
+                    "signTime": "2026-09-13 08:00:00",
+                    "remark": "",
+                    "operator": "admin",
+                    "createdAt": "2026-09-13T08:00:03"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除值班签到记录",
+        "description": "按 id 物理删除值班签到记录（真删除，无回收站）。记录不存在返回 B3 NOT_FOUND。需权限码 `emergency:duty:write`。成功触发 emergency.duty 实时广播。",
+        "tags": ["emergency"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "值班签到记录 id（数据库主键）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1188,10 +1389,22 @@
             },
             "description": "真实明细（全量，条数与同类 count 一致）：应急专家/救援装备/应急车辆/救援队伍 取自对应台账；应急场所/医疗机构 取自 sys_emergency_strength_item 运营参考表；消防设施 取自 fac_fire_facility_ledger 真实台账；仅应急物资为 null（统计口径，无逐项明细）；前端按 20 条/页分页展示",
             "example": [
-              { "name": "张伟", "meta": "救援专家 · 一中队" },
-              { "name": "1#泡沫站", "meta": "中心控制室 · 固定泡沫灭火设施" },
-              { "name": "厂区应急集结点A", "meta": "中心控制室前广场 · 可容纳 200 人" },
-              { "name": "厂区医务室", "meta": "综合办公楼1层 · 全科门诊" }
+              {
+                "name": "张伟",
+                "meta": "救援专家 · 一中队"
+              },
+              {
+                "name": "1#泡沫站",
+                "meta": "中心控制室 · 固定泡沫灭火设施"
+              },
+              {
+                "name": "厂区应急集结点A",
+                "meta": "中心控制室前广场 · 可容纳 200 人"
+              },
+              {
+                "name": "厂区医务室",
+                "meta": "综合办公楼1层 · 全科门诊"
+              }
             ]
           }
         }

@@ -83,6 +83,115 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/typhoon/dispatch-orders/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 修改资源调度单
+     * @description 管理端台账编辑：按 id 局部更新资源调度单，仅覆盖传入的非空字段（read-modify-write）。dispatchAction 取 ASSIGN / CONFIRM / RELEASE；本端点仅覆盖传入的非空字段。需权限码 `typhoon:dispatch:write`。记录不存在返回 B3 NOT_FOUND。成功触发 typhoon.dispatch 实时广播。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 资源调度单 id（数据库主键） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "resourceCode": "TEAM-FX-01",
+           *       "resourceName": "炼油防汛抢险一组",
+           *       "dispatchAction": "ASSIGN",
+           *       "assignee": "高策",
+           *       "quantity": 1,
+           *       "remark": "支援6#路地磅北地沟"
+           *     }
+           */
+          'application/json': components['schemas']['TyphoonDispatchOrderWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 修改成功，返回更新后的资源调度单 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 1,
+             *         "orderNo": "TD-20260913-0001",
+             *         "resourceCode": "TEAM-FX-01",
+             *         "resourceName": "炼油防汛抢险一组",
+             *         "dispatchAction": "ASSIGN",
+             *         "prevStatus": "可调度",
+             *         "currStatus": "已出动",
+             *         "assignee": "高策",
+             *         "quantity": 1,
+             *         "remark": "支援6#路地磅北地沟",
+             *         "operator": "admin",
+             *         "createdAt": "2026-09-13T09:30:00"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['TyphoonDispatchOrderView'];
+          };
+        };
+      };
+    };
+    post?: never;
+    /**
+     * 删除资源调度单
+     * @description 按 id 物理删除资源调度单（真删除，无回收站）。记录不存在返回 B3 NOT_FOUND。需权限码 `typhoon:dispatch:write`。成功触发 typhoon.dispatch 实时广播。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 资源调度单 id（数据库主键） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除成功 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": null
+             *     }
+             */
+            'application/json': unknown;
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {

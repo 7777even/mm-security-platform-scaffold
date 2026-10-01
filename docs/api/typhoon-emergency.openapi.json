@@ -13,8 +13,18 @@
       "description": "默认 baseURL（VITE_API_BASE 可覆盖，见 src/services/http.ts）"
     }
   ],
-  "security": [{ "bearerAuth": [], "replaySign": [] }],
-  "tags": [{ "name": "typhoon", "description": "台风应急" }],
+  "security": [
+    {
+      "bearerAuth": [],
+      "replaySign": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "typhoon",
+      "description": "台风应急"
+    }
+  ],
   "paths": {
     "/typhoon/incident": {
       "get": {
@@ -28,9 +38,13 @@
             "in": "query",
             "required": false,
             "description": "应急事件 id；省略时返回默认事件",
-            "schema": { "type": "integer" }
+            "schema": {
+              "type": "integer"
+            }
           },
-          { "$ref": "./_shared.json#/components/parameters/lang" }
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
         ],
         "responses": {
           "200": {
@@ -39,11 +53,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/TyphoonEmergencyIncident" }
+                        "data": {
+                          "$ref": "#/components/schemas/TyphoonEmergencyIncident"
+                        }
                       }
                     }
                   ]
@@ -129,14 +147,23 @@
                         "videoIds": ["r1-east", "r1-outlet", "r1-road"]
                       }
                     ],
-                    "eventInfoFields": [{ "label": "事件名称", "value": "台风沙迦防台防汛工作" }]
+                    "eventInfoFields": [
+                      {
+                        "label": "事件名称",
+                        "value": "台风沙迦防台防汛工作"
+                      }
+                    ]
                   }
                 }
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
-          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
         }
       }
     },
@@ -146,7 +173,11 @@
         "operationId": "listTyphoonDispatchResources",
         "summary": "防汛排涝可调度力量清单",
         "description": "返回防汛排涝可调度资源清单（队伍/车辆/装备），含所属单位、区域、可调度状态、距离、预计到达时间、能力描述、联系人与坐标，用于台风应急页左侧力量调度面板。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=可调度力量清单）",
@@ -154,13 +185,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/TyphoonDispatchResource" }
+                          "items": {
+                            "$ref": "#/components/schemas/TyphoonDispatchResource"
+                          }
                         }
                       }
                     }
@@ -191,8 +226,12 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
-          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
         }
       }
     },
@@ -202,7 +241,11 @@
         "operationId": "getTyphoonResponseBoard",
         "summary": "台风应急响应板聚合",
         "description": "返回台风应急页响应板所需数据：气象预警横幅（轮播）、预案指令（plan）与临时指令（temporary）。取代前端 TyphoonLeftPanel 硬编码的 weatherAlertBanners / weatherCommands / temporaryCommands。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=响应板聚合）",
@@ -210,11 +253,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/TyphoonResponseBoard" }
+                        "data": {
+                          "$ref": "#/components/schemas/TyphoonResponseBoard"
+                        }
                       }
                     }
                   ]
@@ -258,8 +305,12 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
-          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
         }
       }
     },
@@ -269,7 +320,11 @@
         "operationId": "listTyphoonDispatchOrders",
         "summary": "台风资源调度单列表",
         "description": "返回防汛排涝资源调度单（指派 / 确认 / 释放）列表，按 id 倒序，最多 200 条。资源清单本体（/typhoon/dispatch-resources）保持只读，调度动作落独立的 fac_typhoon_dispatch_order 表。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=调度单列表）",
@@ -277,13 +332,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/TyphoonDispatchOrderView" }
+                          "items": {
+                            "$ref": "#/components/schemas/TyphoonDispatchOrderView"
+                          }
                         }
                       }
                     }
@@ -312,8 +371,12 @@
               }
             }
           },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
-          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
         }
       },
       "post": {
@@ -325,7 +388,9 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/TyphoonDispatchOrderWriteRequest" },
+              "schema": {
+                "$ref": "#/components/schemas/TyphoonDispatchOrderWriteRequest"
+              },
               "example": {
                 "resourceCode": "TEAM-FX-01",
                 "resourceName": "炼油防汛抢险一组",
@@ -344,11 +409,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/TyphoonDispatchOrderView" }
+                        "data": {
+                          "$ref": "#/components/schemas/TyphoonDispatchOrderView"
+                        }
                       }
                     }
                   ]
@@ -374,9 +443,111 @@
               }
             }
           },
-          "400": { "$ref": "./_shared.json#/components/responses/BadRequest" },
-          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
-          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+          "400": {
+            "$ref": "./_shared.json#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/typhoon/dispatch-orders/{id}": {
+      "put": {
+        "summary": "修改资源调度单",
+        "description": "管理端台账编辑：按 id 局部更新资源调度单，仅覆盖传入的非空字段（read-modify-write）。dispatchAction 取 ASSIGN / CONFIRM / RELEASE；本端点仅覆盖传入的非空字段。需权限码 `typhoon:dispatch:write`。记录不存在返回 B3 NOT_FOUND。成功触发 typhoon.dispatch 实时广播。",
+        "tags": ["typhoon"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "资源调度单 id（数据库主键）"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TyphoonDispatchOrderWriteRequest"
+              },
+              "example": {
+                "resourceCode": "TEAM-FX-01",
+                "resourceName": "炼油防汛抢险一组",
+                "dispatchAction": "ASSIGN",
+                "assignee": "高策",
+                "quantity": 1,
+                "remark": "支援6#路地磅北地沟"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "修改成功，返回更新后的资源调度单",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TyphoonDispatchOrderView"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "orderNo": "TD-20260913-0001",
+                    "resourceCode": "TEAM-FX-01",
+                    "resourceName": "炼油防汛抢险一组",
+                    "dispatchAction": "ASSIGN",
+                    "prevStatus": "可调度",
+                    "currStatus": "已出动",
+                    "assignee": "高策",
+                    "quantity": 1,
+                    "remark": "支援6#路地磅北地沟",
+                    "operator": "admin",
+                    "createdAt": "2026-09-13T09:30:00"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除资源调度单",
+        "description": "按 id 物理删除资源调度单（真删除，无回收站）。记录不存在返回 B3 NOT_FOUND。需权限码 `typhoon:dispatch:write`。成功触发 typhoon.dispatch 实时广播。",
+        "tags": ["typhoon"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "资源调度单 id（数据库主键）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": null
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -390,17 +561,23 @@
           "banners": {
             "type": "array",
             "description": "气象预警横幅（轮播）",
-            "items": { "$ref": "#/components/schemas/TyphoonAlertBanner" }
+            "items": {
+              "$ref": "#/components/schemas/TyphoonAlertBanner"
+            }
           },
           "planCommands": {
             "type": "array",
             "description": "预案指令（command_kind=plan，按 sort_no 升序）",
-            "items": { "$ref": "#/components/schemas/TyphoonCommand" }
+            "items": {
+              "$ref": "#/components/schemas/TyphoonCommand"
+            }
           },
           "temporaryCommands": {
             "type": "array",
             "description": "临时指令（command_kind=temporary，按 sort_no 升序）",
-            "items": { "$ref": "#/components/schemas/TyphoonCommand" }
+            "items": {
+              "$ref": "#/components/schemas/TyphoonCommand"
+            }
           }
         }
       },
@@ -408,23 +585,47 @@
         "type": "object",
         "description": "气象预警横幅",
         "properties": {
-          "level": { "type": "string", "description": "预警级别", "example": "橙色预警" },
-          "title": { "type": "string", "description": "响应标题", "example": "防台防汛Ⅱ级响应" },
+          "level": {
+            "type": "string",
+            "description": "预警级别",
+            "example": "橙色预警"
+          },
+          "title": {
+            "type": "string",
+            "description": "响应标题",
+            "example": "防台防汛Ⅱ级响应"
+          },
           "detail": {
             "type": "string",
             "description": "补充说明",
             "example": "暴雨预警触发 · 持续监测中"
           },
-          "tone": { "type": "string", "description": "展示色调", "example": "orange" }
+          "tone": {
+            "type": "string",
+            "description": "展示色调",
+            "example": "orange"
+          }
         }
       },
       "TyphoonCommand": {
         "type": "object",
         "description": "响应板指令行",
         "properties": {
-          "id": { "type": "string", "description": "指令编码", "example": "w1" },
-          "group": { "type": "string", "description": "指令分组", "example": "预警与启动" },
-          "name": { "type": "string", "description": "指令名称", "example": "发布防台防汛预警" },
+          "id": {
+            "type": "string",
+            "description": "指令编码",
+            "example": "w1"
+          },
+          "group": {
+            "type": "string",
+            "description": "指令分组",
+            "example": "预警与启动"
+          },
+          "name": {
+            "type": "string",
+            "description": "指令名称",
+            "example": "发布防台防汛预警"
+          },
           "target": {
             "type": "string",
             "description": "责任对象",
@@ -435,7 +636,11 @@
             "description": "执行状态：已完成/执行中/待执行",
             "example": "已完成"
           },
-          "time": { "type": "string", "description": "指令时间（HH:mm）", "example": "08:13" },
+          "time": {
+            "type": "string",
+            "description": "指令时间（HH:mm）",
+            "example": "08:13"
+          },
           "detail": {
             "type": "string",
             "description": "执行要求说明",
@@ -447,61 +652,136 @@
         "type": "object",
         "description": "台风监测对象实时值（水位 / 泵站运行状态）",
         "properties": {
-          "id": { "type": "string", "description": "监测对象编码（outlet/pool-a/pool-b/pump）" },
-          "name": { "type": "string", "description": "监测对象名称" },
+          "id": {
+            "type": "string",
+            "description": "监测对象编码（outlet/pool-a/pool-b/pump）"
+          },
+          "name": {
+            "type": "string",
+            "description": "监测对象名称"
+          },
           "value": {
             "type": "string",
             "description": "当前监测值（字符串，保留原始精度与单位语义）"
           },
-          "unit": { "type": "string", "description": "计量单位（m / 台运行）" },
+          "unit": {
+            "type": "string",
+            "description": "计量单位（m / 台运行）"
+          },
           "status": {
             "type": "string",
             "description": "状态（normal 正常 / warning 预警 / critical 告警）"
           },
-          "statusText": { "type": "string", "description": "状态中文描述" }
+          "statusText": {
+            "type": "string",
+            "description": "状态中文描述"
+          }
         }
       },
       "TyphoonRiskWarning": {
         "type": "object",
         "description": "风险预警条目",
         "properties": {
-          "id": { "type": "string", "description": "预警 id" },
-          "time": { "type": "string", "description": "预警发布时间（HH:mm）" },
-          "type": { "type": "string", "description": "预警类型（内涝预警/大风预警/暴雨预警）" },
-          "content": { "type": "string", "description": "预警内容" }
+          "id": {
+            "type": "string",
+            "description": "预警 id"
+          },
+          "time": {
+            "type": "string",
+            "description": "预警发布时间（HH:mm）"
+          },
+          "type": {
+            "type": "string",
+            "description": "预警类型（内涝预警/大风预警/暴雨预警）"
+          },
+          "content": {
+            "type": "string",
+            "description": "预警内容"
+          }
         }
       },
       "TyphoonLiveVideo": {
         "type": "object",
         "description": "现场监控视频点位",
         "properties": {
-          "id": { "type": "string", "description": "视频点位 id" },
-          "label": { "type": "string", "description": "点位名称" },
-          "sceneIndex": { "type": "integer", "description": "关联场景序号，用于视频墙分屏" },
-          "angle": { "type": "string", "description": "机位角度描述" },
-          "status": { "type": "string", "description": "在线状态（online / offline）" },
-          "deviceCode": { "type": "string", "description": "设备编码" }
+          "id": {
+            "type": "string",
+            "description": "视频点位 id"
+          },
+          "label": {
+            "type": "string",
+            "description": "点位名称"
+          },
+          "sceneIndex": {
+            "type": "integer",
+            "description": "关联场景序号，用于视频墙分屏"
+          },
+          "angle": {
+            "type": "string",
+            "description": "机位角度描述"
+          },
+          "status": {
+            "type": "string",
+            "description": "在线状态（online / offline）"
+          },
+          "deviceCode": {
+            "type": "string",
+            "description": "设备编码"
+          }
         }
       },
       "TyphoonMapRiskPoint": {
         "type": "object",
         "description": "易涝风险点位（防洪排涝力量布置图）",
         "properties": {
-          "id": { "type": "string", "description": "点位编码（r1…r8）" },
-          "name": { "type": "string", "description": "点位名称" },
-          "longitude": { "type": "number", "description": "经度（WGS84）" },
-          "latitude": { "type": "number", "description": "纬度（WGS84）" },
+          "id": {
+            "type": "string",
+            "description": "点位编码（r1…r8）"
+          },
+          "name": {
+            "type": "string",
+            "description": "点位名称"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "经度（WGS84）"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "纬度（WGS84）"
+          },
           "status": {
             "type": "string",
             "description": "状态（normal 正常 / warning 预警 / critical 告警）"
           },
-          "statusText": { "type": "string", "description": "状态中文描述" },
-          "responsibleUnit": { "type": "string", "description": "责任单位" },
-          "predeployed": { "type": "boolean", "description": "是否已前置部署力量" },
-          "deployment": { "type": "string", "description": "部署方案描述" },
-          "labelOffsetX": { "type": "integer", "description": "标签 X 像素偏移，可为空" },
-          "labelOffsetY": { "type": "integer", "description": "标签 Y 像素偏移，可为空" },
-          "clusterCount": { "type": "integer", "description": "聚合点位数量，可为空" },
+          "statusText": {
+            "type": "string",
+            "description": "状态中文描述"
+          },
+          "responsibleUnit": {
+            "type": "string",
+            "description": "责任单位"
+          },
+          "predeployed": {
+            "type": "boolean",
+            "description": "是否已前置部署力量"
+          },
+          "deployment": {
+            "type": "string",
+            "description": "部署方案描述"
+          },
+          "labelOffsetX": {
+            "type": "integer",
+            "description": "标签 X 像素偏移，可为空"
+          },
+          "labelOffsetY": {
+            "type": "integer",
+            "description": "标签 Y 像素偏移，可为空"
+          },
+          "clusterCount": {
+            "type": "integer",
+            "description": "聚合点位数量，可为空"
+          },
           "kind": {
             "type": "string",
             "description": "点位类型（risk 风险点 / resource 力量点），可为空"
@@ -509,7 +789,10 @@
           "videoIds": {
             "type": "array",
             "description": "关联视频点位 id 列表",
-            "items": { "type": "string", "description": "视频点位 id" }
+            "items": {
+              "type": "string",
+              "description": "视频点位 id"
+            }
           }
         }
       },
@@ -517,100 +800,193 @@
         "type": "object",
         "description": "辅助知识库条目（两行标题 + 计数）",
         "properties": {
-          "id": { "type": "integer", "description": "条目 id" },
-          "line1": { "type": "string", "description": "第一行标题" },
-          "line2": { "type": "string", "description": "第二行标题，可为空串" },
-          "count": { "type": "integer", "description": "条目数量" },
-          "countTone": { "type": "string", "description": "计数色调（cyan / lime）" },
-          "iconIndex": { "type": "integer", "description": "图标序号" }
+          "id": {
+            "type": "integer",
+            "description": "条目 id"
+          },
+          "line1": {
+            "type": "string",
+            "description": "第一行标题"
+          },
+          "line2": {
+            "type": "string",
+            "description": "第二行标题，可为空串"
+          },
+          "count": {
+            "type": "integer",
+            "description": "条目数量"
+          },
+          "countTone": {
+            "type": "string",
+            "description": "计数色调（cyan / lime）"
+          },
+          "iconIndex": {
+            "type": "integer",
+            "description": "图标序号"
+          }
         }
       },
       "TyphoonDutyPerson": {
         "type": "object",
         "description": "值班人员",
         "properties": {
-          "id": { "type": "integer", "description": "人员 id" },
-          "name": { "type": "string", "description": "姓名" },
-          "role": { "type": "string", "description": "值班角色（值班领导 / 值班员）" },
-          "phone": { "type": "string", "description": "联系电话" },
-          "avatarIndex": { "type": "integer", "description": "头像序号" }
+          "id": {
+            "type": "integer",
+            "description": "人员 id"
+          },
+          "name": {
+            "type": "string",
+            "description": "姓名"
+          },
+          "role": {
+            "type": "string",
+            "description": "值班角色（值班领导 / 值班员）"
+          },
+          "phone": {
+            "type": "string",
+            "description": "联系电话"
+          },
+          "avatarIndex": {
+            "type": "integer",
+            "description": "头像序号"
+          }
         }
       },
       "TyphoonEmergencyIncident": {
         "type": "object",
         "description": "台风应急事件聚合（大屏一次性消费的完整文档）",
         "properties": {
-          "eventId": { "type": "integer", "description": "应急事件 id" },
-          "title": { "type": "string", "description": "事件标题" },
-          "location": { "type": "string", "description": "影响位置" },
-          "longitude": { "type": "number", "description": "事件经度" },
-          "latitude": { "type": "number", "description": "事件纬度" },
-          "startedAt": { "type": "string", "description": "启动时间（ISO 本地时间，无时区）" },
-          "endedAt": { "type": "string", "description": "结束时间，未结束时为空" },
-          "status": { "type": "string", "description": "处置状态（processing / pending / done）" },
-          "meteorologySummary": { "type": "string", "description": "气象概要描述" },
+          "eventId": {
+            "type": "integer",
+            "description": "应急事件 id"
+          },
+          "title": {
+            "type": "string",
+            "description": "事件标题"
+          },
+          "location": {
+            "type": "string",
+            "description": "影响位置"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "事件经度"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "事件纬度"
+          },
+          "startedAt": {
+            "type": "string",
+            "description": "启动时间（ISO 本地时间，无时区）"
+          },
+          "endedAt": {
+            "type": "string",
+            "description": "结束时间，未结束时为空"
+          },
+          "status": {
+            "type": "string",
+            "description": "处置状态（processing / pending / done）"
+          },
+          "meteorologySummary": {
+            "type": "string",
+            "description": "气象概要描述"
+          },
           "weatherChartLabels": {
             "type": "array",
             "description": "降雨 / 风速图表横轴标签（小时）",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
           "precipitationSeries": {
             "type": "array",
             "description": "逐小时降雨量序列（mm）",
-            "items": { "type": "number" }
+            "items": {
+              "type": "number"
+            }
           },
           "windSpeedSeries": {
             "type": "array",
             "description": "逐小时风速序列（m/s）",
-            "items": { "type": "number" }
+            "items": {
+              "type": "number"
+            }
           },
           "waterLevelLabels": {
             "type": "array",
             "description": "水位图表横轴标签",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
           "waterLevelSeries": {
             "type": "array",
             "description": "水位序列（m）",
-            "items": { "type": "number" }
+            "items": {
+              "type": "number"
+            }
           },
-          "waterLevelWarn": { "type": "number", "description": "水位预警线（m）" },
-          "waterLevelDanger": { "type": "number", "description": "水位警戒线（m）" },
-          "typhoonApiCode": { "type": "string", "description": "台风编号，如 202518" },
+          "waterLevelWarn": {
+            "type": "number",
+            "description": "水位预警线（m）"
+          },
+          "waterLevelDanger": {
+            "type": "number",
+            "description": "水位警戒线（m）"
+          },
+          "typhoonApiCode": {
+            "type": "string",
+            "description": "台风编号，如 202518"
+          },
           "monitoringObjects": {
             "type": "array",
             "description": "监测对象（装置/罐区/码头等）及其实时状态",
-            "items": { "$ref": "#/components/schemas/TyphoonMonitorObject" }
+            "items": {
+              "$ref": "#/components/schemas/TyphoonMonitorObject"
+            }
           },
           "riskWarnings": {
             "type": "array",
             "description": "气象与海况风险预警列表",
-            "items": { "$ref": "#/components/schemas/TyphoonRiskWarning" }
+            "items": {
+              "$ref": "#/components/schemas/TyphoonRiskWarning"
+            }
           },
           "liveVideos": {
             "type": "array",
             "description": "实时视频监控流",
-            "items": { "$ref": "#/components/schemas/TyphoonLiveVideo" }
+            "items": {
+              "$ref": "#/components/schemas/TyphoonLiveVideo"
+            }
           },
           "auxiliaryItems": {
             "type": "array",
             "description": "辅助决策项（应急预案/知识库/疏散图等）",
-            "items": { "$ref": "#/components/schemas/TyphoonAuxItem" }
+            "items": {
+              "$ref": "#/components/schemas/TyphoonAuxItem"
+            }
           },
           "dutyPersons": {
             "type": "array",
             "description": "值班与应急值守人员",
-            "items": { "$ref": "#/components/schemas/TyphoonDutyPerson" }
+            "items": {
+              "$ref": "#/components/schemas/TyphoonDutyPerson"
+            }
           },
           "mapRiskPoints": {
             "type": "array",
             "description": "地图风险点位（含关联视频 id）",
-            "items": { "$ref": "#/components/schemas/TyphoonMapRiskPoint" }
+            "items": {
+              "$ref": "#/components/schemas/TyphoonMapRiskPoint"
+            }
           },
           "eventInfoFields": {
             "type": "array",
             "description": "事件信息键值对（事件名称/分类/预警等级/影响范围/监测时段/启动时间/来源/当前措施）",
-            "items": { "$ref": "#/components/schemas/TyphoonEventInfoField" }
+            "items": {
+              "$ref": "#/components/schemas/TyphoonEventInfoField"
+            }
           }
         }
       },
@@ -618,28 +994,76 @@
         "type": "object",
         "description": "事件信息字段",
         "properties": {
-          "label": { "type": "string", "description": "字段名" },
-          "value": { "type": "string", "description": "字段值" }
+          "label": {
+            "type": "string",
+            "description": "字段名"
+          },
+          "value": {
+            "type": "string",
+            "description": "字段值"
+          }
         }
       },
       "TyphoonDispatchResource": {
         "type": "object",
         "description": "防汛排涝可调度资源",
         "properties": {
-          "id": { "type": "string", "description": "资源 id" },
-          "type": { "type": "string", "description": "资源类型（救援队伍 / 救援车辆 / 救援装备）" },
-          "name": { "type": "string", "description": "资源名称" },
-          "code": { "type": "string", "description": "资源编码" },
-          "organization": { "type": "string", "description": "所属单位" },
-          "area": { "type": "string", "description": "驻防区域" },
-          "status": { "type": "string", "description": "调度状态（可调度 / 已出动 / 不可调度）" },
-          "distanceKm": { "type": "number", "description": "距事件点直线距离（km）" },
-          "etaMinutes": { "type": "integer", "description": "预计到达时间（分钟）" },
-          "capacity": { "type": "string", "description": "能力描述，如「12人 · 排涝与警戒」" },
-          "contact": { "type": "string", "description": "联系人" },
-          "phone": { "type": "string", "description": "联系电话" },
-          "longitude": { "type": "number", "description": "资源经度" },
-          "latitude": { "type": "number", "description": "资源纬度" }
+          "id": {
+            "type": "string",
+            "description": "资源 id"
+          },
+          "type": {
+            "type": "string",
+            "description": "资源类型（救援队伍 / 救援车辆 / 救援装备）"
+          },
+          "name": {
+            "type": "string",
+            "description": "资源名称"
+          },
+          "code": {
+            "type": "string",
+            "description": "资源编码"
+          },
+          "organization": {
+            "type": "string",
+            "description": "所属单位"
+          },
+          "area": {
+            "type": "string",
+            "description": "驻防区域"
+          },
+          "status": {
+            "type": "string",
+            "description": "调度状态（可调度 / 已出动 / 不可调度）"
+          },
+          "distanceKm": {
+            "type": "number",
+            "description": "距事件点直线距离（km）"
+          },
+          "etaMinutes": {
+            "type": "integer",
+            "description": "预计到达时间（分钟）"
+          },
+          "capacity": {
+            "type": "string",
+            "description": "能力描述，如「12人 · 排涝与警戒」"
+          },
+          "contact": {
+            "type": "string",
+            "description": "联系人"
+          },
+          "phone": {
+            "type": "string",
+            "description": "联系电话"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "资源经度"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "资源纬度"
+          }
         }
       },
       "TyphoonDispatchOrderWriteRequest": {
@@ -667,15 +1091,27 @@
             "description": "被指派单位 / 责任人",
             "example": "高策"
           },
-          "quantity": { "type": "integer", "description": "调度数量", "example": 1 },
-          "remark": { "type": "string", "description": "备注说明", "example": "支援6#路地磅北地沟" }
+          "quantity": {
+            "type": "integer",
+            "description": "调度数量",
+            "example": 1
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注说明",
+            "example": "支援6#路地磅北地沟"
+          }
         }
       },
       "TyphoonDispatchOrderView": {
         "type": "object",
         "description": "台风资源调度单视图（落库后的完整行，含服务端生成的 orderNo 与 prevStatus）",
         "properties": {
-          "id": { "type": "integer", "description": "记录 id", "example": 1 },
+          "id": {
+            "type": "integer",
+            "description": "记录 id",
+            "example": 1
+          },
           "orderNo": {
             "type": "string",
             "description": "调度单号（服务端按 TD-年月日-四位序号 生成）",
@@ -701,15 +1137,31 @@
             "description": "调度前资源状态（首次调度为空）",
             "example": "可调度"
           },
-          "currStatus": { "type": "string", "description": "调度后资源状态", "example": "已出动" },
-          "assignee": { "type": "string", "description": "被指派单位 / 责任人", "example": "高策" },
-          "quantity": { "type": "integer", "description": "调度数量", "example": 1 },
+          "currStatus": {
+            "type": "string",
+            "description": "调度后资源状态",
+            "example": "已出动"
+          },
+          "assignee": {
+            "type": "string",
+            "description": "被指派单位 / 责任人",
+            "example": "高策"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "调度数量",
+            "example": 1
+          },
           "remark": {
             "type": "string",
             "description": "备注说明",
             "example": "支援6#路地磅北地沟"
           },
-          "operator": { "type": "string", "description": "操作人账号", "example": "admin" },
+          "operator": {
+            "type": "string",
+            "description": "操作人账号",
+            "example": "admin"
+          },
           "createdAt": {
             "type": "string",
             "description": "记录创建时间（ISO 本地时间，无时区）",

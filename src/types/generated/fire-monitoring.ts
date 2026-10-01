@@ -123,6 +123,116 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/fire/patrol-executions/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 修改巡更执行记录
+     * @description 管理端台账编辑：按 id 局部更新巡更执行记录，仅覆盖传入的非空字段（read-modify-write）。execResult 取 NORMAL / ABNORMAL；本端点仅覆盖传入的非空字段。需权限码 `fire-alarm:patrol:write`。记录不存在返回 B3 NOT_FOUND。成功触发 fire.patrol 实时广播。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 巡更执行记录 id（数据库主键） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "patrolDate": "2026-09-13",
+           *       "shiftName": "上午",
+           *       "dutyPerson": "李强",
+           *       "patrolCount": "第1次",
+           *       "location": "罐区A",
+           *       "execResult": "NORMAL",
+           *       "finding": "",
+           *       "workOrderNo": ""
+           *     }
+           */
+          'application/json': components['schemas']['PatrolExecutionWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 修改成功，返回更新后的巡更执行记录 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 1,
+             *         "patrolDate": "2026-09-13",
+             *         "shiftName": "上午",
+             *         "dutyPerson": "李强",
+             *         "patrolCount": "第1次",
+             *         "location": "罐区A",
+             *         "execResult": "NORMAL",
+             *         "finding": "",
+             *         "workOrderNo": "",
+             *         "operator": "admin",
+             *         "createdAt": "2026-09-13T09:40:00"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['PatrolExecutionView'];
+          };
+        };
+      };
+    };
+    post?: never;
+    /**
+     * 删除巡更执行记录
+     * @description 按 id 物理删除巡更执行记录（真删除，无回收站）。记录不存在返回 B3 NOT_FOUND。需权限码 `fire-alarm:patrol:write`。成功触发 fire.patrol 实时广播。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 巡更执行记录 id（数据库主键） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除成功 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": null
+             *     }
+             */
+            'application/json': unknown;
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
