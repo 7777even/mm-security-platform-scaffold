@@ -1,11 +1,18 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { Van } from '@element-plus/icons-vue';
 import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import MgmtProTable from '../../components/MgmtProTable.vue';
+import MgmtRecordEditDialog, { type FieldDef } from '../../components/MgmtRecordEditDialog.vue';
 import { toastErr, toastOk } from '../../utils/feedback';
-import { createTyphoonDispatchOrder, fetchTyphoonDispatchOrders } from '@/services/businessWrite';
+import {
+  createTyphoonDispatchOrder,
+  deleteTyphoonDispatchOrder,
+  fetchTyphoonDispatchOrders,
+  updateTyphoonDispatchOrder,
+} from '@/services/businessWrite';
 import type {
   TyphoonDispatchOrderView,
   TyphoonDispatchOrderWriteRequest,
@@ -37,42 +44,78 @@ async function load(): Promise<void> {
   }
 }
 
+// 调度动作为既定枚举 → 下拉；资源名称/指派对象/备注无字典 → 自由文本（不臆造下拉）
+const FIELDS: FieldDef[] = [
+  {
+    prop: 'resourceCode',
+    label: '资源编号',
+    type: 'input',
+    required: true,
+    placeholder: '如 TY-R-12',
+  },
+  { prop: 'resourceName', label: '资源名称', type: 'input', placeholder: '如 大功率排水泵' },
+  {
+    prop: 'dispatchAction',
+    label: '调度动作',
+    type: 'select',
+    required: true,
+    options: [
+      { label: '指派', value: 'ASSIGN' },
+      { label: '确认', value: 'CONFIRM' },
+      { label: '释放', value: 'RELEASE' },
+    ],
+  },
+  { prop: 'assignee', label: '指派对象', type: 'input', placeholder: '如 储运部' },
+  { prop: 'quantity', label: '数量', type: 'number' },
+  { prop: 'remark', label: '备注', type: 'textarea', placeholder: '补充说明' },
+];
+
 const dialogVisible = ref(false);
-const saving = ref(false);
-const form = reactive<TyphoonDispatchOrderWriteRequest>({
-  resourceCode: '',
-  resourceName: '',
-  dispatchAction: 'ASSIGN',
-  assignee: '',
-  quantity: undefined,
-  remark: '',
-});
+const editRow = ref<Record<string, unknown> | null>(null);
 
 function openCreate(): void {
-  Object.assign(form, {
-    resourceCode: '',
-    resourceName: '',
-    dispatchAction: 'ASSIGN',
-    assignee: '',
-    quantity: undefined,
-    remark: '',
-  });
+  editRow.value = null;
+  dialogVisible.value = true;
+}
+function openEdit(row: TyphoonDispatchOrderView): void {
+  editRow.value = { ...row } as unknown as Record<string, unknown>;
   dialogVisible.value = true;
 }
 
-async function submit(): Promise<void> {
-  if (!form.resourceCode.trim()) return toastErr('请输入资源编号', '');
-  if (!form.dispatchAction.trim()) return toastErr('请选择调度动作', '');
-  saving.value = true;
+async function onSave(payload: Record<string, unknown>, id: number | null): Promise<void> {
   try {
-    await createTyphoonDispatchOrder({ ...form });
-    toastOk('调度单已提交');
+    const body = payload as unknown as TyphoonDispatchOrderWriteRequest;
+    if (id == null) {
+      await createTyphoonDispatchOrder(body);
+      toastOk('调度单已提交');
+    } else {
+      await updateTyphoonDispatchOrder(id, body);
+      toastOk('已保存');
+    }
     dialogVisible.value = false;
     await load();
   } catch (err) {
-    toastErr(err, '提交失败：');
-  } finally {
-    saving.value = false;
+    toastErr(err, id == null ? '提交失败：' : '保存失败：');
+  }
+}
+
+async function onDelete(row: TyphoonDispatchOrderView): Promise<void> {
+  if (row.id == null) return;
+  try {
+    await ElMessageBox.confirm(
+      `确认删除调度单「${row.orderNo || row.resourceCode || String(row.id)}」？删除后不可恢复。`,
+      '删除确认',
+      { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
+    );
+  } catch {
+    return; // 用户取消
+  }
+  try {
+    await deleteTyphoonDispatchOrder(row.id);
+    ElMessage.success('已删除');
+    await load();
+  } catch (err) {
+    toastErr(err, '删除失败：');
   }
 }
 
@@ -131,42 +174,34 @@ useDomainAutoRefresh('typhoon.dispatch', load, { immediate: false });
       <el-table-column prop="operator" label="操作人" min-width="100">
         <template #default="{ row }">{{ row.operator || '—' }}</template>
       </el-table-column>
+      <el-table-column label="操作" width="150" fixed="right">
+        <template #default="{ row }">
+          <el-button
+            v-permission="'typhoon:dispatch:write'"
+            link
+            type="primary"
+            @click="openEdit(row as TyphoonDispatchOrderView)"
+          >
+            编辑
+          </el-button>
+          <el-button
+            v-permission="'typhoon:dispatch:write'"
+            link
+            type="danger"
+            @click="onDelete(row as TyphoonDispatchOrderView)"
+          >
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
     </MgmtProTable>
 
-    <el-dialog v-model="dialogVisible" title="台风资源调度" width="520px">
-      <el-form label-width="92px">
-        <el-form-item label="资源编号" required>
-          <el-input v-model="form.resourceCode" placeholder="如 TY-R-12" />
-        </el-form-item>
-        <el-form-item label="资源名称">
-          <el-input v-model="form.resourceName" placeholder="如 大功率排水泵" />
-        </el-form-item>
-        <el-form-item label="调度动作" required>
-          <el-select v-model="form.dispatchAction" style="width: 100%">
-            <el-option label="指派" value="ASSIGN" />
-            <el-option label="确认" value="CONFIRM" />
-            <el-option label="释放" value="RELEASE" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="指派对象">
-          <el-input v-model="form.assignee" placeholder="如 储运部" />
-        </el-form-item>
-        <el-form-item label="数量">
-          <el-input-number
-            v-model="form.quantity"
-            :min="0"
-            controls-position="right"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="备注">
-          <el-input v-model="form.remark" type="textarea" :rows="2" placeholder="补充说明" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="submit">确定</el-button>
-      </template>
-    </el-dialog>
+    <MgmtRecordEditDialog
+      v-model="dialogVisible"
+      :edit-row="editRow"
+      :fields="FIELDS"
+      title="台风资源调度"
+      @save="onSave"
+    />
   </div>
 </template>

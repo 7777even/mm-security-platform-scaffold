@@ -1,21 +1,26 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { Promotion } from '@element-plus/icons-vue';
 import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import MgmtProTable from '../../components/MgmtProTable.vue';
+import MgmtRecordEditDialog, { type FieldDef } from '../../components/MgmtRecordEditDialog.vue';
 import { toastErr, toastOk } from '../../utils/feedback';
 import {
   createEmergencyCommandRecord,
+  deleteEmergencyCommandRecord,
   fetchEmergencyCommandRecords,
+  updateEmergencyCommandRecord,
 } from '@/services/businessWrite';
 import type {
   EmergencyCommandRecordView,
   EmergencyCommandRecordWriteRequest,
 } from '@/services/businessWrite';
 
-// 应急指令下发（/emergency-command）：接后端 /emergency/command-records（GET 列表 + POST 下发）。
-// 业务留痕，绝不触发物理设备（零下行红线在前后端双重拦截）；写按钮受 emergency:command:write 权限码控制。
+// 应急指令下发（/emergency-command）：接后端 /emergency/command-records。
+// 全量 CRUD：POST 下发、PUT 编辑、DELETE 删除。业务留痕，绝不触发物理设备
+// （零下行红线在前后端双重拦截）；写操作受 emergency:command:write 权限码控制。
 
 const rows = ref<EmergencyCommandRecordView[]>([]);
 const loading = ref(false);
@@ -33,44 +38,82 @@ async function load(): Promise<void> {
   }
 }
 
+// 状态为既定枚举 → 下拉；类别/下发方式/目标/备注无字典 → 自由文本（不臆造下拉）
+const STATUS_OPTIONS = [
+  { label: '待下发', value: '待下发' },
+  { label: '已下发', value: '已下发' },
+  { label: '执行中', value: '执行中' },
+  { label: '已完成', value: '已完成' },
+];
+
+const FIELDS: FieldDef[] = [
+  {
+    prop: 'commandCode',
+    label: '指令编号',
+    type: 'input',
+    required: true,
+    placeholder: '如 CMD-20260820-001',
+  },
+  { prop: 'commandName', label: '指令名称', type: 'input', placeholder: '如 罐区泡沫联锁' },
+  { prop: 'commandKind', label: '类别', type: 'input', placeholder: '如 应急调度' },
+  {
+    prop: 'currStatus',
+    label: '当前状态',
+    type: 'select',
+    required: true,
+    options: STATUS_OPTIONS,
+  },
+  { prop: 'dispatchMode', label: '下发方式', type: 'input', placeholder: '如 APP+短信' },
+  { prop: 'target', label: '目标', type: 'input', placeholder: '下发对象 / 单位' },
+  { prop: 'remark', label: '备注', type: 'textarea', placeholder: '补充说明' },
+];
+
 const dialogVisible = ref(false);
-const saving = ref(false);
-const form = reactive<EmergencyCommandRecordWriteRequest>({
-  commandCode: '',
-  commandName: '',
-  commandKind: '',
-  currStatus: '待下发',
-  dispatchMode: '',
-  target: '',
-  remark: '',
-});
+const editRow = ref<Record<string, unknown> | null>(null);
 
 function openCreate(): void {
-  Object.assign(form, {
-    commandCode: '',
-    commandName: '',
-    commandKind: '',
-    currStatus: '待下发',
-    dispatchMode: '',
-    target: '',
-    remark: '',
-  });
+  editRow.value = null;
+  dialogVisible.value = true;
+}
+function openEdit(row: EmergencyCommandRecordView): void {
+  editRow.value = { ...row } as unknown as Record<string, unknown>;
   dialogVisible.value = true;
 }
 
-async function submit(): Promise<void> {
-  if (!form.commandCode.trim()) return toastErr('请输入指令编号', '');
-  if (!form.currStatus.trim()) return toastErr('请选择当前状态', '');
-  saving.value = true;
+async function onSave(payload: Record<string, unknown>, id: number | null): Promise<void> {
   try {
-    await createEmergencyCommandRecord({ ...form });
-    toastOk('指令已下发');
+    const body = payload as unknown as EmergencyCommandRecordWriteRequest;
+    if (id == null) {
+      await createEmergencyCommandRecord(body);
+      toastOk('指令已下发');
+    } else {
+      await updateEmergencyCommandRecord(id, body);
+      toastOk('已保存');
+    }
     dialogVisible.value = false;
     await load();
   } catch (err) {
-    toastErr(err, '下发失败：');
-  } finally {
-    saving.value = false;
+    toastErr(err, id == null ? '下发失败：' : '保存失败：');
+  }
+}
+
+async function onDelete(row: EmergencyCommandRecordView): Promise<void> {
+  if (row.id == null) return;
+  try {
+    await ElMessageBox.confirm(
+      `确认删除应急指令「${row.commandCode || String(row.id)}」？删除后不可恢复。`,
+      '删除确认',
+      { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
+    );
+  } catch {
+    return; // 用户取消
+  }
+  try {
+    await deleteEmergencyCommandRecord(row.id);
+    ElMessage.success('已删除');
+    await load();
+  } catch (err) {
+    toastErr(err, '删除失败：');
   }
 }
 
@@ -129,41 +172,34 @@ useDomainAutoRefresh('emergency.command', load, { immediate: false });
       <el-table-column prop="createdAt" label="创建时间" min-width="160">
         <template #default="{ row }">{{ row.createdAt || '—' }}</template>
       </el-table-column>
+      <el-table-column label="操作" width="150" fixed="right">
+        <template #default="{ row }">
+          <el-button
+            v-permission="'emergency:command:write'"
+            link
+            type="primary"
+            @click="openEdit(row as EmergencyCommandRecordView)"
+          >
+            编辑
+          </el-button>
+          <el-button
+            v-permission="'emergency:command:write'"
+            link
+            type="danger"
+            @click="onDelete(row as EmergencyCommandRecordView)"
+          >
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
     </MgmtProTable>
 
-    <el-dialog v-model="dialogVisible" title="下发应急指令" width="520px">
-      <el-form label-width="92px">
-        <el-form-item label="指令编号" required>
-          <el-input v-model="form.commandCode" placeholder="如 CMD-20260820-001" />
-        </el-form-item>
-        <el-form-item label="指令名称">
-          <el-input v-model="form.commandName" placeholder="如 罐区泡沫联锁" />
-        </el-form-item>
-        <el-form-item label="类别">
-          <el-input v-model="form.commandKind" placeholder="如 应急调度" />
-        </el-form-item>
-        <el-form-item label="当前状态" required>
-          <el-select v-model="form.currStatus" style="width: 100%">
-            <el-option label="待下发" value="待下发" />
-            <el-option label="已下发" value="已下发" />
-            <el-option label="执行中" value="执行中" />
-            <el-option label="已完成" value="已完成" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="下发方式">
-          <el-input v-model="form.dispatchMode" placeholder="如 APP+短信" />
-        </el-form-item>
-        <el-form-item label="目标">
-          <el-input v-model="form.target" placeholder="下发对象 / 单位" />
-        </el-form-item>
-        <el-form-item label="备注">
-          <el-input v-model="form.remark" type="textarea" :rows="2" placeholder="补充说明" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="submit">确定下发</el-button>
-      </template>
-    </el-dialog>
+    <MgmtRecordEditDialog
+      v-model="dialogVisible"
+      :edit-row="editRow"
+      :fields="FIELDS"
+      title="应急指令"
+      @save="onSave"
+    />
   </div>
 </template>

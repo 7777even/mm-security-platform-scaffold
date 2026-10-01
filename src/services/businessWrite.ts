@@ -341,3 +341,101 @@ export async function fetchPatrolExecutions(): Promise<PatrolExecutionView[]> {
     return [];
   }
 }
+
+/* ==================== 管理端台账编辑：修改 / 删除 ==================== */
+// 四域统一补齐 PUT / DELETE，语义与 createXxx 一致：仅业务留痕，绝不触发物理设备；
+// 无后端 / 演示态显式抛 BusinessWriteUnavailableError，绝不伪造「保存成功」。
+
+/** PUT /emergency/command-records/{id}（局部更新，仅覆盖传入的非空字段） */
+export async function updateEmergencyCommandRecord(
+  id: number,
+  payload: EmergencyCommandRecordWriteRequest,
+): Promise<EmergencyCommandRecordView> {
+  const endpoint = `/emergency/command-records/${encodeURIComponent(id)}`;
+  assertWritable('business-write', endpoint);
+  return withWriteBreaker(endpoint, () =>
+    request<EmergencyCommandRecordView>({
+      url: endpoint,
+      method: 'PUT',
+      data: payload,
+      timeout: 8000,
+    }),
+  );
+}
+
+/** DELETE /emergency/command-records/{id}（真删除） */
+export async function deleteEmergencyCommandRecord(id: number): Promise<void> {
+  const endpoint = `/emergency/command-records/${encodeURIComponent(id)}`;
+  assertWritable('business-write', endpoint);
+  await withWriteBreaker(endpoint, () =>
+    request<void>({ url: endpoint, method: 'DELETE', timeout: 8000 }),
+  );
+}
+
+/** PUT /emergency/duty-sign-ins/{id}（局部更新） */
+export async function updateDutySignIn(
+  id: number,
+  payload: DutySignInWriteRequest,
+): Promise<DutySignInView> {
+  const endpoint = `/emergency/duty-sign-ins/${encodeURIComponent(id)}`;
+  assertWritable('business-write', endpoint);
+  return withWriteBreaker(endpoint, () =>
+    request<DutySignInView>({ url: endpoint, method: 'PUT', data: payload, timeout: 8000 }),
+  );
+}
+
+/** DELETE /emergency/duty-sign-ins/{id}（真删除） */
+export async function deleteDutySignIn(id: number): Promise<void> {
+  const endpoint = `/emergency/duty-sign-ins/${encodeURIComponent(id)}`;
+  assertWritable('business-write', endpoint);
+  await withWriteBreaker(endpoint, () =>
+    request<void>({ url: endpoint, method: 'DELETE', timeout: 8000 }),
+  );
+}
+
+/** PUT /typhoon/dispatch-orders/{id}（局部更新） */
+export async function updateTyphoonDispatchOrder(
+  id: number,
+  payload: TyphoonDispatchOrderWriteRequest,
+): Promise<TyphoonDispatchOrderView> {
+  const endpoint = `/typhoon/dispatch-orders/${encodeURIComponent(id)}`;
+  assertWritable('business-write', endpoint);
+  return withWriteBreaker(endpoint, () =>
+    request<TyphoonDispatchOrderView>({
+      url: endpoint,
+      method: 'PUT',
+      data: payload,
+      timeout: 8000,
+    }),
+  );
+}
+
+/** DELETE /typhoon/dispatch-orders/{id}（真删除） */
+export async function deleteTyphoonDispatchOrder(id: number): Promise<void> {
+  const endpoint = `/typhoon/dispatch-orders/${encodeURIComponent(id)}`;
+  assertWritable('business-write', endpoint);
+  await withWriteBreaker(endpoint, () =>
+    request<void>({ url: endpoint, method: 'DELETE', timeout: 8000 }),
+  );
+}
+
+/** PUT /fire/patrol-executions/{id}（局部更新） */
+export async function updatePatrolExecution(
+  id: number,
+  payload: PatrolExecutionWriteRequest,
+): Promise<PatrolExecutionView> {
+  const endpoint = `/fire/patrol-executions/${encodeURIComponent(id)}`;
+  assertWritable('business-write', endpoint);
+  return withWriteBreaker(endpoint, () =>
+    request<PatrolExecutionView>({ url: endpoint, method: 'PUT', data: payload, timeout: 8000 }),
+  );
+}
+
+/** DELETE /fire/patrol-executions/{id}（真删除） */
+export async function deletePatrolExecution(id: number): Promise<void> {
+  const endpoint = `/fire/patrol-executions/${encodeURIComponent(id)}`;
+  assertWritable('business-write', endpoint);
+  await withWriteBreaker(endpoint, () =>
+    request<void>({ url: endpoint, method: 'DELETE', timeout: 8000 }),
+  );
+}
