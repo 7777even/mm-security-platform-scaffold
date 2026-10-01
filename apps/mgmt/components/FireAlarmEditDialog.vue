@@ -10,7 +10,7 @@ import {
   type FireAlarmTypeTone,
 } from '@/services/alarm';
 
-const props = defineProps<{ modelValue: boolean; editRow: FireAlarmItem | null }>();
+const props = defineProps<{ modelValue: boolean; editRow: Partial<FireAlarmItem> | null }>();
 const emit = defineEmits<{
   (e: 'update:modelValue', v: boolean): void;
   (e: 'saved'): void;
