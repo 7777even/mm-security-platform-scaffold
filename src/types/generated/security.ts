@@ -72,7 +72,11 @@ export interface paths {
      */
     get: operations['searchVehicles'];
     put?: never;
-    post?: never;
+    /**
+     * 新增车辆识别检索记录
+     * @description 管理端手工新增一条车辆通行识别记录。需权限码 security:vehicle-write（V99 已登记并授权 ADMIN 及岗位角色）。必填项：plate（车牌号，@NotBlank，为空或不传返回 400 校验失败）。写成功后经 @RealtimeSync(domain="security.vehicle-search") 广播 security.vehicle-search，前端检索列表与大屏自动重拉。返回创建后的 VehicleSearchDetail（含服务端生成主键）。
+     */
+    post: operations['createVehicleSearch'];
     delete?: never;
     options?: never;
     head?: never;
@@ -92,7 +96,11 @@ export interface paths {
      */
     get: operations['searchPersons'];
     put?: never;
-    post?: never;
+    /**
+     * 新增人员识别检索记录
+     * @description 管理端手工新增一条人员通行识别记录。需权限码 security:person-write（V99 已登记并授权 ADMIN 及岗位角色）。必填项：name（人员姓名，@NotBlank，为空或不传返回 400 校验失败）。写成功后经 @RealtimeSync(domain="security.person-search") 广播 security.person-search，前端检索列表与大屏自动重拉。返回创建后的 PersonSearchDetail（含服务端生成主键）。
+     */
+    post: operations['createPersonSearch'];
     delete?: never;
     options?: never;
     head?: never;
@@ -171,9 +179,17 @@ export interface paths {
      * @description 返回单条车辆通行记录的详情（车牌/驾驶员/单位/预约/货物等）。
      */
     get: operations['getVehicleSearchDetail'];
-    put?: never;
+    /**
+     * 更新车辆识别检索记录
+     * @description 管理端全字段更新一条车辆通行识别记录（read-modify-write，未传字段置空/不保留原值需前端回显后提交）。需权限码 security:vehicle-write（V99 已登记并授权 ADMIN 及岗位角色）。必填项：plate（车牌号，@NotBlank，为空返回 400 校验失败）。写成功后经 @RealtimeSync(domain="security.vehicle-search") 广播 security.vehicle-search，前端列表与大屏自动重拉。并发冲突由 @Version 乐观锁拦截（返回 409）。
+     */
+    put: operations['updateVehicleSearch'];
     post?: never;
-    delete?: never;
+    /**
+     * 删除车辆识别检索记录
+     * @description 真删除（物理删除）单条车辆通行识别记录。需权限码 security:vehicle-write（V99 已登记并授权 ADMIN 及岗位角色）。删除成功后经 @RealtimeSync(domain="security.vehicle-search") 广播 security.vehicle-search，前端列表与大屏即时移除该条。记录不存在返回 404。
+     */
+    delete: operations['deleteVehicleSearch'];
     options?: never;
     head?: never;
     patch?: never;
@@ -191,9 +207,17 @@ export interface paths {
      * @description 返回单条人员通行记录的详情（姓名/单位/证件/预约/特种作业等）。
      */
     get: operations['getPersonSearchDetail'];
-    put?: never;
+    /**
+     * 更新人员识别检索记录
+     * @description 管理端全字段更新一条人员通行识别记录（read-modify-write，未传字段置空/不保留原值需前端回显后提交）。需权限码 security:person-write（V99 已登记并授权 ADMIN 及岗位角色）。必填项：name（人员姓名，@NotBlank，为空返回 400 校验失败）。写成功后经 @RealtimeSync(domain="security.person-search") 广播 security.person-search，前端列表与大屏自动重拉。并发冲突由 @Version 乐观锁拦截（返回 409）。
+     */
+    put: operations['updatePersonSearch'];
     post?: never;
-    delete?: never;
+    /**
+     * 删除人员识别检索记录
+     * @description 真删除（物理删除）单条人员通行识别记录。需权限码 security:person-write（V99 已登记并授权 ADMIN 及岗位角色）。删除成功后经 @RealtimeSync(domain="security.person-search") 广播 security.person-search，前端列表与大屏即时移除该条。记录不存在返回 404。
+     */
+    delete: operations['deletePersonSearch'];
     options?: never;
     head?: never;
     patch?: never;
@@ -237,7 +261,11 @@ export interface paths {
      */
     put: operations['updatePerimeterAlarm'];
     post?: never;
-    delete?: never;
+    /**
+     * 删除周界入侵告警
+     * @description 真删除（物理删除）单条周界入侵告警。需权限码 security:perimeter-delete（V99 已登记并授权 ADMIN 及岗位角色）。删除成功后经 @RealtimeSync(domain="security.perimeter-alarm") 广播 security.perimeter-alarm，前端安防态势面板与告警列表即时重拉。记录不存在返回 404。
+     */
+    delete: operations['deletePerimeterAlarm'];
     options?: never;
     head?: never;
     patch?: never;
@@ -648,6 +676,152 @@ export interface components {
        * @example false
        */
       notifySms?: boolean;
+    };
+    /** @description 人员识别检索写请求（新增 / 更新共用）。必填项：name（@NotBlank）。权限码 security:person-write；写成功后经 @RealtimeSync 广播 security.person-search。 */
+    PersonSearchWriteRequest: {
+      /**
+       * @description 人员姓名（必填，@NotBlank，为空返回 400 校验失败）
+       * @example 张三
+       */
+      name: string;
+      /**
+       * @description 通行卡口（如 东门-入）
+       * @example 东门-入
+       */
+      gate?: string;
+      /**
+       * @description 进出状态（入厂/出厂）
+       * @example 入厂
+       */
+      status?: string;
+      /**
+       * @description 通行日期（yyyy-MM-dd）
+       * @example 2026-10-03
+       */
+      date?: string;
+      /**
+       * @description 性别（男/女）
+       * @example 男
+       */
+      gender?: string;
+      /**
+       * @description 联系电话
+       * @example 138****1001
+       */
+      phone?: string;
+      /**
+       * @description 所属单位
+       * @example 茂名石化检修公司
+       */
+      company?: string;
+      /**
+       * @description 证件号
+       * @example 4409**********1234
+       */
+      idNumber?: string;
+      /**
+       * @description 预约单号
+       * @example YY202610030021
+       */
+      appointmentNo?: string;
+      /**
+       * @description 预约时段
+       * @example 2026-10-03 08:00 — 17:00
+       */
+      appointmentTime?: string;
+      /**
+       * @description 来访事由
+       * @example 设备检修
+       */
+      visitPurpose?: string;
+      /**
+       * @description 特种作业类型，无则留空
+       * @example 高处作业
+       */
+      specialOperation?: string;
+      /**
+       * @description 作业区域，无则留空
+       * @example 炼油二区
+       */
+      operationArea?: string;
+    };
+    /** @description 车辆识别检索写请求（新增 / 更新共用）。必填项：plate（@NotBlank）。权限码 security:vehicle-write；写成功后经 @RealtimeSync 广播 security.vehicle-search。 */
+    VehicleSearchWriteRequest: {
+      /**
+       * @description 车牌号（必填，@NotBlank，为空返回 400 校验失败）
+       * @example 粤KA4543
+       */
+      plate: string;
+      /**
+       * @description 识别置信度（0-100，识别失败可为空）
+       * @example 92
+       */
+      confidence?: number | null;
+      /**
+       * @description 通行卡口（如 东门-入）
+       * @example 东门-入
+       */
+      gate?: string;
+      /**
+       * @description 进出状态（入厂/出厂）
+       * @example 入厂
+       */
+      status?: string;
+      /**
+       * @description 识别时间（yyyy-MM-dd HH:mm:ss）
+       * @example 2026-10-03 09:12:00
+       */
+      time?: string;
+      /**
+       * @description 车辆类型
+       * @example 危化品运输车
+       */
+      vehicleType?: string;
+      /**
+       * @description 驾驶员姓名
+       * @example 刘师傅
+       */
+      driverName?: string;
+      /**
+       * @description 驾驶员电话
+       * @example 138****4521
+       */
+      driverPhone?: string;
+      /**
+       * @description 所属单位
+       * @example 茂名顺达物流有限公司
+       */
+      company?: string;
+      /**
+       * @description 预约单号
+       * @example YY202610030001
+       */
+      appointmentNo?: string;
+      /**
+       * @description 预约时段
+       * @example 2026-10-03 09:00 — 18:00
+       */
+      appointmentTime?: string;
+      /**
+       * @description 来访事由
+       * @example 原料配送
+       */
+      visitPurpose?: string;
+      /**
+       * @description 运单号
+       * @example YD202610030031
+       */
+      waybillNo?: string;
+      /**
+       * @description 承运货物
+       * @example 工业乙醇
+       */
+      cargo?: string;
+      /**
+       * @description 目的地
+       * @example 炼油一区装卸点
+       */
+      destination?: string;
     };
     /** @description 周界入侵告警详情（前端由 perimeterAlarmToDetail 适配为 AlarmDetailItem） */
     PerimeterAlarmDetail: {
@@ -1094,6 +1268,73 @@ export interface operations {
       };
     };
   };
+  createVehicleSearch: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "plate": "粤KA4543",
+         *       "confidence": 92,
+         *       "gate": "东门-入",
+         *       "status": "入厂",
+         *       "time": "2026-10-03 09:12:00",
+         *       "vehicleType": "危化品运输车",
+         *       "driverName": "刘师傅",
+         *       "driverPhone": "138****4521",
+         *       "company": "茂名顺达物流有限公司",
+         *       "appointmentNo": "YY202610030001",
+         *       "appointmentTime": "2026-10-03 09:00 — 18:00",
+         *       "visitPurpose": "原料配送",
+         *       "waybillNo": "YD202610030031",
+         *       "cargo": "工业乙醇",
+         *       "destination": "炼油一区装卸点"
+         *     }
+         */
+        'application/json': components['schemas']['VehicleSearchWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description 创建成功，返回新记录详情 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 51,
+           *         "plate": "粤KA4543",
+           *         "confidence": 92,
+           *         "gate": "东门-入",
+           *         "status": "入厂",
+           *         "time": "2026-10-03 09:12:00",
+           *         "vehicleType": "危化品运输车",
+           *         "driverName": "刘师傅",
+           *         "destination": "炼油一区装卸点"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['VehicleSearchDetail'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
   searchPersons: {
     parameters: {
       query?: {
@@ -1135,6 +1376,69 @@ export interface operations {
           };
         };
       };
+    };
+  };
+  createPersonSearch: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "name": "张三",
+         *       "gate": "东门-入",
+         *       "status": "入厂",
+         *       "date": "2026-10-03",
+         *       "gender": "男",
+         *       "phone": "138****1001",
+         *       "company": "茂名石化检修公司",
+         *       "idNumber": "4409**********1234",
+         *       "appointmentNo": "YY202610030021",
+         *       "appointmentTime": "2026-10-03 08:00 — 17:00",
+         *       "visitPurpose": "设备检修",
+         *       "specialOperation": "高处作业",
+         *       "operationArea": "炼油二区"
+         *     }
+         */
+        'application/json': components['schemas']['PersonSearchWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description 创建成功，返回新记录详情 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 42,
+           *         "name": "张三",
+           *         "gate": "东门-入",
+           *         "status": "入厂",
+           *         "date": "2026-10-03",
+           *         "gender": "男",
+           *         "company": "茂名石化检修公司"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['PersonSearchDetail'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
     };
   };
   listSecurityEvents: {
@@ -1311,6 +1615,109 @@ export interface operations {
       401: components['responses']['Unauthorized'];
     };
   };
+  updateVehicleSearch: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path: {
+        /** @description 车辆检索记录主键（fac_vehicle_search.id） */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "plate": "粤KA4543",
+         *       "confidence": 95,
+         *       "gate": "东门-入",
+         *       "status": "出厂",
+         *       "time": "2026-10-03 17:40:00",
+         *       "vehicleType": "危化品运输车",
+         *       "driverName": "刘师傅",
+         *       "driverPhone": "138****4521",
+         *       "company": "茂名顺达物流有限公司",
+         *       "appointmentNo": "YY202610030001",
+         *       "appointmentTime": "2026-10-03 09:00 — 18:00",
+         *       "visitPurpose": "原料配送",
+         *       "waybillNo": "YD202610030031",
+         *       "cargo": "工业乙醇",
+         *       "destination": "炼油一区装卸点"
+         *     }
+         */
+        'application/json': components['schemas']['VehicleSearchWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description 更新成功，返回更新后的记录详情 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 1,
+           *         "plate": "粤KA4543",
+           *         "confidence": 95,
+           *         "gate": "东门-入",
+           *         "status": "出厂",
+           *         "time": "2026-10-03 17:40:00"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['VehicleSearchDetail'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  deleteVehicleSearch: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path: {
+        /** @description 车辆检索记录主键（fac_vehicle_search.id） */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=null） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'];
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['BadRequest'];
+    };
+  };
   getPersonSearchDetail: {
     parameters: {
       query?: never;
@@ -1351,6 +1758,106 @@ export interface operations {
         };
       };
       401: components['responses']['Unauthorized'];
+    };
+  };
+  updatePersonSearch: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path: {
+        /** @description 人员检索记录主键（fac_person_search.id） */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "name": "张三",
+         *       "gate": "东门-入",
+         *       "status": "出厂",
+         *       "date": "2026-10-03",
+         *       "gender": "男",
+         *       "phone": "138****1001",
+         *       "company": "茂名石化检修公司",
+         *       "idNumber": "4409**********1234",
+         *       "appointmentNo": "YY202610030021",
+         *       "appointmentTime": "2026-10-03 08:00 — 17:00",
+         *       "visitPurpose": "设备检修",
+         *       "specialOperation": "高处作业",
+         *       "operationArea": "炼油二区"
+         *     }
+         */
+        'application/json': components['schemas']['PersonSearchWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description 更新成功，返回更新后的记录详情 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 1,
+           *         "name": "张三",
+           *         "gate": "东门-入",
+           *         "status": "出厂",
+           *         "date": "2026-10-03"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['PersonSearchDetail'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  deletePersonSearch: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path: {
+        /** @description 人员检索记录主键（fac_person_search.id） */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=null） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'];
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['BadRequest'];
     };
   };
   getLatestPerimeterAlarm: {
@@ -1502,6 +2009,42 @@ export interface operations {
         };
       };
       401: components['responses']['Unauthorized'];
+    };
+  };
+  deletePerimeterAlarm: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path: {
+        /** @description 周界入侵告警主键（fac_perimeter_alarm.id） */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=null） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'];
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['BadRequest'];
     };
   };
   getPerimeterAlarmSnapshot: {
