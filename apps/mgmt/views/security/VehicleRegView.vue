@@ -11,6 +11,7 @@ import {
   createVehicleSearch,
   deleteVehicleSearch,
   fetchVehicleSearch,
+  fetchVehicleSearchDetail,
   updateVehicleSearch,
   type VehicleSearchWriteRequest,
 } from '@/services/security';
@@ -25,6 +26,8 @@ const keyword = ref('');
 
 const dialogVisible = ref(false);
 const editRow = ref<Record<string, unknown> | null>(null);
+// 正在拉取详情的备案 id（逐行 loading，避免重复点击重复拉详情）
+const detailLoadingId = ref<number | null>(null);
 
 // 列表只返回检索摘要（车牌/卡口/状态/置信度/时间），编辑弹窗按同一契约的写请求字段展开完整备案信息。
 const FIELDS: FieldDef[] = [
@@ -78,9 +81,25 @@ function openCreate(): void {
   dialogVisible.value = true;
 }
 
-function openEdit(row: VehicleSearchResult): void {
-  editRow.value = { ...row } as unknown as Record<string, unknown>;
-  dialogVisible.value = true;
+// 列表只返回摘要字段，直接用行数据回填会让扩展字段全空、用户误以为数据丢失，
+// 故先按 id 取详情（含全部扩展字段）再打开弹窗；取详情失败则中止打开并提示，
+// 避免用户拿残缺记录保存时把后端已有字段覆盖清空。
+async function openEdit(row: VehicleSearchResult): Promise<void> {
+  if (row.id == null) return;
+  const id = Number(row.id);
+  if (detailLoadingId.value === id) return; // 同一行重复点击忽略
+  detailLoadingId.value = id;
+  try {
+    const detail = await fetchVehicleSearchDetail(id);
+    if (!detail) throw new Error('未返回车辆备案详情');
+    editRow.value = { ...row, ...detail } as unknown as Record<string, unknown>;
+    dialogVisible.value = true;
+  } catch (err) {
+    toastErr(err, '加载车辆备案详情失败：');
+    dialogVisible.value = false;
+  } finally {
+    detailLoadingId.value = null;
+  }
 }
 
 async function onSave(payload: Record<string, unknown>, id: number | null): Promise<void> {
@@ -176,6 +195,7 @@ useDomainAutoRefresh('security.vehicle-search', load, { immediate: false });
             v-permission="'security:vehicle-write'"
             link
             type="primary"
+            :loading="detailLoadingId === row.id"
             @click="openEdit(row as VehicleSearchResult)"
           >
             编辑
