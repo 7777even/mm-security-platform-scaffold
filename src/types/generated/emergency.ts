@@ -91,9 +91,21 @@ export interface paths {
      * @description 返回消防/医疗/公安等应急联络电话通讯录。
      */
     get: operations['getEmergencyPhones'];
-    put?: never;
-    post?: never;
-    delete?: never;
+    /**
+     * 编辑通讯录条目
+     * @description 局部更新一条通讯录条目（字段为 null 表示不修改）。需权限码 emergency:phone:write；成功触发 emergency.phone 实时广播。
+     */
+    put: operations['updateEmergencyPhone'];
+    /**
+     * 新增通讯录条目
+     * @description 新增一条应急通讯录条目。需权限码 emergency:phone:write；成功触发 emergency.phone 实时广播。
+     */
+    post: operations['createEmergencyPhone'];
+    /**
+     * 删除通讯录条目
+     * @description 物理删除一条通讯录条目。需权限码 emergency:phone:write；成功触发 emergency.phone 实时广播。
+     */
+    delete: operations['deleteEmergencyPhone'];
     options?: never;
     head?: never;
     patch?: never;
@@ -965,6 +977,25 @@ export interface components {
       number?: string;
       /**
        * @description 分类
+       * @example 消防
+       * @enum {string}
+       */
+      category?: '消防' | '医疗' | '公安' | '厂内应急' | '保卫值班' | '应急通讯' | '智能联动';
+    };
+    /** @description 应急通讯录条目写请求（新增 / 编辑共用），字段名对齐 EmergencyPhone。 */
+    PhoneWriteRequest: {
+      /**
+       * @description 名称/单位
+       * @example 消防报警
+       */
+      name: string;
+      /**
+       * @description 联系电话
+       * @example 119
+       */
+      number: string;
+      /**
+       * @description 分类（可选）
        * @example 消防
        * @enum {string}
        */
@@ -2158,6 +2189,90 @@ export interface operations {
         };
       };
       401: components['responses']['Unauthorized'];
+    };
+  };
+  updateEmergencyPhone: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 通讯录条目 ID */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PhoneWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=EmergencyPhone） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['EmergencyPhone'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  createEmergencyPhone: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PhoneWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=EmergencyPhone） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['EmergencyPhone'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  deleteEmergencyPhone: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 通讯录条目 ID */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=null） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiResponse'];
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
     };
   };
   getEmergencyKnowledge: {

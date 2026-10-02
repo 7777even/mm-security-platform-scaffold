@@ -343,6 +343,110 @@
             "$ref": "./_shared.json#/components/responses/Unauthorized"
           }
         }
+      },
+      "post": {
+        "tags": ["emergency"],
+        "operationId": "createEmergencyPhone",
+        "summary": "新增通讯录条目",
+        "description": "新增一条应急通讯录条目。需权限码 emergency:phone:write；成功触发 emergency.phone 实时广播。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PhoneWriteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=EmergencyPhone）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/EmergencyPhone" } }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "put": {
+        "tags": ["emergency"],
+        "operationId": "updateEmergencyPhone",
+        "summary": "编辑通讯录条目",
+        "description": "局部更新一条通讯录条目（字段为 null 表示不修改）。需权限码 emergency:phone:write；成功触发 emergency.phone 实时广播。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "通讯录条目 ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PhoneWriteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=EmergencyPhone）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/EmergencyPhone" } }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "delete": {
+        "tags": ["emergency"],
+        "operationId": "deleteEmergencyPhone",
+        "summary": "删除通讯录条目",
+        "description": "物理删除一条通讯录条目。需权限码 emergency:phone:write；成功触发 emergency.phone 实时广播。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "通讯录条目 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=null）",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "./_shared.json#/components/schemas/ApiResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
       }
     },
     "/emergency/knowledge": {
@@ -1663,6 +1767,29 @@
           "category": {
             "type": "string",
             "description": "分类",
+            "enum": ["消防", "医疗", "公安", "厂内应急", "保卫值班", "应急通讯", "智能联动"],
+            "example": "消防"
+          }
+        }
+      },
+      "PhoneWriteRequest": {
+        "type": "object",
+        "description": "应急通讯录条目写请求（新增 / 编辑共用），字段名对齐 EmergencyPhone。",
+        "required": ["name", "number"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "名称/单位",
+            "example": "消防报警"
+          },
+          "number": {
+            "type": "string",
+            "description": "联系电话",
+            "example": "119"
+          },
+          "category": {
+            "type": "string",
+            "description": "分类（可选）",
             "enum": ["消防", "医疗", "公安", "厂内应急", "保卫值班", "应急通讯", "智能联动"],
             "example": "消防"
           }

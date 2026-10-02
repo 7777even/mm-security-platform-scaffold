@@ -17,6 +17,39 @@ export interface EmergencyPhoneBook {
   entries: EmergencyPhone[];
 }
 
+// 应急通讯录条目新增 / 编辑入参（字段名对齐 EmergencyPhone）。
+export interface PhoneWriteRequest {
+  name?: string;
+  number?: string;
+  category?: string;
+}
+
+/** 新增通讯录条目。需权限码 emergency:phone:write（V95 登记）。 */
+export async function createEmergencyPhone(payload: PhoneWriteRequest): Promise<EmergencyPhone> {
+  return request<EmergencyPhone>({
+    url: '/emergency/phones',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+/** 编辑通讯录条目（局部更新）。 */
+export async function updateEmergencyPhone(
+  id: number,
+  payload: PhoneWriteRequest,
+): Promise<EmergencyPhone> {
+  return request<EmergencyPhone>({
+    url: `/emergency/phones/${id}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+/** 删除通讯录条目。 */
+export async function deleteEmergencyPhone(id: number): Promise<void> {
+  await request<null>({ url: `/emergency/phones/${id}`, method: 'DELETE' });
+}
+
 // 开发期自包含 mock：8 行关键应急电话
 const DEV_FIXTURE: EmergencyPhoneBook = {
   entries: [
