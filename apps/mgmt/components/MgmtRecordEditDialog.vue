@@ -14,7 +14,7 @@ import { type FormInstance, type FormRules } from 'element-plus';
 
 export interface FieldOption {
   label: string;
-  value: string;
+  value: string | number | boolean;
 }
 
 export interface FieldDef {
@@ -136,7 +136,7 @@ defineExpose({ form, isEdit });
         >
           <el-option
             v-for="opt in f.options ?? []"
-            :key="opt.value"
+            :key="String(opt.value)"
             :label="opt.label"
             :value="opt.value"
           />

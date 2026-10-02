@@ -1,55 +1,155 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { Document } from '@element-plus/icons-vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
+import MgmtProTable from '../../components/MgmtProTable.vue';
 import MgmtPageHead from '../../components/MgmtPageHead.vue';
-import { toastErr } from '../../utils/feedback';
+import MgmtRecordEditDialog, { type FieldDef } from '../../components/MgmtRecordEditDialog.vue';
+import { toastErr, toastOk } from '../../utils/feedback';
 import {
-  fetchEmergencyPlanCatalog,
-  fetchEmergencyPlanDetailSections,
+  createEmergencyPlanMeta,
+  deleteEmergencyPlanMeta,
+  fetchEmergencyPlanMetaList,
+  updateEmergencyPlanMeta,
 } from '@/services/emergencyPlan';
 import type {
-  EmergencyPlanCatalogItem,
-  EmergencyPlanDetailSection,
+  EmergencyPlanMetaItem,
+  EmergencyPlanMetaWriteRequest,
 } from '@/services/emergencyPlan';
 
-// 应急预案管理（/emergency-plan）：接后端 /emergency-plans/catalog + /catalog-detail。
-// 取代原 module-embed 原型 iframe 占位，数据全部来自后端；取数三态：加载中 / 空态 / 错误回落（不回灌假数据）。
+// 应急预案管理（/emergency-plan）：接后端 /emergency-plans（可编辑主记录台账）。
+// 区别于大屏 /options /matrix（只读筛选 + 矩阵视图）。全量 CRUD，写操作受 emergency:plan:write
+// 权限码控制（V98 已登记）。编辑态字段与列表契约同名，行对象可直接灌进表单，无需映射。
 
-const catalog = ref<EmergencyPlanCatalogItem[]>([]);
-const sections = ref<EmergencyPlanDetailSection[]>([]);
+const rows = ref<EmergencyPlanMetaItem[]>([]);
 const loading = ref(false);
-const currentId = ref<string>('');
 
-async function loadCatalog(): Promise<void> {
-  try {
-    const res = await fetchEmergencyPlanCatalog();
-    catalog.value = Array.isArray(res?.items) ? res.items : [];
-    if (catalog.value.length) {
-      currentId.value = catalog.value.find((c) => c.isCurrent)?.id ?? catalog.value[0].id;
-    }
-  } catch (e) {
-    toastErr(e, '加载预案目录失败：');
-    catalog.value = [];
-  }
-}
+const dialogVisible = ref(false);
+const editRow = ref<Record<string, unknown> | null>(null);
 
-async function loadDetail(): Promise<void> {
+const TAB_OPTIONS: { label: string; value: string }[] = [
+  { label: '应急处置方案', value: 'disposal' },
+  { label: '消防救援预案', value: 'fire' },
+  { label: '公司级应急预案', value: 'company' },
+  { label: '上级单位应急预案', value: 'superior' },
+];
+const DOMAIN_OPTIONS: { label: string; value: string }[] = [
+  { label: '生产域', value: 'production' },
+  { label: '消防域', value: 'fire' },
+  { label: '周界域', value: 'perimeter' },
+  { label: '上级单位域', value: 'superior' },
+];
+
+const FIELDS: FieldDef[] = [
+  {
+    prop: 'planName',
+    label: '预案名称',
+    type: 'input',
+    required: true,
+    placeholder: '如 乙烯储罐火灾处置方案',
+  },
+  {
+    prop: 'tabKey',
+    label: '预案类别',
+    type: 'select',
+    options: TAB_OPTIONS,
+    placeholder: '选择 Tab 类别',
+  },
+  { prop: 'accidentType', label: '事故类型', type: 'input', placeholder: '如 火灾 / 泄漏' },
+  { prop: 'facility', label: '关联设施', type: 'input', placeholder: '如 乙烯裂解装置' },
+  {
+    prop: 'domain',
+    label: '业务域',
+    type: 'select',
+    options: DOMAIN_OPTIONS,
+    placeholder: '选择业务域',
+  },
+  {
+    prop: 'nuclear',
+    label: '核预案',
+    type: 'select',
+    options: [
+      { label: '否', value: false },
+      { label: '是', value: true },
+    ],
+  },
+  {
+    prop: 'isActive',
+    label: '是否激活',
+    type: 'select',
+    options: [
+      { label: '否', value: false },
+      { label: '是', value: true },
+    ],
+  },
+  { prop: 'sortNo', label: '排序号', type: 'number', placeholder: '升序展示' },
+];
+
+async function load(): Promise<void> {
   loading.value = true;
   try {
-    const res = await fetchEmergencyPlanDetailSections();
-    sections.value = Array.isArray(res?.sections) ? res.sections : [];
-  } catch (e) {
-    toastErr(e, '加载预案详情失败：');
-    sections.value = [];
+    const res = await fetchEmergencyPlanMetaList();
+    rows.value = Array.isArray(res) ? res : [];
+  } catch (err) {
+    toastErr(err, '加载应急预案失败：');
+    rows.value = [];
   } finally {
     loading.value = false;
   }
 }
 
-onMounted(async () => {
-  await loadCatalog();
-  await loadDetail();
-});
+function openCreate(): void {
+  editRow.value = null;
+  dialogVisible.value = true;
+}
+
+function openEdit(row: EmergencyPlanMetaItem): void {
+  editRow.value = { ...row } as unknown as Record<string, unknown>;
+  dialogVisible.value = true;
+}
+
+async function onSave(payload: Record<string, unknown>, id: number | null): Promise<void> {
+  try {
+    const body = payload as EmergencyPlanMetaWriteRequest;
+    if (id == null) {
+      await createEmergencyPlanMeta(body);
+      toastOk('应急预案已新增');
+    } else {
+      await updateEmergencyPlanMeta(id, body);
+      toastOk('已保存');
+    }
+    dialogVisible.value = false;
+    await load();
+  } catch (err) {
+    toastErr(err, id == null ? '新增失败：' : '保存失败：');
+  }
+}
+
+async function onDelete(row: EmergencyPlanMetaItem): Promise<void> {
+  if (row.id == null) return;
+  try {
+    await ElMessageBox.confirm(
+      `确认删除应急预案「${row.planName || String(row.id)}」？删除后不可恢复。`,
+      '删除确认',
+      { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
+    );
+  } catch {
+    return; // 用户取消
+  }
+  try {
+    await deleteEmergencyPlanMeta(Number(row.id));
+    ElMessage.success('已删除');
+    await load();
+  } catch (err) {
+    toastErr(err, '删除失败：');
+  }
+}
+
+onMounted(load);
+
+// 三端实时刷新：任一端改动应急预案台账，本列表自动重拉
+useDomainAutoRefresh('emergency.plan', load, { immediate: false });
 </script>
 
 <template>
@@ -59,120 +159,84 @@ onMounted(async () => {
       crumb="应急管理 / 应急预案管理"
       :icon="Document"
       icon-tone="blue"
-    />
-    <div class="plan-wrap">
-      <section class="catalog-card">
-        <div
-          v-for="item in catalog"
-          :key="item.id"
-          class="catalog-row"
-          :class="{ active: item.id === currentId }"
-        >
-          <span class="c-label">{{ item.label }}</span>
-          <span class="c-plan">{{ item.planName }}</span>
-          <span v-if="item.isCurrent" class="tag tag-success">当前生效</span>
-        </div>
-        <p v-if="!catalog.length" class="empty">暂无预案目录数据</p>
-      </section>
-      <section class="detail-card">
-        <div v-if="loading" class="loading-tip">加载中…</div>
-        <template v-else>
-          <div v-for="sec in sections" :key="sec.title" class="section">
-            <h4 class="sec-title">{{ sec.title }}</h4>
-            <div class="fields">
-              <div v-for="f in sec.fields" :key="f.label" class="field">
-                <span class="f-label">{{ f.label }}</span>
-                <span class="f-value">{{ f.value || '—' }}</span>
-              </div>
-            </div>
-          </div>
-          <el-empty v-if="!sections.length" description="暂无预案详情" />
+    >
+      <template #actions>
+        <el-button :loading="loading" @click="load">刷新</el-button>
+        <el-button v-permission="'emergency:plan:write'" type="primary" @click="openCreate">
+          新增预案
+        </el-button>
+      </template>
+    </MgmtPageHead>
+
+    <MgmtProTable :data="rows">
+      <el-table-column prop="id" label="编号" width="90" />
+      <el-table-column prop="planName" label="预案名称" min-width="200">
+        <template #default="{ row }">{{ row.planName || '—' }}</template>
+      </el-table-column>
+      <el-table-column prop="tabKey" label="预案类别" width="150">
+        <template #default="{ row }">{{
+          TAB_OPTIONS.find((t) => t.value === row.tabKey)?.label || row.tabKey || '—'
+        }}</template>
+      </el-table-column>
+      <el-table-column prop="accidentType" label="事故类型" width="120">
+        <template #default="{ row }">{{ row.accidentType || '—' }}</template>
+      </el-table-column>
+      <el-table-column prop="facility" label="关联设施" min-width="160">
+        <template #default="{ row }">{{ row.facility || '—' }}</template>
+      </el-table-column>
+      <el-table-column prop="domain" label="业务域" width="130">
+        <template #default="{ row }">{{
+          DOMAIN_OPTIONS.find((d) => d.value === row.domain)?.label || row.domain || '—'
+        }}</template>
+      </el-table-column>
+      <el-table-column label="核预案" width="90" align="center">
+        <template #default="{ row }">
+          <span class="tag" :class="row.nuclear ? 'tag-success' : 'tag-info'">{{
+            row.nuclear ? '是' : '否'
+          }}</span>
         </template>
-      </section>
-    </div>
+      </el-table-column>
+      <el-table-column label="激活" width="90" align="center">
+        <template #default="{ row }">
+          <span class="tag" :class="row.isActive ? 'tag-success' : 'tag-info'">{{
+            row.isActive ? '是' : '否'
+          }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="invokeCount" label="调用次数" width="100" align="center">
+        <template #default="{ row }">{{ row.invokeCount ?? 0 }}</template>
+      </el-table-column>
+      <el-table-column prop="lastInvokedAt" label="最近调用" min-width="170">
+        <template #default="{ row }">{{ row.lastInvokedAt || '—' }}</template>
+      </el-table-column>
+      <el-table-column label="操作" width="150" fixed="right">
+        <template #default="{ row }">
+          <el-button
+            v-permission="'emergency:plan:write'"
+            link
+            type="primary"
+            @click="openEdit(row as EmergencyPlanMetaItem)"
+          >
+            编辑
+          </el-button>
+          <el-button
+            v-permission="'emergency:plan:write'"
+            link
+            type="danger"
+            @click="onDelete(row as EmergencyPlanMetaItem)"
+          >
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </MgmtProTable>
+
+    <MgmtRecordEditDialog
+      v-model="dialogVisible"
+      :edit-row="editRow"
+      :fields="FIELDS"
+      title="应急预案"
+      @save="onSave"
+    />
   </div>
 </template>
-
-<style scoped>
-.plan-wrap {
-  display: flex;
-  gap: var(--space-md, 12px);
-  align-items: flex-start;
-}
-
-.catalog-card {
-  flex: 0 0 280px;
-  background: var(--card-mgmt, #fff);
-  border: 1px solid var(--border-mgmt, #e5e7eb);
-  border-radius: var(--mgmt-radius-lg, 12px);
-  padding: var(--space-sm, 8px) var(--space-md, 12px);
-}
-
-.catalog-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm, 8px);
-  padding: var(--space-sm, 8px) 0;
-  border-bottom: 1px dashed var(--border-mgmt, #e5e7eb);
-}
-
-.catalog-row.active {
-  font-weight: 600;
-  color: var(--text-title-mgmt, #111);
-}
-
-.c-label {
-  flex: 0 0 110px;
-  color: var(--color-text, #333);
-}
-
-.c-plan {
-  flex: 1;
-  color: var(--color-text, #333);
-}
-
-.detail-card {
-  flex: 1;
-  background: var(--card-mgmt, #fff);
-  border: 1px solid var(--border-mgmt, #e5e7eb);
-  border-radius: var(--mgmt-radius-lg, 12px);
-  padding: var(--space-md, 12px);
-}
-
-.sec-title {
-  margin: 0 0 var(--space-sm, 8px);
-  font-size: var(--mgmt-fz-h4, 16px);
-  color: var(--text-title-mgmt, #111);
-}
-
-.fields {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--space-sm, 8px);
-}
-
-.field {
-  display: flex;
-  gap: var(--space-sm, 8px);
-  font-size: var(--mgmt-fz-body, 14px);
-}
-
-.f-label {
-  flex: 0 0 120px;
-  color: var(--color-text-muted, #888);
-}
-
-.f-value {
-  flex: 1;
-  color: var(--color-text, #333);
-}
-
-.loading-tip {
-  color: var(--color-text-muted, #888);
-  padding: var(--space-md, 12px);
-}
-
-.empty {
-  color: var(--color-text-muted, #888);
-}
-</style>

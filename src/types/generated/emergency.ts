@@ -143,6 +143,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/emergency/cases': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 事故案例库列表
+     * @description 返回可编辑的事故案例库列表（区别于 fac_alarm 自动归档的只读结案聚合），按发生时间倒序。
+     */
+    get: operations['getEmergencyCases'];
+    /**
+     * 编辑事故案例
+     * @description 局部更新一条事故案例（字段为 null 表示不修改）。需权限码 emergency:case:write；成功触发 emergency.case 实时广播。
+     */
+    put: operations['updateEmergencyCase'];
+    /**
+     * 新增事故案例
+     * @description 新增一条事故案例。需权限码 emergency:case:write；成功触发 emergency.case 实时广播。
+     */
+    post: operations['createEmergencyCase'];
+    /**
+     * 删除事故案例
+     * @description 物理删除一条事故案例。需权限码 emergency:case:write；成功触发 emergency.case 实时广播。
+     */
+    delete: operations['deleteEmergencyCase'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/emergency/dispatch-personnel': {
     parameters: {
       query?: never;
@@ -1054,6 +1086,80 @@ export interface components {
        * @example 岗位员工应掌握的应急处置卡片要点。
        */
       description?: string;
+    };
+    EmergencyCaseList: {
+      /** @description 事故案例列表 */
+      items?: components['schemas']['EmergencyCaseItem'][];
+    };
+    EmergencyCaseItem: {
+      /**
+       * @description 案例 ID
+       * @example 1
+       */
+      id?: string;
+      /**
+       * @description 事故名称
+       * @example T-301 罐区泄漏处置复盘
+       */
+      title?: string;
+      /**
+       * @description 事故类型（如 泄漏/火灾/爆炸）
+       * @example 泄漏
+       */
+      accidentType?: string;
+      /**
+       * @description 事故地点
+       * @example 储运部 T-301 罐区
+       */
+      location?: string;
+      /**
+       * @description 发生时间（yyyy-MM-dd HH:mm:ss）
+       * @example 2026-08-21 09:03:00
+       */
+      occurredAt?: string;
+      /**
+       * @description 案例摘要
+       * @example 初起泄漏点位于进料线阀门法兰，巡检及时发现并启动围堵，未扩大。
+       */
+      summary?: string;
+      /**
+       * @description 经验教训 / 启示
+       * @example 法兰螺栓定期紧固 + 巡检路线覆盖进料线是关键。
+       */
+      lessons?: string;
+    };
+    /** @description 事故案例写请求（新增/编辑共用，字段名对齐 EmergencyCaseItem） */
+    EmergencyCaseWriteRequest: {
+      /**
+       * @description 事故名称（必填）
+       * @example T-301 罐区泄漏处置复盘
+       */
+      title: string;
+      /**
+       * @description 事故类型
+       * @example 泄漏
+       */
+      accidentType?: string;
+      /**
+       * @description 事故地点
+       * @example 储运部 T-301 罐区
+       */
+      location?: string;
+      /**
+       * @description 发生时间（yyyy-MM-dd HH:mm:ss）
+       * @example 2026-08-21 09:03:00
+       */
+      occurredAt?: string;
+      /**
+       * @description 案例摘要
+       * @example 初起泄漏点位于进料线阀门法兰，巡检及时发现并启动围堵，未扩大。
+       */
+      summary?: string;
+      /**
+       * @description 经验教训 / 启示
+       * @example 法兰螺栓定期紧固 + 巡检路线覆盖进料线是关键。
+       */
+      lessons?: string;
     };
     /** @description 应急派单人员项（告警详情「派单人员」下拉） */
     DispatchPersonnel: {
@@ -2383,6 +2489,135 @@ export interface operations {
       header?: never;
       path: {
         /** @description 知识条目 ID */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=null） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiResponse'];
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  getEmergencyCases: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=EmergencyCaseList） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "items": [
+           *           {
+           *             "id": "1",
+           *             "title": "T-301 罐区泄漏处置复盘",
+           *             "accidentType": "泄漏",
+           *             "location": "储运部 T-301 罐区",
+           *             "occurredAt": "2026-08-21 09:03:00",
+           *             "summary": "初起泄漏点位于进料线阀门法兰，巡检及时发现并启动围堵，未扩大。",
+           *             "lessons": "法兰螺栓定期紧固 + 巡检路线覆盖进料线是关键。"
+           *           }
+           *         ]
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['EmergencyCaseList'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  updateEmergencyCase: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 案例 ID */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['EmergencyCaseWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=EmergencyCaseItem） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['EmergencyCaseItem'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  createEmergencyCase: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['EmergencyCaseWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=EmergencyCaseItem） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['EmergencyCaseItem'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  deleteEmergencyCase: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 案例 ID */
         id: number;
       };
       cookie?: never;

@@ -586,6 +586,399 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/emergency-plans/catalog-items': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 应急预案目录扁平行列表
+     * @description 返回预案目录扁平行（管理端编辑用），按 sort_no 升序。区别于 /catalog 层次化只读摘要（大屏展示用）。数据源 fac_emergency_plan_catalog。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 预案目录扁平行列表 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": [
+             *         {
+             *           "id": "1",
+             *           "planCode": "company",
+             *           "label": "公司级预案",
+             *           "planName": "茂名石化应急预案",
+             *           "canSwitch": 1,
+             *           "isCurrent": 1,
+             *           "sortNo": 2
+             *         }
+             *       ]
+             *     }
+             */
+            'application/json': components['schemas']['EmergencyPlanCatalogRow'][];
+          };
+        };
+      };
+    };
+    put?: never;
+    /**
+     * 新增预案目录行
+     * @description 新增一条预案目录扁平行。需权限码 emergency:plan-catalog:write；成功触发 emergency.plan-catalog 实时广播。label 必填。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['EmergencyPlanCatalogWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 新增后的预案目录行 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": "5",
+             *         "planCode": "branch",
+             *         "label": "消防救援预案",
+             *         "planName": "乙烯装置消防救援处置方案",
+             *         "canSwitch": 1,
+             *         "isCurrent": 0,
+             *         "sortNo": 3
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['EmergencyPlanCatalogRow'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/emergency-plans/catalog-items/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 编辑预案目录行
+     * @description 局部更新预案目录行（字段为 null 表示不修改）。需权限码 emergency:plan-catalog:write；成功触发 emergency.plan-catalog 实时广播。不存在返回 B3 NOT_FOUND。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 预案目录行 id（fac_emergency_plan_catalog.id） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['EmergencyPlanCatalogWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 更新后的预案目录行 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": "1",
+             *         "planCode": "company",
+             *         "label": "公司级预案",
+             *         "planName": "茂名石化应急预案（修订）",
+             *         "canSwitch": 1,
+             *         "isCurrent": 1,
+             *         "sortNo": 2
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['EmergencyPlanCatalogRow'];
+          };
+        };
+      };
+    };
+    post?: never;
+    /**
+     * 删除预案目录行
+     * @description 物理删除预案目录行。需权限码 emergency:plan-catalog:write；成功触发 emergency.plan-catalog 实时广播。不存在返回 B3 NOT_FOUND。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 预案目录行 id */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除成功 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": null
+             *     }
+             */
+            'application/json': null;
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/emergency-plans': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 应急预案主记录列表
+     * @description 返回应急预案主记录（管理端编辑用），按 sort_no 升序。区别于 /options /matrix 大屏只读视图。数据源 fac_emergency_plan。
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 应急预案主记录列表 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": [
+             *         {
+             *           "id": "1",
+             *           "tabKey": "company",
+             *           "planName": "茂名石化综合应急预案",
+             *           "accidentType": "火灾",
+             *           "facility": "全厂",
+             *           "domain": "production",
+             *           "nuclear": false,
+             *           "isActive": true,
+             *           "invokeCount": 3,
+             *           "lastInvokedAt": "2026-09-29 09:12:00"
+             *         }
+             *       ]
+             *     }
+             */
+            'application/json': components['schemas']['EmergencyPlanMetaItem'][];
+          };
+        };
+      };
+    };
+    put?: never;
+    /**
+     * 新增应急预案主记录
+     * @description 新增一条应急预案主记录。需权限码 emergency:plan:write；成功触发 emergency.plan 实时广播。planName 必填。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['EmergencyPlanMetaWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 新增后的应急预案主记录 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": "12",
+             *         "tabKey": "company",
+             *         "planName": "乙烯储罐火灾处置方案",
+             *         "accidentType": "火灾",
+             *         "facility": "乙烯罐区",
+             *         "domain": "production",
+             *         "nuclear": false,
+             *         "isActive": false,
+             *         "invokeCount": 0,
+             *         "lastInvokedAt": null
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['EmergencyPlanMetaItem'];
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/emergency-plans/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 编辑应急预案主记录
+     * @description 局部更新应急预案主记录（字段为 null 表示不修改）。需权限码 emergency:plan:write；成功触发 emergency.plan 实时广播。不存在返回 B3 NOT_FOUND。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 应急预案 id（fac_emergency_plan.id） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['EmergencyPlanMetaWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 更新后的应急预案主记录 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": "1",
+             *         "tabKey": "company",
+             *         "planName": "茂名石化综合应急预案（修订）",
+             *         "accidentType": "火灾",
+             *         "facility": "全厂",
+             *         "domain": "production",
+             *         "nuclear": false,
+             *         "isActive": true,
+             *         "invokeCount": 3,
+             *         "lastInvokedAt": "2026-09-29 09:12:00"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['EmergencyPlanMetaItem'];
+          };
+        };
+      };
+    };
+    post?: never;
+    /**
+     * 删除应急预案主记录
+     * @description 物理删除应急预案主记录。需权限码 emergency:plan:write；成功触发 emergency.plan 实时广播。不存在返回 B3 NOT_FOUND。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 应急预案 id */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除成功 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": null
+             *     }
+             */
+            'application/json': null;
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1115,6 +1508,173 @@ export interface components {
     EmergencyPlanDetailSummary: {
       /** @description 5 段详情（基础 / 评审 / 备案 / 公布 / 评估信息） */
       sections?: components['schemas']['EmergencyPlanDetailSection'][];
+    };
+    /** @description 应急预案目录扁平行（管理端可编辑台账） */
+    EmergencyPlanCatalogRow: {
+      /**
+       * @description 数值主键（字符串化）
+       * @example 1
+       */
+      id?: string;
+      /**
+       * @description 目录编码
+       * @example company
+       */
+      planCode?: string;
+      /**
+       * @description 层级标签
+       * @example 公司级预案
+       */
+      label?: string;
+      /**
+       * @description 当前生效预案名称
+       * @example 茂名石化应急预案
+       */
+      planName?: string;
+      /**
+       * @description 是否可切换（0/1）
+       * @example 1
+       */
+      canSwitch?: number;
+      /**
+       * @description 是否为当前激活（0/1）
+       * @example 1
+       */
+      isCurrent?: number;
+      /**
+       * @description 排序号
+       * @example 2
+       */
+      sortNo?: number;
+    };
+    /** @description 预案目录新增 / 编辑入参（局部更新，null 不覆盖） */
+    EmergencyPlanCatalogWriteRequest: {
+      /**
+       * @description 目录编码
+       * @example company
+       */
+      planCode?: string;
+      /**
+       * @description 层级标签（必填）
+       * @example 公司级预案
+       */
+      label: string;
+      /**
+       * @description 当前生效预案名称
+       * @example 茂名石化应急预案
+       */
+      planName?: string;
+      /**
+       * @description 是否可切换（0/1）
+       * @example 1
+       */
+      canSwitch?: number;
+      /**
+       * @description 是否为当前激活（0/1）
+       * @example 1
+       */
+      isCurrent?: number;
+      /**
+       * @description 排序号
+       * @example 2
+       */
+      sortNo?: number;
+    };
+    /** @description 应急预案主记录（管理端可编辑台账） */
+    EmergencyPlanMetaItem: {
+      /**
+       * @description 数值主键（字符串化）
+       * @example 1
+       */
+      id?: string;
+      /**
+       * @description 预案类别 Tab 键：disposal / fire / company / superior
+       * @example company
+       */
+      tabKey?: string;
+      /**
+       * @description 预案名称
+       * @example 茂名石化综合应急预案
+       */
+      planName?: string;
+      /**
+       * @description 事故类型
+       * @example 火灾
+       */
+      accidentType?: string;
+      /**
+       * @description 关联设施
+       * @example 全厂
+       */
+      facility?: string;
+      /**
+       * @description 业务域：production / fire / perimeter / superior
+       * @example production
+       */
+      domain?: string;
+      /**
+       * @description 核预案标记
+       * @example false
+       */
+      nuclear?: boolean;
+      /**
+       * @description 当前是否激活（同域内唯一）
+       * @example true
+       */
+      isActive?: boolean;
+      /**
+       * @description 累计一键调用次数
+       * @example 3
+       */
+      invokeCount?: number;
+      /**
+       * @description 最近一次调用时间（yyyy-MM-dd HH:mm:ss，可空）
+       * @example 2026-09-29 09:12:00
+       */
+      lastInvokedAt?: string;
+    };
+    /** @description 应急预案主记录新增 / 编辑入参（局部更新，null 不覆盖） */
+    EmergencyPlanMetaWriteRequest: {
+      /**
+       * @description 预案名称（必填）
+       * @example 乙烯储罐火灾处置方案
+       */
+      planName: string;
+      /**
+       * @description 预案类别 Tab 键：disposal / fire / company / superior
+       * @example company
+       */
+      tabKey?: string;
+      /**
+       * @description 事故类型
+       * @example 火灾
+       */
+      accidentType?: string;
+      /**
+       * @description 关联设施
+       * @example 乙烯罐区
+       */
+      facility?: string;
+      /**
+       * @description 业务域：production / fire / perimeter / superior
+       * @example production
+       */
+      domain?: string;
+      /**
+       * @description 核预案标记
+       * @example false
+       */
+      nuclear?: boolean;
+      /**
+       * @description 当前是否激活
+       * @example false
+       */
+      isActive?: boolean;
+      /**
+       * @description 排序号
+       * @example 2
+       */
+      sortNo?: number;
     };
   };
   responses: {

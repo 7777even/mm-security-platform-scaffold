@@ -293,3 +293,168 @@ export async function fetchEmergencyPlanDetailSections(): Promise<EmergencyPlanD
     return EMPTY_DETAIL;
   }
 }
+
+// ==================== 管理端台账：应急预案目录（扁平台账，可编辑） ====================
+// 区别于 /catalog 层次化只读摘要（大屏展示用），此处是管理端可维护的扁平行。
+// 权限码：emergency:plan-catalog:write（V97 登记，授权 ADMIN / COMMANDER / SCHEDULER）。
+
+/** 预案目录扁平行（id 为数值主键，区别于 /catalog 的层级编码）。 */
+export interface EmergencyPlanCatalogRow {
+  id: string;
+  planCode?: string | null;
+  label?: string | null;
+  planName?: string | null;
+  /** 是否可切换（0/1） */
+  canSwitch?: number | null;
+  /** 是否为当前激活（0/1） */
+  isCurrent?: number | null;
+  sortNo?: number | null;
+}
+
+/** 预案目录新增 / 编辑入参（label 必填，其余可选）。 */
+export interface EmergencyPlanCatalogWriteRequest {
+  planCode?: string;
+  label?: string;
+  planName?: string;
+  canSwitch?: number;
+  isCurrent?: number;
+  sortNo?: number;
+}
+
+// 管理端台账：应急预案主记录
+// 权限码：emergency:plan:write（V98 登记，授权 ADMIN / COMMANDER / SCHEDULER）。
+
+/** 应急预案主记录（管理端编辑用，区别于 /options /matrix 大屏视图）。 */
+export interface EmergencyPlanMetaItem {
+  id: string;
+  tabKey?: string | null;
+  planName?: string | null;
+  accidentType?: string | null;
+  facility?: string | null;
+  /** 业务域：production / fire / perimeter / superior */
+  domain?: string | null;
+  /** 核预案标记 */
+  nuclear?: boolean | null;
+  /** 当前是否激活 */
+  isActive?: boolean | null;
+  /** 累计一键调用次数 */
+  invokeCount?: number | null;
+  /** 最近一次调用时间（yyyy-MM-dd HH:mm:ss） */
+  lastInvokedAt?: string | null;
+}
+
+/** 应急预案主记录新增 / 编辑入参（planName 必填，其余可选）。 */
+export interface EmergencyPlanMetaWriteRequest {
+  planName?: string;
+  tabKey?: string;
+  accidentType?: string;
+  facility?: string;
+  domain?: string;
+  nuclear?: boolean;
+  isActive?: boolean;
+  sortNo?: number;
+}
+
+const EMPTY_CATALOG_ROWS: EmergencyPlanCatalogRow[] = [];
+const EMPTY_PLAN_META: EmergencyPlanMetaItem[] = [];
+
+/** 预案目录扁平行列表（管理端编辑用）。 */
+export async function fetchEmergencyPlanCatalogRows(): Promise<EmergencyPlanCatalogRow[]> {
+  const fb = resolveOfflineFetch(
+    'plan-catalog',
+    '/emergency-plans/catalog-items',
+    EMPTY_CATALOG_ROWS,
+    EMPTY_CATALOG_ROWS,
+  );
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
+  try {
+    const data = await request<EmergencyPlanCatalogRow[]>({
+      url: '/emergency-plans/catalog-items',
+      method: 'GET',
+    });
+    if (!Array.isArray(data)) {
+      backendUnavailableWarn(
+        'plan-catalog',
+        '/emergency-plans/catalog-items',
+        REASON_CONTRACT_MISMATCH,
+      );
+      return EMPTY_CATALOG_ROWS;
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('plan-catalog', '/emergency-plans/catalog-items');
+    return EMPTY_CATALOG_ROWS;
+  }
+}
+
+/** 新增预案目录行。 */
+export async function createPlanCatalogRow(
+  payload: EmergencyPlanCatalogWriteRequest,
+): Promise<EmergencyPlanCatalogRow> {
+  return request<EmergencyPlanCatalogRow>({
+    url: '/emergency-plans/catalog-items',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+/** 编辑预案目录行（局部更新）。 */
+export async function updatePlanCatalogRow(
+  id: number,
+  payload: EmergencyPlanCatalogWriteRequest,
+): Promise<EmergencyPlanCatalogRow> {
+  return request<EmergencyPlanCatalogRow>({
+    url: `/emergency-plans/catalog-items/${id}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+/** 删除预案目录行。 */
+export async function deletePlanCatalogRow(id: number): Promise<void> {
+  await request<null>({ url: `/emergency-plans/catalog-items/${id}`, method: 'DELETE' });
+}
+
+/** 应急预案主记录列表（管理端编辑用）。 */
+export async function fetchEmergencyPlanMetaList(): Promise<EmergencyPlanMetaItem[]> {
+  const fb = resolveOfflineFetch('plan-meta', '/emergency-plans', EMPTY_PLAN_META, EMPTY_PLAN_META);
+  if (fb.mode !== 'live') return Promise.resolve(fb.value);
+  try {
+    const data = await request<EmergencyPlanMetaItem[]>({
+      url: '/emergency-plans',
+      method: 'GET',
+    });
+    if (!Array.isArray(data)) {
+      backendUnavailableWarn('plan-meta', '/emergency-plans', REASON_CONTRACT_MISMATCH);
+      return EMPTY_PLAN_META;
+    }
+    return data;
+  } catch {
+    backendUnavailableWarn('plan-meta', '/emergency-plans');
+    return EMPTY_PLAN_META;
+  }
+}
+
+/** 新增应急预案主记录。 */
+export async function createEmergencyPlanMeta(
+  payload: EmergencyPlanMetaWriteRequest,
+): Promise<EmergencyPlanMetaItem> {
+  return request<EmergencyPlanMetaItem>({ url: '/emergency-plans', method: 'POST', data: payload });
+}
+
+/** 编辑应急预案主记录（局部更新）。 */
+export async function updateEmergencyPlanMeta(
+  id: number,
+  payload: EmergencyPlanMetaWriteRequest,
+): Promise<EmergencyPlanMetaItem> {
+  return request<EmergencyPlanMetaItem>({
+    url: `/emergency-plans/${id}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+/** 删除应急预案主记录。 */
+export async function deleteEmergencyPlanMeta(id: number): Promise<void> {
+  await request<null>({ url: `/emergency-plans/${id}`, method: 'DELETE' });
+}
