@@ -10,5 +10,5 @@
 - [x] 契约三域补 put / delete 并 `gen:api-types`
 - [x] 单测：通用弹窗 3 例 + 四域删除链路 4 例 + 联动弹窗 3 例 + 联动页 3 例
 - [x] `type-check` / `lint`（0 error）通过
-- [ ] 全量 `vitest run` 回归确认
-- [ ] 双仓提交推送并归档
+- [x] 全量 `vitest run` 回归确认
+- [x] 双仓提交推送并归档
