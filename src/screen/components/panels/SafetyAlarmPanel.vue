@@ -13,6 +13,7 @@ import { toScreenAlarmFromFire } from '../../lib/adapters/alarmAdapter';
 import { useFireFacilityMonitoringDialog } from '../../lib/composables/useFireFacilityMonitoringDialog';
 import { showToast } from '../../lib/composables/useToast';
 import { fireAlarmChanged } from '../../lib/composables/useScreenAlarmFeed';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import fireAreaScene from '../../assets/semantic-scenes/fire-alarm-pipe-rack.png';
 import type { ConcretePlantAreaCode } from '../../lib/data/plantAreas';
 
@@ -80,6 +81,9 @@ async function loadFireAlarms() {
 onMounted(loadFireAlarms);
 // 写回（确认/处置/误报）成功后，进行中报警列表随之刷新，已确认/已派单/已闭环的报警退出「进行中」视图
 watch(fireAlarmChanged, loadFireAlarms);
+// 三端实时联通：管理后台（/apps/mgmt）新增/编辑/删除消防报警后，经 WS 广播 fire-alarm.alarm.changed，
+// 本面板（仅展示 status=ACTIVE）随之重拉，新增的出现、删除/流转走的退出视图。
+useDomainAutoRefresh('fire-alarm.alarm', loadFireAlarms);
 const hasActiveAlarm = computed(() => demoAlarmEnabled.value && visibleAlarms.value.length > 0);
 const visibleFireAreas = computed(() => {
   if (selectedPlantArea.value === 'all') return fireAreas.value;

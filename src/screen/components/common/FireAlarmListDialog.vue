@@ -9,6 +9,7 @@ import { fireListItemToDetail } from '../../lib/data/alarmDetailMock';
 import { useAlarmDetailPanel } from '../../lib/composables/useAlarmDetailPanel';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 import { fireAlarmChanged } from '../../lib/composables/useScreenAlarmFeed';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 const props = defineProps<{
   open: boolean;
@@ -104,6 +105,9 @@ async function loadAlarms() {
 onMounted(loadAlarms);
 // 写回（确认/处置/误报）成功后刷新列表，保证弹窗内状态与后端一致
 watch(fireAlarmChanged, loadAlarms);
+// 三端实时联通：管理后台（/apps/mgmt）新增/编辑/删除消防报警后，经 WS 广播 fire-alarm.alarm.changed，
+// 本列表随之重拉，后台的改动在大屏即时可见/移除。
+useDomainAutoRefresh('fire-alarm.alarm', loadAlarms);
 
 // 列表跟随页面「厂区」筛选。默认厂区为「全厂区」→ 显示接口全部；切到某厂区则只显示该厂区。
 const filteredItems = computed(() =>
