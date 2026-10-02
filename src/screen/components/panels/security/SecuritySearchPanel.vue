@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import PanelCard from '../../common/PanelCard.vue';
 import SecuritySearchResultCard from './SecuritySearchResultCard.vue';
 import {
@@ -80,6 +81,16 @@ watch(
   },
   { immediate: true },
 );
+
+// 后台改写备案数据 → 本检索面板自动重拉，实现「后台改 → 大屏自动跟随」。
+// 广播域与后端 @RealtimeSync 一致：人员 security.person-search / 车辆 security.vehicle-search。
+// 只重拉当前激活模式对应的资源，避免人员变更触发一次无意义的车辆检索。
+useDomainAutoRefresh('security.person-search', () => {
+  if (!isVehicle.value) void loadResults();
+});
+useDomainAutoRefresh('security.vehicle-search', () => {
+  if (isVehicle.value) void loadResults();
+});
 
 function handleSearch() {
   void loadResults();

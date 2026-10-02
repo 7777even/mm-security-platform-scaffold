@@ -1,8 +1,15 @@
 import http, { request } from '@/services/http';
-import { backendUnavailableWarn, resolveOfflineFetch } from '@/services/backendFallback';
+import {
+  backendUnavailableWarn,
+  isDemoMode,
+  isOfflineNoBackend,
+  notifyBackendOffline,
+  resolveOfflineFetch,
+} from '@/services/backendFallback';
 import { ref } from 'vue';
 import * as searchFixture from '@/services/map-data/securitySearchMock';
 import type { SecurityTrackMode } from '@/services/map-data/securityTrackMock';
+import type { components } from '@/types/generated/security';
 
 // 安全防恐数据域：复用共享 fixture 层（services/map-data/*）作为 dev 降级源，
 // 并叠加 B3 契约 GET 封装（生产环境 VITE_API_BASE 命中时走 request，否则返回 fixture）。
@@ -833,4 +840,106 @@ export async function fetchPersonSearch(
     backendUnavailableWarn('security', '/security/search/person');
     return [];
   }
+}
+
+// —— 人员 / 车辆备案写接口（管理端 CRUD）——
+// 端点与字段对齐 docs/api/security.openapi.json（security:person-write / security:vehicle-write）。
+// 三态语义与文件既有写接口（createPerimeterAlarm 等）一致并补全演示态：
+// - 离线演示（VITE_USE_DEV_MOCK=true）→ 仅本地成功、不落库，返回 null；
+// - 未连后端且未开演示 → notifyBackendOffline 显式报错并抛异常，绝不伪造成功；
+// - 连后端 → 真实请求，成功返回服务端生成的详情（含主键），写成功后后端广播
+//   security.person-search / security.vehicle-search，各端订阅方自动重拉。
+
+/** 人员备案写请求体（新增/编辑共用）：由契约 PersonSearchWriteRequest 生成，必填 name。 */
+export type PersonSearchWriteRequest = components['schemas']['PersonSearchWriteRequest'];
+
+/** 车辆备案写请求体（新增/编辑共用）：由契约 VehicleSearchWriteRequest 生成，必填 plate。 */
+export type VehicleSearchWriteRequest = components['schemas']['VehicleSearchWriteRequest'];
+
+const OFFLINE_REASON = '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）';
+
+export async function createPersonSearch(
+  payload: PersonSearchWriteRequest,
+): Promise<PersonSearchDetail | null> {
+  if (isDemoMode()) return Promise.resolve(null);
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline('security', '/security/search/person', OFFLINE_REASON);
+    throw new Error('后端未连接，无法新增人员备案');
+  }
+  return request<PersonSearchDetail>({
+    url: '/security/search/person',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function updatePersonSearch(
+  id: number,
+  payload: PersonSearchWriteRequest,
+): Promise<PersonSearchDetail | null> {
+  if (isDemoMode()) return Promise.resolve(null);
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline('security', `/security/search/person/${id}`, OFFLINE_REASON);
+    throw new Error('后端未连接，无法编辑人员备案');
+  }
+  return request<PersonSearchDetail>({
+    url: `/security/search/person/${encodeURIComponent(id)}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+export async function deletePersonSearch(id: number): Promise<void> {
+  if (isDemoMode()) return Promise.resolve();
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline('security', `/security/search/person/${id}`, OFFLINE_REASON);
+    throw new Error('后端未连接，无法删除人员备案');
+  }
+  await request<void>({
+    url: `/security/search/person/${encodeURIComponent(id)}`,
+    method: 'DELETE',
+  });
+}
+
+export async function createVehicleSearch(
+  payload: VehicleSearchWriteRequest,
+): Promise<VehicleSearchDetail | null> {
+  if (isDemoMode()) return Promise.resolve(null);
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline('security', '/security/search/vehicle', OFFLINE_REASON);
+    throw new Error('后端未连接，无法新增车辆备案');
+  }
+  return request<VehicleSearchDetail>({
+    url: '/security/search/vehicle',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function updateVehicleSearch(
+  id: number,
+  payload: VehicleSearchWriteRequest,
+): Promise<VehicleSearchDetail | null> {
+  if (isDemoMode()) return Promise.resolve(null);
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline('security', `/security/search/vehicle/${id}`, OFFLINE_REASON);
+    throw new Error('后端未连接，无法编辑车辆备案');
+  }
+  return request<VehicleSearchDetail>({
+    url: `/security/search/vehicle/${encodeURIComponent(id)}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+export async function deleteVehicleSearch(id: number): Promise<void> {
+  if (isDemoMode()) return Promise.resolve();
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline('security', `/security/search/vehicle/${id}`, OFFLINE_REASON);
+    throw new Error('后端未连接，无法删除车辆备案');
+  }
+  await request<void>({
+    url: `/security/search/vehicle/${encodeURIComponent(id)}`,
+    method: 'DELETE',
+  });
 }
