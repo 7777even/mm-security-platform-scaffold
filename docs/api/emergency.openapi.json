@@ -377,7 +377,9 @@
           "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
           "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
         }
-      },
+      }
+    },
+    "/emergency/phones/{id}": {
       "put": {
         "tags": ["emergency"],
         "operationId": "updateEmergencyPhone",
@@ -536,7 +538,9 @@
           "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
           "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
         }
-      },
+      }
+    },
+    "/emergency/knowledge/{id}": {
       "put": {
         "tags": ["emergency"],
         "operationId": "updateEmergencyKnowledge",
@@ -685,7 +689,9 @@
           "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
           "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
         }
-      },
+      }
+    },
+    "/emergency/cases/{id}": {
       "put": {
         "tags": ["emergency"],
         "operationId": "updateEmergencyCase",

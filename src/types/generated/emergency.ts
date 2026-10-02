@@ -91,16 +91,32 @@ export interface paths {
      * @description 返回消防/医疗/公安等应急联络电话通讯录。
      */
     get: operations['getEmergencyPhones'];
-    /**
-     * 编辑通讯录条目
-     * @description 局部更新一条通讯录条目（字段为 null 表示不修改）。需权限码 emergency:phone:write；成功触发 emergency.phone 实时广播。
-     */
-    put: operations['updateEmergencyPhone'];
+    put?: never;
     /**
      * 新增通讯录条目
      * @description 新增一条应急通讯录条目。需权限码 emergency:phone:write；成功触发 emergency.phone 实时广播。
      */
     post: operations['createEmergencyPhone'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/emergency/phones/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 编辑通讯录条目
+     * @description 局部更新一条通讯录条目（字段为 null 表示不修改）。需权限码 emergency:phone:write；成功触发 emergency.phone 实时广播。
+     */
+    put: operations['updateEmergencyPhone'];
+    post?: never;
     /**
      * 删除通讯录条目
      * @description 物理删除一条通讯录条目。需权限码 emergency:phone:write；成功触发 emergency.phone 实时广播。
@@ -123,16 +139,32 @@ export interface paths {
      * @description 返回应急生产安全知识点列表，支持按分类检索。
      */
     get: operations['getEmergencyKnowledge'];
-    /**
-     * 编辑知识库条目
-     * @description 局部更新一条知识库条目（字段为 null 表示不修改）。需权限码 emergency:knowledge:write；成功触发 emergency.knowledge 实时广播。
-     */
-    put: operations['updateEmergencyKnowledge'];
+    put?: never;
     /**
      * 新增知识库条目
      * @description 新增一条应急生产安全知识条目。需权限码 emergency:knowledge:write；成功触发 emergency.knowledge 实时广播。
      */
     post: operations['createEmergencyKnowledge'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/emergency/knowledge/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 编辑知识库条目
+     * @description 局部更新一条知识库条目（字段为 null 表示不修改）。需权限码 emergency:knowledge:write；成功触发 emergency.knowledge 实时广播。
+     */
+    put: operations['updateEmergencyKnowledge'];
+    post?: never;
     /**
      * 删除知识库条目
      * @description 物理删除一条知识库条目。需权限码 emergency:knowledge:write；成功触发 emergency.knowledge 实时广播。
@@ -155,16 +187,32 @@ export interface paths {
      * @description 返回可编辑的事故案例库列表（区别于 fac_alarm 自动归档的只读结案聚合），按发生时间倒序。
      */
     get: operations['getEmergencyCases'];
-    /**
-     * 编辑事故案例
-     * @description 局部更新一条事故案例（字段为 null 表示不修改）。需权限码 emergency:case:write；成功触发 emergency.case 实时广播。
-     */
-    put: operations['updateEmergencyCase'];
+    put?: never;
     /**
      * 新增事故案例
      * @description 新增一条事故案例。需权限码 emergency:case:write；成功触发 emergency.case 实时广播。
      */
     post: operations['createEmergencyCase'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/emergency/cases/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 编辑事故案例
+     * @description 局部更新一条事故案例（字段为 null 表示不修改）。需权限码 emergency:case:write；成功触发 emergency.case 实时广播。
+     */
+    put: operations['updateEmergencyCase'];
+    post?: never;
     /**
      * 删除事故案例
      * @description 物理删除一条事故案例。需权限码 emergency:case:write；成功触发 emergency.case 实时广播。
@@ -2297,14 +2345,11 @@ export interface operations {
       401: components['responses']['Unauthorized'];
     };
   };
-  updateEmergencyPhone: {
+  createEmergencyPhone: {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        /** @description 通讯录条目 ID */
-        id: number;
-      };
+      path?: never;
       cookie?: never;
     };
     requestBody: {
@@ -2328,11 +2373,14 @@ export interface operations {
       403: components['responses']['Forbidden'];
     };
   };
-  createEmergencyPhone: {
+  updateEmergencyPhone: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description 通讯录条目 ID */
+        id: number;
+      };
       cookie?: never;
     };
     requestBody: {
@@ -2424,14 +2472,11 @@ export interface operations {
       401: components['responses']['Unauthorized'];
     };
   };
-  updateEmergencyKnowledge: {
+  createEmergencyKnowledge: {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        /** @description 知识条目 ID */
-        id: number;
-      };
+      path?: never;
       cookie?: never;
     };
     requestBody: {
@@ -2455,11 +2500,14 @@ export interface operations {
       403: components['responses']['Forbidden'];
     };
   };
-  createEmergencyKnowledge: {
+  updateEmergencyKnowledge: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description 知识条目 ID */
+        id: number;
+      };
       cookie?: never;
     };
     requestBody: {
@@ -2553,14 +2601,11 @@ export interface operations {
       401: components['responses']['Unauthorized'];
     };
   };
-  updateEmergencyCase: {
+  createEmergencyCase: {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        /** @description 案例 ID */
-        id: number;
-      };
+      path?: never;
       cookie?: never;
     };
     requestBody: {
@@ -2584,11 +2629,14 @@ export interface operations {
       403: components['responses']['Forbidden'];
     };
   };
-  createEmergencyCase: {
+  updateEmergencyCase: {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description 案例 ID */
+        id: number;
+      };
       cookie?: never;
     };
     requestBody: {
