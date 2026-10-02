@@ -111,9 +111,21 @@ export interface paths {
      * @description 返回应急生产安全知识点列表，支持按分类检索。
      */
     get: operations['getEmergencyKnowledge'];
-    put?: never;
-    post?: never;
-    delete?: never;
+    /**
+     * 编辑知识库条目
+     * @description 局部更新一条知识库条目（字段为 null 表示不修改）。需权限码 emergency:knowledge:write；成功触发 emergency.knowledge 实时广播。
+     */
+    put: operations['updateEmergencyKnowledge'];
+    /**
+     * 新增知识库条目
+     * @description 新增一条应急生产安全知识条目。需权限码 emergency:knowledge:write；成功触发 emergency.knowledge 实时广播。
+     */
+    post: operations['createEmergencyKnowledge'];
+    /**
+     * 删除知识库条目
+     * @description 物理删除一条知识库条目。需权限码 emergency:knowledge:write；成功触发 emergency.knowledge 实时广播。
+     */
+    delete: operations['deleteEmergencyKnowledge'];
     options?: never;
     head?: never;
     patch?: never;
@@ -986,6 +998,29 @@ export interface components {
       /**
        * @description 知识分类说明（真实可编辑文案，来自 sys_knowledge_item.description）
        * @example 岗位员工应掌握的应急处置卡片要点，覆盖启停、退守、隔离、上报等标准动作。
+       */
+      description?: string;
+    };
+    /** @description 知识库条目写请求（新增/编辑共用，字段名对齐 KnowledgeItem） */
+    KnowledgeWriteRequest: {
+      /**
+       * @description 知识标题（必填）
+       * @example 岗位应急处置卡
+       */
+      title: string;
+      /**
+       * @description 知识条目数
+       * @example 158
+       */
+      count?: number;
+      /**
+       * @description 图标名（Element Plus icon 名）
+       * @example Document
+       */
+      icon?: string;
+      /**
+       * @description 知识分类说明
+       * @example 岗位员工应掌握的应急处置卡片要点。
        */
       description?: string;
     };
@@ -2166,6 +2201,90 @@ export interface operations {
         };
       };
       401: components['responses']['Unauthorized'];
+    };
+  };
+  updateEmergencyKnowledge: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 知识条目 ID */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['KnowledgeWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=KnowledgeItem） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['KnowledgeItem'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  createEmergencyKnowledge: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['KnowledgeWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=KnowledgeItem） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['KnowledgeItem'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  deleteEmergencyKnowledge: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 知识条目 ID */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=null） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiResponse'];
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
     };
   };
   getDispatchPersonnel: {

@@ -398,6 +398,110 @@
             "$ref": "./_shared.json#/components/responses/Unauthorized"
           }
         }
+      },
+      "post": {
+        "tags": ["emergency"],
+        "operationId": "createEmergencyKnowledge",
+        "summary": "新增知识库条目",
+        "description": "新增一条应急生产安全知识条目。需权限码 emergency:knowledge:write；成功触发 emergency.knowledge 实时广播。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/KnowledgeWriteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=KnowledgeItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/KnowledgeItem" } }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "put": {
+        "tags": ["emergency"],
+        "operationId": "updateEmergencyKnowledge",
+        "summary": "编辑知识库条目",
+        "description": "局部更新一条知识库条目（字段为 null 表示不修改）。需权限码 emergency:knowledge:write；成功触发 emergency.knowledge 实时广播。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "知识条目 ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/KnowledgeWriteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=KnowledgeItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/KnowledgeItem" } }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "delete": {
+        "tags": ["emergency"],
+        "operationId": "deleteEmergencyKnowledge",
+        "summary": "删除知识库条目",
+        "description": "物理删除一条知识库条目。需权限码 emergency:knowledge:write；成功触发 emergency.knowledge 实时广播。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "知识条目 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=null）",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "./_shared.json#/components/schemas/ApiResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
       }
     },
     "/emergency/dispatch-personnel": {
@@ -1605,6 +1709,29 @@
             "example": "岗位员工应掌握的应急处置卡片要点，覆盖启停、退守、隔离、上报等标准动作。"
           }
         }
+      },
+      "KnowledgeWriteRequest": {
+        "type": "object",
+        "description": "知识库条目写请求（新增/编辑共用，字段名对齐 KnowledgeItem）",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "知识标题（必填）",
+            "example": "岗位应急处置卡"
+          },
+          "count": { "type": "integer", "description": "知识条目数", "example": 158 },
+          "icon": {
+            "type": "string",
+            "description": "图标名（Element Plus icon 名）",
+            "example": "Document"
+          },
+          "description": {
+            "type": "string",
+            "description": "知识分类说明",
+            "example": "岗位员工应掌握的应急处置卡片要点。"
+          }
+        },
+        "required": ["title"]
       },
       "DispatchPersonnel": {
         "type": "object",

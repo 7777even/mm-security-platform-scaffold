@@ -50,3 +50,41 @@ export async function fetchEmergencyKnowledge(): Promise<KnowledgeList> {
     return EMPTY;
   }
 }
+
+// ==================== 写侧：知识库台账 CRUD ====================
+// 权限码：emergency:knowledge:write（V94 登记，授权 ADMIN / COMMANDER / SCHEDULER）。
+// 编辑一律局部更新：字段为 undefined 表示不修改。
+
+/** 知识库条目新增 / 编辑入参（字段名对齐 KnowledgeItem）。 */
+export interface KnowledgeWriteRequest {
+  title?: string;
+  count?: number;
+  icon?: string;
+  description?: string;
+}
+
+/** 新增知识库条目。 */
+export async function createKnowledge(payload: KnowledgeWriteRequest): Promise<KnowledgeItem> {
+  return request<KnowledgeItem>({
+    url: '/emergency/knowledge',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+/** 编辑知识库条目（局部更新）。 */
+export async function updateKnowledge(
+  id: number,
+  payload: KnowledgeWriteRequest,
+): Promise<KnowledgeItem> {
+  return request<KnowledgeItem>({
+    url: `/emergency/knowledge/${id}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+/** 删除知识库条目。 */
+export async function deleteKnowledge(id: number): Promise<void> {
+  await request<null>({ url: `/emergency/knowledge/${id}`, method: 'DELETE' });
+}
