@@ -8,6 +8,54 @@
   "servers": [{ "url": "/api/v1" }],
   "paths": {
     "/rescue-resources/equipment": {
+      "post": {
+        "summary": "新增救援装备",
+        "description": "新增一条救援装备台账。name 必填（缺失返回 B3 PARAM_INVALID）；sort_no 取当前最大值 +1 保证列表顺序稳定。需权限码 rescue:equipment:write（V93 登记并授权 ADMIN/COMMANDER/SCHEDULER）。成功广播 rescue.equipment 域，订阅方自动重拉。",
+        "tags": ["rescue-resource"],
+        "operationId": "createRescueEquipment",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RescueEquipmentWriteRequest" },
+              "example": {
+                "name": "正压式空气呼吸器",
+                "squadron": "炼油中队",
+                "category": "防护装备",
+                "unit": "具",
+                "quantity": 40,
+                "stockQuantity": 36,
+                "model": "RHZK6.8"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "新增后的救援装备条目",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RescueEquipmentItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 21,
+                    "name": "正压式空气呼吸器",
+                    "squadron": "炼油中队",
+                    "category": "防护装备",
+                    "unit": "具",
+                    "quantity": 40,
+                    "stockQuantity": 36,
+                    "model": "RHZK6.8"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "summary": "救援装备台账列表",
         "description": "按中队的名称模糊可选过滤，返回装备品类聚合（中队集合 + 套装总数 + 装备项明细）。",
@@ -67,6 +115,89 @@
       }
     },
     "/rescue-resources/equipment/{id}": {
+      "put": {
+        "summary": "编辑救援装备",
+        "description": "局部更新救援装备台账：请求体中为 null 的字段表示不修改。记录不存在返回 B3 NOT_FOUND。需权限码 rescue:equipment:write。成功广播 rescue.equipment 域。",
+        "tags": ["rescue-resource"],
+        "operationId": "updateRescueEquipment",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "救援装备主键 id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RescueEquipmentWriteRequest" },
+              "example": {
+                "name": "正压式空气呼吸器",
+                "squadron": "炼油中队",
+                "category": "防护装备",
+                "unit": "具",
+                "quantity": 40,
+                "stockQuantity": 36,
+                "model": "RHZK6.8"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新后的救援装备条目",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RescueEquipmentItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 21,
+                    "name": "正压式空气呼吸器",
+                    "squadron": "炼油中队",
+                    "category": "防护装备",
+                    "unit": "具",
+                    "quantity": 40,
+                    "stockQuantity": 36,
+                    "model": "RHZK6.8"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除救援装备",
+        "description": "物理删除救援装备台账（表无 deleted 列，真删除）。记录不存在（含重复删除）返回 B3 NOT_FOUND。需权限码 rescue:equipment:write。成功广播 rescue.equipment 域。",
+        "tags": ["rescue-resource"],
+        "operationId": "deleteRescueEquipment",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "救援装备主键 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": { "code": 0, "message": "ok", "data": null }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "summary": "救援装备明细",
         "description": "按装备 id 返回单条装备台账明细。",
@@ -120,6 +251,52 @@
       }
     },
     "/rescue-resources/personnel": {
+      "post": {
+        "summary": "新增救援人员",
+        "description": "新增一条救援人员台账。name 必填（缺失返回 B3 PARAM_INVALID）；sort_no 取当前最大值 +1 保证列表顺序稳定。需权限码 rescue:personnel:write（V93 登记并授权 ADMIN/COMMANDER/SCHEDULER）。成功广播 rescue.personnel 域，订阅方自动重拉。",
+        "tags": ["rescue-resource"],
+        "operationId": "createRescuePersonnel",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RescuePersonnelWriteRequest" },
+              "example": {
+                "name": "王强",
+                "squadron": "炼油中队",
+                "role": "指挥员",
+                "personGroup": "危化品处置组",
+                "phone": "13800000001",
+                "dutyStatus": "在岗"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "新增后的救援人员条目",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RescuePersonnelItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 43,
+                    "name": "王强",
+                    "squadron": "炼油中队",
+                    "role": "指挥员",
+                    "personGroup": "危化品处置组",
+                    "phone": "13800000001",
+                    "dutyStatus": "在岗"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "summary": "救援人员台账列表",
         "description": "按中队与角色可选过滤，返回人员聚合（中队集合 + 角色集合 + 人员总数 + 人员明细）。",
@@ -163,6 +340,87 @@
       }
     },
     "/rescue-resources/personnel/{id}": {
+      "put": {
+        "summary": "编辑救援人员",
+        "description": "局部更新救援人员台账：请求体中为 null 的字段表示不修改。记录不存在返回 B3 NOT_FOUND。需权限码 rescue:personnel:write。成功广播 rescue.personnel 域。",
+        "tags": ["rescue-resource"],
+        "operationId": "updateRescuePersonnel",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "救援人员主键 id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RescuePersonnelWriteRequest" },
+              "example": {
+                "name": "王强",
+                "squadron": "炼油中队",
+                "role": "指挥员",
+                "personGroup": "危化品处置组",
+                "phone": "13800000001",
+                "dutyStatus": "在岗"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新后的救援人员条目",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RescuePersonnelItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 43,
+                    "name": "王强",
+                    "squadron": "炼油中队",
+                    "role": "指挥员",
+                    "personGroup": "危化品处置组",
+                    "phone": "13800000001",
+                    "dutyStatus": "在岗"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除救援人员",
+        "description": "物理删除救援人员台账（表无 deleted 列，真删除）。记录不存在（含重复删除）返回 B3 NOT_FOUND。需权限码 rescue:personnel:write。成功广播 rescue.personnel 域。",
+        "tags": ["rescue-resource"],
+        "operationId": "deleteRescuePersonnel",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "救援人员主键 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": { "code": 0, "message": "ok", "data": null }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "summary": "救援人员明细",
         "description": "按人员 id 返回单条救援人员台账明细。",
@@ -194,6 +452,52 @@
       }
     },
     "/rescue-resources/vehicles": {
+      "post": {
+        "summary": "新增救援车辆",
+        "description": "新增一条救援车辆台账。plate 必填（缺失返回 B3 PARAM_INVALID）；sort_no 取当前最大值 +1 保证列表顺序稳定。需权限码 rescue:vehicle:write（V93 登记并授权 ADMIN/COMMANDER/SCHEDULER）。成功广播 rescue.vehicle 域，订阅方自动重拉。",
+        "tags": ["rescue-resource"],
+        "operationId": "createRescueVehicle",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RescueVehicleWriteRequest" },
+              "example": {
+                "plate": "粤K12345",
+                "type": "泡沫消防车",
+                "squadron": "炼油中队",
+                "leaderName": "张车长",
+                "leaderPhone": "13800000003",
+                "status": "待命"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "新增后的救援车辆条目",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RescueVehicleItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 12,
+                    "plate": "粤K12345",
+                    "type": "泡沫消防车",
+                    "squadron": "炼油中队",
+                    "leaderName": "张车长",
+                    "leaderPhone": "13800000003",
+                    "status": "待命"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "summary": "救援车辆台账列表",
         "description": "按中队与车辆类型可选过滤，返回车辆聚合（中队集合 + 类型集合 + 车辆明细）。",
@@ -282,6 +586,87 @@
       }
     },
     "/rescue-resources/vehicles/{id}": {
+      "put": {
+        "summary": "编辑救援车辆",
+        "description": "局部更新救援车辆台账：请求体中为 null 的字段表示不修改。记录不存在返回 B3 NOT_FOUND。需权限码 rescue:vehicle:write。成功广播 rescue.vehicle 域。",
+        "tags": ["rescue-resource"],
+        "operationId": "updateRescueVehicle",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "救援车辆主键 id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RescueVehicleWriteRequest" },
+              "example": {
+                "plate": "粤K12345",
+                "type": "泡沫消防车",
+                "squadron": "炼油中队",
+                "leaderName": "张车长",
+                "leaderPhone": "13800000003",
+                "status": "待命"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新后的救援车辆条目",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RescueVehicleItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 12,
+                    "plate": "粤K12345",
+                    "type": "泡沫消防车",
+                    "squadron": "炼油中队",
+                    "leaderName": "张车长",
+                    "leaderPhone": "13800000003",
+                    "status": "待命"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除救援车辆",
+        "description": "物理删除救援车辆台账（表无 deleted 列，真删除）。记录不存在（含重复删除）返回 B3 NOT_FOUND。需权限码 rescue:vehicle:write。成功广播 rescue.vehicle 域。",
+        "tags": ["rescue-resource"],
+        "operationId": "deleteRescueVehicle",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "救援车辆主键 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": { "code": 0, "message": "ok", "data": null }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "summary": "救援车辆明细",
         "description": "按车辆 id 返回单条救援车辆台账明细（含随车人员/随车装备/消耗品/出车汇总）。",
@@ -340,6 +725,56 @@
       }
     },
     "/rescue-resources/brigades": {
+      "post": {
+        "summary": "新增消防队伍",
+        "description": "新增一条消防队伍台账。name 必填（缺失返回 B3 PARAM_INVALID）；sort_no 取当前最大值 +1 保证列表顺序稳定。需权限码 rescue:brigade:write（V93 登记并授权 ADMIN/COMMANDER/SCHEDULER）。成功广播 rescue.brigade 域，订阅方自动重拉。",
+        "tags": ["rescue-resource"],
+        "operationId": "createRescueBrigade",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RescueBrigadeWriteRequest" },
+              "example": {
+                "name": "化工特勤队",
+                "area": "化工区",
+                "memberCount": 32,
+                "leaderName": "李队",
+                "leaderPhone": "13800000002",
+                "location": "化工消防站",
+                "longitude": 110.88,
+                "latitude": 21.68
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "新增后的消防队伍条目",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FireBrigadeTeam" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 7,
+                    "name": "化工特勤队",
+                    "area": "化工区",
+                    "memberCount": 32,
+                    "leaderName": "李队",
+                    "leaderPhone": "13800000002",
+                    "location": "化工消防站",
+                    "longitude": 110.88,
+                    "latitude": 21.68
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "summary": "消防队伍台账列表",
         "description": "按区域可选过滤，返回消防队伍聚合（区域集合 + 队伍明细）。",
@@ -419,6 +854,91 @@
       }
     },
     "/rescue-resources/brigades/{id}": {
+      "put": {
+        "summary": "编辑消防队伍",
+        "description": "局部更新消防队伍台账：请求体中为 null 的字段表示不修改。记录不存在返回 B3 NOT_FOUND。需权限码 rescue:brigade:write。成功广播 rescue.brigade 域。",
+        "tags": ["rescue-resource"],
+        "operationId": "updateRescueBrigade",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "消防队伍主键 id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RescueBrigadeWriteRequest" },
+              "example": {
+                "name": "化工特勤队",
+                "area": "化工区",
+                "memberCount": 32,
+                "leaderName": "李队",
+                "leaderPhone": "13800000002",
+                "location": "化工消防站",
+                "longitude": 110.88,
+                "latitude": 21.68
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新后的消防队伍条目",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FireBrigadeTeam" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 7,
+                    "name": "化工特勤队",
+                    "area": "化工区",
+                    "memberCount": 32,
+                    "leaderName": "李队",
+                    "leaderPhone": "13800000002",
+                    "location": "化工消防站",
+                    "longitude": 110.88,
+                    "latitude": 21.68
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除消防队伍",
+        "description": "物理删除消防队伍台账（表无 deleted 列，真删除）。记录不存在（含重复删除）返回 B3 NOT_FOUND。需权限码 rescue:brigade:write。成功广播 rescue.brigade 域。",
+        "tags": ["rescue-resource"],
+        "operationId": "deleteRescueBrigade",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "消防队伍主键 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": { "code": 0, "message": "ok", "data": null }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "summary": "消防队伍明细",
         "description": "按队伍 id 返回单条消防队伍台账明细（含下属车辆/人员/装备）。",
@@ -485,6 +1005,78 @@
           }
         }
       },
+      "RescueEquipmentWriteRequest": {
+        "type": "object",
+        "description": "救援装备（应急物资）新增 / 编辑入参。编辑为局部更新：字段为 null 表示不修改该字段。",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "装备名称（新增必填）",
+            "example": "正压式空气呼吸器"
+          },
+          "squadron": { "type": "string", "description": "所属中队", "example": "炼油中队" },
+          "category": { "type": "string", "description": "装备类别", "example": "防护装备" },
+          "unit": { "type": "string", "description": "计量单位", "example": "具" },
+          "quantity": { "type": "integer", "description": "编配数量", "example": 40 },
+          "leaderName": { "type": "string", "description": "责任人姓名", "example": "赵装备" },
+          "leaderPhone": {
+            "type": "string",
+            "description": "责任人电话",
+            "example": "13800000004"
+          },
+          "stockQuantity": { "type": "integer", "description": "当前库存数量", "example": 36 },
+          "model": { "type": "string", "description": "规格型号", "example": "RHZK6.8" },
+          "protectionType": { "type": "string", "description": "防护类型", "example": "隔绝式" },
+          "filterCanister": {
+            "type": "string",
+            "description": "滤毒罐型号",
+            "example": "A2B2E2K2"
+          },
+          "maxContinuousUse": {
+            "type": "string",
+            "description": "最长连续使用时长",
+            "example": "60 分钟"
+          },
+          "storageLocation": {
+            "type": "string",
+            "description": "存放位置",
+            "example": "炼油消防站装备库 A 架"
+          },
+          "purchaseBatch": {
+            "type": "string",
+            "description": "采购批次",
+            "example": "2024-03 批次"
+          },
+          "factoryValidityYears": {
+            "type": "string",
+            "description": "出厂有效期（年）",
+            "example": "10"
+          },
+          "remainingValidity": {
+            "type": "string",
+            "description": "剩余有效期",
+            "example": "7 年 4 个月"
+          },
+          "lastInspectionDate": {
+            "type": "string",
+            "description": "上次检查日期",
+            "example": "2026-09-01"
+          },
+          "nextMandatoryMaintenanceDate": {
+            "type": "string",
+            "description": "下次强制维护日期",
+            "example": "2027-03-01"
+          },
+          "equipmentStatus": { "type": "string", "description": "装备状态", "example": "完好" },
+          "scrapWarning": { "type": "string", "description": "报废预警", "example": "无" },
+          "issueRegistration": {
+            "type": "string",
+            "description": "领用登记",
+            "example": "2026-09-20 领用 2 具"
+          },
+          "spareParts": { "type": "string", "description": "备品备件", "example": "面罩 5 套" }
+        }
+      },
       "RescueEquipmentItem": {
         "type": "object",
         "description": "救援装备台账项",
@@ -492,6 +1084,8 @@
           "id": { "type": "integer", "format": "int64", "description": "装备 id", "example": 1 },
           "name": { "type": "string", "description": "装备名称", "example": "正压式空气呼吸器" },
           "squadron": { "type": "string", "description": "所属中队", "example": "炼油中队" },
+          "category": { "type": "string", "description": "装备类别", "example": "防护装备" },
+          "unit": { "type": "string", "description": "计量单位", "example": "具" },
           "quantity": { "type": "integer", "description": "配置数量", "example": 6 },
           "leaderName": {
             "type": ["string", "null"],
@@ -594,6 +1188,18 @@
           }
         }
       },
+      "RescuePersonnelWriteRequest": {
+        "type": "object",
+        "description": "救援人员（应急专家）新增 / 编辑入参。编辑为局部更新：字段为 null 表示不修改该字段。",
+        "properties": {
+          "name": { "type": "string", "description": "姓名（新增必填）", "example": "王强" },
+          "squadron": { "type": "string", "description": "所属中队", "example": "炼油中队" },
+          "role": { "type": "string", "description": "岗位", "example": "指挥员" },
+          "personGroup": { "type": "string", "description": "所属分组", "example": "危化品处置组" },
+          "phone": { "type": "string", "description": "联系电话", "example": "13800000001" },
+          "dutyStatus": { "type": "string", "description": "值班状态", "example": "在岗" }
+        }
+      },
       "RescuePersonnelItem": {
         "type": "object",
         "description": "救援人员台账项",
@@ -601,7 +1207,10 @@
           "id": { "type": "integer", "format": "int64", "description": "人员 id", "example": 1 },
           "name": { "type": "string", "description": "姓名", "example": "王强" },
           "squadron": { "type": "string", "description": "所属中队", "example": "炼油中队" },
-          "role": { "type": "string", "description": "角色", "example": "队长" }
+          "role": { "type": "string", "description": "岗位", "example": "指挥员" },
+          "personGroup": { "type": "string", "description": "所属分组", "example": "危化品处置组" },
+          "phone": { "type": "string", "description": "联系电话", "example": "13800000001" },
+          "dutyStatus": { "type": "string", "description": "值班状态", "example": "在岗" }
         }
       },
       "RescueVehicleList": {
@@ -623,6 +1232,65 @@
             "description": "车辆明细列表",
             "items": { "$ref": "#/components/schemas/RescueVehicleItem" }
           }
+        }
+      },
+      "RescueVehicleWriteRequest": {
+        "type": "object",
+        "description": "救援车辆新增 / 编辑入参。编辑为局部更新：字段为 null 表示不修改该字段。",
+        "properties": {
+          "plate": { "type": "string", "description": "车牌号（新增必填）", "example": "粤K12345" },
+          "type": { "type": "string", "description": "车辆类型", "example": "泡沫消防车" },
+          "squadron": { "type": "string", "description": "所属中队", "example": "炼油中队" },
+          "leaderName": { "type": "string", "description": "车长姓名", "example": "张车长" },
+          "leaderPhone": { "type": "string", "description": "车长电话", "example": "13800000003" },
+          "status": { "type": "string", "description": "车辆状态", "example": "待命" },
+          "businessName": { "type": "string", "description": "业务名称", "example": "灭火救援" },
+          "vehicleTypeFull": {
+            "type": "string",
+            "description": "车辆类型全称",
+            "example": "重型泡沫消防车"
+          },
+          "parkingLocation": {
+            "type": "string",
+            "description": "停放位置",
+            "example": "炼油消防站 3 号库"
+          },
+          "chassisModel": { "type": "string", "description": "底盘型号", "example": "ZZ5347" },
+          "manufactureDate": {
+            "type": "string",
+            "description": "出厂日期",
+            "example": "2023-05-18"
+          },
+          "inspectionExpiry": {
+            "type": "string",
+            "description": "年检到期日",
+            "example": "2026-05-18"
+          },
+          "foamTankVolume": {
+            "type": "string",
+            "description": "泡沫罐容积",
+            "example": "3.5 立方米"
+          },
+          "waterTankVolume": {
+            "type": "string",
+            "description": "水罐容积",
+            "example": "12 立方米"
+          },
+          "maxWaterFlow": { "type": "string", "description": "最大出水流量", "example": "80 L/s" },
+          "foamType": { "type": "string", "description": "泡沫类型", "example": "抗溶性泡沫" },
+          "lastMaintenanceDate": {
+            "type": "string",
+            "description": "上次保养日期",
+            "example": "2026-08-01"
+          },
+          "nextMaintenanceDate": {
+            "type": "string",
+            "description": "下次保养日期",
+            "example": "2026-11-01"
+          },
+          "totalMileage": { "type": "string", "description": "总里程", "example": "38000 公里" },
+          "faultRecord": { "type": "string", "description": "故障记录", "example": "无" },
+          "inspectionStatus": { "type": "string", "description": "年检状态", "example": "合格" }
         }
       },
       "RescueVehicleItem": {
@@ -802,6 +1470,35 @@
             "description": "队伍明细列表",
             "items": { "$ref": "#/components/schemas/FireBrigadeTeam" }
           }
+        }
+      },
+      "RescueBrigadeWriteRequest": {
+        "type": "object",
+        "description": "消防队伍（救援队伍）新增 / 编辑入参。编辑为局部更新：字段为 null 表示不修改该字段。",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "队伍名称（新增必填）",
+            "example": "化工特勤队"
+          },
+          "area": { "type": "string", "description": "所属区域", "example": "化工区" },
+          "memberCount": { "type": "integer", "description": "队员人数", "example": 32 },
+          "leaderName": { "type": "string", "description": "负责人姓名", "example": "李队" },
+          "leaderPhone": {
+            "type": "string",
+            "description": "负责人电话",
+            "example": "13800000002"
+          },
+          "location": { "type": "string", "description": "驻扎位置", "example": "化工消防站" },
+          "longitude": { "type": "number", "description": "经度", "example": 110.88 },
+          "latitude": { "type": "number", "description": "纬度", "example": 21.68 },
+          "description": {
+            "type": "string",
+            "description": "队伍简介",
+            "example": "承担化工区重大危险源处置"
+          },
+          "rescuePersonnel": { "type": "integer", "description": "可投入救援人数", "example": 30 },
+          "rescueVehicles": { "type": "integer", "description": "可投入救援车辆数", "example": 4 }
         }
       },
       "FireBrigadeTeam": {

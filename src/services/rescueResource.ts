@@ -7,6 +7,10 @@ export interface RescueEquipmentItem {
   id: number;
   name: string;
   squadron: string;
+  /** 装备类别（防护装备 / 堵漏器材 等）。 */
+  category: string | null;
+  /** 计量单位（具 / 套 / 吨 等）。 */
+  unit: string | null;
   quantity: number;
   leaderName: string | null;
   leaderPhone: string | null;
@@ -38,6 +42,12 @@ export interface RescuePersonnelItem {
   name: string;
   squadron: string;
   role: string;
+  /** 所属分组（专家分类）。 */
+  personGroup: string | null;
+  /** 联系电话。 */
+  phone: string | null;
+  /** 值班状态（在岗 / 备勤 / 休整）。 */
+  dutyStatus: string | null;
 }
 
 export interface RescuePersonnelList {
@@ -226,4 +236,205 @@ export async function fetchFireBrigadeDetail(id: number): Promise<FireBrigadeTea
     url: `/rescue-resources/brigades/${id}`,
     method: 'GET',
   });
+}
+
+// ==================== 写侧：四台账 CRUD ====================
+// 权限码：rescue:personnel:write / rescue:brigade:write / rescue:vehicle:write / rescue:equipment:write
+// （V93 登记，授权 ADMIN / COMMANDER / SCHEDULER）。编辑一律局部更新：字段为 undefined/null 表示不修改。
+
+/** 救援人员（应急专家）新增 / 编辑入参。 */
+export interface RescuePersonnelWriteRequest {
+  name?: string;
+  squadron?: string;
+  role?: string;
+  personGroup?: string;
+  phone?: string;
+  dutyStatus?: string;
+}
+
+/** 消防队伍（救援队伍）新增 / 编辑入参。 */
+export interface RescueBrigadeWriteRequest {
+  name?: string;
+  area?: string;
+  memberCount?: number;
+  leaderName?: string;
+  leaderPhone?: string;
+  location?: string;
+  longitude?: number;
+  latitude?: number;
+  description?: string;
+  rescuePersonnel?: number;
+  rescueVehicles?: number;
+}
+
+/** 救援车辆新增 / 编辑入参（只含车辆本体，不含乘员/随车装备等子表）。 */
+export interface RescueVehicleWriteRequest {
+  plate?: string;
+  type?: string;
+  squadron?: string;
+  leaderName?: string;
+  leaderPhone?: string;
+  status?: string;
+  businessName?: string;
+  vehicleTypeFull?: string;
+  parkingLocation?: string;
+  chassisModel?: string;
+  manufactureDate?: string;
+  inspectionExpiry?: string;
+  foamTankVolume?: string;
+  waterTankVolume?: string;
+  maxWaterFlow?: string;
+  foamType?: string;
+  lastMaintenanceDate?: string;
+  nextMaintenanceDate?: string;
+  totalMileage?: string;
+  faultRecord?: string;
+  inspectionStatus?: string;
+}
+
+/** 救援装备（应急物资）新增 / 编辑入参。 */
+export interface RescueEquipmentWriteRequest {
+  name?: string;
+  squadron?: string;
+  category?: string;
+  unit?: string;
+  quantity?: number;
+  leaderName?: string;
+  leaderPhone?: string;
+  stockQuantity?: number;
+  model?: string;
+  protectionType?: string;
+  filterCanister?: string;
+  maxContinuousUse?: string;
+  storageLocation?: string;
+  purchaseBatch?: string;
+  factoryValidityYears?: string;
+  remainingValidity?: string;
+  lastInspectionDate?: string;
+  nextMandatoryMaintenanceDate?: string;
+  equipmentStatus?: string;
+  scrapWarning?: string;
+  issueRegistration?: string;
+  spareParts?: string;
+}
+
+/** 值班状态下拉（既有库内口径，非字典表，故在前端登记）。 */
+export const DUTY_STATUS_OPTIONS: { label: string; value: string }[] = [
+  { label: '在岗', value: '在岗' },
+  { label: '备勤', value: '备勤' },
+  { label: '休整', value: '休整' },
+];
+
+/** 装备状态下拉（既有库内口径）。 */
+export const EQUIPMENT_STATUS_OPTIONS: { label: string; value: string }[] = [
+  { label: '完好', value: '完好' },
+  { label: '待修', value: '待修' },
+  { label: '报废', value: '报废' },
+];
+
+/** 车辆状态下拉（既有库内口径）。 */
+export const VEHICLE_STATUS_OPTIONS: { label: string; value: string }[] = [
+  { label: '待命', value: '待命' },
+  { label: '出动', value: '出动' },
+  { label: '维修', value: '维修' },
+];
+
+export async function createRescuePersonnel(
+  payload: RescuePersonnelWriteRequest,
+): Promise<RescuePersonnelItem> {
+  return request<RescuePersonnelItem>({
+    url: '/rescue-resources/personnel',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function updateRescuePersonnel(
+  id: number,
+  payload: RescuePersonnelWriteRequest,
+): Promise<RescuePersonnelItem> {
+  return request<RescuePersonnelItem>({
+    url: `/rescue-resources/personnel/${id}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+export async function deleteRescuePersonnel(id: number): Promise<void> {
+  await request<null>({ url: `/rescue-resources/personnel/${id}`, method: 'DELETE' });
+}
+
+export async function createRescueBrigade(
+  payload: RescueBrigadeWriteRequest,
+): Promise<FireBrigadeTeam> {
+  return request<FireBrigadeTeam>({
+    url: '/rescue-resources/brigades',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function updateRescueBrigade(
+  id: number,
+  payload: RescueBrigadeWriteRequest,
+): Promise<FireBrigadeTeam> {
+  return request<FireBrigadeTeam>({
+    url: `/rescue-resources/brigades/${id}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+export async function deleteRescueBrigade(id: number): Promise<void> {
+  await request<null>({ url: `/rescue-resources/brigades/${id}`, method: 'DELETE' });
+}
+
+export async function createRescueVehicle(
+  payload: RescueVehicleWriteRequest,
+): Promise<RescueVehicleItem> {
+  return request<RescueVehicleItem>({
+    url: '/rescue-resources/vehicles',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function updateRescueVehicle(
+  id: number,
+  payload: RescueVehicleWriteRequest,
+): Promise<RescueVehicleItem> {
+  return request<RescueVehicleItem>({
+    url: `/rescue-resources/vehicles/${id}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+export async function deleteRescueVehicle(id: number): Promise<void> {
+  await request<null>({ url: `/rescue-resources/vehicles/${id}`, method: 'DELETE' });
+}
+
+export async function createRescueEquipment(
+  payload: RescueEquipmentWriteRequest,
+): Promise<RescueEquipmentItem> {
+  return request<RescueEquipmentItem>({
+    url: '/rescue-resources/equipment',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function updateRescueEquipment(
+  id: number,
+  payload: RescueEquipmentWriteRequest,
+): Promise<RescueEquipmentItem> {
+  return request<RescueEquipmentItem>({
+    url: `/rescue-resources/equipment/${id}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+export async function deleteRescueEquipment(id: number): Promise<void> {
+  await request<null>({ url: `/rescue-resources/equipment/${id}`, method: 'DELETE' });
 }

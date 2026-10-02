@@ -72,7 +72,11 @@ export interface paths {
       };
     };
     put?: never;
-    post?: never;
+    /**
+     * 新增救援装备
+     * @description 新增一条救援装备台账。name 必填（缺失返回 B3 PARAM_INVALID）；sort_no 取当前最大值 +1 保证列表顺序稳定。需权限码 rescue:equipment:write（V93 登记并授权 ADMIN/COMMANDER/SCHEDULER）。成功广播 rescue.equipment 域，订阅方自动重拉。
+     */
+    post: operations['createRescueEquipment'];
     delete?: never;
     options?: never;
     head?: never;
@@ -142,9 +146,17 @@ export interface paths {
         };
       };
     };
-    put?: never;
+    /**
+     * 编辑救援装备
+     * @description 局部更新救援装备台账：请求体中为 null 的字段表示不修改。记录不存在返回 B3 NOT_FOUND。需权限码 rescue:equipment:write。成功广播 rescue.equipment 域。
+     */
+    put: operations['updateRescueEquipment'];
     post?: never;
-    delete?: never;
+    /**
+     * 删除救援装备
+     * @description 物理删除救援装备台账（表无 deleted 列，真删除）。记录不存在（含重复删除）返回 B3 NOT_FOUND。需权限码 rescue:equipment:write。成功广播 rescue.equipment 域。
+     */
+    delete: operations['deleteRescueEquipment'];
     options?: never;
     head?: never;
     patch?: never;
@@ -212,7 +224,11 @@ export interface paths {
       };
     };
     put?: never;
-    post?: never;
+    /**
+     * 新增救援人员
+     * @description 新增一条救援人员台账。name 必填（缺失返回 B3 PARAM_INVALID）；sort_no 取当前最大值 +1 保证列表顺序稳定。需权限码 rescue:personnel:write（V93 登记并授权 ADMIN/COMMANDER/SCHEDULER）。成功广播 rescue.personnel 域，订阅方自动重拉。
+     */
+    post: operations['createRescuePersonnel'];
     delete?: never;
     options?: never;
     head?: never;
@@ -265,9 +281,17 @@ export interface paths {
         };
       };
     };
-    put?: never;
+    /**
+     * 编辑救援人员
+     * @description 局部更新救援人员台账：请求体中为 null 的字段表示不修改。记录不存在返回 B3 NOT_FOUND。需权限码 rescue:personnel:write。成功广播 rescue.personnel 域。
+     */
+    put: operations['updateRescuePersonnel'];
     post?: never;
-    delete?: never;
+    /**
+     * 删除救援人员
+     * @description 物理删除救援人员台账（表无 deleted 列，真删除）。记录不存在（含重复删除）返回 B3 NOT_FOUND。需权限码 rescue:personnel:write。成功广播 rescue.personnel 域。
+     */
+    delete: operations['deleteRescuePersonnel'];
     options?: never;
     head?: never;
     patch?: never;
@@ -383,7 +407,11 @@ export interface paths {
       };
     };
     put?: never;
-    post?: never;
+    /**
+     * 新增救援车辆
+     * @description 新增一条救援车辆台账。plate 必填（缺失返回 B3 PARAM_INVALID）；sort_no 取当前最大值 +1 保证列表顺序稳定。需权限码 rescue:vehicle:write（V93 登记并授权 ADMIN/COMMANDER/SCHEDULER）。成功广播 rescue.vehicle 域，订阅方自动重拉。
+     */
+    post: operations['createRescueVehicle'];
     delete?: never;
     options?: never;
     head?: never;
@@ -458,9 +486,17 @@ export interface paths {
         };
       };
     };
-    put?: never;
+    /**
+     * 编辑救援车辆
+     * @description 局部更新救援车辆台账：请求体中为 null 的字段表示不修改。记录不存在返回 B3 NOT_FOUND。需权限码 rescue:vehicle:write。成功广播 rescue.vehicle 域。
+     */
+    put: operations['updateRescueVehicle'];
     post?: never;
-    delete?: never;
+    /**
+     * 删除救援车辆
+     * @description 物理删除救援车辆台账（表无 deleted 列，真删除）。记录不存在（含重复删除）返回 B3 NOT_FOUND。需权限码 rescue:vehicle:write。成功广播 rescue.vehicle 域。
+     */
+    delete: operations['deleteRescueVehicle'];
     options?: never;
     head?: never;
     patch?: never;
@@ -559,7 +595,11 @@ export interface paths {
       };
     };
     put?: never;
-    post?: never;
+    /**
+     * 新增消防队伍
+     * @description 新增一条消防队伍台账。name 必填（缺失返回 B3 PARAM_INVALID）；sort_no 取当前最大值 +1 保证列表顺序稳定。需权限码 rescue:brigade:write（V93 登记并授权 ADMIN/COMMANDER/SCHEDULER）。成功广播 rescue.brigade 域，订阅方自动重拉。
+     */
+    post: operations['createRescueBrigade'];
     delete?: never;
     options?: never;
     head?: never;
@@ -623,9 +663,17 @@ export interface paths {
         };
       };
     };
-    put?: never;
+    /**
+     * 编辑消防队伍
+     * @description 局部更新消防队伍台账：请求体中为 null 的字段表示不修改。记录不存在返回 B3 NOT_FOUND。需权限码 rescue:brigade:write。成功广播 rescue.brigade 域。
+     */
+    put: operations['updateRescueBrigade'];
     post?: never;
-    delete?: never;
+    /**
+     * 删除消防队伍
+     * @description 物理删除消防队伍台账（表无 deleted 列，真删除）。记录不存在（含重复删除）返回 B3 NOT_FOUND。需权限码 rescue:brigade:write。成功广播 rescue.brigade 域。
+     */
+    delete: operations['deleteRescueBrigade'];
     options?: never;
     head?: never;
     patch?: never;
@@ -689,6 +737,119 @@ export interface components {
       /** @description 装备项明细列表 */
       items?: components['schemas']['RescueEquipmentItem'][];
     };
+    /** @description 救援装备（应急物资）新增 / 编辑入参。编辑为局部更新：字段为 null 表示不修改该字段。 */
+    RescueEquipmentWriteRequest: {
+      /**
+       * @description 装备名称（新增必填）
+       * @example 正压式空气呼吸器
+       */
+      name?: string;
+      /**
+       * @description 所属中队
+       * @example 炼油中队
+       */
+      squadron?: string;
+      /**
+       * @description 装备类别
+       * @example 防护装备
+       */
+      category?: string;
+      /**
+       * @description 计量单位
+       * @example 具
+       */
+      unit?: string;
+      /**
+       * @description 编配数量
+       * @example 40
+       */
+      quantity?: number;
+      /**
+       * @description 责任人姓名
+       * @example 赵装备
+       */
+      leaderName?: string;
+      /**
+       * @description 责任人电话
+       * @example 13800000004
+       */
+      leaderPhone?: string;
+      /**
+       * @description 当前库存数量
+       * @example 36
+       */
+      stockQuantity?: number;
+      /**
+       * @description 规格型号
+       * @example RHZK6.8
+       */
+      model?: string;
+      /**
+       * @description 防护类型
+       * @example 隔绝式
+       */
+      protectionType?: string;
+      /**
+       * @description 滤毒罐型号
+       * @example A2B2E2K2
+       */
+      filterCanister?: string;
+      /**
+       * @description 最长连续使用时长
+       * @example 60 分钟
+       */
+      maxContinuousUse?: string;
+      /**
+       * @description 存放位置
+       * @example 炼油消防站装备库 A 架
+       */
+      storageLocation?: string;
+      /**
+       * @description 采购批次
+       * @example 2024-03 批次
+       */
+      purchaseBatch?: string;
+      /**
+       * @description 出厂有效期（年）
+       * @example 10
+       */
+      factoryValidityYears?: string;
+      /**
+       * @description 剩余有效期
+       * @example 7 年 4 个月
+       */
+      remainingValidity?: string;
+      /**
+       * @description 上次检查日期
+       * @example 2026-09-01
+       */
+      lastInspectionDate?: string;
+      /**
+       * @description 下次强制维护日期
+       * @example 2027-03-01
+       */
+      nextMandatoryMaintenanceDate?: string;
+      /**
+       * @description 装备状态
+       * @example 完好
+       */
+      equipmentStatus?: string;
+      /**
+       * @description 报废预警
+       * @example 无
+       */
+      scrapWarning?: string;
+      /**
+       * @description 领用登记
+       * @example 2026-09-20 领用 2 具
+       */
+      issueRegistration?: string;
+      /**
+       * @description 备品备件
+       * @example 面罩 5 套
+       */
+      spareParts?: string;
+    };
     /** @description 救援装备台账项 */
     RescueEquipmentItem: {
       /**
@@ -707,6 +868,16 @@ export interface components {
        * @example 炼油中队
        */
       squadron?: string;
+      /**
+       * @description 装备类别
+       * @example 防护装备
+       */
+      category?: string;
+      /**
+       * @description 计量单位
+       * @example 具
+       */
+      unit?: string;
       /**
        * @description 配置数量
        * @example 6
@@ -812,6 +983,39 @@ export interface components {
       /** @description 人员明细列表 */
       items?: components['schemas']['RescuePersonnelItem'][];
     };
+    /** @description 救援人员（应急专家）新增 / 编辑入参。编辑为局部更新：字段为 null 表示不修改该字段。 */
+    RescuePersonnelWriteRequest: {
+      /**
+       * @description 姓名（新增必填）
+       * @example 王强
+       */
+      name?: string;
+      /**
+       * @description 所属中队
+       * @example 炼油中队
+       */
+      squadron?: string;
+      /**
+       * @description 岗位
+       * @example 指挥员
+       */
+      role?: string;
+      /**
+       * @description 所属分组
+       * @example 危化品处置组
+       */
+      personGroup?: string;
+      /**
+       * @description 联系电话
+       * @example 13800000001
+       */
+      phone?: string;
+      /**
+       * @description 值班状态
+       * @example 在岗
+       */
+      dutyStatus?: string;
+    };
     /** @description 救援人员台账项 */
     RescuePersonnelItem: {
       /**
@@ -831,10 +1035,25 @@ export interface components {
        */
       squadron?: string;
       /**
-       * @description 角色
-       * @example 队长
+       * @description 岗位
+       * @example 指挥员
        */
       role?: string;
+      /**
+       * @description 所属分组
+       * @example 危化品处置组
+       */
+      personGroup?: string;
+      /**
+       * @description 联系电话
+       * @example 13800000001
+       */
+      phone?: string;
+      /**
+       * @description 值班状态
+       * @example 在岗
+       */
+      dutyStatus?: string;
     };
     /** @description 救援车辆台账列表聚合 */
     RescueVehicleList: {
@@ -844,6 +1063,114 @@ export interface components {
       types?: string[];
       /** @description 车辆明细列表 */
       items?: components['schemas']['RescueVehicleItem'][];
+    };
+    /** @description 救援车辆新增 / 编辑入参。编辑为局部更新：字段为 null 表示不修改该字段。 */
+    RescueVehicleWriteRequest: {
+      /**
+       * @description 车牌号（新增必填）
+       * @example 粤K12345
+       */
+      plate?: string;
+      /**
+       * @description 车辆类型
+       * @example 泡沫消防车
+       */
+      type?: string;
+      /**
+       * @description 所属中队
+       * @example 炼油中队
+       */
+      squadron?: string;
+      /**
+       * @description 车长姓名
+       * @example 张车长
+       */
+      leaderName?: string;
+      /**
+       * @description 车长电话
+       * @example 13800000003
+       */
+      leaderPhone?: string;
+      /**
+       * @description 车辆状态
+       * @example 待命
+       */
+      status?: string;
+      /**
+       * @description 业务名称
+       * @example 灭火救援
+       */
+      businessName?: string;
+      /**
+       * @description 车辆类型全称
+       * @example 重型泡沫消防车
+       */
+      vehicleTypeFull?: string;
+      /**
+       * @description 停放位置
+       * @example 炼油消防站 3 号库
+       */
+      parkingLocation?: string;
+      /**
+       * @description 底盘型号
+       * @example ZZ5347
+       */
+      chassisModel?: string;
+      /**
+       * @description 出厂日期
+       * @example 2023-05-18
+       */
+      manufactureDate?: string;
+      /**
+       * @description 年检到期日
+       * @example 2026-05-18
+       */
+      inspectionExpiry?: string;
+      /**
+       * @description 泡沫罐容积
+       * @example 3.5 立方米
+       */
+      foamTankVolume?: string;
+      /**
+       * @description 水罐容积
+       * @example 12 立方米
+       */
+      waterTankVolume?: string;
+      /**
+       * @description 最大出水流量
+       * @example 80 L/s
+       */
+      maxWaterFlow?: string;
+      /**
+       * @description 泡沫类型
+       * @example 抗溶性泡沫
+       */
+      foamType?: string;
+      /**
+       * @description 上次保养日期
+       * @example 2026-08-01
+       */
+      lastMaintenanceDate?: string;
+      /**
+       * @description 下次保养日期
+       * @example 2026-11-01
+       */
+      nextMaintenanceDate?: string;
+      /**
+       * @description 总里程
+       * @example 38000 公里
+       */
+      totalMileage?: string;
+      /**
+       * @description 故障记录
+       * @example 无
+       */
+      faultRecord?: string;
+      /**
+       * @description 年检状态
+       * @example 合格
+       */
+      inspectionStatus?: string;
     };
     /** @description 救援车辆台账项 */
     RescueVehicleItem: {
@@ -1047,6 +1374,64 @@ export interface components {
       areas?: string[];
       /** @description 队伍明细列表 */
       items?: components['schemas']['FireBrigadeTeam'][];
+    };
+    /** @description 消防队伍（救援队伍）新增 / 编辑入参。编辑为局部更新：字段为 null 表示不修改该字段。 */
+    RescueBrigadeWriteRequest: {
+      /**
+       * @description 队伍名称（新增必填）
+       * @example 化工特勤队
+       */
+      name?: string;
+      /**
+       * @description 所属区域
+       * @example 化工区
+       */
+      area?: string;
+      /**
+       * @description 队员人数
+       * @example 32
+       */
+      memberCount?: number;
+      /**
+       * @description 负责人姓名
+       * @example 李队
+       */
+      leaderName?: string;
+      /**
+       * @description 负责人电话
+       * @example 13800000002
+       */
+      leaderPhone?: string;
+      /**
+       * @description 驻扎位置
+       * @example 化工消防站
+       */
+      location?: string;
+      /**
+       * @description 经度
+       * @example 110.88
+       */
+      longitude?: number;
+      /**
+       * @description 纬度
+       * @example 21.68
+       */
+      latitude?: number;
+      /**
+       * @description 队伍简介
+       * @example 承担化工区重大危险源处置
+       */
+      description?: string;
+      /**
+       * @description 可投入救援人数
+       * @example 30
+       */
+      rescuePersonnel?: number;
+      /**
+       * @description 可投入救援车辆数
+       * @example 4
+       */
+      rescueVehicles?: number;
     };
     /** @description 消防队伍台账项 */
     FireBrigadeTeam: {
@@ -1272,4 +1657,541 @@ export interface components {
   pathItems: never;
 }
 export type $defs = Record<string, never>;
-export type operations = Record<string, never>;
+export interface operations {
+  createRescueEquipment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "name": "正压式空气呼吸器",
+         *       "squadron": "炼油中队",
+         *       "category": "防护装备",
+         *       "unit": "具",
+         *       "quantity": 40,
+         *       "stockQuantity": 36,
+         *       "model": "RHZK6.8"
+         *     }
+         */
+        'application/json': components['schemas']['RescueEquipmentWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description 新增后的救援装备条目 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 21,
+           *         "name": "正压式空气呼吸器",
+           *         "squadron": "炼油中队",
+           *         "category": "防护装备",
+           *         "unit": "具",
+           *         "quantity": 40,
+           *         "stockQuantity": 36,
+           *         "model": "RHZK6.8"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['RescueEquipmentItem'];
+        };
+      };
+    };
+  };
+  updateRescueEquipment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 救援装备主键 id */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "name": "正压式空气呼吸器",
+         *       "squadron": "炼油中队",
+         *       "category": "防护装备",
+         *       "unit": "具",
+         *       "quantity": 40,
+         *       "stockQuantity": 36,
+         *       "model": "RHZK6.8"
+         *     }
+         */
+        'application/json': components['schemas']['RescueEquipmentWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description 更新后的救援装备条目 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 21,
+           *         "name": "正压式空气呼吸器",
+           *         "squadron": "炼油中队",
+           *         "category": "防护装备",
+           *         "unit": "具",
+           *         "quantity": 40,
+           *         "stockQuantity": 36,
+           *         "model": "RHZK6.8"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['RescueEquipmentItem'];
+        };
+      };
+    };
+  };
+  deleteRescueEquipment: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 救援装备主键 id */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description 删除成功 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
+          'application/json': unknown;
+        };
+      };
+    };
+  };
+  createRescuePersonnel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "name": "王强",
+         *       "squadron": "炼油中队",
+         *       "role": "指挥员",
+         *       "personGroup": "危化品处置组",
+         *       "phone": "13800000001",
+         *       "dutyStatus": "在岗"
+         *     }
+         */
+        'application/json': components['schemas']['RescuePersonnelWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description 新增后的救援人员条目 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 43,
+           *         "name": "王强",
+           *         "squadron": "炼油中队",
+           *         "role": "指挥员",
+           *         "personGroup": "危化品处置组",
+           *         "phone": "13800000001",
+           *         "dutyStatus": "在岗"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['RescuePersonnelItem'];
+        };
+      };
+    };
+  };
+  updateRescuePersonnel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 救援人员主键 id */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "name": "王强",
+         *       "squadron": "炼油中队",
+         *       "role": "指挥员",
+         *       "personGroup": "危化品处置组",
+         *       "phone": "13800000001",
+         *       "dutyStatus": "在岗"
+         *     }
+         */
+        'application/json': components['schemas']['RescuePersonnelWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description 更新后的救援人员条目 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 43,
+           *         "name": "王强",
+           *         "squadron": "炼油中队",
+           *         "role": "指挥员",
+           *         "personGroup": "危化品处置组",
+           *         "phone": "13800000001",
+           *         "dutyStatus": "在岗"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['RescuePersonnelItem'];
+        };
+      };
+    };
+  };
+  deleteRescuePersonnel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 救援人员主键 id */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description 删除成功 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
+          'application/json': unknown;
+        };
+      };
+    };
+  };
+  createRescueVehicle: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "plate": "粤K12345",
+         *       "type": "泡沫消防车",
+         *       "squadron": "炼油中队",
+         *       "leaderName": "张车长",
+         *       "leaderPhone": "13800000003",
+         *       "status": "待命"
+         *     }
+         */
+        'application/json': components['schemas']['RescueVehicleWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description 新增后的救援车辆条目 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 12,
+           *         "plate": "粤K12345",
+           *         "type": "泡沫消防车",
+           *         "squadron": "炼油中队",
+           *         "leaderName": "张车长",
+           *         "leaderPhone": "13800000003",
+           *         "status": "待命"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['RescueVehicleItem'];
+        };
+      };
+    };
+  };
+  updateRescueVehicle: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 救援车辆主键 id */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "plate": "粤K12345",
+         *       "type": "泡沫消防车",
+         *       "squadron": "炼油中队",
+         *       "leaderName": "张车长",
+         *       "leaderPhone": "13800000003",
+         *       "status": "待命"
+         *     }
+         */
+        'application/json': components['schemas']['RescueVehicleWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description 更新后的救援车辆条目 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 12,
+           *         "plate": "粤K12345",
+           *         "type": "泡沫消防车",
+           *         "squadron": "炼油中队",
+           *         "leaderName": "张车长",
+           *         "leaderPhone": "13800000003",
+           *         "status": "待命"
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['RescueVehicleItem'];
+        };
+      };
+    };
+  };
+  deleteRescueVehicle: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 救援车辆主键 id */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description 删除成功 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
+          'application/json': unknown;
+        };
+      };
+    };
+  };
+  createRescueBrigade: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "name": "化工特勤队",
+         *       "area": "化工区",
+         *       "memberCount": 32,
+         *       "leaderName": "李队",
+         *       "leaderPhone": "13800000002",
+         *       "location": "化工消防站",
+         *       "longitude": 110.88,
+         *       "latitude": 21.68
+         *     }
+         */
+        'application/json': components['schemas']['RescueBrigadeWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description 新增后的消防队伍条目 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 7,
+           *         "name": "化工特勤队",
+           *         "area": "化工区",
+           *         "memberCount": 32,
+           *         "leaderName": "李队",
+           *         "leaderPhone": "13800000002",
+           *         "location": "化工消防站",
+           *         "longitude": 110.88,
+           *         "latitude": 21.68
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['FireBrigadeTeam'];
+        };
+      };
+    };
+  };
+  updateRescueBrigade: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 消防队伍主键 id */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "name": "化工特勤队",
+         *       "area": "化工区",
+         *       "memberCount": 32,
+         *       "leaderName": "李队",
+         *       "leaderPhone": "13800000002",
+         *       "location": "化工消防站",
+         *       "longitude": 110.88,
+         *       "latitude": 21.68
+         *     }
+         */
+        'application/json': components['schemas']['RescueBrigadeWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description 更新后的消防队伍条目 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 7,
+           *         "name": "化工特勤队",
+           *         "area": "化工区",
+           *         "memberCount": 32,
+           *         "leaderName": "李队",
+           *         "leaderPhone": "13800000002",
+           *         "location": "化工消防站",
+           *         "longitude": 110.88,
+           *         "latitude": 21.68
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['FireBrigadeTeam'];
+        };
+      };
+    };
+  };
+  deleteRescueBrigade: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 消防队伍主键 id */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description 删除成功 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
+          'application/json': unknown;
+        };
+      };
+    };
+  };
+}
