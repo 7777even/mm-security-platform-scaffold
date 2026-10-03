@@ -12,7 +12,53 @@ export interface paths {
      */
     get: operations['listMajorHazards'];
     put?: never;
-    post?: never;
+    /**
+     * 新建重大危险源
+     * @description 新建一条重大危险源主数据；id 由服务端按 LedgerIdSupport 分配。仅覆盖主数据列——嵌套明细（联系人 / 档案 / 监测点 / 视频 / 化学品 / 疏散路线 / 应急操作）以 JSON 列承载，本批不开放编辑。写后失效服务端缓存，列表立即可见。仅 ADMIN 可写。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['MajorHazardWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description B3 成功包络 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 12,
+             *         "name": "新建危险源",
+             *         "level": "三级",
+             *         "rValue": 12.5,
+             *         "monitorCount": 4,
+             *         "videoCount": 2,
+             *         "enterprise": "中海壳牌石油化工有限公司",
+             *         "category": "储罐区",
+             *         "code": "WH-012",
+             *         "longitude": 110.851,
+             *         "latitude": 21.623
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['MajorHazardItem'];
+          };
+        };
+      };
+    };
     delete?: never;
     options?: never;
     head?: never;
@@ -31,9 +77,93 @@ export interface paths {
      * @description 按 id 返回重大危险源完整明细：基础信息 + 投用日期/重点工艺/化工园区标识 + 联系人、档案、监测点、视频、化学品、疏散路线、应急操作等嵌套明细。数据来自 fac_major_hazard 真实表（嵌套明细为 JSON 列解析）。
      */
     get: operations['getMajorHazardDetail'];
-    put?: never;
+    /**
+     * 更新重大危险源
+     * @description 按 id 更新重大危险源主数据字段；未命中时 data 为 null。写后失效服务端缓存。仅 ADMIN 可写。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 重大危险源 id（取自 /hazards 列表） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['MajorHazardWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description B3 成功包络 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 12,
+             *         "name": "罐区A危险源",
+             *         "level": "三级",
+             *         "rValue": 12.5,
+             *         "monitorCount": 4,
+             *         "videoCount": 2,
+             *         "enterprise": "中海壳牌石油化工有限公司",
+             *         "category": "储罐区",
+             *         "code": "WH-012",
+             *         "longitude": 110.851,
+             *         "latitude": 21.623
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['MajorHazardItem'];
+          };
+        };
+      };
+    };
     post?: never;
-    delete?: never;
+    /**
+     * 删除重大危险源
+     * @description 按 id 删除重大危险源；未命中时 ok 为 false（不抛异常）。写后失效服务端缓存。仅 ADMIN 可写。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 重大危险源 id（取自 /hazards 列表） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description B3 成功包络（data=DeleteResult） */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "ok": true
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['DeleteResult'];
+          };
+        };
+      };
+    };
     options?: never;
     head?: never;
     patch?: never;
@@ -52,8 +182,148 @@ export interface paths {
      */
     get: operations['listMonitoringPoints'];
     put?: never;
-    post?: never;
+    /**
+     * 新建监测点位
+     * @description 新建一个监测点位；id 为字符串主键、由请求体给定（实体非自增，不走 LedgerIdSupport），重复编码返回 409。写后失效服务端缓存。仅 ADMIN 可写。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['MonitoringPointWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description B3 成功包络 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": "MP-001",
+             *         "name": "罐区A可燃气体监测点",
+             *         "category": "气体监测",
+             *         "status": "online",
+             *         "lastTime": "2026-08-21 09:03",
+             *         "org": "安全环保部",
+             *         "longitude": 110.851,
+             *         "latitude": 21.623
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['MonitoringPoint'];
+          };
+        };
+      };
+    };
     delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/monitoring/points/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 更新监测点位
+     * @description 按 id 更新监测点位字段；未命中时 data 为 null。写后失效服务端缓存。仅 ADMIN 可写。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 监测点位编码（取自 /monitoring/points 列表） */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['MonitoringPointWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description B3 成功包络 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": "MP-001",
+             *         "name": "罐区B可燃气体监测点",
+             *         "category": "气体监测",
+             *         "status": "online",
+             *         "lastTime": "2026-08-21 09:03",
+             *         "org": "安全环保部",
+             *         "longitude": 110.851,
+             *         "latitude": 21.623
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['MonitoringPoint'];
+          };
+        };
+      };
+    };
+    post?: never;
+    /**
+     * 删除监测点位
+     * @description 按 id 删除监测点位；未命中时 ok 为 false（不抛异常）。写后失效服务端缓存。仅 ADMIN 可写。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 监测点位编码（取自 /monitoring/points 列表） */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description B3 成功包络（data=DeleteResult） */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "ok": true
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['DeleteResult'];
+          };
+        };
+      };
+    };
     options?: never;
     head?: never;
     patch?: never;
@@ -334,6 +604,115 @@ export interface components {
         /** @description 文件名 */
         name?: string;
       }[];
+    };
+    /** @description 重大危险源写请求（新建/更新共用）。id 由服务端分配；仅覆盖主数据列，嵌套明细以 JSON 列承载、本批不开放编辑。 */
+    MajorHazardWriteRequest: {
+      /**
+       * @description 危险源名称
+       * @example 新建危险源
+       */
+      name: string;
+      /**
+       * @description 危险等级（一级 / 二级 / 三级 / 四级）
+       * @example 三级
+       */
+      level?: string;
+      /**
+       * Format: double
+       * @description 重大危险源 R 值（定量风险评价）
+       * @example 12.5
+       */
+      rValue?: number;
+      /**
+       * @description 监测点数量
+       * @example 4
+       */
+      monitorCount?: number;
+      /**
+       * @description 视频数量
+       * @example 2
+       */
+      videoCount?: number;
+      /**
+       * @description 所属企业
+       * @example 中海壳牌石油化工有限公司
+       */
+      enterprise?: string;
+      /**
+       * @description 危险源分类
+       * @example 储罐区
+       */
+      category?: string;
+      /**
+       * @description 危险源编码（业务自然键）
+       * @example WH-012
+       */
+      code?: string;
+      /**
+       * Format: double
+       * @description 经度
+       * @example 110.851
+       */
+      longitude?: number;
+      /**
+       * Format: double
+       * @description 纬度
+       * @example 21.623
+       */
+      latitude?: number;
+    };
+    /** @description 监测点位写请求（新建/更新共用）。实体主键 id 为字符串、非自增，故由请求给定（不能用 LedgerIdSupport）；重复返回 409。 */
+    MonitoringPointWriteRequest: {
+      /**
+       * @description 监测点位编码（字符串主键，由请求给定）
+       * @example MP-001
+       */
+      id: string;
+      /**
+       * @description 点位名称
+       * @example 罐区A可燃气体监测点
+       */
+      name?: string;
+      /**
+       * @description 点位分类
+       * @example 气体监测
+       */
+      category?: string;
+      /**
+       * @description 点位状态
+       * @example online
+       */
+      status?: string;
+      /**
+       * @description 最近一次采集时间
+       * @example 2026-08-21 09:03
+       */
+      lastTime?: string;
+      /**
+       * @description 责任单位
+       * @example 安全环保部
+       */
+      org?: string;
+      /**
+       * Format: double
+       * @description 经度
+       * @example 110.851
+       */
+      longitude?: number;
+      /**
+       * Format: double
+       * @description 纬度
+       * @example 21.623
+       */
+      latitude?: number;
+    };
+    /** @description 删除结果（与后端 dto/DeleteResult 同名对齐）。 */
+    DeleteResult: {
+      /**
+       * @description 删除是否成功（命中行数 > 0 为 true）
+       * @example true
+       */
+      ok?: boolean;
     };
   };
   responses: {

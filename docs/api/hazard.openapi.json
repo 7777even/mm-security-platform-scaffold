@@ -13,8 +13,18 @@
       "description": "默认 baseURL（VITE_API_BASE 可覆盖，见 src/services/http.ts）"
     }
   ],
-  "security": [{ "bearerAuth": [], "replaySign": [] }],
-  "tags": [{ "name": "hazard", "description": "重大危险源与监测" }],
+  "security": [
+    {
+      "bearerAuth": [],
+      "replaySign": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "hazard",
+      "description": "重大危险源与监测"
+    }
+  ],
   "paths": {
     "/hazards": {
       "get": {
@@ -22,7 +32,11 @@
         "operationId": "listMajorHazards",
         "summary": "重大危险源列表",
         "description": "返回全部重大危险源基础信息（等级、R值、监测/视频点数、企业、经纬度等），用于大屏重大危险源分布与列表。数据来自 fac_major_hazard 真实表。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=重大危险源列表）",
@@ -30,13 +44,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/MajorHazardItem" }
+                          "items": {
+                            "$ref": "#/components/schemas/MajorHazardItem"
+                          }
                         }
                       }
                     }
@@ -65,6 +83,50 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": ["hazard"],
+        "summary": "新建重大危险源",
+        "description": "新建一条重大危险源主数据；id 由服务端按 LedgerIdSupport 分配。仅覆盖主数据列——嵌套明细（联系人 / 档案 / 监测点 / 视频 / 化学品 / 疏散路线 / 应急操作）以 JSON 列承载，本批不开放编辑。写后失效服务端缓存，列表立即可见。仅 ADMIN 可写。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MajorHazardWriteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MajorHazardItem"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 12,
+                    "name": "新建危险源",
+                    "level": "三级",
+                    "rValue": 12.5,
+                    "monitorCount": 4,
+                    "videoCount": 2,
+                    "enterprise": "中海壳牌石油化工有限公司",
+                    "category": "储罐区",
+                    "code": "WH-012",
+                    "longitude": 110.851,
+                    "latitude": 21.623
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/hazards/{id}": {
@@ -78,10 +140,15 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "schema": { "type": "integer", "format": "int64" },
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
             "description": "重大危险源 id"
           },
-          { "$ref": "./_shared.json#/components/parameters/lang" }
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
         ],
         "responses": {
           "200": {
@@ -90,11 +157,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/MajorHazardDetail" }
+                        "data": {
+                          "$ref": "#/components/schemas/MajorHazardDetail"
+                        }
                       }
                     }
                   ]
@@ -118,9 +189,112 @@
                     "keyProcess": true,
                     "inChemicalPark": true,
                     "contacts": [
-                      { "role": "主要负责人", "name": "程仁策", "phone": "13705456799" }
+                      {
+                        "role": "主要负责人",
+                        "name": "程仁策",
+                        "phone": "13705456799"
+                      }
                     ],
-                    "files": [{ "id": 1, "name": "SIL定级报告.pdf" }]
+                    "files": [
+                      {
+                        "id": 1,
+                        "name": "SIL定级报告.pdf"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["hazard"],
+        "summary": "更新重大危险源",
+        "description": "按 id 更新重大危险源主数据字段；未命中时 data 为 null。写后失效服务端缓存。仅 ADMIN 可写。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "重大危险源 id（取自 /hazards 列表）",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 12
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MajorHazardWriteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MajorHazardItem"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 12,
+                    "name": "罐区A危险源",
+                    "level": "三级",
+                    "rValue": 12.5,
+                    "monitorCount": 4,
+                    "videoCount": 2,
+                    "enterprise": "中海壳牌石油化工有限公司",
+                    "category": "储罐区",
+                    "code": "WH-012",
+                    "longitude": 110.851,
+                    "latitude": 21.623
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["hazard"],
+        "summary": "删除重大危险源",
+        "description": "按 id 删除重大危险源；未命中时 ok 为 false（不抛异常）。写后失效服务端缓存。仅 ADMIN 可写。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "重大危险源 id（取自 /hazards 列表）",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 12
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DeleteResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResult"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "ok": true
                   }
                 }
               }
@@ -135,7 +309,11 @@
         "operationId": "listMonitoringPoints",
         "summary": "监测点位列表",
         "description": "返回全部监测点位（DCS/GDS/气体/压力/温度/液位）及状态与经纬度，用于大屏监测点位分布。数据来自 fac_monitoring_point 真实表。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=监测点位列表）",
@@ -143,13 +321,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/MonitoringPoint" }
+                          "items": {
+                            "$ref": "#/components/schemas/MonitoringPoint"
+                          }
                         }
                       }
                     }
@@ -175,6 +357,138 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": ["hazard"],
+        "summary": "新建监测点位",
+        "description": "新建一个监测点位；id 为字符串主键、由请求体给定（实体非自增，不走 LedgerIdSupport），重复编码返回 409。写后失效服务端缓存。仅 ADMIN 可写。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MonitoringPointWriteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonitoringPoint"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": "MP-001",
+                    "name": "罐区A可燃气体监测点",
+                    "category": "气体监测",
+                    "status": "online",
+                    "lastTime": "2026-08-21 09:03",
+                    "org": "安全环保部",
+                    "longitude": 110.851,
+                    "latitude": 21.623
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/monitoring/points/{id}": {
+      "put": {
+        "tags": ["hazard"],
+        "summary": "更新监测点位",
+        "description": "按 id 更新监测点位字段；未命中时 data 为 null。写后失效服务端缓存。仅 ADMIN 可写。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "监测点位编码（取自 /monitoring/points 列表）",
+            "schema": {
+              "type": "string",
+              "example": "MP-001"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MonitoringPointWriteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonitoringPoint"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": "MP-001",
+                    "name": "罐区B可燃气体监测点",
+                    "category": "气体监测",
+                    "status": "online",
+                    "lastTime": "2026-08-21 09:03",
+                    "org": "安全环保部",
+                    "longitude": 110.851,
+                    "latitude": 21.623
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["hazard"],
+        "summary": "删除监测点位",
+        "description": "按 id 删除监测点位；未命中时 ok 为 false（不抛异常）。写后失效服务端缓存。仅 ADMIN 可写。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "监测点位编码（取自 /monitoring/points 列表）",
+            "schema": {
+              "type": "string",
+              "example": "MP-001"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DeleteResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResult"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "ok": true
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/monitoring/alarms": {
@@ -183,7 +497,11 @@
         "operationId": "listMonitoringAlarms",
         "summary": "监测告警列表",
         "description": "返回监测类告警（压力/气体/温度等），含区域、时间、等级。数据来自 fac_monitoring_alarm 真实表。",
-        "parameters": [{ "$ref": "./_shared.json#/components/parameters/lang" }],
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
         "responses": {
           "200": {
             "description": "B3 成功包络（data=监测告警列表）",
@@ -191,13 +509,17 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/MonitoringAlarm" }
+                          "items": {
+                            "$ref": "#/components/schemas/MonitoringAlarm"
+                          }
                         }
                       }
                     }
@@ -234,10 +556,14 @@
             "name": "name",
             "in": "query",
             "required": false,
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "设施名称，缺省取首条"
           },
-          { "$ref": "./_shared.json#/components/parameters/lang" }
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
         ],
         "responses": {
           "200": {
@@ -246,11 +572,15 @@
               "application/json": {
                 "schema": {
                   "allOf": [
-                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
                     {
                       "type": "object",
                       "properties": {
-                        "data": { "$ref": "#/components/schemas/FacilityDetailInfo" }
+                        "data": {
+                          "$ref": "#/components/schemas/FacilityDetailInfo"
+                        }
                       }
                     }
                   ]
@@ -261,9 +591,24 @@
                   "data": {
                     "facilityName": "乙烯裂解装置",
                     "hazardSourceCode": "370680917088",
-                    "basicFields": [{ "label": "重大危险源等级", "value": "一级" }],
-                    "chemicalFields": [{ "label": "化学品名称", "value": "乙烯" }],
-                    "archives": [{ "id": "1", "name": "SIL定级报告终版.pdf" }]
+                    "basicFields": [
+                      {
+                        "label": "重大危险源等级",
+                        "value": "一级"
+                      }
+                    ],
+                    "chemicalFields": [
+                      {
+                        "label": "化学品名称",
+                        "value": "乙烯"
+                      }
+                    ],
+                    "archives": [
+                      {
+                        "id": "1",
+                        "name": "SIL定级报告终版.pdf"
+                      }
+                    ]
                   }
                 }
               }
@@ -278,45 +623,131 @@
       "MajorHazardItem": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "format": "int64", "description": "重大危险源主键" },
-          "name": { "type": "string", "description": "装置/储罐名称" },
-          "level": { "type": "string", "description": "重大危险源等级（一级/二级/三级/四级）" },
-          "rValue": { "type": "number", "description": "R 值（风险值）" },
-          "monitorCount": { "type": "integer", "description": "监测点数量" },
-          "videoCount": { "type": "integer", "description": "视频点位数量" },
-          "enterprise": { "type": "string", "description": "所属企业" },
-          "category": { "type": "string", "description": "类别（装置/储罐/仓库/管廊）" },
-          "code": { "type": "string", "description": "重大危险源编码" },
-          "longitude": { "type": "number", "description": "经度" },
-          "latitude": { "type": "number", "description": "纬度" }
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "重大危险源主键"
+          },
+          "name": {
+            "type": "string",
+            "description": "装置/储罐名称"
+          },
+          "level": {
+            "type": "string",
+            "description": "重大危险源等级（一级/二级/三级/四级）"
+          },
+          "rValue": {
+            "type": "number",
+            "description": "R 值（风险值）"
+          },
+          "monitorCount": {
+            "type": "integer",
+            "description": "监测点数量"
+          },
+          "videoCount": {
+            "type": "integer",
+            "description": "视频点位数量"
+          },
+          "enterprise": {
+            "type": "string",
+            "description": "所属企业"
+          },
+          "category": {
+            "type": "string",
+            "description": "类别（装置/储罐/仓库/管廊）"
+          },
+          "code": {
+            "type": "string",
+            "description": "重大危险源编码"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "经度"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "纬度"
+          }
         }
       },
       "MajorHazardDetail": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "format": "int64", "description": "重大危险源主键" },
-          "name": { "type": "string", "description": "装置/储罐名称" },
-          "level": { "type": "string", "description": "重大危险源等级" },
-          "rValue": { "type": "number", "description": "R 值" },
-          "monitorCount": { "type": "integer", "description": "监测点数量" },
-          "videoCount": { "type": "integer", "description": "视频点位数量" },
-          "enterprise": { "type": "string", "description": "所属企业" },
-          "category": { "type": "string", "description": "类别" },
-          "code": { "type": "string", "description": "重大危险源编码" },
-          "longitude": { "type": "number", "description": "经度" },
-          "latitude": { "type": "number", "description": "纬度" },
-          "commissionDate": { "type": "string", "description": "投用日期" },
-          "keyProcess": { "type": "boolean", "description": "是否涉及重点监管工艺" },
-          "inChemicalPark": { "type": "boolean", "description": "是否在化工园区内" },
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "重大危险源主键"
+          },
+          "name": {
+            "type": "string",
+            "description": "装置/储罐名称"
+          },
+          "level": {
+            "type": "string",
+            "description": "重大危险源等级"
+          },
+          "rValue": {
+            "type": "number",
+            "description": "R 值"
+          },
+          "monitorCount": {
+            "type": "integer",
+            "description": "监测点数量"
+          },
+          "videoCount": {
+            "type": "integer",
+            "description": "视频点位数量"
+          },
+          "enterprise": {
+            "type": "string",
+            "description": "所属企业"
+          },
+          "category": {
+            "type": "string",
+            "description": "类别"
+          },
+          "code": {
+            "type": "string",
+            "description": "重大危险源编码"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "经度"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "纬度"
+          },
+          "commissionDate": {
+            "type": "string",
+            "description": "投用日期"
+          },
+          "keyProcess": {
+            "type": "boolean",
+            "description": "是否涉及重点监管工艺"
+          },
+          "inChemicalPark": {
+            "type": "boolean",
+            "description": "是否在化工园区内"
+          },
           "contacts": {
             "type": "array",
             "description": "联系人列表",
             "items": {
               "type": "object",
               "properties": {
-                "role": { "type": "string", "description": "角色" },
-                "name": { "type": "string", "description": "姓名" },
-                "phone": { "type": "string", "description": "电话" }
+                "role": {
+                  "type": "string",
+                  "description": "角色"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "姓名"
+                },
+                "phone": {
+                  "type": "string",
+                  "description": "电话"
+                }
               }
             }
           },
@@ -326,8 +757,14 @@
             "items": {
               "type": "object",
               "properties": {
-                "id": { "type": "integer", "description": "文件 id" },
-                "name": { "type": "string", "description": "文件名" }
+                "id": {
+                  "type": "integer",
+                  "description": "文件 id"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "文件名"
+                }
               }
             }
           },
@@ -337,9 +774,18 @@
             "items": {
               "type": "object",
               "properties": {
-                "id": { "type": "integer", "description": "监测点 id" },
-                "name": { "type": "string", "description": "监测点名称" },
-                "status": { "type": "string", "description": "状态" }
+                "id": {
+                  "type": "integer",
+                  "description": "监测点 id"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "监测点名称"
+                },
+                "status": {
+                  "type": "string",
+                  "description": "状态"
+                }
               }
             }
           },
@@ -349,9 +795,18 @@
             "items": {
               "type": "object",
               "properties": {
-                "id": { "type": "integer", "description": "视频 id" },
-                "name": { "type": "string", "description": "视频名称" },
-                "status": { "type": "string", "description": "状态" }
+                "id": {
+                  "type": "integer",
+                  "description": "视频 id"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "视频名称"
+                },
+                "status": {
+                  "type": "string",
+                  "description": "状态"
+                }
               }
             }
           },
@@ -361,9 +816,18 @@
             "items": {
               "type": "object",
               "properties": {
-                "id": { "type": "integer", "description": "化学品 id" },
-                "name": { "type": "string", "description": "化学品名称" },
-                "amount": { "type": "string", "description": "储量" }
+                "id": {
+                  "type": "integer",
+                  "description": "化学品 id"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "化学品名称"
+                },
+                "amount": {
+                  "type": "string",
+                  "description": "储量"
+                }
               }
             }
           },
@@ -373,12 +837,30 @@
             "items": {
               "type": "object",
               "properties": {
-                "id": { "type": "integer", "description": "路线 id" },
-                "name": { "type": "string", "description": "路线名称" },
-                "from": { "type": "string", "description": "起点" },
-                "via": { "type": "string", "description": "途经" },
-                "to": { "type": "string", "description": "终点" },
-                "status": { "type": "string", "description": "状态" }
+                "id": {
+                  "type": "integer",
+                  "description": "路线 id"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "路线名称"
+                },
+                "from": {
+                  "type": "string",
+                  "description": "起点"
+                },
+                "via": {
+                  "type": "string",
+                  "description": "途经"
+                },
+                "to": {
+                  "type": "string",
+                  "description": "终点"
+                },
+                "status": {
+                  "type": "string",
+                  "description": "状态"
+                }
               }
             }
           },
@@ -388,11 +870,26 @@
             "items": {
               "type": "object",
               "properties": {
-                "id": { "type": "integer", "description": "操作 id" },
-                "name": { "type": "string", "description": "操作名称" },
-                "type": { "type": "string", "description": "类型" },
-                "owner": { "type": "string", "description": "责任人" },
-                "status": { "type": "string", "description": "状态" }
+                "id": {
+                  "type": "integer",
+                  "description": "操作 id"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "操作名称"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "类型"
+                },
+                "owner": {
+                  "type": "string",
+                  "description": "责任人"
+                },
+                "status": {
+                  "type": "string",
+                  "description": "状态"
+                }
               }
             }
           }
@@ -401,43 +898,94 @@
       "MonitoringPoint": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "description": "监测点位 id" },
-          "name": { "type": "string", "description": "监测点位名称" },
+          "id": {
+            "type": "string",
+            "description": "监测点位 id"
+          },
+          "name": {
+            "type": "string",
+            "description": "监测点位名称"
+          },
           "category": {
             "type": "string",
             "description": "类别（DCS/GDS/气体检测/压力/温度/液位）"
           },
-          "status": { "type": "string", "description": "状态（normal/warning/alarm）" },
-          "lastTime": { "type": "string", "description": "最近上报时间（ISO8601）" },
-          "org": { "type": "string", "description": "所属单位/装置区" },
-          "longitude": { "type": "number", "description": "经度" },
-          "latitude": { "type": "number", "description": "纬度" }
+          "status": {
+            "type": "string",
+            "description": "状态（normal/warning/alarm）"
+          },
+          "lastTime": {
+            "type": "string",
+            "description": "最近上报时间（ISO8601）"
+          },
+          "org": {
+            "type": "string",
+            "description": "所属单位/装置区"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "经度"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "纬度"
+          }
         }
       },
       "MonitoringAlarm": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "description": "告警 id" },
-          "title": { "type": "string", "description": "告警标题" },
-          "detail": { "type": "string", "description": "告警详情" },
-          "area": { "type": "string", "description": "区域" },
-          "time": { "type": "string", "description": "告警时间（ISO8601）" },
-          "level": { "type": "string", "description": "等级（low/medium/high）" }
+          "id": {
+            "type": "string",
+            "description": "告警 id"
+          },
+          "title": {
+            "type": "string",
+            "description": "告警标题"
+          },
+          "detail": {
+            "type": "string",
+            "description": "告警详情"
+          },
+          "area": {
+            "type": "string",
+            "description": "区域"
+          },
+          "time": {
+            "type": "string",
+            "description": "告警时间（ISO8601）"
+          },
+          "level": {
+            "type": "string",
+            "description": "等级（low/medium/high）"
+          }
         }
       },
       "FacilityDetailInfo": {
         "type": "object",
         "properties": {
-          "facilityName": { "type": "string", "description": "设施名称" },
-          "hazardSourceCode": { "type": "string", "description": "危险源编码" },
+          "facilityName": {
+            "type": "string",
+            "description": "设施名称"
+          },
+          "hazardSourceCode": {
+            "type": "string",
+            "description": "危险源编码"
+          },
           "basicFields": {
             "type": "array",
             "description": "基础字段列表（label/value）",
             "items": {
               "type": "object",
               "properties": {
-                "label": { "type": "string", "description": "字段名" },
-                "value": { "type": "string", "description": "字段值" }
+                "label": {
+                  "type": "string",
+                  "description": "字段名"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "字段值"
+                }
               }
             }
           },
@@ -447,8 +995,14 @@
             "items": {
               "type": "object",
               "properties": {
-                "label": { "type": "string", "description": "字段名" },
-                "value": { "type": "string", "description": "字段值" }
+                "label": {
+                  "type": "string",
+                  "description": "字段名"
+                },
+                "value": {
+                  "type": "string",
+                  "description": "字段值"
+                }
               }
             }
           },
@@ -458,10 +1012,136 @@
             "items": {
               "type": "object",
               "properties": {
-                "id": { "type": "string", "description": "文件 id" },
-                "name": { "type": "string", "description": "文件名" }
+                "id": {
+                  "type": "string",
+                  "description": "文件 id"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "文件名"
+                }
               }
             }
+          }
+        }
+      },
+      "MajorHazardWriteRequest": {
+        "type": "object",
+        "description": "重大危险源写请求（新建/更新共用）。id 由服务端分配；仅覆盖主数据列，嵌套明细以 JSON 列承载、本批不开放编辑。",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "危险源名称",
+            "example": "新建危险源"
+          },
+          "level": {
+            "type": "string",
+            "description": "危险等级（一级 / 二级 / 三级 / 四级）",
+            "example": "三级"
+          },
+          "rValue": {
+            "type": "number",
+            "format": "double",
+            "description": "重大危险源 R 值（定量风险评价）",
+            "example": 12.5
+          },
+          "monitorCount": {
+            "type": "integer",
+            "description": "监测点数量",
+            "example": 4
+          },
+          "videoCount": {
+            "type": "integer",
+            "description": "视频数量",
+            "example": 2
+          },
+          "enterprise": {
+            "type": "string",
+            "description": "所属企业",
+            "example": "中海壳牌石油化工有限公司"
+          },
+          "category": {
+            "type": "string",
+            "description": "危险源分类",
+            "example": "储罐区"
+          },
+          "code": {
+            "type": "string",
+            "description": "危险源编码（业务自然键）",
+            "example": "WH-012"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "经度",
+            "example": 110.851
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "纬度",
+            "example": 21.623
+          }
+        },
+        "required": ["name"]
+      },
+      "MonitoringPointWriteRequest": {
+        "type": "object",
+        "description": "监测点位写请求（新建/更新共用）。实体主键 id 为字符串、非自增，故由请求给定（不能用 LedgerIdSupport）；重复返回 409。",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "监测点位编码（字符串主键，由请求给定）",
+            "example": "MP-001"
+          },
+          "name": {
+            "type": "string",
+            "description": "点位名称",
+            "example": "罐区A可燃气体监测点"
+          },
+          "category": {
+            "type": "string",
+            "description": "点位分类",
+            "example": "气体监测"
+          },
+          "status": {
+            "type": "string",
+            "description": "点位状态",
+            "example": "online"
+          },
+          "lastTime": {
+            "type": "string",
+            "description": "最近一次采集时间",
+            "example": "2026-08-21 09:03"
+          },
+          "org": {
+            "type": "string",
+            "description": "责任单位",
+            "example": "安全环保部"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "经度",
+            "example": 110.851
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "纬度",
+            "example": 21.623
+          }
+        },
+        "required": ["id"]
+      },
+      "DeleteResult": {
+        "type": "object",
+        "description": "删除结果（与后端 dto/DeleteResult 同名对齐）。",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "description": "删除是否成功（命中行数 > 0 为 true）",
+            "example": true
           }
         }
       }

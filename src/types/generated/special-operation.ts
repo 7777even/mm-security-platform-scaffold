@@ -88,7 +88,70 @@ export interface paths {
       };
     };
     put?: never;
-    post?: never;
+    /**
+     * 新建作业票
+     * @description 新建一张特殊作业票；id 与 sort_no 由服务端按 LedgerIdSupport 分配。只写主票表 fac_special_operation_ticket——现场视频 / 气体检测点 / 作业人员子表本批不开放写。仅 ADMIN 可写。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SpecialOperationWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description B3 成功包络 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 31,
+             *         "area": "罐区A",
+             *         "type": "动火作业",
+             *         "level": "二级",
+             *         "status": "进行中",
+             *         "startTime": "08:30",
+             *         "endTime": "17:30",
+             *         "timeRange": "08:30-17:30",
+             *         "unit": "电仪车间",
+             *         "applyUnit": "电仪车间",
+             *         "operationDate": "2026-08-21",
+             *         "location": "罐区A东侧",
+             *         "isContractor": "否",
+             *         "hazardType": "火灾爆炸",
+             *         "leaderName": "张三",
+             *         "leaderPhone": "138****2211",
+             *         "position": "作业负责人",
+             *         "longitude": 110.851,
+             *         "latitude": 21.623,
+             *         "changeReason": "",
+             *         "cancelReason": "",
+             *         "guardianName": "李四",
+             *         "workers": "王五、赵六",
+             *         "permitNo": "DH-2026-0831",
+             *         "content": "罐区A管线焊接",
+             *         "videoCount": 2,
+             *         "gasMonitorCount": 1,
+             *         "personnelCount": 3
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['SpecialOperationItem'];
+          };
+        };
+      };
+    };
     delete?: never;
     options?: never;
     head?: never;
@@ -165,9 +228,110 @@ export interface paths {
         };
       };
     };
-    put?: never;
+    /**
+     * 更新作业票
+     * @description 按 id 更新作业票字段；未命中时 data 为 null。仅 ADMIN 可写。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 作业票 id（取自 /special-operations 列表） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['SpecialOperationWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description B3 成功包络 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 31,
+             *         "area": "罐区A",
+             *         "type": "动火作业",
+             *         "level": "二级",
+             *         "status": "已结束",
+             *         "startTime": "08:30",
+             *         "endTime": "17:30",
+             *         "timeRange": "08:30-17:30",
+             *         "unit": "电仪车间",
+             *         "applyUnit": "电仪车间",
+             *         "operationDate": "2026-08-21",
+             *         "location": "罐区A东侧",
+             *         "isContractor": "否",
+             *         "hazardType": "火灾爆炸",
+             *         "leaderName": "张三",
+             *         "leaderPhone": "138****2211",
+             *         "position": "作业负责人",
+             *         "longitude": 110.851,
+             *         "latitude": 21.623,
+             *         "changeReason": "",
+             *         "cancelReason": "",
+             *         "guardianName": "李四",
+             *         "workers": "王五、赵六",
+             *         "permitNo": "DH-2026-0831",
+             *         "content": "罐区A管线焊接",
+             *         "videoCount": 2,
+             *         "gasMonitorCount": 1,
+             *         "personnelCount": 3
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['SpecialOperationItem'];
+          };
+        };
+      };
+    };
     post?: never;
-    delete?: never;
+    /**
+     * 删除作业票
+     * @description 按 id 删除作业票；未命中时 ok 为 false（不抛异常）。仅 ADMIN 可写。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 作业票 id（取自 /special-operations 列表） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description B3 成功包络（data=DeleteResult） */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "ok": true
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['DeleteResult'];
+          };
+        };
+      };
+    };
     options?: never;
     head?: never;
     patch?: never;
@@ -464,6 +628,154 @@ export interface components {
       pages?: number;
       /** @description 当前页作业票列表 */
       list?: components['schemas']['SpecialOperationItem'][];
+    };
+    /** @description 特殊作业票写请求（新建/更新共用）。id 与 sort_no 由服务端分配；列名沿用实体保留字规避约定（op_type / op_level / ticket_status / work_location）。 */
+    SpecialOperationWriteRequest: {
+      /**
+       * @description 作业类型（动火 / 受限空间 / 高处 …）
+       * @example 动火作业
+       */
+      opType: string;
+      /**
+       * @description 作业区域
+       * @example 罐区A
+       */
+      ticketArea?: string;
+      /**
+       * @description 作业等级（一级 / 二级 / 三级）
+       * @example 二级
+       */
+      opLevel?: string;
+      /**
+       * @description 作业票状态（待审批 / 进行中 / 已结束 / 已取消）
+       * @example 进行中
+       */
+      ticketStatus?: string;
+      /**
+       * @description 作业开始时间
+       * @example 08:30
+       */
+      startTime?: string;
+      /**
+       * @description 作业结束时间
+       * @example 17:30
+       */
+      endTime?: string;
+      /**
+       * @description 作业时间段（展示用）
+       * @example 08:30-17:30
+       */
+      timeRange?: string;
+      /**
+       * @description 作业单位
+       * @example 电仪车间
+       */
+      workUnit?: string;
+      /**
+       * @description 申请单位
+       * @example 电仪车间
+       */
+      applyUnit?: string;
+      /**
+       * @description 作业日期
+       * @example 2026-08-21
+       */
+      operationDate?: string;
+      /**
+       * @description 作业地点
+       * @example 罐区A东侧
+       */
+      workLocation?: string;
+      /**
+       * @description 是否承包商作业（是 / 否）
+       * @example 否
+       */
+      isContractor?: string;
+      /**
+       * @description 危害类型
+       * @example 火灾爆炸
+       */
+      hazardType?: string;
+      /**
+       * @description 作业负责人姓名
+       * @example 张三
+       */
+      leaderName?: string;
+      /**
+       * @description 作业负责人电话
+       * @example 138****2211
+       */
+      leaderPhone?: string;
+      /**
+       * @description 负责人岗位
+       * @example 作业负责人
+       */
+      position?: string;
+      /**
+       * Format: double
+       * @description 经度
+       * @example 110.851
+       */
+      longitude?: number;
+      /**
+       * Format: double
+       * @description 纬度
+       * @example 21.623
+       */
+      latitude?: number;
+      /**
+       * @description 变更原因
+       * @example
+       */
+      changeReason?: string;
+      /**
+       * @description 取消原因
+       * @example
+       */
+      cancelReason?: string;
+      /**
+       * @description 监护人姓名
+       * @example 李四
+       */
+      guardianName?: string;
+      /**
+       * @description 作业人员（顿号分隔）
+       * @example 王五、赵六
+       */
+      workers?: string;
+      /**
+       * @description 作业许可证编号
+       * @example DH-2026-0831
+       */
+      permitNo?: string;
+      /**
+       * @description 作业内容
+       * @example 罐区A管线焊接
+       */
+      content?: string;
+      /**
+       * @description 关联现场视频数量
+       * @example 2
+       */
+      videoCount?: number;
+      /**
+       * @description 关联气体检测点数量
+       * @example 1
+       */
+      gasMonitorCount?: number;
+      /**
+       * @description 作业人员数量
+       * @example 3
+       */
+      personnelCount?: number;
+    };
+    /** @description 删除结果（与后端 dto/DeleteResult 同名对齐）。 */
+    DeleteResult: {
+      /**
+       * @description 删除是否成功（命中行数 > 0 为 true）
+       * @example true
+       */
+      ok?: boolean;
     };
   };
   responses: {
