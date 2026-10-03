@@ -251,8 +251,169 @@ export interface paths {
       };
     };
     put?: never;
-    post?: never;
+    /**
+     * 消防设施台账新增
+     * @description 管理端台账录入：落库 fac_fire_facility_ledger，返回新建台账条目（含 id）。必填字段缺失或设施编码重复返回 B3 PARAM_INVALID / CONFLICT。需权限码 fire-facility:ledger:write（V99 已登记并授权）。成功触发 fire-facility.ledger 实时广播。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "facilityCode": "FP-099",
+           *       "facilityName": "99#消防水泵",
+           *       "facilityType": "消防水泵",
+           *       "location": "炼油三部泵房",
+           *       "device": "XBD8/30-150L",
+           *       "maintainerName": "王芳",
+           *       "maintainerPhone": "13800000099",
+           *       "enabled": true
+           *     }
+           */
+          'application/json': components['schemas']['FireFacilityLedgerWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 新增成功，返回新建台账条目 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 99,
+             *         "facilityCode": "FP-099",
+             *         "facilityName": "99#消防水泵",
+             *         "facilityType": "消防水泵",
+             *         "location": "炼油三部泵房",
+             *         "device": "XBD8/30-150L",
+             *         "maintainerName": "王芳",
+             *         "maintainerPhone": "13800000099",
+             *         "enabled": true,
+             *         "maintenanceRecords": []
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['FireFacilityLedgerItem'];
+          };
+        };
+      };
+    };
     delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/fire-facility/ledger/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 消防设施台账编辑
+     * @description 按 id 局部更新台账条目：仅覆盖传入字段（read-modify-write），返回更新后的条目。id 非法或记录不存在返回 B3 PARAM_INVALID / NOT_FOUND。需权限码 fire-facility:ledger:write（V99 已登记并授权）。成功触发 fire-facility.ledger 实时广播。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 台账记录 id（fac_fire_facility_ledger.id） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "maintainerName": "李强",
+           *       "maintainerPhone": "13800000002",
+           *       "enabled": false
+           *     }
+           */
+          'application/json': components['schemas']['FireFacilityLedgerWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 编辑成功，返回更新后的台账条目 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 1,
+             *         "facilityCode": "FP-001",
+             *         "facilityName": "1#消防水泵",
+             *         "facilityType": "消防水泵",
+             *         "location": "炼油一部泵房",
+             *         "device": "XBD8/30-150L",
+             *         "maintainerName": "李强",
+             *         "maintainerPhone": "13800000002",
+             *         "enabled": false,
+             *         "maintenanceRecords": []
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['FireFacilityLedgerItem'];
+          };
+        };
+      };
+    };
+    post?: never;
+    /**
+     * 消防设施台账删除
+     * @description 级联清理历史维保记录后物理删除台账条目（真删除）。id 非法或记录不存在返回 B3 PARAM_INVALID / NOT_FOUND。需权限码 fire-facility:ledger:write（V99 已登记并授权）。成功触发 fire-facility.ledger 实时广播。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 台账记录 id（fac_fire_facility_ledger.id） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除成功 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": null
+             *     }
+             */
+            'application/json': unknown;
+          };
+        };
+      };
+    };
     options?: never;
     head?: never;
     patch?: never;
@@ -872,6 +1033,11 @@ export interface components {
     /** @description 设施台账明细项 */
     FireFacilityLedgerItem: {
       /**
+       * @description 台账记录 id（fac_fire_facility_ledger.id），编辑/删除时引用
+       * @example 1
+       */
+      id?: number;
+      /**
        * @description 设施编码
        * @example FP-001
        */
@@ -920,6 +1086,49 @@ export interface components {
       typeOptions?: string[];
       /** @description 设施台账明细列表 */
       items?: components['schemas']['FireFacilityLedgerItem'][];
+    };
+    /** @description 消防设施台账写请求：管理端台账录入/编辑用，落库 fac_fire_facility_ledger。字段名对齐只读 DTO（location→location_name、device→device_name、enabled→enabled_flag 在后端映射）。所有字段可选（read-modify-write）：新增时缺失按默认值处理，编辑时仅覆盖传入字段。 */
+    FireFacilityLedgerWriteRequest: {
+      /**
+       * @description 设施编码（新增必填，作为台账自然键，建议唯一）
+       * @example FP-099
+       */
+      facilityCode?: string;
+      /**
+       * @description 设施名称（新增必填）
+       * @example 99#消防水泵
+       */
+      facilityName?: string;
+      /**
+       * @description 设施类型，如 消防水泵 / 火灾报警控制器 / 自动喷淋系统（新增必填）
+       * @example 消防水泵
+       */
+      facilityType?: string;
+      /**
+       * @description 设置部位（location_name）
+       * @example 炼油三部泵房
+       */
+      location?: string;
+      /**
+       * @description 关联设备型号（device_name）
+       * @example XBD8/30-150L
+       */
+      device?: string;
+      /**
+       * @description 维保人姓名
+       * @example 王芳
+       */
+      maintainerName?: string;
+      /**
+       * @description 维保人电话
+       * @example 13800000099
+       */
+      maintainerPhone?: string;
+      /**
+       * @description 是否启用（enabled_flag），不传默认 true
+       * @example true
+       */
+      enabled?: boolean;
     };
     /** @description 故障/工单时间线条目 */
     FireFacilityFaultTimelineItem: {

@@ -1,6 +1,9 @@
 import { request } from '@/services/http';
 import {
   backendUnavailableWarn,
+  isDemoMode,
+  isOfflineNoBackend,
+  notifyBackendOffline,
   REASON_CONTRACT_MISMATCH,
   resolveOfflineFetch,
 } from '@/services/backendFallback';
@@ -63,6 +66,17 @@ export interface FirePatrolRecord {
   completed: boolean;
   workOrderNo?: string | null;
   checkItems: FirePatrolCheckItem[];
+}
+
+/** 防火巡查记录写请求（管理端台账新增/编辑，fire:patrol-write）。 */
+export interface FirePatrolWriteRequest {
+  patrolDate: string;
+  shift?: PatrolShift;
+  dutyPerson?: string;
+  patrolCount?: string;
+  locations?: string[];
+  completed?: boolean;
+  workOrderNo?: string;
 }
 
 /** 开发期自包含 mock（纯静态演示）：数值与 V10 种子保持一致，便于无后端时对照 UI */
@@ -205,6 +219,77 @@ export async function fetchFirePatrols(): Promise<FirePatrolRecord[]> {
     backendUnavailableWarn('fire-monitoring', '/fire/patrols');
     return [];
   }
+}
+
+/**
+ * 防火巡查记录新增（管理端录入）：POST /fire/patrols，落库 fac_fire_patrol。
+ * 三态与消防故障写回对齐：离线演示仅本地成功返回 null；未连后端显式报错并抛异常；连后端真实 POST。
+ */
+export async function createFirePatrol(
+  payload: FirePatrolWriteRequest,
+): Promise<FirePatrolRecord | null> {
+  if (isDemoMode()) {
+    return Promise.resolve(null);
+  }
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'fire-monitoring',
+      '/fire/patrols',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法新增防火巡查记录');
+  }
+  return request<FirePatrolRecord>({
+    url: '/fire/patrols',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+/**
+ * 防火巡查记录编辑（局部更新）：PUT /fire/patrols/{id}。三态与新增对齐。
+ */
+export async function updateFirePatrol(
+  id: number,
+  payload: FirePatrolWriteRequest,
+): Promise<FirePatrolRecord | null> {
+  if (isDemoMode()) {
+    return Promise.resolve(null);
+  }
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'fire-monitoring',
+      `/fire/patrols/${id}`,
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法编辑防火巡查记录');
+  }
+  return request<FirePatrolRecord>({
+    url: `/fire/patrols/${encodeURIComponent(id)}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+/**
+ * 防火巡查记录删除（真删除）：DELETE /fire/patrols/{id}。三态与新增对齐。
+ */
+export async function deleteFirePatrol(id: number): Promise<void> {
+  if (isDemoMode()) {
+    return Promise.resolve();
+  }
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'fire-monitoring',
+      `/fire/patrols/${id}`,
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法删除防火巡查记录');
+  }
+  await request<void>({
+    url: `/fire/patrols/${encodeURIComponent(id)}`,
+    method: 'DELETE',
+  });
 }
 
 const DEV_FIRE_EQUIPMENT: FireEquipmentItem[] = [

@@ -91,9 +91,173 @@ export interface paths {
      * @description 返回防火巡查记录（巡查区域、责任人、巡查日期、是否完成、检查项明细），用于消防监控页设备监控面板的巡查页签与统计。检查项 result 取值：正常 / 异常。数据来自 fac_fire_patrol 与 fac_fire_patrol_item 真实表。
      */
     get: operations['listFirePatrols'];
-    put?: never;
-    post?: never;
-    delete?: never;
+    /**
+     * 修改防火巡查记录
+     * @description 管理端台账编辑：按 id 局部更新防火巡查记录，仅覆盖传入的非空字段（read-modify-write）。需权限码 `fire:patrol-write`。记录不存在返回 B3 NOT_FOUND。成功触发 `fire.patrol-record` 实时广播。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 防火巡查记录 id（数据库主键） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "patrolDate": "2026-10-03",
+           *       "shift": "下午",
+           *       "dutyPerson": "李四",
+           *       "patrolCount": "第2次",
+           *       "locations": [
+           *         "罐区A"
+           *       ],
+           *       "completed": true,
+           *       "workOrderNo": ""
+           *     }
+           */
+          'application/json': components['schemas']['FirePatrolWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 修改成功，返回更新后的防火巡查记录 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 20,
+             *         "patrolDate": "2026-10-03",
+             *         "shift": "下午",
+             *         "dutyPerson": "李四",
+             *         "patrolCount": "第2次",
+             *         "locations": [
+             *           "罐区A"
+             *         ],
+             *         "completed": true,
+             *         "workOrderNo": "",
+             *         "checkItems": []
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['ApiResponse'] & {
+              data?: components['schemas']['FirePatrolRecord'];
+            };
+          };
+        };
+        401: components['responses']['Unauthorized'];
+        403: components['responses']['Forbidden'];
+      };
+    };
+    /**
+     * 新增防火巡查记录
+     * @description 管理端台账新增一条防火巡查记录（落 fac_fire_patrol）。字段白名单：仅录入台账字段，不含任何设备实时状态 / 检查项结果（检查项本轮只读）。locations 为部位列表，落库逗号拼接。需权限码 `fire:patrol-write`。成功触发 `fire.patrol-record` 实时广播，各端订阅方自动重拉。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "patrolDate": "2026-10-03",
+           *       "shift": "上午",
+           *       "dutyPerson": "张三",
+           *       "patrolCount": "第1次",
+           *       "locations": [
+           *         "1#联合装置",
+           *         "中央控制室"
+           *       ],
+           *       "completed": true,
+           *       "workOrderNo": ""
+           *     }
+           */
+          'application/json': components['schemas']['FirePatrolWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 新增成功，返回创建后的防火巡查记录 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 20,
+             *         "patrolDate": "2026-10-03",
+             *         "shift": "上午",
+             *         "dutyPerson": "张三",
+             *         "patrolCount": "第1次",
+             *         "locations": [
+             *           "1#联合装置",
+             *           "中央控制室"
+             *         ],
+             *         "completed": true,
+             *         "workOrderNo": "",
+             *         "checkItems": []
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['ApiResponse'] & {
+              data?: components['schemas']['FirePatrolRecord'];
+            };
+          };
+        };
+        401: components['responses']['Unauthorized'];
+        403: components['responses']['Forbidden'];
+      };
+    };
+    /**
+     * 删除防火巡查记录
+     * @description 按 id 物理删除防火巡查记录（真删除，无回收站）。记录不存在返回 B3 NOT_FOUND。需权限码 `fire:patrol-write`。成功触发 `fire.patrol-record` 实时广播。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 防火巡查记录 id（数据库主键） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除成功 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": null
+             *     }
+             */
+            'application/json': unknown;
+          };
+        };
+      };
+    };
     options?: never;
     head?: never;
     patch?: never;
@@ -366,6 +530,41 @@ export interface components {
       workOrderNo?: string;
       /** @description 15 项标准检查项逐条结果 */
       checkItems?: components['schemas']['FirePatrolCheckItem'][];
+    };
+    /** @description 防火巡查记录写请求（A3 业务写侧，fire:patrol-write） */
+    FirePatrolWriteRequest: {
+      /**
+       * @description 巡查日期 YYYY-MM-DD，必填
+       * @example 2026-10-03
+       */
+      patrolDate: string;
+      /**
+       * @description 班次（上午 / 下午 / 夜间）
+       * @example 上午
+       */
+      shift?: string;
+      /**
+       * @description 巡查责任人姓名
+       * @example 张三
+       */
+      dutyPerson?: string;
+      /**
+       * @description 当班第几次巡查，如「第1次」
+       * @example 第1次
+       */
+      patrolCount?: string;
+      /** @description 本次巡查覆盖的部位列表（逗号 / 顿号录入，落库逗号拼接） */
+      locations?: string[];
+      /**
+       * @description 是否已完成巡查
+       * @example true
+       */
+      completed?: boolean;
+      /**
+       * @description 关联工单号，仅在巡查发现异常并派单后有值，可为空
+       * @example
+       */
+      workOrderNo?: string;
     };
     /** @description 巡更执行上报写请求（A2 业务写侧） */
     PatrolExecutionWriteRequest: {

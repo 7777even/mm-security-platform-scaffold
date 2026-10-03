@@ -57,6 +57,7 @@ export interface FireFacilityMaintenanceRecord {
 }
 
 export interface FireFacilityLedgerItem {
+  id?: number;
   facilityCode: string;
   facilityName: string;
   facilityType: string;
@@ -66,6 +67,18 @@ export interface FireFacilityLedgerItem {
   maintainerPhone: string;
   enabled: boolean;
   maintenanceRecords: FireFacilityMaintenanceRecord[];
+}
+
+/** 消防设施台账写请求体：字段名对齐只读 DTO；所有字段可选（局部更新）。 */
+export interface FireFacilityLedgerWriteRequest {
+  facilityCode?: string;
+  facilityName?: string;
+  facilityType?: string;
+  location?: string;
+  device?: string;
+  maintainerName?: string;
+  maintainerPhone?: string;
+  enabled?: boolean;
 }
 
 export interface FireFacilityLedgerResult {
@@ -163,6 +176,77 @@ export async function fetchFireFacilityLedger(
     url: '/fire-facility/ledger',
     method: 'GET',
     params: { facilityType },
+  });
+}
+
+/**
+ * 消防设施台账新增（管理端录入）：POST /fire-facility/ledger，落库 fac_fire_facility_ledger。
+ * 三态与消防故障写回对齐：离线演示仅本地成功返回 null；未连后端显式报错并抛异常；连后端真实 POST。
+ */
+export async function createFireFacilityLedger(
+  payload: FireFacilityLedgerWriteRequest,
+): Promise<FireFacilityLedgerItem | null> {
+  if (isDemoMode()) {
+    return Promise.resolve(null);
+  }
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'fireFacility',
+      '/fire-facility/ledger',
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法新增消防设施台账');
+  }
+  return request<FireFacilityLedgerItem>({
+    url: '/fire-facility/ledger',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+/**
+ * 消防设施台账编辑（局部更新）：PUT /fire-facility/ledger/{id}。三态与新增对齐。
+ */
+export async function updateFireFacilityLedger(
+  id: number,
+  payload: FireFacilityLedgerWriteRequest,
+): Promise<FireFacilityLedgerItem | null> {
+  if (isDemoMode()) {
+    return Promise.resolve(null);
+  }
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'fireFacility',
+      `/fire-facility/ledger/${id}`,
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法编辑消防设施台账');
+  }
+  return request<FireFacilityLedgerItem>({
+    url: `/fire-facility/ledger/${encodeURIComponent(id)}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+/**
+ * 消防设施台账删除（真删除，后端级联清理维保记录）：DELETE /fire-facility/ledger/{id}。三态与新增对齐。
+ */
+export async function deleteFireFacilityLedger(id: number): Promise<void> {
+  if (isDemoMode()) {
+    return Promise.resolve();
+  }
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'fireFacility',
+      `/fire-facility/ledger/${id}`,
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法删除消防设施台账');
+  }
+  await request<void>({
+    url: `/fire-facility/ledger/${encodeURIComponent(id)}`,
+    method: 'DELETE',
   });
 }
 
