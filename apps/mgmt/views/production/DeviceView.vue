@@ -6,6 +6,7 @@ import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import { toastErr } from '../../utils/feedback';
 import { fetchDevicePage } from '@/services/device';
 import type { DeviceItem, DeviceStatus } from '@/services/device';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 装置/设备台账管理（/device-mgmt）：接后端 /devices 分页。
 // 取代原 module-embed 原型 iframe 占位，数据全部来自后端；取数三态：加载中 / 空态 / 错误回落（不回灌假数据）。
@@ -59,6 +60,7 @@ function onStatusChange() {
 }
 
 onMounted(load);
+useDomainAutoRefresh('device', load);
 </script>
 
 <template>

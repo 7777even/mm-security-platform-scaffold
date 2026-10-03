@@ -9,6 +9,7 @@ import { toastErr } from '../../utils/feedback';
 import { fetchCommunicationRecords } from '@/services/communication';
 import type { CommunicationRecord, CommunicationRecordType } from '@/services/communication';
 import type { Component } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 通讯通知管理（/comm-sms、/comm-call、/comm-broadcast、/comm-push、/comm-intercom）：
 // 五页共用本视图，按 route.path 决定记录类型与列定义，数据统一来自后端 /communication/records。
@@ -138,6 +139,8 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+// 五页共用同一视图，统一订阅 communication.record：任意一端改写记录后五个记录页同源刷新。
+useDomainAutoRefresh('communication.record', load);
 </script>
 
 <template>
