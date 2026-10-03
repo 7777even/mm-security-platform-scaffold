@@ -828,6 +828,124 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/fire-facility/ledger/{ledgerId}/maintenance': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 消防设施台账维保记录新增
+     * @description 落库 fac_fire_facility_maintenance（ledger_id 关联台账条目）。必填 date（维保日期）/ content（维保内容）；reportFile 可空。需权限码 fire-facility:ledger:write（V99）。成功后经 fire-facility.ledger 实时广播，管理端重拉台账即带出新记录。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 台账记录 id（fac_fire_facility_ledger.id） */
+          ledgerId: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "date": "2026-10-10",
+           *       "content": "更换密封圈",
+           *       "reportFile": "https://example.com/report/1.pdf"
+           *     }
+           */
+          'application/json': components['schemas']['FireFacilityMaintenanceWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 新增成功，返回新建维保记录 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 5,
+             *         "ledgerId": 1,
+             *         "date": "2026-10-10",
+             *         "content": "更换密封圈",
+             *         "reportFile": "https://example.com/report/1.pdf"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['ApiResponse'] & {
+              data?: components['schemas']['FireFacilityMaintenanceRecord'];
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/fire-facility/maintenance/{recordId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * 消防设施台账维保记录删除
+     * @description 按记录 id 物理删除维保记录。需权限码 fire-facility:ledger:write。成功后经 fire-facility.ledger 实时广播。记录不存在返回 404。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 维保记录 id（fac_fire_facility_maintenance.id） */
+          recordId: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除成功 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": null
+             *     }
+             */
+            'application/json': unknown;
+          };
+        };
+        404: components['responses']['BadRequest'];
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1012,8 +1130,18 @@ export interface components {
       /** @description 上报的分项列表（按 key upsert） */
       items?: components['schemas']['FireFacilityMonitorReportItem'][];
     };
-    /** @description 设施维保记录项 */
+    /** @description 设施维保记录项（含 id / ledgerId，供删除引用） */
     FireFacilityMaintenanceRecord: {
+      /**
+       * @description 维保记录 id（fac_fire_facility_maintenance.id），删除时引用
+       * @example 5
+       */
+      id?: number;
+      /**
+       * @description 关联台账记录 id（fac_fire_facility_ledger.id）
+       * @example 1
+       */
+      ledgerId?: number;
       /**
        * @description 维保日期
        * @example 2026-02-20
@@ -1026,6 +1154,24 @@ export interface components {
       content?: string;
       /**
        * @description 维保报告文件地址
+       * @example https://example.com/report/1.pdf
+       */
+      reportFile?: string | null;
+    };
+    /** @description 消防设施台账维保记录写请求：落库 fac_fire_facility_maintenance。字段名对齐只读 DTO（date→record_date、content→content_text、reportFile→report_file 在后端映射）。 */
+    FireFacilityMaintenanceWriteRequest: {
+      /**
+       * @description 维保日期（yyyy-MM-dd，必填）
+       * @example 2026-10-10
+       */
+      date?: string;
+      /**
+       * @description 维保内容（必填）
+       * @example 更换密封圈
+       */
+      content?: string;
+      /**
+       * @description 维保报告文件地址（可空）
        * @example https://example.com/report/1.pdf
        */
       reportFile?: string | null;

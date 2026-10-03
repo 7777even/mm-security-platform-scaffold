@@ -322,7 +322,11 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /**
+     * 周界入侵告警列表
+     * @description 按告警时间倒序返回全部周界入侵告警，供管理端台账表格展示与检索。写回经 security.perimeter-alarm 广播，订阅方即时重拉。
+     */
+    get: operations['listPerimeterAlarms'];
     put?: never;
     /**
      * 创建周界入侵告警（手工录入）
@@ -2433,6 +2437,48 @@ export interface operations {
         };
         content?: never;
       };
+    };
+  };
+  listPerimeterAlarms: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
+        'Accept-Language'?: components['parameters']['lang'];
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=PerimeterAlarmDetail 数组） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": [
+           *         {
+           *           "id": 1,
+           *           "alarmCode": "PA-20260923-173000",
+           *           "title": "南门未经授权翻越",
+           *           "status": "未确认",
+           *           "level": "一级",
+           *           "time": "2026-09-23 17:30:00"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['PerimeterAlarmDetail'][];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
     };
   };
   createPerimeterAlarm: {

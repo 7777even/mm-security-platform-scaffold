@@ -709,6 +709,93 @@
           }
         }
       }
+    },
+    "/fire-facility/ledger/{ledgerId}/maintenance": {
+      "post": {
+        "summary": "消防设施台账维保记录新增",
+        "description": "落库 fac_fire_facility_maintenance（ledger_id 关联台账条目）。必填 date（维保日期）/ content（维保内容）；reportFile 可空。需权限码 fire-facility:ledger:write（V99）。成功后经 fire-facility.ledger 实时广播，管理端重拉台账即带出新记录。",
+        "tags": ["fire-facility"],
+        "parameters": [
+          {
+            "name": "ledgerId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "台账记录 id（fac_fire_facility_ledger.id）"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/FireFacilityMaintenanceWriteRequest" },
+              "example": {
+                "date": "2026-10-10",
+                "content": "更换密封圈",
+                "reportFile": "https://example.com/report/1.pdf"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "新增成功，返回新建维保记录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/FireFacilityMaintenanceRecord" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 5,
+                    "ledgerId": 1,
+                    "date": "2026-10-10",
+                    "content": "更换密封圈",
+                    "reportFile": "https://example.com/report/1.pdf"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fire-facility/maintenance/{recordId}": {
+      "delete": {
+        "summary": "消防设施台账维保记录删除",
+        "description": "按记录 id 物理删除维保记录。需权限码 fire-facility:ledger:write。成功后经 fire-facility.ledger 实时广播。记录不存在返回 404。",
+        "tags": ["fire-facility"],
+        "parameters": [
+          {
+            "name": "recordId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "维保记录 id（fac_fire_facility_maintenance.id）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "example": { "code": 0, "message": "ok", "data": null }
+              }
+            }
+          },
+          "404": { "$ref": "./_shared.json#/components/responses/BadRequest" }
+        }
+      }
     }
   },
   "components": {
@@ -896,8 +983,18 @@
       },
       "FireFacilityMaintenanceRecord": {
         "type": "object",
-        "description": "设施维保记录项",
+        "description": "设施维保记录项（含 id / ledgerId，供删除引用）",
         "properties": {
+          "id": {
+            "type": "integer",
+            "description": "维保记录 id（fac_fire_facility_maintenance.id），删除时引用",
+            "example": 5
+          },
+          "ledgerId": {
+            "type": "integer",
+            "description": "关联台账记录 id（fac_fire_facility_ledger.id）",
+            "example": 1
+          },
           "date": {
             "type": "string",
             "description": "维保日期",
@@ -911,6 +1008,27 @@
           "reportFile": {
             "type": ["string", "null"],
             "description": "维保报告文件地址",
+            "example": "https://example.com/report/1.pdf"
+          }
+        }
+      },
+      "FireFacilityMaintenanceWriteRequest": {
+        "type": "object",
+        "description": "消防设施台账维保记录写请求：落库 fac_fire_facility_maintenance。字段名对齐只读 DTO（date→record_date、content→content_text、reportFile→report_file 在后端映射）。",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "维保日期（yyyy-MM-dd，必填）",
+            "example": "2026-10-10"
+          },
+          "content": {
+            "type": "string",
+            "description": "维保内容（必填）",
+            "example": "更换密封圈"
+          },
+          "reportFile": {
+            "type": ["string", "null"],
+            "description": "维保报告文件地址（可空）",
             "example": "https://example.com/report/1.pdf"
           }
         }

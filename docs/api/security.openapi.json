@@ -1749,6 +1749,61 @@
       }
     },
     "/security/perimeter-alarms": {
+      "get": {
+        "tags": ["security"],
+        "operationId": "listPerimeterAlarms",
+        "summary": "周界入侵告警列表",
+        "description": "按告警时间倒序返回全部周界入侵告警，供管理端台账表格展示与检索。写回经 security.perimeter-alarm 广播，订阅方即时重拉。",
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=PerimeterAlarmDetail 数组）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/PerimeterAlarmDetail"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "alarmCode": "PA-20260923-173000",
+                      "title": "南门未经授权翻越",
+                      "status": "未确认",
+                      "level": "一级",
+                      "time": "2026-09-23 17:30:00"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          }
+        }
+      },
       "post": {
         "tags": ["security"],
         "operationId": "createPerimeterAlarm",
