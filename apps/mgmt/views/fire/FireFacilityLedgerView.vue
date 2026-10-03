@@ -172,7 +172,7 @@ useDomainAutoRefresh('fire-facility.ledger', load, { immediate: false });
             v-permission="'fire-facility:ledger:write'"
             link
             type="primary"
-            @click="openEdit(row)"
+            @click="openEdit(row as FireFacilityLedgerItem)"
           >
             编辑
           </el-button>
@@ -180,7 +180,7 @@ useDomainAutoRefresh('fire-facility.ledger', load, { immediate: false });
             v-permission="'fire-facility:ledger:write'"
             link
             type="danger"
-            @click="onDelete(row)"
+            @click="onDelete(row as FireFacilityLedgerItem)"
           >
             删除
           </el-button>

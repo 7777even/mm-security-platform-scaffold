@@ -51,8 +51,22 @@ export interface FireFacilityMonitorReportRequest {
 }
 
 export interface FireFacilityMaintenanceRecord {
+  /** 维保记录主键（fac_fire_facility_maintenance.id），删除时引用。 */
+  id: number;
+  /** 所属台账条目 id（fac_fire_facility_ledger.id）。 */
+  ledgerId: number;
   date: string;
   content: string;
+  reportFile?: string | null;
+}
+
+/** 消防设施台账维保记录写请求：落库 fac_fire_facility_maintenance。date/content 必填，reportFile 可空。 */
+export interface FireFacilityMaintenanceWriteRequest {
+  /** 维保日期（必填，yyyy-MM-dd）。 */
+  date: string;
+  /** 维保内容（必填）。 */
+  content: string;
+  /** 维保报告文件路径（可空）。 */
   reportFile?: string | null;
 }
 
@@ -246,6 +260,54 @@ export async function deleteFireFacilityLedger(id: number): Promise<void> {
   }
   await request<void>({
     url: `/fire-facility/ledger/${encodeURIComponent(id)}`,
+    method: 'DELETE',
+  });
+}
+
+/**
+ * 消防设施台账维保记录新增：POST /fire-facility/ledger/{ledgerId}/maintenance，落 fac_fire_facility_maintenance。
+ * date/content 必填，reportFile 可空。三态与台账写接口对齐：演示态仅本地成功返回 null；离线显式报错抛异常；连后端真实 POST。
+ * 成功返回新建维保记录（含主键），写成功后后端广播 fire-facility.ledger，台账重拉即带出新记录。
+ */
+export async function createFireFacilityMaintenance(
+  ledgerId: number,
+  payload: FireFacilityMaintenanceWriteRequest,
+): Promise<FireFacilityMaintenanceRecord | null> {
+  if (isDemoMode()) {
+    return Promise.resolve(null);
+  }
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'fireFacility',
+      `/fire-facility/ledger/${ledgerId}/maintenance`,
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法新增消防设施维保记录');
+  }
+  return request<FireFacilityMaintenanceRecord>({
+    url: `/fire-facility/ledger/${encodeURIComponent(ledgerId)}/maintenance`,
+    method: 'POST',
+    data: payload,
+  });
+}
+
+/**
+ * 消防设施台账维保记录删除（按记录 id 物理删除）：DELETE /fire-facility/maintenance/{recordId}。三态与新增对齐。
+ */
+export async function deleteFireFacilityMaintenance(recordId: number): Promise<void> {
+  if (isDemoMode()) {
+    return Promise.resolve();
+  }
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'fireFacility',
+      `/fire-facility/maintenance/${recordId}`,
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法删除消防设施维保记录');
+  }
+  await request<void>({
+    url: `/fire-facility/maintenance/${encodeURIComponent(recordId)}`,
     method: 'DELETE',
   });
 }

@@ -297,6 +297,36 @@ export async function createPerimeterAlarm(
   });
 }
 
+/** 周界入侵告警全量列表（管理端台账表格）：GET /security/perimeter-alarms，按告警时间倒序。 */
+export async function fetchPerimeterAlarms(): Promise<PerimeterAlarmDetail[]> {
+  if (!import.meta.env.VITE_API_BASE) return [];
+  try {
+    const data = await request<PerimeterAlarmDetail[]>({
+      url: '/security/perimeter-alarms',
+      method: 'GET',
+    });
+    return Array.isArray(data) ? data : [];
+  } catch {
+    backendUnavailableWarn('security', '/security/perimeter-alarms');
+    return [];
+  }
+}
+
+/**
+ * 周界入侵告警删除（真删除）：DELETE /security/perimeter-alarms/{id}。
+ * 离线（未配置 VITE_API_BASE）显式报错并抛异常；成功后后端经 @RealtimeSync 广播 security.perimeter-alarm，订阅方自动重拉。
+ */
+export async function deletePerimeterAlarm(id: number): Promise<void> {
+  if (!import.meta.env.VITE_API_BASE) {
+    backendUnavailableWarn('security', `/security/perimeter-alarms/${id}`);
+    throw new Error('后端未连接，无法删除周界入侵告警');
+  }
+  await request<void>({
+    url: `/security/perimeter-alarms/${encodeURIComponent(id)}`,
+    method: 'DELETE',
+  });
+}
+
 /**
  * 周界入侵告警写回后的刷新信号：写接口成功后置位，订阅方（SecurityStatusPanel）据此重新拉取最新告警，
  * 保证面板与详情状态一致；同时后端经 @RealtimeSync 广播 security.perimeter-alarm.changed，

@@ -326,6 +326,11 @@ const serviceRoutes: RouteRecordRaw[] = [
     component: () => import('./views/security/VehicleRegView.vue'),
     meta: routeMeta('/vehicle-registration', '车辆备案管理'),
   },
+  {
+    path: '/perimeter-alarm-mgmt',
+    component: () => import('./views/security/PerimeterAlarmView.vue'),
+    meta: routeMeta('/perimeter-alarm-mgmt', '周界入侵告警管理'),
+  },
   // —— 消防设施管理域（台账段 / 运行监控段批量接管，共用视图）——
   ...fireFacilityLedgerRoutes,
   ...fireMonitorRoutes,
