@@ -4,6 +4,7 @@ import PanelCard from '../../common/PanelCard.vue';
 import { type GateControlItem } from '@/services/security';
 import {
   gateControlsData,
+  refreshGateControls,
   refreshSecurityData,
 } from '../../../lib/composables/useScreenSecurityData';
 import {
@@ -17,8 +18,12 @@ import {
   resetGateControlSearch,
 } from '../../../lib/composables/useGateControlListView';
 import { openGateControlDetail } from '../../../lib/composables/useGateControlDetailDialog';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 onMounted(() => void refreshSecurityData());
+
+// 三端实时刷新：任一端改道闸台账，本面板自动重拉
+useDomainAutoRefresh('security.gate-control', refreshGateControls, { immediate: false });
 
 function statusClass(status: GateControlItem['status']) {
   if (status === '正常') return 'gate-table__status--normal';

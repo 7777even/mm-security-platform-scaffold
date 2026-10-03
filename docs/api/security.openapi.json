@@ -132,6 +132,200 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": ["security"],
+        "operationId": "createGate",
+        "summary": "道闸台账新增",
+        "description": "管理端新增一条道闸台账（名称/所属门/经纬度）。status 为设备实时状态，仅读不写（零下行控制红线），请求体不含该字段。需权限码 security:gate-write（V101 已登记并授权 ADMIN 及岗位角色）。写成功后经 @RealtimeSync(domain=\"security.gate-control\") 广播 security.gate-control，前端列表与大屏自动重拉。必填项：name（@NotBlank，为空返回 400 校验失败）。",
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GateControlWriteRequest"
+              },
+              "example": {
+                "name": "1#门-道闸1",
+                "location": "1#门",
+                "longitude": 110.89175,
+                "latitude": 21.67778
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "创建成功，返回新记录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/GateControlItem"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 41,
+                    "name": "1#门-道闸1",
+                    "location": "1#门",
+                    "status": "正常",
+                    "longitude": 110.89175,
+                    "latitude": 21.67778
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
+        }
+      },
+      "put": {
+        "tags": ["security"],
+        "operationId": "updateGate",
+        "summary": "道闸台账更新",
+        "description": "管理端全字段更新一条道闸台账（read-modify-write，未传字段置空/不保留原值需前端回显后提交）。status 仅读不写。需权限码 security:gate-write（V101）。必填项：name（@NotBlank）。写成功后经 @RealtimeSync 广播 security.gate-control，前端列表与大屏自动重拉。并发冲突由 @Version 乐观锁拦截（返回 409）。",
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "道闸主键（fac_gate_control.id）",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 41
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GateControlWriteRequest"
+              },
+              "example": {
+                "name": "1#门-道闸1",
+                "location": "1#门",
+                "longitude": 110.89175,
+                "latitude": 21.67778
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功，返回更新后的记录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/GateControlItem"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 41,
+                    "name": "1#门-道闸1",
+                    "location": "1#门",
+                    "status": "正常",
+                    "longitude": 110.89175,
+                    "latitude": 21.67778
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["security"],
+        "operationId": "deleteGate",
+        "summary": "道闸台账删除",
+        "description": "真删除（物理删除）单条道闸台账。需权限码 security:gate-write（V101）。删除成功后经 @RealtimeSync 广播 security.gate-control，前端列表与大屏即时移除该条。记录不存在返回 NOT_FOUND（B3 包络，HTTP 200 + code!=0）。",
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "道闸主键（fac_gate_control.id）",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 41
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=null）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
+        }
       }
     },
     "/security/bollards": {
@@ -184,6 +378,200 @@
                 }
               }
             }
+          }
+        }
+      },
+      "post": {
+        "tags": ["security"],
+        "operationId": "createBollard",
+        "summary": "防恐柱台账新增",
+        "description": "管理端新增一条防恐柱台账（名称/所属门区/经纬度）。status 为设备实时状态，仅读不写（零下行控制红线），请求体不含该字段。需权限码 security:bollard-write（V101 已登记并授权 ADMIN 及岗位角色）。写成功后经 @RealtimeSync(domain=\"security.bollard\") 广播 security.bollard，前端列表与大屏自动重拉。必填项：name（@NotBlank，为空返回 400 校验失败）。",
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BollardWriteRequest"
+              },
+              "example": {
+                "name": "1#门防恐柱",
+                "zone": "1#门",
+                "longitude": 110.89175,
+                "latitude": 21.67778
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "创建成功，返回新记录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/BollardItem"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 51,
+                    "name": "1#门防恐柱",
+                    "zone": "1#门",
+                    "status": "正常",
+                    "longitude": 110.89175,
+                    "latitude": 21.67778
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
+        }
+      },
+      "put": {
+        "tags": ["security"],
+        "operationId": "updateBollard",
+        "summary": "防恐柱台账更新",
+        "description": "管理端全字段更新一条防恐柱台账（read-modify-write，未传字段置空/不保留原值需前端回显后提交）。status 仅读不写。需权限码 security:bollard-write（V101）。必填项：name（@NotBlank）。写成功后经 @RealtimeSync 广播 security.bollard，前端列表与大屏自动重拉。并发冲突由 @Version 乐观锁拦截（返回 409）。",
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "防恐柱主键（fac_bollard.id）",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 51
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BollardWriteRequest"
+              },
+              "example": {
+                "name": "1#门防恐柱",
+                "zone": "1#门",
+                "longitude": 110.89175,
+                "latitude": 21.67778
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功，返回更新后的记录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/BollardItem"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 51,
+                    "name": "1#门防恐柱",
+                    "zone": "1#门",
+                    "status": "正常",
+                    "longitude": 110.89175,
+                    "latitude": 21.67778
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["security"],
+        "operationId": "deleteBollard",
+        "summary": "防恐柱台账删除",
+        "description": "真删除（物理删除）单条防恐柱台账。需权限码 security:bollard-write（V101）。删除成功后经 @RealtimeSync 广播 security.bollard，前端列表与大屏即时移除该条。记录不存在返回 NOT_FOUND（B3 包络，HTTP 200 + code!=0）。",
+        "parameters": [
+          {
+            "$ref": "./_shared.json#/components/parameters/lang"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "防恐柱主键（fac_bollard.id）",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 51
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=null）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./_shared.json#/components/schemas/ApiResponse"
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": null
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "./_shared.json#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "./_shared.json#/components/responses/Forbidden"
           }
         }
       }
@@ -1518,6 +1906,60 @@
           "latitude": {
             "type": "number",
             "description": "纬度"
+          }
+        }
+      },
+      "GateControlWriteRequest": {
+        "type": "object",
+        "description": "道闸台账写请求（新增 / 更新共用）。字段白名单：name/location/longitude/latitude；status 为设备实时状态，仅读不写（零下行控制红线），不在请求体内接受。必填项：name（@NotBlank）。权限码 security:gate-write；写成功后经 @RealtimeSync 广播 security.gate-control。",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "道闸名称（必填，@NotBlank，为空返回 400 校验失败）",
+            "example": "1#门-道闸1"
+          },
+          "location": {
+            "type": "string",
+            "description": "所属门（1#门/2#门/东门/南门/西门/北门）",
+            "example": "1#门"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "经度",
+            "example": 110.89175
+          },
+          "latitude": {
+            "type": "number",
+            "description": "纬度",
+            "example": 21.67778
+          }
+        }
+      },
+      "BollardWriteRequest": {
+        "type": "object",
+        "description": "防恐柱台账写请求（新增 / 更新共用）。字段白名单：name/zone/longitude/latitude；status 为设备实时状态，仅读不写（零下行控制红线），不在请求体内接受。必填项：name（@NotBlank）。权限码 security:bollard-write；写成功后经 @RealtimeSync 广播 security.bollard。",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "防恐柱名称（必填，@NotBlank，为空返回 400 校验失败）",
+            "example": "1#门防恐柱"
+          },
+          "zone": {
+            "type": "string",
+            "description": "所属门/区",
+            "example": "1#门"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "经度",
+            "example": 110.89175
+          },
+          "latitude": {
+            "type": "number",
+            "description": "纬度",
+            "example": 21.67778
           }
         }
       },

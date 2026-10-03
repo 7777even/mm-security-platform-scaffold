@@ -38,3 +38,29 @@ export function refreshSecurityData(): Promise<void> {
     });
   return inflight;
 }
+
+/**
+ * 道闸台账定向刷新：绕过 loaded 单例守卫，供 useDomainAutoRefresh 在收到 security.gate-control
+ * 广播时单独重拉（不影响其余两列表）。失败保留既有数据，不抛异常。
+ */
+export async function refreshGateControls(): Promise<void> {
+  try {
+    const data = await fetchGateControls();
+    gateControlsData.value = Array.isArray(data) ? data : [];
+  } catch {
+    /* 保留上次成功数据 */
+  }
+}
+
+/**
+ * 防恐柱台账定向刷新：绕过 loaded 单例守卫，供 useDomainAutoRefresh 在收到 security.bollard
+ * 广播时单独重拉。失败保留既有数据，不抛异常。
+ */
+export async function refreshBollards(): Promise<void> {
+  try {
+    const data = await fetchBollards();
+    bollardsData.value = Array.isArray(data) ? data : [];
+  } catch {
+    /* 保留上次成功数据 */
+  }
+}

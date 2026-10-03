@@ -3,6 +3,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils';
 import PersonnelRegView from '../security/PersonnelRegView.vue';
 import VehicleRegView from '../security/VehicleRegView.vue';
+import GateView from '../security/GateView.vue';
+import BollardView from '../security/BollardView.vue';
 
 const {
   fetchPersonSearch,
@@ -15,6 +17,14 @@ const {
   createVehicleSearch,
   updateVehicleSearch,
   deleteVehicleSearch,
+  fetchGateControls,
+  createGateControl,
+  updateGateControl,
+  deleteGateControl,
+  fetchBollards,
+  createBollard,
+  updateBollard,
+  deleteBollard,
   subscribeDomainChange,
   unsub,
   confirmMock,
@@ -30,6 +40,14 @@ const {
   createVehicleSearch: vi.fn(),
   updateVehicleSearch: vi.fn(),
   deleteVehicleSearch: vi.fn(),
+  fetchGateControls: vi.fn(),
+  createGateControl: vi.fn(),
+  updateGateControl: vi.fn(),
+  deleteGateControl: vi.fn(),
+  fetchBollards: vi.fn(),
+  createBollard: vi.fn(),
+  updateBollard: vi.fn(),
+  deleteBollard: vi.fn(),
   subscribeDomainChange: vi.fn(),
   unsub: vi.fn(),
   confirmMock: vi.fn(),
@@ -47,6 +65,14 @@ vi.mock('@/services/security', () => ({
   createVehicleSearch: (...args: unknown[]) => createVehicleSearch(...args),
   updateVehicleSearch: (...args: unknown[]) => updateVehicleSearch(...args),
   deleteVehicleSearch: (...args: unknown[]) => deleteVehicleSearch(...args),
+  fetchGateControls: (...args: unknown[]) => fetchGateControls(...args),
+  createGateControl: (...args: unknown[]) => createGateControl(...args),
+  updateGateControl: (...args: unknown[]) => updateGateControl(...args),
+  deleteGateControl: (...args: unknown[]) => deleteGateControl(...args),
+  fetchBollards: (...args: unknown[]) => fetchBollards(...args),
+  createBollard: (...args: unknown[]) => createBollard(...args),
+  updateBollard: (...args: unknown[]) => updateBollard(...args),
+  deleteBollard: (...args: unknown[]) => deleteBollard(...args),
 }));
 // useDomainAutoRefresh 内部走 realtime 中枢，mock 到这一层即可捕获订阅与退订
 vi.mock('@/services/realtime', () => ({
@@ -95,6 +121,22 @@ const VEHICLE_DETAIL = {
   waybillNo: 'YD202610030001',
   cargo: '工业乙醇',
   destination: '炼油一区装卸点',
+};
+const GATE_ROW = {
+  id: 7,
+  name: '1#门-道闸1',
+  location: '1#门',
+  status: '正常',
+  longitude: 110.5,
+  latitude: 21.3,
+};
+const BOLLARD_ROW = {
+  id: 9,
+  name: '1#门防恐柱',
+  zone: '1#门',
+  status: '正常',
+  longitude: 110.6,
+  latitude: 21.4,
 };
 
 function findBtn(wrapper: VueWrapper, text: string) {
@@ -158,6 +200,14 @@ beforeEach(() => {
   createVehicleSearch.mockResolvedValue(null);
   updateVehicleSearch.mockResolvedValue(null);
   deleteVehicleSearch.mockResolvedValue(undefined);
+  fetchGateControls.mockResolvedValue([GATE_ROW]);
+  createGateControl.mockResolvedValue(null);
+  updateGateControl.mockResolvedValue(null);
+  deleteGateControl.mockResolvedValue(undefined);
+  fetchBollards.mockResolvedValue([BOLLARD_ROW]);
+  createBollard.mockResolvedValue(null);
+  updateBollard.mockResolvedValue(null);
+  deleteBollard.mockResolvedValue(undefined);
   confirmMock.mockResolvedValue('confirm');
 });
 
@@ -213,7 +263,7 @@ describe('人员备案管理（PersonnelRegView）实时订阅与 CRUD', () => {
     const wrapper = await mountLoaded(PersonnelRegView);
     const dialog = await openEditDialog(wrapper);
     expect(fetchPersonSearchDetail).toHaveBeenCalledWith(7);
-    const editRow = dialog.props('editRow') as Record<string, unknown>;
+    const editRow = dialog.props('editRow' as never) as Record<string, unknown>;
     expect(editRow).toBeTruthy();
     expect(editRow.id).toBe(7);
     // 详情扩展字段必须回填，否则编辑态除摘要外全空、用户误以为数据丢失
@@ -326,7 +376,7 @@ describe('车辆备案管理（VehicleRegView）实时订阅与 CRUD', () => {
     const wrapper = await mountLoaded(VehicleRegView);
     const dialog = await openEditDialog(wrapper);
     expect(fetchVehicleSearchDetail).toHaveBeenCalledWith(12);
-    const editRow = dialog.props('editRow') as Record<string, unknown>;
+    const editRow = dialog.props('editRow' as never) as Record<string, unknown>;
     expect(editRow).toBeTruthy();
     expect(editRow.id).toBe(12);
     expect(editRow.vehicleType).toBe('危化品运输车');
@@ -388,5 +438,142 @@ describe('车辆备案管理（VehicleRegView）实时订阅与 CRUD', () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(fetchVehicleSearchDetail).not.toHaveBeenCalled();
     expect(wrapper.findComponent({ name: 'MgmtRecordEditDialog' }).props('editRow')).toBeNull();
+  });
+});
+
+describe('卡口门禁管理（GateView）实时订阅与 CRUD', () => {
+  it('挂载时订阅 security.gate-control 域，卸载时退订', async () => {
+    const wrapper = await mountLoaded(GateView);
+    expect(subscribeDomainChange).toHaveBeenCalledWith(
+      'security.gate-control',
+      expect.any(Function),
+    );
+    wrapper.unmount();
+    expect(unsub).toHaveBeenCalledTimes(1);
+  });
+
+  it('删除经二次确认后调用 deleteGateControl', async () => {
+    const wrapper = await mountLoaded(GateView);
+    await clickDelete(wrapper);
+    expect(confirmMock).toHaveBeenCalled();
+    expect(deleteGateControl).toHaveBeenCalledWith(7);
+    expect(fetchGateControls.mock.calls.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('用户取消确认时不调用 deleteGateControl', async () => {
+    confirmMock.mockRejectedValue('cancel');
+    const wrapper = await mountLoaded(GateView);
+    await clickDelete(wrapper);
+    expect(deleteGateControl).not.toHaveBeenCalled();
+  });
+
+  it('新增保存：必填 name 走 createGateControl，且写请求体不含 status（零下行控制）', async () => {
+    const wrapper = await mountLoaded(GateView);
+    await saveDialog(wrapper, '新增', { name: '2#门-道闸1' });
+    expect(createGateControl).toHaveBeenCalledTimes(1);
+    const payload = createGateControl.mock.calls[0][0] as Record<string, unknown>;
+    expect(payload.name).toBe('2#门-道闸1');
+    expect(payload).not.toHaveProperty('status');
+    expect(updateGateControl).not.toHaveBeenCalled();
+  });
+
+  it('编辑保存：带 id 走 updateGateControl，且写请求体不含 status', async () => {
+    const wrapper = await mountLoaded(GateView);
+    await saveDialog(wrapper, '编辑', { location: '2#门' });
+    expect(updateGateControl).toHaveBeenCalledTimes(1);
+    const [id, payload] = updateGateControl.mock.calls[0] as [number, Record<string, unknown>];
+    expect(id).toBe(7);
+    expect(payload.name).toBe('1#门-道闸1');
+    expect(payload.location).toBe('2#门');
+    expect(payload).not.toHaveProperty('status');
+    expect(createGateControl).not.toHaveBeenCalled();
+  });
+
+  it('点击编辑以行数据直接回填，不拉详情接口', async () => {
+    const wrapper = await mountLoaded(GateView);
+    await findBtn(wrapper, '编辑').trigger('click');
+    await flushPromises();
+    await new Promise((r) => setTimeout(r, 0));
+    const dialog = wrapper.findComponent({ name: 'MgmtRecordEditDialog' });
+    expect(dialog.props('modelValue')).toBe(true);
+    const editRow = dialog.props('editRow') as Record<string, unknown>;
+    expect(editRow.id).toBe(7);
+    expect(editRow.name).toBe('1#门-道闸1');
+  });
+
+  it('新增态弹窗为空白表单', async () => {
+    const wrapper = await mountLoaded(GateView);
+    await findBtn(wrapper, '新增').trigger('click');
+    await flushPromises();
+    await new Promise((r) => setTimeout(r, 0));
+    const dialog = wrapper.findComponent({ name: 'MgmtRecordEditDialog' });
+    expect(dialog.props('editRow')).toBeNull();
+  });
+});
+
+describe('液压防撞柱管理（BollardView）实时订阅与 CRUD', () => {
+  it('挂载时订阅 security.bollard 域，卸载时退订', async () => {
+    const wrapper = await mountLoaded(BollardView);
+    expect(subscribeDomainChange).toHaveBeenCalledWith('security.bollard', expect.any(Function));
+    wrapper.unmount();
+    expect(unsub).toHaveBeenCalledTimes(1);
+  });
+
+  it('删除经二次确认后调用 deleteBollard', async () => {
+    const wrapper = await mountLoaded(BollardView);
+    await clickDelete(wrapper);
+    expect(confirmMock).toHaveBeenCalled();
+    expect(deleteBollard).toHaveBeenCalledWith(9);
+    expect(fetchBollards.mock.calls.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('用户取消确认时不调用 deleteBollard', async () => {
+    confirmMock.mockRejectedValue('cancel');
+    const wrapper = await mountLoaded(BollardView);
+    await clickDelete(wrapper);
+    expect(deleteBollard).not.toHaveBeenCalled();
+  });
+
+  it('新增保存：必填 name 走 createBollard，且写请求体不含 status（零下行控制）', async () => {
+    const wrapper = await mountLoaded(BollardView);
+    await saveDialog(wrapper, '新增', { name: '2#门防恐柱' });
+    expect(createBollard).toHaveBeenCalledTimes(1);
+    const payload = createBollard.mock.calls[0][0] as Record<string, unknown>;
+    expect(payload.name).toBe('2#门防恐柱');
+    expect(payload).not.toHaveProperty('status');
+    expect(updateBollard).not.toHaveBeenCalled();
+  });
+
+  it('编辑保存：带 id 走 updateBollard，且写请求体不含 status', async () => {
+    const wrapper = await mountLoaded(BollardView);
+    await saveDialog(wrapper, '编辑', { zone: '2#门' });
+    expect(updateBollard).toHaveBeenCalledTimes(1);
+    const [id, payload] = updateBollard.mock.calls[0] as [number, Record<string, unknown>];
+    expect(id).toBe(9);
+    expect(payload.name).toBe('1#门防恐柱');
+    expect(payload.zone).toBe('2#门');
+    expect(payload).not.toHaveProperty('status');
+    expect(createBollard).not.toHaveBeenCalled();
+  });
+
+  it('点击编辑以行数据直接回填，不拉详情接口', async () => {
+    const wrapper = await mountLoaded(BollardView);
+    await findBtn(wrapper, '编辑').trigger('click');
+    await flushPromises();
+    await new Promise((r) => setTimeout(r, 0));
+    const dialog = wrapper.findComponent({ name: 'MgmtRecordEditDialog' });
+    expect(dialog.props('modelValue')).toBe(true);
+    const editRow = dialog.props('editRow') as Record<string, unknown>;
+    expect(editRow.id).toBe(9);
+    expect(editRow.name).toBe('1#门防恐柱');
+  });
+
+  it('新增态弹窗为空白表单', async () => {
+    const wrapper = await mountLoaded(BollardView);
+    await findBtn(wrapper, '新增').trigger('click');
+    await flushPromises();
+    await new Promise((r) => setTimeout(r, 0));
+    const dialog = wrapper.findComponent({ name: 'MgmtRecordEditDialog' });
+    expect(dialog.props('editRow')).toBeNull();
   });
 });

@@ -2,7 +2,12 @@
 import { onMounted } from 'vue';
 import PanelCard from '../../common/PanelCard.vue';
 import { type BollardItem } from '@/services/security';
-import { bollardsData, refreshSecurityData } from '../../../lib/composables/useScreenSecurityData';
+import {
+  bollardsData,
+  refreshBollards,
+  refreshSecurityData,
+} from '../../../lib/composables/useScreenSecurityData';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import {
   bollardCurrentPage,
   bollardPagedItems,
@@ -16,6 +21,9 @@ import {
 import { openBollardDetail } from '../../../lib/composables/useBollardDetailDialog';
 
 onMounted(() => void refreshSecurityData());
+
+// 三端实时刷新：任一端改防恐柱台账，本面板自动重拉
+useDomainAutoRefresh('security.bollard', refreshBollards, { immediate: false });
 
 function statusClass(status: BollardItem['status']) {
   if (status === '正常') return 'bollard-table__status--normal';

@@ -943,3 +943,99 @@ export async function deleteVehicleSearch(id: number): Promise<void> {
     method: 'DELETE',
   });
 }
+
+// —— 道闸 / 防恐柱台账写接口（管理端 CRUD）——
+// 端点与字段对齐 docs/api/security.openapi.json（security:gate-write / security:bollard-write）。
+// status 为设备实时状态，仅读不写（零下行控制红线），写请求体不含该字段。
+// 三态语义与人员/车辆备案写接口一致（演示态/离线/连后端）。写成功后后端广播
+// security.gate-control / security.bollard，各端订阅方自动重拉。
+
+/** 道闸台账写请求体（新增/编辑共用）：由契约 GateControlWriteRequest 生成，必填 name。 */
+export type GateControlWriteRequest = components['schemas']['GateControlWriteRequest'];
+
+/** 防恐柱台账写请求体（新增/编辑共用）：由契约 BollardWriteRequest 生成，必填 name。 */
+export type BollardWriteRequest = components['schemas']['BollardWriteRequest'];
+
+export async function createGateControl(
+  payload: GateControlWriteRequest,
+): Promise<GateControlItem | null> {
+  if (isDemoMode()) return Promise.resolve(null);
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline('security', '/security/gate-controls', OFFLINE_REASON);
+    throw new Error('后端未连接，无法新增道闸台账');
+  }
+  return request<GateControlItem>({
+    url: '/security/gate-controls',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function updateGateControl(
+  id: number,
+  payload: GateControlWriteRequest,
+): Promise<GateControlItem | null> {
+  if (isDemoMode()) return Promise.resolve(null);
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline('security', `/security/gate-controls/${id}`, OFFLINE_REASON);
+    throw new Error('后端未连接，无法编辑道闸台账');
+  }
+  return request<GateControlItem>({
+    url: `/security/gate-controls/${encodeURIComponent(id)}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+export async function deleteGateControl(id: number): Promise<void> {
+  if (isDemoMode()) return Promise.resolve();
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline('security', `/security/gate-controls/${id}`, OFFLINE_REASON);
+    throw new Error('后端未连接，无法删除道闸台账');
+  }
+  await request<void>({
+    url: `/security/gate-controls/${encodeURIComponent(id)}`,
+    method: 'DELETE',
+  });
+}
+
+export async function createBollard(payload: BollardWriteRequest): Promise<BollardItem | null> {
+  if (isDemoMode()) return Promise.resolve(null);
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline('security', '/security/bollards', OFFLINE_REASON);
+    throw new Error('后端未连接，无法新增防恐柱台账');
+  }
+  return request<BollardItem>({
+    url: '/security/bollards',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function updateBollard(
+  id: number,
+  payload: BollardWriteRequest,
+): Promise<BollardItem | null> {
+  if (isDemoMode()) return Promise.resolve(null);
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline('security', `/security/bollards/${id}`, OFFLINE_REASON);
+    throw new Error('后端未连接，无法编辑防恐柱台账');
+  }
+  return request<BollardItem>({
+    url: `/security/bollards/${encodeURIComponent(id)}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+export async function deleteBollard(id: number): Promise<void> {
+  if (isDemoMode()) return Promise.resolve();
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline('security', `/security/bollards/${id}`, OFFLINE_REASON);
+    throw new Error('后端未连接，无法删除防恐柱台账');
+  }
+  await request<void>({
+    url: `/security/bollards/${encodeURIComponent(id)}`,
+    method: 'DELETE',
+  });
+}
