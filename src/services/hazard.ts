@@ -1,4 +1,5 @@
 import { request } from '@/services/http';
+import type { components } from '@/types/generated/hazard';
 import { backendUnavailableWarn, resolveOfflineFetch } from '@/services/backendFallback';
 import * as majorHazardFixture from '@/services/map-data/majorHazardMock';
 import * as monitoringFixture from '@/services/map-data/monitoringPointsMock';
@@ -121,4 +122,63 @@ export async function fetchFacilityDetail(
     backendUnavailableWarn('hazard', '/facilities/detail');
     return {} as facilityFixture.FacilityDetailInfo;
   }
+}
+
+export type MajorHazardWriteRequest = components['schemas']['MajorHazardWriteRequest'];
+export type MonitoringPointWriteRequest = components['schemas']['MonitoringPointWriteRequest'];
+
+export async function createMajorHazard(
+  payload: MajorHazardWriteRequest,
+): Promise<majorHazardFixture.MajorHazardItem> {
+  return request<majorHazardFixture.MajorHazardItem>({
+    url: '/hazards',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function updateMajorHazard(
+  id: number,
+  payload: MajorHazardWriteRequest,
+): Promise<majorHazardFixture.MajorHazardItem> {
+  return request<majorHazardFixture.MajorHazardItem>({
+    url: `/hazards/${id}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+export async function deleteMajorHazard(id: number): Promise<void> {
+  await request<void>({
+    url: `/hazards/${id}`,
+    method: 'DELETE',
+  });
+}
+
+export async function createMonitoringPoint(
+  payload: MonitoringPointWriteRequest,
+): Promise<monitoringFixture.MonitoringPoint> {
+  return request<monitoringFixture.MonitoringPoint>({
+    url: '/monitoring/points',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function updateMonitoringPoint(
+  id: string,
+  payload: MonitoringPointWriteRequest,
+): Promise<monitoringFixture.MonitoringPoint> {
+  return request<monitoringFixture.MonitoringPoint>({
+    url: `/monitoring/points/${encodeURIComponent(id)}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+export async function deleteMonitoringPoint(id: string): Promise<void> {
+  await request<void>({
+    url: `/monitoring/points/${encodeURIComponent(id)}`,
+    method: 'DELETE',
+  });
 }

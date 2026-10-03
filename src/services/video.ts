@@ -4,6 +4,7 @@ import {
   REASON_CONTRACT_MISMATCH,
   resolveOfflineFetch,
 } from '@/services/backendFallback';
+import type { components } from '@/types/generated/video';
 
 // 视频控制/视频墙大屏接口（fm-video-control / fm-video-wall），对齐 docs/api/video.openapi.json。
 // 取代前端硬编码的 videoControlMock / videoLinkageMock 业务数据；
@@ -234,6 +235,41 @@ export async function fetchVideoCameras(page = 1, size = 9): Promise<VideoCamera
     url: '/video/cameras',
     method: 'GET',
     params: { page, size },
+  });
+}
+
+/** 摄像头台账写请求体（新增/编辑共用）：由契约 VideoCameraWriteRequest 生成，必填 name。 */
+export type VideoCameraWriteRequest = components['schemas']['VideoCameraWriteRequest'];
+
+/** 删除结果（对齐契约 DeleteResult）。 */
+export interface VideoCameraDeleteResult {
+  ok: boolean;
+}
+
+/** 新建摄像头台账（权限码 video:camera-write），返回落库后的台账项。 */
+export async function createVideoCamera(
+  payload: VideoCameraWriteRequest,
+): Promise<VideoCameraItem> {
+  return request<VideoCameraItem>({ url: '/video/cameras', method: 'POST', data: payload });
+}
+
+/** 更新摄像头台账；未命中 id 时返回 null。 */
+export async function updateVideoCamera(
+  id: number,
+  payload: VideoCameraWriteRequest,
+): Promise<VideoCameraItem | null> {
+  return request<VideoCameraItem | null>({
+    url: `/video/cameras/${encodeURIComponent(id)}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+/** 删除摄像头台账；未命中 id 时后端返回 ok=false（不抛异常）。 */
+export async function deleteVideoCamera(id: number): Promise<void> {
+  await request<VideoCameraDeleteResult>({
+    url: `/video/cameras/${encodeURIComponent(id)}`,
+    method: 'DELETE',
   });
 }
 

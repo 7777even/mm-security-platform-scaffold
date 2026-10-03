@@ -1,4 +1,5 @@
 import { request } from '@/services/http';
+import type { components } from '@/types/generated/special-operation';
 import { ApiError } from '@/services/http';
 
 // 特殊作业大屏接口（壳内特殊作业面板 + 消防特殊作业弹窗复用），
@@ -112,4 +113,34 @@ export async function fetchSpecialOperationDetail(
     if (error instanceof ApiError && error.code === 404) return null;
     throw error;
   }
+}
+
+export type SpecialOperationWriteRequest = components['schemas']['SpecialOperationWriteRequest'];
+
+export async function createSpecialOperation(
+  payload: SpecialOperationWriteRequest,
+): Promise<SpecialOperationItem> {
+  return request<SpecialOperationItem>({
+    url: '/special-operations',
+    method: 'POST',
+    data: payload,
+  });
+}
+
+export async function updateSpecialOperation(
+  id: number,
+  payload: SpecialOperationWriteRequest,
+): Promise<SpecialOperationItem> {
+  return request<SpecialOperationItem>({
+    url: `/special-operations/${id}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+export async function deleteSpecialOperation(id: number): Promise<void> {
+  await request<void>({
+    url: `/special-operations/${id}`,
+    method: 'DELETE',
+  });
 }
