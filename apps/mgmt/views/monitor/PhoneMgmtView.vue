@@ -6,6 +6,7 @@ import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import { toastErr } from '../../utils/feedback';
 import { fetchCommunicationDevices } from '@/services/communication';
 import type { CommunicationDevice } from '@/services/communication';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 电话设备管理（/phone-management）：接后端 /communication/devices，取 phone 分组设备展平。
 const rows = ref<CommunicationDevice[]>([]);
@@ -26,6 +27,7 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+useDomainAutoRefresh('communication.device', load);
 </script>
 
 <template>

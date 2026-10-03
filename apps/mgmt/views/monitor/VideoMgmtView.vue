@@ -6,6 +6,7 @@ import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import { toastErr } from '../../utils/feedback';
 import { fetchVideoCameras } from '@/services/video';
 import type { VideoCameraItem } from '@/services/video';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 视频监控管理（/video-mgmt）：接后端 /video/cameras（分页网格，每页 9 宫格）。
 const rows = ref<VideoCameraItem[]>([]);
@@ -39,6 +40,7 @@ function onSizeChange(s: number) {
 }
 
 onMounted(load);
+useDomainAutoRefresh('video.camera', load);
 </script>
 
 <template>

@@ -6,6 +6,7 @@ import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import { toastErr } from '../../utils/feedback';
 import { fetchVideoCameras } from '@/services/video';
 import type { VideoCameraItem } from '@/services/video';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 视频健康度管理（/video-health）：接后端 /video/cameras，以状态列呈现设备健康度。
 const rows = ref<VideoCameraItem[]>([]);
@@ -25,6 +26,7 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+useDomainAutoRefresh('video.camera', load);
 </script>
 
 <template>
