@@ -6,6 +6,7 @@ import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import { toastErr } from '../../utils/feedback';
 import { fetchSpecialOperations } from '@/services/specialOperation';
 import type { SpecialOperationItem, SpecialOperationQuery } from '@/services/specialOperation';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 特殊作业管理（/special-ops）：接后端 /special-operations 分页列表，支持类型/等级/状态过滤。
 const rows = ref<SpecialOperationItem[]>([]);
@@ -57,6 +58,7 @@ function onFilter() {
 }
 
 onMounted(load);
+useDomainAutoRefresh('special-operation', load);
 </script>
 
 <template>

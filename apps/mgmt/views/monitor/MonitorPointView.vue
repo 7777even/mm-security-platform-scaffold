@@ -6,6 +6,7 @@ import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import { toastErr } from '../../utils/feedback';
 import { fetchMonitoringPoints } from '@/services/hazard';
 import type { MonitoringPoint } from '@/services/map-data/monitoringPointsMock';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 监测点位管理（/monitor-point）：接后端 /monitoring/points（工艺/消防监测点列表）。
 const rows = ref<MonitoringPoint[]>([]);
@@ -25,6 +26,7 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+useDomainAutoRefresh('hazard.point', load);
 </script>
 
 <template>

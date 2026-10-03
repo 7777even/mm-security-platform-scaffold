@@ -6,6 +6,7 @@ import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import { toastErr } from '../../utils/feedback';
 import { fetchMajorHazards } from '@/services/hazard';
 import type { MajorHazardItem } from '@/services/hazard';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 两重点一重大管理（/hazard-mgmt）：3 个 tab，仅「重大危险源」有后端列表端点（/hazards），
 // 其余两个 tab（重点监管危化品 / 重点监管工艺）后端暂未提供数据源，显示空态、不造假数据。
@@ -27,6 +28,7 @@ async function loadMajor(): Promise<void> {
 }
 
 onMounted(loadMajor);
+useDomainAutoRefresh('hazard', loadMajor);
 </script>
 
 <template>
