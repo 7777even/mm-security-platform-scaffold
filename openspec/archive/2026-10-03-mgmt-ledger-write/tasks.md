@@ -26,4 +26,4 @@
 ## 验证（Task 5）
 
 - [x] `SUBAPP_NO_EMPTY=1 npm run build:subapps` 编译通过
-- [ ] 双仓提交并按 scope 拆分推送（后端 common / 前端 mgmt），关联本 Change 归档
+- [x] 双仓提交并按 scope 拆分推送（后端 common / 前端 mgmt），关联本 Change 归档
