@@ -21,13 +21,13 @@
 - [x] `node backend-scaffold/scripts/check-api-contract.mjs --strict`：路由差异 0 / schema 漂移 0
 - [x] `node scripts/validate-api-contracts.mjs`：security.openapi.json 无四铁律违规
 
-## 前端消费层（Task 5，未开始）
+## 前端消费层（Task 5）
 
-- [ ] `src/services/security.ts` 新增 `createPersonSearch` / `updatePersonSearch` / `deletePersonSearch` 与车辆同构三方法
-- [ ] 新增 `apps/mgmt/components/PersonSearchEditDialog.vue` / `VehicleSearchEditDialog.vue`（编辑前回显详情，`name` / `plate` 必填校验）
-- [ ] 人员/车辆登记视图加操作列（编辑 / 删除二次确认）并订阅 `security.person-search` / `security.vehicle-search`
-- [ ] 周界告警列表加删除入口（权限 `security:perimeter-delete`），订阅 `security.perimeter-alarm`
+- [x] `src/services/security.ts` 新增 `createPersonSearch` / `updatePersonSearch` / `deletePersonSearch` 与车辆同构三方法
+- [x] 新增 `apps/mgmt/components/PersonSearchEditDialog.vue` / `VehicleSearchEditDialog.vue`（编辑前回显详情，`name` / `plate` 必填校验）
+- [x] 人员/车辆登记视图加操作列（编辑 / 删除二次确认）并订阅 `security.person-search` / `security.vehicle-search`
+- [x] 周界告警列表加删除入口（权限 `security:perimeter-delete`），订阅 `security.perimeter-alarm`
 
 ## 收尾（Task 6）
 
-- [ ] 双仓推送 `feature/scaffold-rebuild` 并联调（待本 Change 上列项全部完成后归档）
+- [x] 双仓推送 `feature/scaffold-rebuild` 并联调（消费层已在 995dc5c/90f286c 落地，双仓已于 2026-10-03 推送，本 Change 闭环）

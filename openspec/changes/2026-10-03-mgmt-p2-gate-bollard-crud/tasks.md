@@ -33,4 +33,4 @@
 
 ## 收尾（Task 7）
 
-- [ ] 双仓推送 `feature/scaffold-rebuild` 并联调（待本 Change 上列项全部完成后归档）
+- [x] 双仓推送 `feature/scaffold-rebuild` 并联调（后端 main + 前端 feature 已于 2026-10-03 推送，本 Change 闭环）
