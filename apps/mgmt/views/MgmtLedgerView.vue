@@ -9,6 +9,7 @@ import MgmtProTable from '../components/MgmtProTable.vue';
 import MgmtRecordEditDialog, { type FieldDef } from '../components/MgmtRecordEditDialog.vue';
 import { toastErr } from '../utils/feedback';
 import { mgmtLeafByPath } from '@/data/mgmtMenus';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import {
   fetchMgmtLedgerList,
   fetchMgmtLedgerMeta,
@@ -214,6 +215,10 @@ onMounted(reloadAll);
 watch(domain, () => {
   void reloadAll();
 });
+
+// 实时订阅：任一端（管理端/大屏/移动端）改写通用台账，本视图按 mgmt-ledger.changed 自动重拉当前域数据。
+// 25 域共用 mgmt-ledger 单一广播域，fetcher 仅重拉本路由 domain，跨域写入只触发无害的当前域刷新。
+useDomainAutoRefresh('mgmt-ledger', load);
 </script>
 
 <template>

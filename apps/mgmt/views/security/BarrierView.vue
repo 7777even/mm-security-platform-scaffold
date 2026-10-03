@@ -6,6 +6,7 @@ import MgmtPageHead from '../../components/MgmtPageHead.vue';
 import { toastErr } from '../../utils/feedback';
 import { fetchGateControls } from '@/services/security';
 import type { GateControlItem } from '@/services/security';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 道闸管理（/barrier-mgmt）：接后端 /security/gate-controls。
 const rows = ref<GateControlItem[]>([]);
@@ -25,6 +26,8 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+// 三端实时刷新：管理端维护道闸，本页自动重拉（realtime-channel spec）
+useDomainAutoRefresh('security.gate-control', load);
 </script>
 
 <template>
