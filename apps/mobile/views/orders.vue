@@ -7,6 +7,7 @@ import {
   fetchFireFacilityWorkOrders,
   type FireFacilityWorkOrderItem,
 } from '@/services/fireFacility';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { isOfflineNoBackend, notifyBackendOffline } from '@/services/backendFallback';
 
 /**
@@ -99,6 +100,9 @@ const STATUS_TAG: Record<string, string> = {
 };
 
 onMounted(load);
+// 三端实时刷新：管理端维护消防设施维保工单 / 故障，本页自动重拉（realtime-channel spec）
+useDomainAutoRefresh('fire-facility.ledger', load);
+useDomainAutoRefresh('fire-facility.fault', load);
 </script>
 
 <template>

@@ -7,6 +7,7 @@ import {
   fetchEmergencyPlanDetailSections,
   type EmergencyPlanDetailSection,
 } from '@/services/emergencyPlan';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 预案详情（详情页模板，docs/UI规范-移动端.md §5）
 // 数据源：后端 /api/v1/emergency-plans/catalog（目录，取 id 命中项作抬头）
@@ -48,6 +49,8 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+// 三端实时刷新：管理端维护应急预案目录 / 详情，本页自动重拉（realtime-channel spec）
+useDomainAutoRefresh('emergency.plan-catalog', load);
 </script>
 
 <template>

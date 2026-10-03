@@ -8,6 +8,7 @@ import {
   fetchFireFacilityWorkOrders,
   type FireFacilityWorkOrderItem,
 } from '@/services/fireFacility';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { isOfflineNoBackend, notifyBackendOffline } from '@/services/backendFallback';
 
 // 运维监测看板（看板页模板，docs/UI规范-移动端.md §5）
@@ -131,6 +132,9 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+// 三端实时刷新：管理端维护消防设施维保工单 / 故障，本看板工单部分自动重拉（realtime-channel spec）
+useDomainAutoRefresh('fire-facility.ledger', load);
+useDomainAutoRefresh('fire-facility.fault', load);
 </script>
 
 <template>

@@ -129,6 +129,8 @@ onMounted(load);
 
 // 三端实时刷新：管理端 / 大屏下发应急指令，指令 tab 自动重拉（realtime-channel spec）
 useDomainAutoRefresh('emergency.command', () => void loadCommands(), { immediate: false });
+// 三端实时刷新：管理端 / 大屏新建或更新应急事件，事件 tab 自动重拉（realtime-channel spec）
+useDomainAutoRefresh('emergency.event', () => void loadEvents(), { immediate: false });
 </script>
 
 <template>

@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
 import { fetchEmergencyPlanCatalog } from '@/services/emergencyPlan';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 应急预案（列表页模板，docs/UI规范-移动端.md §5）
 // 数据源：后端 /api/v1/emergency-plans/catalog（应急预案目录，4 行层级），
@@ -45,6 +46,8 @@ const filtered = computed(() => {
 });
 
 onMounted(load);
+// 三端实时刷新：管理端维护应急预案目录，本页自动重拉（realtime-channel spec）
+useDomainAutoRefresh('emergency.plan-catalog', load);
 </script>
 
 <template>

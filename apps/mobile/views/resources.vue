@@ -10,6 +10,7 @@ import {
   fetchFireBrigades,
   type FireBrigadeTeam,
 } from '@/services/rescueResource';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { isOfflineNoBackend, notifyBackendOffline } from '@/services/backendFallback';
 
 // 应急资源（列表页模板，docs/UI规范-移动端.md §5）
@@ -74,6 +75,11 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+// 三端实时刷新：管理端维护应急救援资源（车辆 / 装备 / 人员 / 队伍），本页自动重拉（realtime-channel spec）
+useDomainAutoRefresh('rescue.vehicle', load);
+useDomainAutoRefresh('rescue.equipment', load);
+useDomainAutoRefresh('rescue.personnel', load);
+useDomainAutoRefresh('rescue.brigade', load);
 </script>
 
 <template>

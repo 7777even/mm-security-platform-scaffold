@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import MobileHeader from '../components/MobileHeader.vue';
 import IconTile from '../components/IconTile.vue';
 import { fetchEmergencyKnowledge, type KnowledgeItem } from '@/services/knowledge';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 辅助资料库（列表页模板，docs/UI规范-移动端.md §5）
 // 数据源：后端 /api/v1/emergency/knowledge（应急生产安全知识分类），经 fetchEmergencyKnowledge
@@ -44,6 +45,8 @@ const filtered = computed(() => {
 });
 
 onMounted(load);
+// 三端实时刷新：管理端维护辅助资料库，本页自动重拉（realtime-channel spec）
+useDomainAutoRefresh('emergency.knowledge', load);
 </script>
 
 <template>

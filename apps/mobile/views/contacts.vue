@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import MobileHeader from '../components/MobileHeader.vue';
 import Icon from '../components/Icon.vue';
 import { fetchEmergencyPhones, type EmergencyPhone } from '@/services/emergencyPhone';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 /**
  * 应急通讯录（docs/UI规范-移动端.md §5）
@@ -45,6 +46,8 @@ const filtered = computed(() => {
 });
 
 onMounted(load);
+// 三端实时刷新：管理端维护应急通讯录，本页自动重拉（realtime-channel spec）
+useDomainAutoRefresh('emergency.phone', load);
 </script>
 
 <template>
