@@ -280,6 +280,118 @@
             }
           }
         }
+      },
+      "post": {
+        "summary": "新建摄像头台账",
+        "description": "新建一台摄像头台账；id 与 sort_no 由服务端按 LedgerIdSupport 分配（规避三方言自增序列滞后撞主键）。status 取值 live/loading/ai。仅 ADMIN 可写。",
+        "tags": ["video"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/VideoCameraWriteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "新建后的摄像头台账项",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/VideoCameraItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 28,
+                    "name": "新建摄像头",
+                    "cameraType": "球机",
+                    "location": "中央控制楼",
+                    "status": "loading",
+                    "hd": true,
+                    "thumbIndex": 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/video/cameras/{id}": {
+      "put": {
+        "summary": "更新摄像头台账",
+        "description": "按 id 更新摄像头台账字段；未命中 id 时 data 为 null。仅 ADMIN 可写。",
+        "tags": ["video"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "摄像头 id（取自 /video/cameras 列表）",
+            "schema": { "type": "integer", "format": "int64", "example": 28 }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/VideoCameraWriteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新后的摄像头台账项；未命中时为 null",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/VideoCameraItem" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 28,
+                    "name": "新建摄像头",
+                    "cameraType": "枪机",
+                    "location": "中央控制楼2F",
+                    "status": "live",
+                    "hd": false,
+                    "thumbIndex": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除摄像头台账",
+        "description": "按 id 删除摄像头台账；未命中 id 时 ok 为 false（不抛异常）。仅 ADMIN 可写。",
+        "tags": ["video"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "摄像头 id（取自 /video/cameras 列表）",
+            "schema": { "type": "integer", "format": "int64", "example": 28 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除结果",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DeleteResult" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": { "ok": true }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/video/linkages": {
@@ -699,6 +811,43 @@
             "example": 1
           }
         }
+      },
+      "VideoCameraWriteRequest": {
+        "type": "object",
+        "description": "摄像头写请求（新建/更新共用）。id 与 sort_no 由服务端分配；snapshot_bytes 演示占位图不在请求中传递。",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "摄像头名称",
+            "example": "新建摄像头"
+          },
+          "cameraType": {
+            "type": "string",
+            "description": "摄像机类型（固定点机/球机/枪机/云台）",
+            "example": "球机"
+          },
+          "location": {
+            "type": "string",
+            "description": "安装位置",
+            "example": "中央控制楼"
+          },
+          "statusName": {
+            "type": "string",
+            "description": "画面状态名：live 直播 / loading 加载中 / ai AI 识别",
+            "example": "loading"
+          },
+          "hd": {
+            "type": "boolean",
+            "description": "是否高清",
+            "example": true
+          },
+          "thumbIndex": {
+            "type": "integer",
+            "description": "缩略图索引（前端静态图下标）",
+            "example": 0
+          }
+        },
+        "required": ["name"]
       },
       "VideoCameraPage": {
         "type": "object",

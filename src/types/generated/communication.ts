@@ -114,7 +114,57 @@ export interface paths {
       };
     };
     put?: never;
-    post?: never;
+    /**
+     * 新建通讯设备台账
+     * @description 新建一台通讯设备台账；id 与 sort_no 由服务端按 LedgerIdSupport 分配。deviceCode 为业务自然键。仅 ADMIN 可写。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CommDeviceWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 新建后的通讯设备 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": "BC-099",
+             *         "type": "broadcast",
+             *         "name": "新建广播",
+             *         "area": "炼油罐区",
+             *         "location": "中央控制楼1F",
+             *         "status": "online",
+             *         "longitude": 110.851,
+             *         "latitude": 21.623,
+             *         "detail": {
+             *           "category": "号角扬声器",
+             *           "installTime": "2024-06-01 09:00:00",
+             *           "owner": "电仪车间",
+             *           "ip": "10.20.3.11",
+             *           "lastCheck": "2026-03-10 14:20:00"
+             *         }
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['CommunicationDevice'];
+          };
+        };
+      };
+    };
     delete?: never;
     options?: never;
     head?: never;
@@ -178,9 +228,97 @@ export interface paths {
         };
       };
     };
-    put?: never;
+    /**
+     * 更新通讯设备台账
+     * @description 按 deviceCode 更新通讯设备台账字段；未命中时 data 为 null。仅 ADMIN 可写。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 通讯设备 deviceCode（如 BC-001） */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CommDeviceWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 更新后的通讯设备；未命中时为 null */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": "BC-001",
+             *         "type": "broadcast",
+             *         "name": "中央控制室广播",
+             *         "area": "炼油罐区",
+             *         "location": "中央控制楼1F",
+             *         "status": "online",
+             *         "longitude": 110.851,
+             *         "latitude": 21.623,
+             *         "detail": {
+             *           "category": "号角扬声器",
+             *           "installTime": "2024-06-01 09:00:00",
+             *           "owner": "电仪车间",
+             *           "ip": "10.20.3.11",
+             *           "lastCheck": "2026-03-10 14:20:00"
+             *         }
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['CommunicationDevice'];
+          };
+        };
+      };
+    };
     post?: never;
-    delete?: never;
+    /**
+     * 删除通讯设备台账
+     * @description 按 deviceCode 删除通讯设备台账；未命中时 ok 为 false（不抛异常）。仅 ADMIN 可写。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 通讯设备 deviceCode（如 BC-001） */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除结果 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "ok": true
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['DeleteResult'];
+          };
+        };
+      };
+    };
     options?: never;
     head?: never;
     patch?: never;
@@ -470,6 +608,94 @@ export interface components {
        * @example 2026-03-10 14:20:00
        */
       lastCheck?: string;
+    };
+    /** @description 通讯设备写请求（新建/更新共用）。id 与 sort_no 由服务端分配；deviceCode 为业务自然键。 */
+    CommDeviceWriteRequest: {
+      /**
+       * @description 设备编码（业务自然键，与详情 id 一致）
+       * @example BC-001
+       */
+      deviceCode: string;
+      /**
+       * @description 设备类型：broadcast/phone/intercom
+       * @example broadcast
+       */
+      deviceType: string;
+      /**
+       * @description 分组键（同类型下分组标识）
+       * @example broadcast-1
+       */
+      groupKey?: string;
+      /**
+       * @description 分组名称
+       * @example 厂区广播组
+       */
+      groupLabel?: string;
+      /**
+       * @description 设备名称
+       * @example 中央控制室广播
+       */
+      deviceName: string;
+      /**
+       * @description 所属区域
+       * @example 炼油罐区
+       */
+      areaName?: string;
+      /**
+       * @description 安装位置描述
+       * @example 中央控制楼1F
+       */
+      locationName?: string;
+      /**
+       * @description 设备状态：online/offline/fault
+       * @example online
+       */
+      deviceStatus?: string;
+      /**
+       * Format: double
+       * @description 经度
+       * @example 110.851
+       */
+      longitude?: number;
+      /**
+       * Format: double
+       * @description 纬度
+       * @example 21.623
+       */
+      latitude?: number;
+      /**
+       * @description 设备型号/类别
+       * @example 号角扬声器
+       */
+      categoryName?: string;
+      /**
+       * @description 安装时间
+       * @example 2024-06-01 09:00:00
+       */
+      installTime?: string;
+      /**
+       * @description 责任部门/责任人
+       * @example 电仪车间
+       */
+      ownerName?: string;
+      /**
+       * @description 设备 IP 地址
+       * @example 10.20.3.11
+       */
+      ipAddress?: string;
+      /**
+       * @description 最近巡检时间
+       * @example 2026-03-10 14:20:00
+       */
+      lastCheckTime?: string;
+    };
+    /** @description 删除结果（与后端 dto/DeleteResult 同名对齐）。 */
+    DeleteResult: {
+      /**
+       * @description 删除是否成功（命中行数 > 0 为 true）
+       * @example true
+       */
+      ok?: boolean;
     };
   };
   responses: {

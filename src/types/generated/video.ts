@@ -388,8 +388,146 @@ export interface paths {
       };
     };
     put?: never;
-    post?: never;
+    /**
+     * 新建摄像头台账
+     * @description 新建一台摄像头台账；id 与 sort_no 由服务端按 LedgerIdSupport 分配（规避三方言自增序列滞后撞主键）。status 取值 live/loading/ai。仅 ADMIN 可写。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['VideoCameraWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 新建后的摄像头台账项 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 28,
+             *         "name": "新建摄像头",
+             *         "cameraType": "球机",
+             *         "location": "中央控制楼",
+             *         "status": "loading",
+             *         "hd": true,
+             *         "thumbIndex": 0
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['VideoCameraItem'];
+          };
+        };
+      };
+    };
     delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/video/cameras/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 更新摄像头台账
+     * @description 按 id 更新摄像头台账字段；未命中 id 时 data 为 null。仅 ADMIN 可写。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 摄像头 id（取自 /video/cameras 列表） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['VideoCameraWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 更新后的摄像头台账项；未命中时为 null */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 28,
+             *         "name": "新建摄像头",
+             *         "cameraType": "枪机",
+             *         "location": "中央控制楼2F",
+             *         "status": "live",
+             *         "hd": false,
+             *         "thumbIndex": 1
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['VideoCameraItem'];
+          };
+        };
+      };
+    };
+    post?: never;
+    /**
+     * 删除摄像头台账
+     * @description 按 id 删除摄像头台账；未命中 id 时 ok 为 false（不抛异常）。仅 ADMIN 可写。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 摄像头 id（取自 /video/cameras 列表） */
+          id: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除结果 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "ok": true
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['DeleteResult'];
+          };
+        };
+      };
+    };
     options?: never;
     head?: never;
     patch?: never;
@@ -981,6 +1119,39 @@ export interface components {
       /**
        * @description 缩略图索引（前端静态图下标）
        * @example 1
+       */
+      thumbIndex?: number;
+    };
+    /** @description 摄像头写请求（新建/更新共用）。id 与 sort_no 由服务端分配；snapshot_bytes 演示占位图不在请求中传递。 */
+    VideoCameraWriteRequest: {
+      /**
+       * @description 摄像头名称
+       * @example 新建摄像头
+       */
+      name: string;
+      /**
+       * @description 摄像机类型（固定点机/球机/枪机/云台）
+       * @example 球机
+       */
+      cameraType?: string;
+      /**
+       * @description 安装位置
+       * @example 中央控制楼
+       */
+      location?: string;
+      /**
+       * @description 画面状态名：live 直播 / loading 加载中 / ai AI 识别
+       * @example loading
+       */
+      statusName?: string;
+      /**
+       * @description 是否高清
+       * @example true
+       */
+      hd?: boolean;
+      /**
+       * @description 缩略图索引（前端静态图下标）
+       * @example 0
        */
       thumbIndex?: number;
     };

@@ -103,6 +103,50 @@
             }
           }
         }
+      },
+      "post": {
+        "summary": "新建通讯设备台账",
+        "description": "新建一台通讯设备台账；id 与 sort_no 由服务端按 LedgerIdSupport 分配。deviceCode 为业务自然键。仅 ADMIN 可写。",
+        "tags": ["communication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CommDeviceWriteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "新建后的通讯设备",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommunicationDevice" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": "BC-099",
+                    "type": "broadcast",
+                    "name": "新建广播",
+                    "area": "炼油罐区",
+                    "location": "中央控制楼1F",
+                    "status": "online",
+                    "longitude": 110.851,
+                    "latitude": 21.623,
+                    "detail": {
+                      "category": "号角扬声器",
+                      "installTime": "2024-06-01 09:00:00",
+                      "owner": "电仪车间",
+                      "ip": "10.20.3.11",
+                      "lastCheck": "2026-03-10 14:20:00"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/communication/devices/{id}": {
@@ -145,6 +189,88 @@
                       "lastCheck": "2026-03-10 14:20:00"
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "更新通讯设备台账",
+        "description": "按 deviceCode 更新通讯设备台账字段；未命中时 data 为 null。仅 ADMIN 可写。",
+        "tags": ["communication"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "通讯设备 deviceCode（如 BC-001）",
+            "schema": { "type": "string", "example": "BC-001" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CommDeviceWriteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新后的通讯设备；未命中时为 null",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CommunicationDevice" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": "BC-001",
+                    "type": "broadcast",
+                    "name": "中央控制室广播",
+                    "area": "炼油罐区",
+                    "location": "中央控制楼1F",
+                    "status": "online",
+                    "longitude": 110.851,
+                    "latitude": 21.623,
+                    "detail": {
+                      "category": "号角扬声器",
+                      "installTime": "2024-06-01 09:00:00",
+                      "owner": "电仪车间",
+                      "ip": "10.20.3.11",
+                      "lastCheck": "2026-03-10 14:20:00"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除通讯设备台账",
+        "description": "按 deviceCode 删除通讯设备台账；未命中时 ok 为 false（不抛异常）。仅 ADMIN 可写。",
+        "tags": ["communication"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "通讯设备 deviceCode（如 BC-001）",
+            "schema": { "type": "string", "example": "BC-001" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除结果",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DeleteResult" },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": { "ok": true }
                 }
               }
             }
@@ -348,6 +474,101 @@
             "type": "string",
             "description": "最近巡检时间",
             "example": "2026-03-10 14:20:00"
+          }
+        }
+      },
+      "CommDeviceWriteRequest": {
+        "type": "object",
+        "description": "通讯设备写请求（新建/更新共用）。id 与 sort_no 由服务端分配；deviceCode 为业务自然键。",
+        "properties": {
+          "deviceCode": {
+            "type": "string",
+            "description": "设备编码（业务自然键，与详情 id 一致）",
+            "example": "BC-001"
+          },
+          "deviceType": {
+            "type": "string",
+            "description": "设备类型：broadcast/phone/intercom",
+            "example": "broadcast"
+          },
+          "groupKey": {
+            "type": "string",
+            "description": "分组键（同类型下分组标识）",
+            "example": "broadcast-1"
+          },
+          "groupLabel": {
+            "type": "string",
+            "description": "分组名称",
+            "example": "厂区广播组"
+          },
+          "deviceName": {
+            "type": "string",
+            "description": "设备名称",
+            "example": "中央控制室广播"
+          },
+          "areaName": {
+            "type": "string",
+            "description": "所属区域",
+            "example": "炼油罐区"
+          },
+          "locationName": {
+            "type": "string",
+            "description": "安装位置描述",
+            "example": "中央控制楼1F"
+          },
+          "deviceStatus": {
+            "type": "string",
+            "description": "设备状态：online/offline/fault",
+            "example": "online"
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "经度",
+            "example": 110.851
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "纬度",
+            "example": 21.623
+          },
+          "categoryName": {
+            "type": "string",
+            "description": "设备型号/类别",
+            "example": "号角扬声器"
+          },
+          "installTime": {
+            "type": "string",
+            "description": "安装时间",
+            "example": "2024-06-01 09:00:00"
+          },
+          "ownerName": {
+            "type": "string",
+            "description": "责任部门/责任人",
+            "example": "电仪车间"
+          },
+          "ipAddress": {
+            "type": "string",
+            "description": "设备 IP 地址",
+            "example": "10.20.3.11"
+          },
+          "lastCheckTime": {
+            "type": "string",
+            "description": "最近巡检时间",
+            "example": "2026-03-10 14:20:00"
+          }
+        },
+        "required": ["deviceCode", "deviceType", "deviceName"]
+      },
+      "DeleteResult": {
+        "type": "object",
+        "description": "删除结果（与后端 dto/DeleteResult 同名对齐）。",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "description": "删除是否成功（命中行数 > 0 为 true）",
+            "example": true
           }
         }
       }
