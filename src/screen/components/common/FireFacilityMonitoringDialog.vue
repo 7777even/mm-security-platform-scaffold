@@ -59,6 +59,8 @@ async function loadFacilityData() {
 
 // 三端实时联通：管理端新增/编辑/删除故障后（fire-facility.fault 域变更），大屏即时重拉。
 useDomainAutoRefresh('fire-facility.fault', () => void loadFacilityData());
+// 三端实时联通：管理端维护消防设施监测数据（fire-facility.monitor 域变更），大屏监测 tab 即时重拉。
+useDomainAutoRefresh('fire-facility.monitor', () => void loadFacilityData());
 
 type DetailView =
   | { kind: 'facility'; facilityType: string }
