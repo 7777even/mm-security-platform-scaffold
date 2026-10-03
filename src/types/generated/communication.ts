@@ -384,8 +384,156 @@ export interface paths {
       };
     };
     put?: never;
-    post?: never;
+    /**
+     * 新建通讯通知记录
+     * @description 新建一条通讯通知记录（短信 / 电话通话 / 广播播报 / APP推送 / 语音对讲之一）。id 由服务端按 LedgerIdSupport 分配，recordNo 为业务自然键。仅 ADMIN 可写。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CommRecordWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 新建后的通讯通知记录 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "recordNo": "SMS-092",
+             *         "recordType": "sms",
+             *         "occurredAt": "2026-08-21 10:15",
+             *         "category": "告警通知",
+             *         "sender": "系统",
+             *         "receiver": "138****2212",
+             *         "summary": "T-302 压力报警，请立即核实",
+             *         "result": "成功",
+             *         "duration": "",
+             *         "channel": "短信网关",
+             *         "direction": "下发",
+             *         "contentType": "文本"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['CommunicationRecord'];
+          };
+        };
+      };
+    };
     delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/communication/records/{recordNo}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 更新通讯通知记录
+     * @description 按 recordNo 更新通讯通知记录字段；未命中时 data 为 null。仅 ADMIN 可写。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 通讯记录编号（取自 /communication/records 列表） */
+          recordNo: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['CommRecordWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 更新后的通讯通知记录；未命中时为 null */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "recordNo": "SMS-091",
+             *         "recordType": "sms",
+             *         "occurredAt": "2026-08-21 09:03",
+             *         "category": "告警通知",
+             *         "sender": "系统",
+             *         "receiver": "138****2211",
+             *         "summary": "T-301 感温报警，请立即核实",
+             *         "result": "失败",
+             *         "duration": "",
+             *         "channel": "短信网关",
+             *         "direction": "下发",
+             *         "contentType": "文本"
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['CommunicationRecord'];
+          };
+        };
+      };
+    };
+    post?: never;
+    /**
+     * 删除通讯通知记录
+     * @description 按 recordNo 删除通讯通知记录；未命中时 ok 为 false（不抛异常）。仅 ADMIN 可写。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 通讯记录编号（取自 /communication/records 列表） */
+          recordNo: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除结果 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "ok": true
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['DeleteResult'];
+          };
+        };
+      };
+    };
     options?: never;
     head?: never;
     patch?: never;
@@ -696,6 +844,69 @@ export interface components {
        * @example true
        */
       ok?: boolean;
+    };
+    /** @description 通讯通知记录写请求（新建/更新共用）。id 由服务端分配；recordNo 为业务自然键；result 落到实体的 result_text 列。 */
+    CommRecordWriteRequest: {
+      /**
+       * @description 记录编号（业务自然键，与列表 recordNo 一致）
+       * @example SMS-091
+       */
+      recordNo: string;
+      /**
+       * @description 记录类型：sms/call/broadcast/push/intercom
+       * @example sms
+       */
+      recordType: string;
+      /**
+       * @description 发生时间（发送/通话/播报/推送时间）
+       * @example 2026-08-21 09:03
+       */
+      occurredAt?: string;
+      /**
+       * @description 业务分类
+       * @example 告警通知
+       */
+      category?: string;
+      /**
+       * @description 发起方
+       * @example 系统
+       */
+      sender?: string;
+      /**
+       * @description 接收方/对象
+       * @example 138****2211
+       */
+      receiver?: string;
+      /**
+       * @description 内容摘要
+       * @example T-301 感温报警，请立即核实
+       */
+      summary?: string;
+      /**
+       * @description 状态/结果
+       * @example 成功
+       */
+      result?: string;
+      /**
+       * @description 通话/播报时长
+       * @example 00:42
+       */
+      duration?: string;
+      /**
+       * @description 通道（信道/关联设备/业务通道）
+       * @example 短信网关
+       */
+      channel?: string;
+      /**
+       * @description 呼叫方向（呼入/外呼/组呼/单呼）
+       * @example 下发
+       */
+      direction?: string;
+      /**
+       * @description 内容类型（文本/语音）
+       * @example 文本
+       */
+      contentType?: string;
     };
   };
   responses: {

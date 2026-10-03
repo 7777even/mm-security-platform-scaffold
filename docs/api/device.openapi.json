@@ -103,6 +103,53 @@
           "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
           "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
         }
+      },
+      "post": {
+        "tags": ["device"],
+        "operationId": "createDevice",
+        "summary": "新建设备台账",
+        "description": "新建一台设备台账；deviceCode 为 20 位 MDM 物理主键，由请求体给定（实体 IdType.INPUT，不走自增）。createdAt / updatedAt / deleted 由服务端维护，不在请求中传递。deviceCode 已存在返回 409。仅 ADMIN 可写。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DeviceWriteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=Device）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/Device" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "deviceCode": "FAC2026FIREA00000099",
+                    "deviceName": "罐区A消防探头-F99",
+                    "deviceType": "FIRE",
+                    "zone": "罐区A",
+                    "status": 1,
+                    "lat": 21.5123,
+                    "lon": 110.4123
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
       }
     },
     "/devices/{code}": {
@@ -147,6 +194,102 @@
                     "lat": 21.5123,
                     "lon": 110.4123
                   }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "put": {
+        "tags": ["device"],
+        "operationId": "updateDevice",
+        "summary": "更新设备台账",
+        "description": "按 20 位 MDM 设备编码更新设备台账字段；未命中或已软删时 data 为 null。deviceCode 本身不可改。仅 ADMIN 可写。",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "minLength": 20, "maxLength": 20 },
+            "description": "20 位 MDM 设备编码"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DeviceWriteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=Device；未命中时为 null）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/Device" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "deviceCode": "FAC2026FIREA00000001",
+                    "deviceName": "罐区A消防探头-F01",
+                    "deviceType": "FIRE",
+                    "zone": "罐区A",
+                    "status": 2,
+                    "lat": 21.5123,
+                    "lon": 110.4123
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "delete": {
+        "tags": ["device"],
+        "operationId": "deleteDevice",
+        "summary": "删除设备台账（软删除）",
+        "description": "按 20 位 MDM 设备编码删除设备台账；走软删除置 deleted=1，与读端点的 deleted=0 过滤保持一致。未命中 ok=false。仅 ADMIN 可写。",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "minLength": 20, "maxLength": 20 },
+            "description": "20 位 MDM 设备编码"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DeleteResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/DeleteResult" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": { "ok": true }
                 }
               }
             }
@@ -200,6 +343,59 @@
           }
         },
         "required": ["deviceCode", "deviceName", "deviceType", "zone", "status"]
+      },
+      "DeviceWriteRequest": {
+        "type": "object",
+        "description": "设备台账写请求（新建/更新共用）。deviceCode 为 20 位 MDM 物理主键由请求给定；createdAt / updatedAt / deleted 由服务端维护，不在请求中传递。",
+        "properties": {
+          "deviceCode": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 20,
+            "description": "20 位 MDM 设备编码（物理主键）",
+            "example": "FAC2026FIREA00000001"
+          },
+          "deviceName": {
+            "type": "string",
+            "description": "设备名称",
+            "example": "罐区A消防探头-F01"
+          },
+          "deviceType": {
+            "type": "string",
+            "description": "设备类型：FIRE/GAS/FLOOD/CCTV",
+            "example": "FIRE"
+          },
+          "zone": { "type": "string", "description": "所属区域", "example": "罐区A" },
+          "status": {
+            "type": "integer",
+            "description": "运行状态：0=离线 1=在线 2=告警",
+            "example": 1
+          },
+          "lat": {
+            "type": "number",
+            "format": "double",
+            "description": "纬度",
+            "example": 21.5123
+          },
+          "lon": {
+            "type": "number",
+            "format": "double",
+            "description": "经度",
+            "example": 110.4123
+          }
+        },
+        "required": ["deviceCode"]
+      },
+      "DeleteResult": {
+        "type": "object",
+        "description": "删除结果（与后端 dto/DeleteResult 同名对齐）。",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "description": "删除是否成功（软删除命中行数 > 0 为 true）",
+            "example": true
+          }
+        }
       }
     }
   }

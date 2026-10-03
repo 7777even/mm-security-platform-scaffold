@@ -12,7 +12,11 @@ export interface paths {
      */
     get: operations['getDevicePage'];
     put?: never;
-    post?: never;
+    /**
+     * 新建设备台账
+     * @description 新建一台设备台账；deviceCode 为 20 位 MDM 物理主键，由请求体给定（实体 IdType.INPUT，不走自增）。createdAt / updatedAt / deleted 由服务端维护，不在请求中传递。deviceCode 已存在返回 409。仅 ADMIN 可写。
+     */
+    post: operations['createDevice'];
     delete?: never;
     options?: never;
     head?: never;
@@ -31,9 +35,17 @@ export interface paths {
      * @description 按 20 位 MDM 设备编码查询单台设备台账明细；编码非 20 位直接返回 301，查无此设备时 data 为 null。
      */
     get: operations['getDeviceByCode'];
-    put?: never;
+    /**
+     * 更新设备台账
+     * @description 按 20 位 MDM 设备编码更新设备台账字段；未命中或已软删时 data 为 null。deviceCode 本身不可改。仅 ADMIN 可写。
+     */
+    put: operations['updateDevice'];
     post?: never;
-    delete?: never;
+    /**
+     * 删除设备台账（软删除）
+     * @description 按 20 位 MDM 设备编码删除设备台账；走软删除置 deleted=1，与读端点的 deleted=0 过滤保持一致。未命中 ok=false。仅 ADMIN 可写。
+     */
+    delete: operations['deleteDevice'];
     options?: never;
     head?: never;
     patch?: never;
@@ -124,6 +136,54 @@ export interface components {
        * @example 110.4123
        */
       lon?: number;
+    };
+    /** @description 设备台账写请求（新建/更新共用）。deviceCode 为 20 位 MDM 物理主键由请求给定；createdAt / updatedAt / deleted 由服务端维护，不在请求中传递。 */
+    DeviceWriteRequest: {
+      /**
+       * @description 20 位 MDM 设备编码（物理主键）
+       * @example FAC2026FIREA00000001
+       */
+      deviceCode: string;
+      /**
+       * @description 设备名称
+       * @example 罐区A消防探头-F01
+       */
+      deviceName?: string;
+      /**
+       * @description 设备类型：FIRE/GAS/FLOOD/CCTV
+       * @example FIRE
+       */
+      deviceType?: string;
+      /**
+       * @description 所属区域
+       * @example 罐区A
+       */
+      zone?: string;
+      /**
+       * @description 运行状态：0=离线 1=在线 2=告警
+       * @example 1
+       */
+      status?: number;
+      /**
+       * Format: double
+       * @description 纬度
+       * @example 21.5123
+       */
+      lat?: number;
+      /**
+       * Format: double
+       * @description 经度
+       * @example 110.4123
+       */
+      lon?: number;
+    };
+    /** @description 删除结果（与后端 dto/DeleteResult 同名对齐）。 */
+    DeleteResult: {
+      /**
+       * @description 删除是否成功（软删除命中行数 > 0 为 true）
+       * @example true
+       */
+      ok?: boolean;
     };
   };
   responses: {
@@ -238,6 +298,49 @@ export interface operations {
       403: components['responses']['Forbidden'];
     };
   };
+  createDevice: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DeviceWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=Device） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "deviceCode": "FAC2026FIREA00000099",
+           *         "deviceName": "罐区A消防探头-F99",
+           *         "deviceType": "FIRE",
+           *         "zone": "罐区A",
+           *         "status": 1,
+           *         "lat": 21.5123,
+           *         "lon": 110.4123
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['Device'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
   getDeviceByCode: {
     parameters: {
       query?: never;
@@ -276,6 +379,88 @@ export interface operations {
            */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['Device'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  updateDevice: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 20 位 MDM 设备编码 */
+        code: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DeviceWriteRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=Device；未命中时为 null） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "deviceCode": "FAC2026FIREA00000001",
+           *         "deviceName": "罐区A消防探头-F01",
+           *         "deviceType": "FIRE",
+           *         "zone": "罐区A",
+           *         "status": 2,
+           *         "lat": 21.5123,
+           *         "lon": 110.4123
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['Device'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  deleteDevice: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 20 位 MDM 设备编码 */
+        code: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=DeleteResult） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "ok": true
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['DeleteResult'];
           };
         };
       };
