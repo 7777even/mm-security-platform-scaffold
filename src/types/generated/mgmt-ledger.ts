@@ -144,6 +144,9 @@ export interface paths {
              *             }
              *           ]
              *         ],
+             *         "rowIds": [
+             *           1
+             *         ],
              *         "total": 3,
              *         "page": 1,
              *         "size": 20
@@ -158,6 +161,170 @@ export interface paths {
     put?: never;
     post?: never;
     delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/mgmt-ledger/{domain}/rows': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 新增台账行
+     * @description 需 ADMIN 角色。请求体为按列顺序排列的单元格数组；行与单元格在同一事务内写入，主键/排序号由服务层显式分配（规避自增序列滞后撞主键）。返回新行主键。
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 域标识（菜单叶子 path 去掉前导 /，如 alarm-config） */
+          domain: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "cells": [
+           *         {
+           *           "colIndex": 0,
+           *           "text": "R-009",
+           *           "type": null
+           *         },
+           *         {
+           *           "colIndex": 1,
+           *           "text": "新规则",
+           *           "type": null
+           *         },
+           *         {
+           *           "colIndex": 3,
+           *           "text": "一级",
+           *           "type": "bad"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['MgmtLedgerRowWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 新增成功，返回新行主键 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": 42
+             *     }
+             */
+            'application/json': number;
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/mgmt-ledger/{domain}/rows/{rowId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 更新台账行
+     * @description 需 ADMIN 角色。按 rowId 定位（须属于该 domain），删除旧单元格后按请求重写；行号/排序保持不变。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 域标识（菜单叶子 path 去掉前导 /，如 alarm-config） */
+          domain: string;
+          /** @description 行主键 */
+          rowId: number;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': components['schemas']['MgmtLedgerRowWriteRequest'];
+        };
+      };
+      responses: {
+        /** @description 更新成功 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": null
+             *     }
+             */
+            'application/json': null;
+          };
+        };
+      };
+    };
+    post?: never;
+    /**
+     * 删除台账行
+     * @description 需 ADMIN 角色。同时删除该行的全部单元格；行不存在返回 B3 NOT_FOUND（code=404）。
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 域标识（菜单叶子 path 去掉前导 /，如 alarm-config） */
+          domain: string;
+          /** @description 行主键 */
+          rowId: number;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 删除成功 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": null
+             *     }
+             */
+            'application/json': null;
+          };
+        };
+      };
+    };
     options?: never;
     head?: never;
     patch?: never;
@@ -257,6 +424,8 @@ export interface components {
       filters?: components['schemas']['MgmtLedgerFilterDto'][];
       /** @description 行集合，每行是等长于 columns 的单元格数组 */
       rows?: components['schemas']['MgmtLedgerCellDto'][][];
+      /** @description 与 rows 一一对应的行主键（筛选/分页后与显示行对齐），用于前端编辑/删除定位 */
+      rowIds?: number[];
       /**
        * @description 符合条件的总条数
        * @example 3
@@ -272,6 +441,29 @@ export interface components {
        * @example 20
        */
       size?: number;
+    };
+    /** @description 台账行写请求：一组按列顺序排列的单元格。 */
+    MgmtLedgerRowWriteRequest: {
+      /** @description 按列顺序排列的单元格（colIndex 从 0 起，对应列标题顺序） */
+      cells?: components['schemas']['MgmtLedgerCellWriteDto'][];
+    };
+    /** @description 台账单元格写请求。colIndex 对应列顺序（从 0 起）；type 为 ok/warn/bad/null，缺省为普通文本。 */
+    MgmtLedgerCellWriteDto: {
+      /**
+       * @description 列序号（从 0 开始，对应列标题顺序）
+       * @example 0
+       */
+      colIndex?: number;
+      /**
+       * @description 单元格文本
+       * @example R-001
+       */
+      text?: string | null;
+      /**
+       * @description 状态类型：ok=正常 / warn=警告 / bad=异常 / null=普通文本
+       * @example bad
+       */
+      type?: string | null;
     };
   };
   responses: {

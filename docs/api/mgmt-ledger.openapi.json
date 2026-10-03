@@ -117,11 +117,128 @@
                         { "text": "是", "type": "ok" }
                       ]
                     ],
+                    "rowIds": [1],
                     "total": 3,
                     "page": 1,
                     "size": 20
                   }
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mgmt-ledger/{domain}/rows": {
+      "post": {
+        "summary": "新增台账行",
+        "description": "需 ADMIN 角色。请求体为按列顺序排列的单元格数组；行与单元格在同一事务内写入，主键/排序号由服务层显式分配（规避自增序列滞后撞主键）。返回新行主键。",
+        "tags": ["mgmt-ledger"],
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "域标识（菜单叶子 path 去掉前导 /，如 alarm-config）"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MgmtLedgerRowWriteRequest" },
+              "example": {
+                "cells": [
+                  { "colIndex": 0, "text": "R-009", "type": null },
+                  { "colIndex": 1, "text": "新规则", "type": null },
+                  { "colIndex": 3, "text": "一级", "type": "bad" }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "新增成功，返回新行主键",
+            "content": {
+              "application/json": {
+                "schema": { "type": "integer" },
+                "example": { "code": 0, "message": "ok", "data": 42 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mgmt-ledger/{domain}/rows/{rowId}": {
+      "put": {
+        "summary": "更新台账行",
+        "description": "需 ADMIN 角色。按 rowId 定位（须属于该 domain），删除旧单元格后按请求重写；行号/排序保持不变。",
+        "tags": ["mgmt-ledger"],
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "域标识（菜单叶子 path 去掉前导 /，如 alarm-config）"
+          },
+          {
+            "name": "rowId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "行主键"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MgmtLedgerRowWriteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": { "type": "null" },
+                "example": { "code": 0, "message": "ok", "data": null }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "删除台账行",
+        "description": "需 ADMIN 角色。同时删除该行的全部单元格；行不存在返回 B3 NOT_FOUND（code=404）。",
+        "tags": ["mgmt-ledger"],
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "域标识（菜单叶子 path 去掉前导 /，如 alarm-config）"
+          },
+          {
+            "name": "rowId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "行主键"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "schema": { "type": "null" },
+                "example": { "code": 0, "message": "ok", "data": null }
               }
             }
           }
@@ -195,9 +312,42 @@
               "items": { "$ref": "#/components/schemas/MgmtLedgerCellDto" }
             }
           },
+          "rowIds": {
+            "type": "array",
+            "description": "与 rows 一一对应的行主键（筛选/分页后与显示行对齐），用于前端编辑/删除定位",
+            "items": { "type": "integer", "description": "行主键", "example": 1 }
+          },
           "total": { "type": "integer", "description": "符合条件的总条数", "example": 3 },
           "page": { "type": "integer", "description": "当前页码", "example": 1 },
           "size": { "type": "integer", "description": "每页条数", "example": 20 }
+        }
+      },
+      "MgmtLedgerRowWriteRequest": {
+        "type": "object",
+        "description": "台账行写请求：一组按列顺序排列的单元格。",
+        "properties": {
+          "cells": {
+            "type": "array",
+            "description": "按列顺序排列的单元格（colIndex 从 0 起，对应列标题顺序）",
+            "items": { "$ref": "#/components/schemas/MgmtLedgerCellWriteDto" }
+          }
+        }
+      },
+      "MgmtLedgerCellWriteDto": {
+        "type": "object",
+        "description": "台账单元格写请求。colIndex 对应列顺序（从 0 起）；type 为 ok/warn/bad/null，缺省为普通文本。",
+        "properties": {
+          "colIndex": {
+            "type": "integer",
+            "description": "列序号（从 0 开始，对应列标题顺序）",
+            "example": 0
+          },
+          "text": { "type": ["string", "null"], "description": "单元格文本", "example": "R-001" },
+          "type": {
+            "type": ["string", "null"],
+            "description": "状态类型：ok=正常 / warn=警告 / bad=异常 / null=普通文本",
+            "example": "bad"
+          }
         }
       }
     }
