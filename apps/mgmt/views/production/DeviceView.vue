@@ -1,15 +1,25 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { ElMessageBox } from 'element-plus';
 import { Cpu } from '@element-plus/icons-vue';
 import MgmtProTable from '../../components/MgmtProTable.vue';
 import MgmtPageHead from '../../components/MgmtPageHead.vue';
-import { toastErr } from '../../utils/feedback';
-import { fetchDevicePage } from '@/services/device';
-import type { DeviceItem, DeviceStatus } from '@/services/device';
+import MgmtRecordEditDialog, { type FieldDef } from '../../components/MgmtRecordEditDialog.vue';
+import { toastErr, toastOk } from '../../utils/feedback';
+import {
+  createDevice,
+  deleteDevice,
+  fetchDevicePage,
+  updateDevice,
+  type DeviceItem,
+  type DeviceStatus,
+  type DeviceWriteRequest,
+} from '@/services/device';
 import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 // 装置/设备台账管理（/device-mgmt）：接后端 /devices 分页。
 // 取代原 module-embed 原型 iframe 占位，数据全部来自后端；取数三态：加载中 / 空态 / 错误回落（不回灌假数据）。
+// 写操作（POST/PUT/DELETE）受 device:write 权限码控制，成功后后端广播 device。
 
 const rows = ref<DeviceItem[]>([]);
 const loading = ref(false);
@@ -25,6 +35,32 @@ const TYPE_TEXT: Record<string, string> = {
   FLOOD: '防汛',
   CCTV: '视频',
 };
+
+const dialogVisible = ref(false);
+const editRow = ref<Record<string, unknown> | null>(null);
+// 本域主键为 20 位 MDM 编码 deviceCode（非自增 id），MgmtRecordEditDialog 回传的 id 为数字故不可靠，
+// 页面自行记录当前编辑键：为空表示新增。
+const editKey = ref<string | null>(null);
+
+// 设备类型枚举（与后端 device_type 同义），写表单据此下拉。
+const DEVICE_TYPE_OPTIONS = Object.entries(TYPE_TEXT).map(([value, label]) => ({ value, label }));
+
+const FIELDS: FieldDef[] = [
+  {
+    prop: 'deviceCode',
+    label: '设备编码',
+    type: 'input',
+    required: true,
+    disabledOnEdit: true,
+    placeholder: '20 位 MDM 设备编码',
+  },
+  { prop: 'deviceName', label: '设备名称', type: 'input', placeholder: '如 罐区A消防探头-F01' },
+  { prop: 'deviceType', label: '设备类型', type: 'select', options: DEVICE_TYPE_OPTIONS },
+  { prop: 'zone', label: '所属区域', type: 'input', placeholder: '如 罐区A' },
+  { prop: 'status', label: '运行状态', type: 'number', placeholder: '0=离线 1=在线 2=告警' },
+  { prop: 'lat', label: '纬度', type: 'number' },
+  { prop: 'lon', label: '经度', type: 'number' },
+];
 
 async function load(): Promise<void> {
   loading.value = true;
@@ -59,6 +95,59 @@ function onStatusChange() {
   load();
 }
 
+function openCreate(): void {
+  editKey.value = null;
+  editRow.value = null;
+  dialogVisible.value = true;
+}
+
+function openEdit(row: DeviceItem): void {
+  if (!row.deviceCode) return;
+  editKey.value = row.deviceCode;
+  editRow.value = { ...row } as unknown as Record<string, unknown>;
+  dialogVisible.value = true;
+}
+
+// 第二个参数 id 由组件按数字主键回传，本域 deviceCode 是字符串，故忽略该参数改用 editKey 判定新增/更新。
+async function onSave(payload: Record<string, unknown>, _id: number | null): Promise<void> {
+  const key = editKey.value;
+  try {
+    const body = payload as DeviceWriteRequest;
+    if (key == null) {
+      await createDevice(body);
+      toastOk('设备台账已新增');
+    } else {
+      await updateDevice(key, body);
+      toastOk('已保存');
+    }
+    dialogVisible.value = false;
+    await load();
+  } catch (err) {
+    toastErr(err, key == null ? '新增失败：' : '保存失败：');
+  }
+}
+
+async function onDelete(row: DeviceItem): Promise<void> {
+  const key = row.deviceCode;
+  if (!key) return;
+  try {
+    await ElMessageBox.confirm(
+      `确认删除设备「${row.deviceName || key}」？删除后不可恢复。`,
+      '删除确认',
+      { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' },
+    );
+  } catch {
+    return; // 用户取消
+  }
+  try {
+    await deleteDevice(key);
+    toastOk('已删除');
+    await load();
+  } catch (err) {
+    toastErr(err, '删除失败：');
+  }
+}
+
 onMounted(load);
 useDomainAutoRefresh('device', load);
 </script>
@@ -79,6 +168,7 @@ useDomainAutoRefresh('device', load);
           <el-option label="告警" :value="2" />
         </el-select>
         <el-button :loading="loading" @click="load">刷新</el-button>
+        <el-button v-permission="'device:write'" type="primary" @click="openCreate">新增</el-button>
       </template>
     </MgmtPageHead>
 
@@ -115,9 +205,37 @@ useDomainAutoRefresh('device', load);
       <el-table-column prop="latitude" label="纬度" min-width="120">
         <template #default="{ row }">{{ row.lon ?? '—' }}</template>
       </el-table-column>
+      <el-table-column label="操作" width="150" fixed="right">
+        <template #default="{ row }">
+          <el-button
+            v-permission="'device:write'"
+            link
+            type="primary"
+            @click="openEdit(row as DeviceItem)"
+          >
+            编辑
+          </el-button>
+          <el-button
+            v-permission="'device:write'"
+            link
+            type="danger"
+            @click="onDelete(row as DeviceItem)"
+          >
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
     </MgmtProTable>
 
     <el-empty v-if="!loading && !rows.length" description="暂无设备台账数据" />
+
+    <MgmtRecordEditDialog
+      v-model="dialogVisible"
+      :edit-row="editRow"
+      :fields="FIELDS"
+      title="设备台账"
+      @save="onSave"
+    />
   </div>
 </template>
 
