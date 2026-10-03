@@ -22,7 +22,7 @@
 | `components/MgmtFilterBar.vue` | 筛选工具条                  |
 | `components/MgmtIconTile.vue`  | 图标宫格入口                |
 
-页面落在 `views/`，当前有 `workbench` / `module` / `module-embed` / `form-wizard`。
+页面落在 `views/`，当前活跃入口为 `workbench` / `form-wizard`。`module.vue` 与 `module-embed.vue` 为遗留数据驱动兜底页（原型 iframe / 静态页），自全部菜单叶子接入服务视图后已无活跃消费者，仅作休眠兜底保留（新增未接入叶子时由 `moduleRoutes` 触发，避免 404）。
 
 ## 端特异红线
 

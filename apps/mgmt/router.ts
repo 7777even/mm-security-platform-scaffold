@@ -43,7 +43,7 @@ const FIRE_MONITOR_PATHS = [
 ];
 
 // 已接后端的系统管理页路径：显式指向服务驱动视图（优先于数据驱动的 module-embed 兜底页）。
-// 其余叶子仍统一走 module-embed.vue（原型 iframe / 静态数据兜底），后续按域逐步接入。
+// 全部叶子均已接入后端/服务视图，module-embed.vue 现为休眠兜底（仅当新增未接入叶子时触发），当前无活跃消费者。
 const SERVICE_PATHS = [
   '/staff-mgmt',
   '/role-mgmt',
