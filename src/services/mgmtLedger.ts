@@ -28,9 +28,41 @@ export interface MgmtLedgerListResult {
   columns: string[];
   filters: MgmtLedgerFilter[];
   rows: MgmtLedgerCell[][];
+  /** 与 rows 一一对应的行主键（筛选/分页后与显示行对齐），用于编辑/删除定位 */
+  rowIds?: number[];
   total: number;
   page: number;
   size: number;
+}
+
+/** 单元格写请求：colIndex 对应列顺序（从 0 起），type 为 ok/warn/bad/null（可选）。 */
+export interface MgmtLedgerCellWrite {
+  colIndex: number;
+  text: string | null;
+  type?: MgmtLedgerCellType;
+}
+
+/** 新增台账行（需 ADMIN 角色），返回新行主键。 */
+export function createMgmtLedgerRow(domain: string, cells: MgmtLedgerCellWrite[]): Promise<number> {
+  return request<number>({ url: `/mgmt-ledger/${domain}/rows`, method: 'POST', data: { cells } });
+}
+
+/** 更新台账行（需 ADMIN 角色）。按 rowId 重写单元格。 */
+export function updateMgmtLedgerRow(
+  domain: string,
+  rowId: number,
+  cells: MgmtLedgerCellWrite[],
+): Promise<void> {
+  return request<void>({
+    url: `/mgmt-ledger/${domain}/rows/${rowId}`,
+    method: 'PUT',
+    data: { cells },
+  });
+}
+
+/** 删除台账行（需 ADMIN 角色）。 */
+export function deleteMgmtLedgerRow(domain: string, rowId: number): Promise<void> {
+  return request<void>({ url: `/mgmt-ledger/${domain}/rows/${rowId}`, method: 'DELETE' });
 }
 
 /** “全部”类占位值：前后端约定忽略（按列不筛选）。 */

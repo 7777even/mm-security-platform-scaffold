@@ -75,6 +75,9 @@ const SERVICE_PATHS = [
   '/barrier-mgmt',
   '/personnel-registration',
   '/vehicle-registration',
+  // 周界入侵告警管理：serviceRoutes 已显式接管 PerimeterAlarmView，补入 SERVICE_PATHS
+  // 避免 moduleRoutes 再生成一条被 shadow 的 module-embed 兜底路由。
+  '/perimeter-alarm-mgmt',
   // 设备管理域：已接后端设备台账接口
   '/device-mgmt',
   // 治安防恐管理域：已接后端卡口门禁接口

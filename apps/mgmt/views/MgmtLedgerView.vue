@@ -1,15 +1,22 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { Document } from '@element-plus/icons-vue';
+import { Document, Plus } from '@element-plus/icons-vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import MgmtPageHead from '../components/MgmtPageHead.vue';
 import MgmtFilterBar from '../components/MgmtFilterBar.vue';
 import MgmtProTable from '../components/MgmtProTable.vue';
+import MgmtRecordEditDialog, { type FieldDef } from '../components/MgmtRecordEditDialog.vue';
 import { toastErr } from '../utils/feedback';
+import { mgmtLeafByPath } from '@/data/mgmtMenus';
 import {
   fetchMgmtLedgerList,
   fetchMgmtLedgerMeta,
+  createMgmtLedgerRow,
+  updateMgmtLedgerRow,
+  deleteMgmtLedgerRow,
   type MgmtLedgerCell,
+  type MgmtLedgerCellWrite,
   type MgmtLedgerMeta,
 } from '@/services/mgmtLedger';
 
@@ -27,6 +34,86 @@ const size = ref(20);
 const keyword = ref('');
 const filters = ref<Record<string, string>>({});
 const loading = ref(false);
+
+// —— 写能力（新增/编辑/删除）：行主键与单元格，复用 MgmtRecordEditDialog 动态表单 ——
+const rowIds = ref<number[]>([]);
+const dialogVisible = ref(false);
+const editRowId = ref<number | null>(null);
+const editInitial = ref<Record<string, unknown> | null>(null);
+
+// 新增按钮文案：优先取菜单叶子声明的「新增X」动作，否则兜底「新增」
+const createLabel = computed(() => {
+  const action = mgmtLeafByPath[domain.value]?.action;
+  return action && action.startsWith('新增') ? action : '新增';
+});
+
+// 编辑表单字段由后端列定义驱动：prop = 列序号，label = 列标题
+const fields = computed<FieldDef[]>(() =>
+  (meta.value?.columns ?? []).map((label, i) => ({
+    prop: String(i),
+    label,
+    type: 'input' as const,
+  })),
+);
+
+function openCreate(): void {
+  editRowId.value = null;
+  editInitial.value = null;
+  dialogVisible.value = true;
+}
+
+function openEdit(index: number): void {
+  const id = rowIds.value[index];
+  const cells = rows.value[index] ?? [];
+  const initial: Record<string, unknown> = { id };
+  cells.forEach((c, i) => {
+    initial[String(i)] = c?.text ?? '';
+  });
+  editRowId.value = id;
+  editInitial.value = initial;
+  dialogVisible.value = true;
+}
+
+async function onSave(payload: Record<string, unknown>, id: number | null): Promise<void> {
+  const cells: MgmtLedgerCellWrite[] = Object.entries(payload).map(([k, v]) => ({
+    colIndex: Number(k),
+    text: v == null || v === '' ? null : String(v),
+  }));
+  try {
+    if (id == null) {
+      await createMgmtLedgerRow(domain.value, cells);
+      ElMessage.success('新增成功');
+    } else {
+      await updateMgmtLedgerRow(domain.value, id, cells);
+      ElMessage.success('保存成功');
+    }
+    dialogVisible.value = false;
+    await reloadAll();
+  } catch (err) {
+    toastErr(err, '保存失败：');
+  }
+}
+
+async function onDelete(index: number): Promise<void> {
+  const id = rowIds.value[index];
+  if (id == null) return;
+  try {
+    await ElMessageBox.confirm('确认删除该行台账数据？删除后不可恢复。', '删除确认', {
+      type: 'warning',
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+    });
+  } catch {
+    return;
+  }
+  try {
+    await deleteMgmtLedgerRow(domain.value, id);
+    ElMessage.success('删除成功');
+    await reloadAll();
+  } catch (err) {
+    toastErr(err, '删除失败：');
+  }
+}
 
 const columns = computed(() => meta.value?.columns ?? []);
 
@@ -68,6 +155,7 @@ async function load(): Promise<void> {
       filters: filters.value,
     });
     rows.value = res.rows ?? [];
+    rowIds.value = res.rowIds ?? [];
     total.value = res.total ?? 0;
     // 后端返回的 columns/filters 以实时为准，覆盖 meta 快照
     if (meta.value) {
@@ -132,6 +220,7 @@ watch(domain, () => {
   <div>
     <MgmtPageHead :title="title()" :crumb="crumb()" :icon="Document" icon-tone="blue">
       <template #actions>
+        <el-button type="primary" :icon="Plus" @click="openCreate">{{ createLabel }}</el-button>
         <el-button :loading="loading" @click="reloadAll">刷新</el-button>
       </template>
     </MgmtPageHead>
@@ -174,7 +263,21 @@ watch(domain, () => {
           <template v-else>{{ row.cells[i]?.text ?? '—' }}</template>
         </template>
       </el-table-column>
+      <el-table-column label="操作" width="140" fixed="right">
+        <template #default="{ $index }">
+          <el-button link type="primary" @click="openEdit($index)">编辑</el-button>
+          <el-button link type="danger" @click="onDelete($index)">删除</el-button>
+        </template>
+      </el-table-column>
     </MgmtProTable>
+
+    <MgmtRecordEditDialog
+      v-model="dialogVisible"
+      :edit-row="editInitial"
+      :fields="fields"
+      :title="title()"
+      @save="onSave"
+    />
   </div>
 </template>
 
