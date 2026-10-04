@@ -726,7 +726,7 @@ export interface paths {
              *       "data": {
              *         "items": [
              *           {
-             *             "id": 2001,
+             *             "id": "AL-2001",
              *             "source": "火灾报警控制器",
              *             "facilityType": "火灾报警控制器",
              *             "level": "一级",
@@ -746,6 +746,86 @@ export interface paths {
       };
     };
     put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/fire-facility/alarms/{alarmId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 消防设施报警处置
+     * @description 报警是故障（fac_fire_facility_fault）的派生命名视图（id=AL-<故障号数字部分>）。本端点按报警 id 定位底层故障，复用故障处置能力：确认/派单/维修/验收状态流转 + 派单/维修/验收字段局部更新 + 时间线追加。需权限码 fire-facility:handle（V68 已登记并授权 ADMIN 及岗位角色）。委托底层故障写回并触发 fire-facility.fault 实时广播，报警列表自动刷新。字段均为可选，未传则不更新（read-modify-write）。
+     */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 报警 id（AL-<故障号数字部分>，与列表返回的 id 一致） */
+          alarmId: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          /**
+           * @example {
+           *       "faultStatus": "已确认",
+           *       "timelines": [
+           *         {
+           *           "time": "2026-10-04 10:30:00",
+           *           "operator": "值班员",
+           *           "action": "确认故障",
+           *           "detail": "确认为故障，待派单"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['FireFacilityFaultUpdateRequest'];
+        };
+      };
+      responses: {
+        /** @description 处置成功，返回更新后的故障明细（含完整时间线），供前端即时回填 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            /**
+             * @example {
+             *       "code": 0,
+             *       "message": "ok",
+             *       "data": {
+             *         "id": 7,
+             *         "faultCode": "FLT-7",
+             *         "status": "已确认",
+             *         "workOrderNo": null,
+             *         "repairPerson": null,
+             *         "timeline": [
+             *           {
+             *             "time": "2026-10-04 10:30:00",
+             *             "operator": "值班员",
+             *             "action": "确认故障",
+             *             "detail": "确认为故障，待派单"
+             *           }
+             *         ]
+             *       }
+             *     }
+             */
+            'application/json': components['schemas']['FireFacilityFaultItem'];
+          };
+        };
+      };
+    };
     post?: never;
     delete?: never;
     options?: never;
