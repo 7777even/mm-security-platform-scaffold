@@ -27,3 +27,15 @@ export function refreshMajorHazards(): Promise<void> {
     });
   return inflight;
 }
+
+/**
+ * 重大危险源实时刷新：绕过 loaded 单例守卫，供 useDomainAutoRefresh 在收到 hazard.changed
+ * 广播时单独重拉（不影响既有一次加载口径）。失败保留上次成功数据，不抛异常。
+ */
+export async function refreshMajorHazardsLive(): Promise<void> {
+  try {
+    majorHazardsData.value = await fetchMajorHazards();
+  } catch {
+    /* 保留上次成功数据 */
+  }
+}

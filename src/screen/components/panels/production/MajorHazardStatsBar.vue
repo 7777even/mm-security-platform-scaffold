@@ -3,13 +3,16 @@ import { computed, onMounted } from 'vue';
 import {
   majorHazardsData,
   refreshMajorHazards,
+  refreshMajorHazardsLive,
 } from '../../../lib/composables/useScreenHazardData';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const { filterByPlantArea } = usePlantArea();
 const visibleHazards = computed(() => filterByPlantArea(majorHazardsData.value));
 
 onMounted(() => void refreshMajorHazards());
+useDomainAutoRefresh('hazard', refreshMajorHazardsLive, { immediate: false });
 const levels = computed(() => [
   {
     key: '一级',

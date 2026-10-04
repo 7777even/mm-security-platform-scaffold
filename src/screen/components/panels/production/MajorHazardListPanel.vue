@@ -11,7 +11,9 @@ import {
 import {
   majorHazardsData,
   refreshMajorHazards,
+  refreshMajorHazardsLive,
 } from '../../../lib/composables/useScreenHazardData';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
 
 const router = useRouter();
@@ -47,6 +49,7 @@ function closeList() {
 }
 
 onMounted(() => void refreshMajorHazards());
+useDomainAutoRefresh('hazard', refreshMajorHazardsLive, { immediate: false });
 </script>
 
 <template>

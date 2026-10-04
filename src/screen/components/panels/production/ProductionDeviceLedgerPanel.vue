@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import PanelCard from '../../common/PanelCard.vue';
 import InfoDetailDialog, { type DetailField } from '../../common/InfoDetailDialog.vue';
 import { fetchDevicePage, fetchDeviceByCode, type DeviceItem } from '@/services/device';
@@ -115,6 +116,16 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
+async function refreshDevices() {
+  try {
+    const page = await fetchDevicePage({ page: 1, size: 200 });
+    allDevices.value = page.list.map((d: DeviceItem, i) => toDeviceLedgerItem(d, i));
+  } catch {
+    backendUnavailableWarn('device', '/devices');
+  }
+}
+useDomainAutoRefresh('device', refreshDevices, { immediate: false });
 </script>
 
 <template>

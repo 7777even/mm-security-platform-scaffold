@@ -23,7 +23,9 @@ import {
   selectCommunicationDevice,
   selectedDevice,
   selectedDeviceId,
+  refreshCommunicationDevicesLive,
 } from '../../lib/composables/useCommunicationDevices';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 import {
   resolvePlantAreaWorldPosition,
@@ -32,6 +34,8 @@ import {
   type ConcretePlantAreaCode,
 } from '../../lib/data/plantAreas';
 import { fetchAlarmPoints, type MapPoint } from '@/services/map';
+
+useDomainAutoRefresh('communication.device', refreshCommunicationDevicesLive, { immediate: false });
 
 const { onMapControl } = useMapControls();
 const { isActive } = useMapControlActive();

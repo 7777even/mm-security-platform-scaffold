@@ -1,5 +1,6 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { fetchVideoCameras, type GridLayout, type VideoCameraPage } from '@/services/video';
 import { useScreenAsyncState } from '../../lib/composables/useScreenAsyncState';
 import { useCameraSnapshots } from '../../lib/composables/useCameraSnapshot';
@@ -58,6 +59,8 @@ onMounted(() => {
 onUnmounted(() => {
   clearInterval(timer);
 });
+
+useDomainAutoRefresh('video.camera', retry, { immediate: false });
 
 const cells = computed(() => cameras.value?.list ?? []);
 

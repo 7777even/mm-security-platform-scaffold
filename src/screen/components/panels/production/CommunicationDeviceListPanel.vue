@@ -8,8 +8,12 @@ import {
   selectedDeviceId,
   selectCommunicationDevice,
   switchCommunicationTab,
+  refreshCommunicationDevicesLive,
 } from '../../../lib/composables/useCommunicationDevices';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import type { CommunicationTab } from '../../../lib/data/communicationDeviceMock';
+
+useDomainAutoRefresh('communication.device', refreshCommunicationDevicesLive, { immediate: false });
 
 const tabOptions: { key: CommunicationTab; label: string }[] = [
   { key: 'broadcast', label: '广播' },

@@ -4,7 +4,12 @@ import { useRouter } from 'vue-router';
 import { useWorldMarkerScreenPositions } from '../../lib/composables/useCesiumScreenAnchor';
 import { getSharedMap } from '../../lib/composables/sharedCesiumBridge';
 import { levelTone, type MajorHazardItem } from '@/services/hazard';
-import { majorHazardsData, refreshMajorHazards } from '../../lib/composables/useScreenHazardData';
+import {
+  majorHazardsData,
+  refreshMajorHazards,
+  refreshMajorHazardsLive,
+} from '../../lib/composables/useScreenHazardData';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 import { resolvePlantAreaWorldPosition } from '../../lib/data/plantAreas';
 
@@ -25,6 +30,7 @@ function openDetail(item: MajorHazardItem) {
 }
 
 onMounted(() => void refreshMajorHazards());
+useDomainAutoRefresh('hazard', refreshMajorHazardsLive, { immediate: false });
 </script>
 
 <template>

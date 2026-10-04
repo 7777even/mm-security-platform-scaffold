@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import PanelCard from '../common/PanelCard.vue';
 
 import { fetchSpecialOperations, type SpecialOperationStat } from '@/services/fireMonitoring';
@@ -27,6 +28,11 @@ const visibleOperations = computed(() =>
 onMounted(async () => {
   operations.value = await fetchSpecialOperations();
 });
+
+async function refreshSpecialOperations() {
+  operations.value = await fetchSpecialOperations();
+}
+useDomainAutoRefresh('special-operation', refreshSpecialOperations, { immediate: false });
 
 function handleItemClick(label: string) {
   closeFireBrigadeView();

@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { fetchVideoCameras, type GridLayout } from '@/services/video';
 import { useScreenAsyncState } from '../../lib/composables/useScreenAsyncState';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 defineProps<{
   page: number;
@@ -14,9 +15,11 @@ const emit = defineEmits<{
 }>();
 
 // 页码列表根据 /video/cameras 返回的 pages 动态生成（拉一次首页取总页数）。
-const { data: firstPage } = useScreenAsyncState('video', '/video/cameras', () =>
+const { data: firstPage, retry } = useScreenAsyncState('video', '/video/cameras', () =>
   fetchVideoCameras(1, 9),
 );
+
+useDomainAutoRefresh('video.camera', () => void retry(), { immediate: false });
 const pagerPages = computed(() => {
   const pages = firstPage.value?.pages ?? 1;
   return Array.from({ length: Math.max(1, pages) }, (_, i) => i + 1);

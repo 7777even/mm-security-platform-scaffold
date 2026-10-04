@@ -14,7 +14,9 @@ import { usePlantArea } from '../../../lib/composables/usePlantArea';
 import {
   majorHazardsData,
   refreshMajorHazards,
+  refreshMajorHazardsLive,
 } from '../../../lib/composables/useScreenHazardData';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { openTvVideoDetail } from '../../../lib/composables/useTvVideoDetail';
 
 const router = useRouter();
@@ -62,6 +64,8 @@ async function openDetail(item: TvOverviewItem) {
 }
 
 const filteredHazards = computed(() => filterByPlantArea(majorHazardsData.value));
+
+useDomainAutoRefresh('hazard', refreshMajorHazardsLive, { immediate: false });
 
 // 当前选中分类下的真实监控点（参考重大危险源 detailItems 同构：真实清单 + 可点击下钻）。
 const categoryMonitors = computed<TvMonitorSummary[]>(() => {

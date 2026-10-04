@@ -112,3 +112,22 @@ export function useCommunicationDevices() {
     switchCommunicationTab,
   };
 }
+
+/**
+ * 通讯设备实时刷新：绕过模块级一次性加载，供 useDomainAutoRefresh 在收到
+ * communication.device.changed 广播时重拉（不影响既有一次加载口径）。失败保留既有数据。
+ */
+export async function refreshCommunicationDevicesLive(): Promise<void> {
+  const fb = resolveOfflineFetch<Record<CommunicationTab, CommunicationGroup[]>>(
+    'communication',
+    '/communication/devices',
+    EMPTY_COMMUNICATION_DEVICE_GROUPS,
+    EMPTY_COMMUNICATION_DEVICE_GROUPS,
+  );
+  if (fb.mode !== 'live') return;
+  try {
+    communicationDeviceGroups.value = await fetchCommunicationDevices();
+  } catch {
+    /* 保留上次成功数据 */
+  }
+}
