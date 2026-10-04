@@ -85,7 +85,7 @@ const EMPTY_RESCUE_PERSONNEL_LIST: RescuePersonnelList = {
   items: [],
 };
 
-async function loadRescuePersonnel() {
+export async function loadRescuePersonnel() {
   rescuePersonnelLoading.value = true;
   rescuePersonnelError.value = null;
   // 三态：demo（无本地 fixture）→ 空态；未连后端 → 显式报错（全局横幅）+ 空态；live → 真实端点。

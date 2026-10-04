@@ -108,7 +108,7 @@ function applyFireEmergencyGroups(all: EmergencyEventGroup[]): void {
 
 void loadFireEmergencyEvents();
 
-async function loadFireEmergencyEvents(): Promise<void> {
+export async function loadFireEmergencyEvents(): Promise<void> {
   fireEmergencyEventsLoading.value = true;
   fireEmergencyEventsError.value = null;
   // 三态：live 拉后端；demo 回落本地 fixture；offline 显式报错（全局横幅）+ 空态，不回灌假数据。

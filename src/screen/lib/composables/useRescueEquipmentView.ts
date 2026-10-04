@@ -71,7 +71,7 @@ const EMPTY_RESCUE_EQUIPMENT_LIST: RescueEquipmentList = {
   items: [],
 };
 
-async function loadRescueEquipment() {
+export async function loadRescueEquipment() {
   rescueEquipmentLoading.value = true;
   rescueEquipmentError.value = null;
   // 三态：demo（无本地 fixture）→ 空态；未连后端 → 显式报错（全局横幅）+ 空态；live → 真实端点。

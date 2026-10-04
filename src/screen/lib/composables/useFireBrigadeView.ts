@@ -70,7 +70,7 @@ export const fireBrigadePagedTeams = computed(() => {
   return fireBrigadeFilteredTeams.value.slice(start, start + FIRE_BRIGADE_PAGE_SIZE);
 });
 
-async function loadFireBrigades() {
+export async function loadFireBrigades() {
   fireBrigadeLoading.value = true;
   fireBrigadeError.value = null;
   const fb = resolveOfflineFetch<FireBrigadeList>(

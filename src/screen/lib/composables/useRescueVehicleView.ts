@@ -78,7 +78,7 @@ export const rescueVehiclePagedItems = computed(() => {
 /** 空态：未连后端 / 契约不符 / 请求异常时使用，绝不回灌假数据。 */
 const EMPTY_RESCUE_VEHICLE_LIST: RescueVehicleList = { squadrons: [], types: [], items: [] };
 
-async function loadRescueVehicles() {
+export async function loadRescueVehicles() {
   rescueVehicleLoading.value = true;
   rescueVehicleError.value = null;
   // 三态：demo（无本地 fixture）→ 空态；未连后端 → 显式报错（全局横幅）+ 空态；live → 真实端点。

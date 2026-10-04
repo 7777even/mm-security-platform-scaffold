@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
 import { Phone } from '@element-plus/icons-vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import {
   selectedPreliminaryEventId,
   selectPreliminaryEvent,
@@ -36,6 +37,7 @@ import {
   setFireEmergencyPageSize,
   createFireEmergencyEventFromForm,
   applyPendingFireEmergencyListPage,
+  loadFireEmergencyEvents,
   type EmergencyEventCreatePayload,
 } from '../../../lib/composables/useFireEmergencyEventList';
 import type { DesignModule } from '@/utils/designAssets';
@@ -48,6 +50,9 @@ import {
 } from '../../../lib/composables/useFireEmergencyListTab';
 import type { EmergencyEventItem } from '../../../lib/data/preliminaryMock';
 import EmergencyEventCreateModal from './EmergencyEventCreateModal.vue';
+
+// 三端实时刷新：后台/移动端新增或变更应急事件后，本面板自动重拉
+useDomainAutoRefresh('emergency.event', loadFireEmergencyEvents, { immediate: false });
 
 const props = withDefaults(
   defineProps<{

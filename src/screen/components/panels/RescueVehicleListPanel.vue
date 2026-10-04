@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import {
   closeRescueVehicleView,
   goToRescueVehiclePage,
@@ -17,6 +18,7 @@ import {
   searchRescueVehicle,
   selectRescueVehicle,
   selectedRescueVehicleId,
+  loadRescueVehicles,
   statusBadgeClass,
 } from '../../lib/composables/useRescueVehicleView';
 
@@ -29,6 +31,9 @@ const visiblePages = computed(() => {
 function handleSelect(id: number) {
   selectRescueVehicle(id);
 }
+
+// 三端实时刷新：后台/移动端写入救援车辆后，本面板自动重拉
+useDomainAutoRefresh('rescue.vehicle', loadRescueVehicles, { immediate: false });
 </script>
 
 <template>

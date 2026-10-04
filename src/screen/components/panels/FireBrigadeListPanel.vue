@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import PanelCard from '../common/PanelCard.vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import {
   closeFireBrigadeView,
   fireBrigadeAreas,
@@ -15,6 +16,7 @@ import {
   searchFireBrigade,
   selectFireBrigade,
   selectedFireBrigadeId,
+  loadFireBrigades,
 } from '../../lib/composables/useFireBrigadeView';
 
 const visiblePages = computed(() => {
@@ -26,6 +28,9 @@ const visiblePages = computed(() => {
 function handleSelect(id: number) {
   selectFireBrigade(id);
 }
+
+// 三端实时刷新：后台/移动端写入消防队伍后，本面板自动重拉
+useDomainAutoRefresh('rescue.brigade', loadFireBrigades, { immediate: false });
 </script>
 
 <template>
