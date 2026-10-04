@@ -24,6 +24,7 @@ interface FacilitySection {
 
 const loading = ref(false);
 const error = ref(false);
+const lastRefreshedAt = ref<Date | null>(null);
 const sections = ref<FacilitySection[]>(
   FACILITY_DOMAINS.map((d) => ({ code: d.code, title: d.title, total: 0, rows: [] })),
 );
@@ -38,9 +39,29 @@ function rowLabel(row: MgmtLedgerCell[]): string {
   );
 }
 
+function formatTime(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+// 分页拉全量：单域可能超过单页上限（size=200），循环翻页直到取尽，避免静默截断。
+// 上限保护最多 200 页，防止后端异常导致死循环。
+async function fetchAllRows(domain: string): Promise<{ total: number; rows: MgmtLedgerCell[][] }> {
+  const all: MgmtLedgerCell[][] = [];
+  const size = 200;
+  let page = 1;
+  while (page <= 200) {
+    const res = await fetchMgmtLedgerList(domain, { page, size });
+    all.push(...res.rows);
+    if (all.length >= res.total || res.rows.length < size) break;
+    page += 1;
+  }
+  return { total: all.length, rows: all };
+}
+
 async function loadSection(d: { code: string }, index: number) {
-  const res = await fetchMgmtLedgerList(d.code, { page: 1, size: 200 });
-  return { index, total: res.total, rows: res.rows };
+  const { total, rows } = await fetchAllRows(d.code);
+  return { index, total, rows };
 }
 
 async function load() {
@@ -49,13 +70,14 @@ async function load() {
   try {
     const results = await Promise.all(
       FACILITY_DOMAINS.map((d, i) =>
-        loadSection(d, i).catch(() => ({ index: i, total: 0, rows: [] })),
+        loadSection(d, i).catch(() => ({ index: i, total: 0, rows: [] as MgmtLedgerCell[][] })),
       ),
     );
     for (const r of results) {
       sections.value[r.index].total = r.total;
       sections.value[r.index].rows = r.rows;
     }
+    lastRefreshedAt.value = new Date();
   } catch {
     // 暴露式降级：后端不可用保持上一帧，不白屏、不静默回落假数据
     error.value = true;
@@ -71,6 +93,12 @@ useDomainAutoRefresh('mgmt-ledger', load, { immediate: true });
 <template>
   <PanelCard title="设施台账总览" variant="devices" module="production" :show-more="false">
     <div class="facility-ledger">
+      <div class="facility-ledger__status">
+        <span v-if="loading" class="facility-ledger__loading">刷新中…</span>
+        <span v-else-if="lastRefreshedAt" class="facility-ledger__updated">
+          更新于 {{ formatTime(lastRefreshedAt) }}
+        </span>
+      </div>
       <div v-for="sec in sections" :key="sec.code" class="facility-ledger__sec">
         <div class="facility-ledger__head">
           <span class="facility-ledger__title">{{ sec.title }}</span>
@@ -100,6 +128,18 @@ useDomainAutoRefresh('mgmt-ledger', load, { immediate: true });
   height: 100%;
   min-height: 0;
   gap: 6px;
+}
+
+.facility-ledger__status {
+  flex-shrink: 0;
+  height: 16px;
+  font-size: 11px;
+  line-height: 16px;
+  color: rgb(150 170 190 / 80%);
+}
+
+.facility-ledger__loading {
+  color: #4db8ff;
 }
 
 .facility-ledger__sec {

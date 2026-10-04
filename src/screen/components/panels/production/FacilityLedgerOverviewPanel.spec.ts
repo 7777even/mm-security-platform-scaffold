@@ -75,4 +75,52 @@ describe('FacilityLedgerOverviewPanel 大屏设施台账联动', () => {
     // onUnmounted 应调用 composable 实际持有的退订函数
     expect(unsubSpy).toHaveBeenCalled();
   });
+
+  it('单域超单页上限时分页拉全量（不静默截断）', async () => {
+    // 仅 ef-tank 返回 total=201 触发第 2 页；其余 4 域仍单页
+    (fetchMgmtLedgerList as unknown as vi.Mock).mockImplementation(
+      (domain: string, opts: { page: number; size: number }) => {
+        if (domain === 'ef-tank' && opts.page === 1) {
+          return Promise.resolve({
+            columns: ['编号'],
+            filters: [],
+            rows: Array.from({ length: 200 }, () => [{ text: 'T' }]),
+            rowIds: Array.from({ length: 200 }, (_: unknown, i: number) => i + 1),
+            total: 201,
+            page: 1,
+            size: 200,
+          });
+        }
+        if (domain === 'ef-tank' && opts.page === 2) {
+          return Promise.resolve({
+            columns: ['编号'],
+            filters: [],
+            rows: [[{ text: 'T-201' }]],
+            rowIds: [201],
+            total: 201,
+            page: 2,
+            size: 200,
+          });
+        }
+        return Promise.resolve({
+          columns: ['编号'],
+          filters: [],
+          rows: [[{ text: 'X' }]],
+          rowIds: [1],
+          total: 1,
+          page: 1,
+          size: 200,
+        });
+      },
+    );
+    const wrapper = mount(FacilityLedgerOverviewPanel);
+    await flushPromises();
+    const efTankCalls = (fetchMgmtLedgerList as unknown as vi.Mock).mock.calls.filter(
+      (c) => c[0] === 'ef-tank',
+    ).length;
+    // ef-tank 翻了 2 页；其余 4 域各 1 页 → 共 6 次
+    expect(efTankCalls).toBe(2);
+    expect((fetchMgmtLedgerList as unknown as vi.Mock).mock.calls.length).toBe(6);
+    wrapper.unmount();
+  });
 });
