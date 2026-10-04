@@ -18,4 +18,4 @@
 
 ## 收尾（Task 4）
 
-- [ ] 归档本 Change 并推送 `feature/scaffold-rebuild`（契约真源变更，需连带生成类型一并入库）
+- [x] 归档本 Change 并推送 `feature/scaffold-rebuild`（契约真源变更，需连带生成类型一并入库）
