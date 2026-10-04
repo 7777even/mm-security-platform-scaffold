@@ -2364,6 +2364,18 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": "ph1",
+           *         "name": "消防报警",
+           *         "number": "119",
+           *         "category": "消防"
+           *       }
+           *     }
+           */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['EmergencyPhone'];
           };
@@ -2395,6 +2407,18 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": "ph1",
+           *         "name": "消防报警",
+           *         "number": "119",
+           *         "category": "消防"
+           *       }
+           *     }
+           */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['EmergencyPhone'];
           };
@@ -2422,6 +2446,13 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
           'application/json': components['schemas']['ApiResponse'];
         };
       };
@@ -2491,6 +2522,19 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": "k1",
+           *         "title": "岗位应急处置卡",
+           *         "count": 158,
+           *         "icon": "Document",
+           *         "description": "岗位员工应掌握的应急处置卡片要点，覆盖启停、退守、隔离、上报等标准动作。"
+           *       }
+           *     }
+           */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['KnowledgeItem'];
           };
@@ -2522,6 +2566,19 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": "k1",
+           *         "title": "岗位应急处置卡",
+           *         "count": 158,
+           *         "icon": "Document",
+           *         "description": "岗位员工应掌握的应急处置卡片要点，覆盖启停、退守、隔离、上报等标准动作。"
+           *       }
+           *     }
+           */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['KnowledgeItem'];
           };
@@ -2549,6 +2606,13 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
           'application/json': components['schemas']['ApiResponse'];
         };
       };
@@ -2620,6 +2684,21 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": "1",
+           *         "title": "T-301 罐区泄漏处置复盘",
+           *         "accidentType": "泄漏",
+           *         "location": "储运部 T-301 罐区",
+           *         "occurredAt": "2026-08-21 09:03:00",
+           *         "summary": "初起泄漏点位于进料线阀门法兰，巡检及时发现并启动围堵，未扩大。",
+           *         "lessons": "法兰螺栓定期紧固 + 巡检路线覆盖进料线是关键。"
+           *       }
+           *     }
+           */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['EmergencyCaseItem'];
           };
@@ -2651,6 +2730,21 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": "1",
+           *         "title": "T-301 罐区泄漏处置复盘",
+           *         "accidentType": "泄漏",
+           *         "location": "储运部 T-301 罐区",
+           *         "occurredAt": "2026-08-21 09:03:00",
+           *         "summary": "初起泄漏点位于进料线阀门法兰，巡检及时发现并启动围堵，未扩大。",
+           *         "lessons": "法兰螺栓定期紧固 + 巡检路线覆盖进料线是关键。"
+           *       }
+           *     }
+           */
           'application/json': components['schemas']['ApiResponse'] & {
             data?: components['schemas']['EmergencyCaseItem'];
           };
@@ -2678,6 +2772,13 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": null
+           *     }
+           */
           'application/json': components['schemas']['ApiResponse'];
         };
       };
