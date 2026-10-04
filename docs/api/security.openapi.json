@@ -201,7 +201,9 @@
             "$ref": "./_shared.json#/components/responses/Forbidden"
           }
         }
-      },
+      }
+    },
+    "/security/gate-controls/{id}": {
       "put": {
         "tags": ["security"],
         "operationId": "updateGate",
@@ -282,6 +284,7 @@
           }
         }
       },
+
       "delete": {
         "tags": ["security"],
         "operationId": "deleteGate",
@@ -449,7 +452,9 @@
             "$ref": "./_shared.json#/components/responses/Forbidden"
           }
         }
-      },
+      }
+    },
+    "/security/bollards/{id}": {
       "put": {
         "tags": ["security"],
         "operationId": "updateBollard",
@@ -530,6 +535,7 @@
           }
         }
       },
+
       "delete": {
         "tags": ["security"],
         "operationId": "deleteBollard",

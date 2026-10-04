@@ -419,7 +419,9 @@
             "$ref": "./_shared.json#/components/responses/Forbidden"
           }
         }
-      },
+      }
+    },
+    "/fire/patrols/{id}": {
       "put": {
         "summary": "修改防火巡查记录",
         "description": "管理端台账编辑：按 id 局部更新防火巡查记录，仅覆盖传入的非空字段（read-modify-write）。需权限码 `fire:patrol-write`。记录不存在返回 B3 NOT_FOUND。成功触发 `fire.patrol-record` 实时广播。",
@@ -500,6 +502,7 @@
           }
         }
       },
+
       "delete": {
         "summary": "删除防火巡查记录",
         "description": "按 id 物理删除防火巡查记录（真删除，无回收站）。记录不存在返回 B3 NOT_FOUND。需权限码 `fire:patrol-write`。成功触发 `fire.patrol-record` 实时广播。",

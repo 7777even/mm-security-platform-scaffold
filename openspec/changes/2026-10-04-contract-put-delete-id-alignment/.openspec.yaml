@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-10-04
+status: in-progress
+title: 契约 PUT/DELETE 路由对齐至 /{id}（消化 12 条路由差异技术债）

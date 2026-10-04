@@ -31,16 +31,32 @@ export interface paths {
      * @description 返回全部道闸点位（名称、所属门、状态、经纬度），用于门禁卡口分布与列表。数据来自 fac_gate_control 真实表。
      */
     get: operations['listGateControls'];
-    /**
-     * 道闸台账更新
-     * @description 管理端全字段更新一条道闸台账（read-modify-write，未传字段置空/不保留原值需前端回显后提交）。status 仅读不写。需权限码 security:gate-write（V101）。必填项：name（@NotBlank）。写成功后经 @RealtimeSync 广播 security.gate-control，前端列表与大屏自动重拉。并发冲突由 @Version 乐观锁拦截（返回 409）。
-     */
-    put: operations['updateGate'];
+    put?: never;
     /**
      * 道闸台账新增
      * @description 管理端新增一条道闸台账（名称/所属门/经纬度）。status 为设备实时状态，仅读不写（零下行控制红线），请求体不含该字段。需权限码 security:gate-write（V101 已登记并授权 ADMIN 及岗位角色）。写成功后经 @RealtimeSync(domain="security.gate-control") 广播 security.gate-control，前端列表与大屏自动重拉。必填项：name（@NotBlank，为空返回 400 校验失败）。
      */
     post: operations['createGate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/security/gate-controls/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 道闸台账更新
+     * @description 管理端全字段更新一条道闸台账（read-modify-write，未传字段置空/不保留原值需前端回显后提交）。status 仅读不写。需权限码 security:gate-write（V101）。必填项：name（@NotBlank）。写成功后经 @RealtimeSync 广播 security.gate-control，前端列表与大屏自动重拉。并发冲突由 @Version 乐观锁拦截（返回 409）。
+     */
+    put: operations['updateGate'];
+    post?: never;
     /**
      * 道闸台账删除
      * @description 真删除（物理删除）单条道闸台账。需权限码 security:gate-write（V101）。删除成功后经 @RealtimeSync 广播 security.gate-control，前端列表与大屏即时移除该条。记录不存在返回 NOT_FOUND（B3 包络，HTTP 200 + code!=0）。
@@ -63,16 +79,32 @@ export interface paths {
      * @description 返回全部防恐柱点位（名称、所属门/区、状态、经纬度），用于防恐柱分布与列表。数据来自 fac_bollard 真实表。
      */
     get: operations['listBollards'];
-    /**
-     * 防恐柱台账更新
-     * @description 管理端全字段更新一条防恐柱台账（read-modify-write，未传字段置空/不保留原值需前端回显后提交）。status 仅读不写。需权限码 security:bollard-write（V101）。必填项：name（@NotBlank）。写成功后经 @RealtimeSync 广播 security.bollard，前端列表与大屏自动重拉。并发冲突由 @Version 乐观锁拦截（返回 409）。
-     */
-    put: operations['updateBollard'];
+    put?: never;
     /**
      * 防恐柱台账新增
      * @description 管理端新增一条防恐柱台账（名称/所属门区/经纬度）。status 为设备实时状态，仅读不写（零下行控制红线），请求体不含该字段。需权限码 security:bollard-write（V101 已登记并授权 ADMIN 及岗位角色）。写成功后经 @RealtimeSync(domain="security.bollard") 广播 security.bollard，前端列表与大屏自动重拉。必填项：name（@NotBlank，为空返回 400 校验失败）。
      */
     post: operations['createBollard'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/security/bollards/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 防恐柱台账更新
+     * @description 管理端全字段更新一条防恐柱台账（read-modify-write，未传字段置空/不保留原值需前端回显后提交）。status 仅读不写。需权限码 security:bollard-write（V101）。必填项：name（@NotBlank）。写成功后经 @RealtimeSync 广播 security.bollard，前端列表与大屏自动重拉。并发冲突由 @Version 乐观锁拦截（返回 409）。
+     */
+    put: operations['updateBollard'];
+    post?: never;
     /**
      * 防恐柱台账删除
      * @description 真删除（物理删除）单条防恐柱台账。需权限码 security:bollard-write（V101）。删除成功后经 @RealtimeSync 广播 security.bollard，前端列表与大屏即时移除该条。记录不存在返回 NOT_FOUND（B3 包络，HTTP 200 + code!=0）。
@@ -1257,17 +1289,14 @@ export interface operations {
       };
     };
   };
-  updateGate: {
+  createGate: {
     parameters: {
       query?: never;
       header?: {
         /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
         'Accept-Language'?: components['parameters']['lang'];
       };
-      path: {
-        /** @description 道闸主键（fac_gate_control.id） */
-        id: number;
-      };
+      path?: never;
       cookie?: never;
     };
     requestBody: {
@@ -1284,7 +1313,7 @@ export interface operations {
       };
     };
     responses: {
-      /** @description 更新成功，返回更新后的记录 */
+      /** @description 创建成功，返回新记录 */
       200: {
         headers: {
           [name: string]: unknown;
@@ -1313,14 +1342,17 @@ export interface operations {
       403: components['responses']['Forbidden'];
     };
   };
-  createGate: {
+  updateGate: {
     parameters: {
       query?: never;
       header?: {
         /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
         'Accept-Language'?: components['parameters']['lang'];
       };
-      path?: never;
+      path: {
+        /** @description 道闸主键（fac_gate_control.id） */
+        id: number;
+      };
       cookie?: never;
     };
     requestBody: {
@@ -1337,7 +1369,7 @@ export interface operations {
       };
     };
     responses: {
-      /** @description 创建成功，返回新记录 */
+      /** @description 更新成功，返回更新后的记录 */
       200: {
         headers: {
           [name: string]: unknown;
@@ -1442,17 +1474,14 @@ export interface operations {
       };
     };
   };
-  updateBollard: {
+  createBollard: {
     parameters: {
       query?: never;
       header?: {
         /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
         'Accept-Language'?: components['parameters']['lang'];
       };
-      path: {
-        /** @description 防恐柱主键（fac_bollard.id） */
-        id: number;
-      };
+      path?: never;
       cookie?: never;
     };
     requestBody: {
@@ -1469,7 +1498,7 @@ export interface operations {
       };
     };
     responses: {
-      /** @description 更新成功，返回更新后的记录 */
+      /** @description 创建成功，返回新记录 */
       200: {
         headers: {
           [name: string]: unknown;
@@ -1498,14 +1527,17 @@ export interface operations {
       403: components['responses']['Forbidden'];
     };
   };
-  createBollard: {
+  updateBollard: {
     parameters: {
       query?: never;
       header?: {
         /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
         'Accept-Language'?: components['parameters']['lang'];
       };
-      path?: never;
+      path: {
+        /** @description 防恐柱主键（fac_bollard.id） */
+        id: number;
+      };
       cookie?: never;
     };
     requestBody: {
@@ -1522,7 +1554,7 @@ export interface operations {
       };
     };
     responses: {
-      /** @description 创建成功，返回新记录 */
+      /** @description 更新成功，返回更新后的记录 */
       200: {
         headers: {
           [name: string]: unknown;
