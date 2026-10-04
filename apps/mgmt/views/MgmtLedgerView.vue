@@ -225,7 +225,13 @@ useDomainAutoRefresh('mgmt-ledger', load);
   <div>
     <MgmtPageHead :title="title()" :crumb="crumb()" :icon="Document" icon-tone="blue">
       <template #actions>
-        <el-button type="primary" :icon="Plus" @click="openCreate">{{ createLabel }}</el-button>
+        <el-button
+          v-permission="'mgmt-ledger:write'"
+          type="primary"
+          :icon="Plus"
+          @click="openCreate"
+          >{{ createLabel }}</el-button
+        >
         <el-button :loading="loading" @click="reloadAll">刷新</el-button>
       </template>
     </MgmtPageHead>
@@ -270,8 +276,16 @@ useDomainAutoRefresh('mgmt-ledger', load);
       </el-table-column>
       <el-table-column label="操作" width="140" fixed="right">
         <template #default="{ $index }">
-          <el-button link type="primary" @click="openEdit($index)">编辑</el-button>
-          <el-button link type="danger" @click="onDelete($index)">删除</el-button>
+          <el-button
+            v-permission="'mgmt-ledger:write'"
+            link
+            type="primary"
+            @click="openEdit($index)"
+            >编辑</el-button
+          >
+          <el-button v-permission="'mgmt-ledger:write'" link type="danger" @click="onDelete($index)"
+            >删除</el-button
+          >
         </template>
       </el-table-column>
     </MgmtProTable>
