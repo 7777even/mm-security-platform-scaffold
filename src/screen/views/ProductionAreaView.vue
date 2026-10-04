@@ -8,6 +8,7 @@ import ProductionAreaTopBar from '../components/panels/production/ProductionArea
 import ProductionAreaPersonnelPanel from '../components/panels/production/ProductionAreaPersonnelPanel.vue';
 import ProductionAreaAlarmPanel from '../components/panels/production/ProductionAreaAlarmPanel.vue';
 import ProductionAreaFacilityListPanel from '../components/panels/production/ProductionAreaFacilityListPanel.vue';
+import FacilityLedgerOverviewPanel from '../components/panels/production/FacilityLedgerOverviewPanel.vue';
 import { getSharedMap, onSharedMapReady } from '../lib/composables/sharedCesiumBridge';
 import {
   fetchProductionAreaDetail,
@@ -119,6 +120,7 @@ onUnmounted(() => {
 
           <aside class="production-area__left">
             <ProductionAreaFacilityListPanel :metrics="metrics" />
+            <FacilityLedgerOverviewPanel />
           </aside>
         </div>
 
@@ -183,10 +185,15 @@ onUnmounted(() => {
   min-height: 0;
   z-index: var(--z-chrome);
   pointer-events: auto;
+
+  /* 两个面板纵向堆叠（设施分类 + 设施台账总览），各自等分高度 */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .production-area__left > :deep(.panel-card) {
-  height: 100%;
+  flex: 1;
   min-height: 0;
 }
 
