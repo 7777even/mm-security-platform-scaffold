@@ -135,7 +135,8 @@ export interface FireFacilityFaultResult {
 }
 
 export interface FireFacilityAlarmItem {
-  id: number;
+  /** 报警 id：派生命名视图，形如 AL-<故障号数字部分>（后端按字符串下发，与契约 type:string 一致）。 */
+  id: string;
   source: string;
   facilityType: string;
   level: string;
@@ -417,6 +418,33 @@ export async function updateFireFacilityFault(
   }
   return request<FireFacilityFaultItem>({
     url: `/fire-facility/faults/${encodeURIComponent(faultId)}`,
+    method: 'PUT',
+    data: payload,
+  });
+}
+
+/**
+ * 消防报警处置（确认/派单/维修/验收状态流转 + 字段局部更新 + 时间线追加）：
+ * PUT /fire-facility/alarms/{alarmId}，按报警 id（AL-xxx）定位底层故障并复用故障处置能力。
+ * 三态与 updateFireFacilityFault 对齐：离线演示仅本地成功、未连后端显式报错、连后端真实 PUT。
+ */
+export async function updateFireFacilityAlarm(
+  alarmId: string,
+  payload: FireFacilityFaultUpdatePayload,
+): Promise<FireFacilityFaultItem | null> {
+  if (isDemoMode()) {
+    return Promise.resolve(null);
+  }
+  if (isOfflineNoBackend()) {
+    notifyBackendOffline(
+      'fireFacility',
+      `/fire-facility/alarms/${alarmId}`,
+      '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
+    );
+    throw new Error('后端未连接，无法处置消防设施报警');
+  }
+  return request<FireFacilityFaultItem>({
+    url: `/fire-facility/alarms/${encodeURIComponent(alarmId)}`,
     method: 'PUT',
     data: payload,
   });

@@ -4,6 +4,8 @@ import { Bell } from '@element-plus/icons-vue';
 import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import MgmtProTable from '../../components/MgmtProTable.vue';
 import MgmtPageHead from '../../components/MgmtPageHead.vue';
+import FireFacilityAlarmHandleDialog from '../../components/FireFacilityAlarmHandleDialog.vue';
+import type { AlarmHandleAction } from '../../components/FireFacilityAlarmHandleDialog.vue';
 import { toastErr } from '../../utils/feedback';
 import {
   fetchFireFacilityAlarms,
@@ -37,6 +39,31 @@ onMounted(load);
 
 // 三端实时刷新：消防故障写回（fire-facility.fault 广播）后，报警派生视图自动重拉
 useDomainAutoRefresh('fire-facility.fault', load, { immediate: false });
+
+// 报警处置：复用故障处置能力（权限 fire-facility:handle），状态机 待确认→已确认→已派单→维修中→待验收→已闭环
+const ACTION_PREDECESSOR: Record<AlarmHandleAction, string> = {
+  confirm: '待确认',
+  dispatch: '已确认',
+  repair: '已派单',
+  accept: '维修中',
+  close: '待验收',
+};
+const dialogVisible = ref(false);
+const activeAction = ref<AlarmHandleAction>('confirm');
+const activeAlarm = ref<FireFacilityAlarmItem | null>(null);
+
+function canHandle(row: FireFacilityAlarmItem, action: AlarmHandleAction): boolean {
+  return (row.status ?? '') === ACTION_PREDECESSOR[action];
+}
+function openHandle(row: FireFacilityAlarmItem, action: AlarmHandleAction): void {
+  activeAlarm.value = row;
+  activeAction.value = action;
+  dialogVisible.value = true;
+}
+function onSaved(): void {
+  // fire-facility.fault 广播已触发 load() 重拉；此处兜底再拉一次，保证即时刷新。
+  void load();
+}
 </script>
 
 <template>
@@ -98,6 +125,52 @@ useDomainAutoRefresh('fire-facility.fault', load, { immediate: false });
       <el-table-column prop="time" label="时间" min-width="170">
         <template #default="{ row }">{{ (row as FireFacilityAlarmItem).time || '—' }}</template>
       </el-table-column>
+      <el-table-column v-permission="'fire-facility:handle'" label="处置" min-width="320">
+        <template #default="{ row }">
+          <el-button
+            link
+            type="primary"
+            :disabled="!canHandle(row as FireFacilityAlarmItem, 'confirm')"
+            @click="openHandle(row as FireFacilityAlarmItem, 'confirm')"
+            >确认</el-button
+          >
+          <el-button
+            link
+            type="primary"
+            :disabled="!canHandle(row as FireFacilityAlarmItem, 'dispatch')"
+            @click="openHandle(row as FireFacilityAlarmItem, 'dispatch')"
+            >派单</el-button
+          >
+          <el-button
+            link
+            type="primary"
+            :disabled="!canHandle(row as FireFacilityAlarmItem, 'repair')"
+            @click="openHandle(row as FireFacilityAlarmItem, 'repair')"
+            >维修</el-button
+          >
+          <el-button
+            link
+            type="warning"
+            :disabled="!canHandle(row as FireFacilityAlarmItem, 'accept')"
+            @click="openHandle(row as FireFacilityAlarmItem, 'accept')"
+            >验收</el-button
+          >
+          <el-button
+            link
+            type="success"
+            :disabled="!canHandle(row as FireFacilityAlarmItem, 'close')"
+            @click="openHandle(row as FireFacilityAlarmItem, 'close')"
+            >闭环</el-button
+          >
+        </template>
+      </el-table-column>
     </MgmtProTable>
+
+    <FireFacilityAlarmHandleDialog
+      v-model="dialogVisible"
+      :alarm="activeAlarm"
+      :action="activeAction"
+      @saved="onSaved"
+    />
   </div>
 </template>
