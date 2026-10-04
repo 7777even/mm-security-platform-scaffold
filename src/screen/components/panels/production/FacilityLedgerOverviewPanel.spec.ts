@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, type Mock } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { flushPromises } from '@vue/test-utils';
 import FacilityLedgerOverviewPanel from './FacilityLedgerOverviewPanel.vue';
@@ -78,7 +78,7 @@ describe('FacilityLedgerOverviewPanel 大屏设施台账联动', () => {
 
   it('单域超单页上限时分页拉全量（不静默截断）', async () => {
     // 仅 ef-tank 返回 total=201 触发第 2 页；其余 4 域仍单页
-    (fetchMgmtLedgerList as unknown as vi.Mock).mockImplementation(
+    (fetchMgmtLedgerList as unknown as Mock).mockImplementation(
       (domain: string, opts: { page: number; size: number }) => {
         if (domain === 'ef-tank' && opts.page === 1) {
           return Promise.resolve({
@@ -115,12 +115,12 @@ describe('FacilityLedgerOverviewPanel 大屏设施台账联动', () => {
     );
     const wrapper = mount(FacilityLedgerOverviewPanel);
     await flushPromises();
-    const efTankCalls = (fetchMgmtLedgerList as unknown as vi.Mock).mock.calls.filter(
-      (c) => c[0] === 'ef-tank',
+    const efTankCalls = (fetchMgmtLedgerList as unknown as Mock).mock.calls.filter(
+      (c: unknown[]) => c[0] === 'ef-tank',
     ).length;
     // ef-tank 翻了 2 页；其余 4 域各 1 页 → 共 6 次
     expect(efTankCalls).toBe(2);
-    expect((fetchMgmtLedgerList as unknown as vi.Mock).mock.calls.length).toBe(6);
+    expect((fetchMgmtLedgerList as unknown as Mock).mock.calls.length).toBe(6);
     wrapper.unmount();
   });
 });
