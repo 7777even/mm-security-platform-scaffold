@@ -38,7 +38,7 @@
 ### 0.4 完成底线
 
 - 前端 `vitest run` + `vue-tsc` 须**全绿**；改 `src/` 或共享代码后须 `SUBAPP_NO_EMPTY=1 npm run build:subapps` 重建子应用产物。
-- 后端单测基线须全绿；带 DB 的 `*IT` 中 H2 与 **PostgreSQL 真机**（Testcontainers，2026-10-05 起已跑通）须全绿，**达梦**（需外部实例+驱动）未执行须**如实报告**，禁止用「零 DB 通过」冒充；H2 通过 ≠ PG / 达梦通过。
+- 后端单测基线须全绿；带 DB 的 `*IT` **三方言真机已全部全绿**（2026-10-06）：H2 6/6、PostgreSQL 2/2、**达梦 DM8 2/2（本机实例 V1–V107）**。改迁移或 SQL 后三方言都要重跑；跑不到的方言须显式声明「未执行」，禁止用「零 DB 通过」冒充。H2 通过 ≠ PG / 达梦通过（达梦尤须注意：`domain` 是保留字须改 `domain_code`、自增列显式插 id 须 `IDENTITY_INSERT`、无法重置 IDENTITY 起始值）。
 - 提交按 scope 拆分、不 amend；两库**独立提交、独立推送**。
 
 ## 1. 分级工作流（L0–L4 决策树）
