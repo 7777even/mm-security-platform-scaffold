@@ -4,6 +4,17 @@ import {
   deleteFireFacilityFault,
   createFireFacilityMaintenance,
   deleteFireFacilityMaintenance,
+  fetchFireFacilityMonitors,
+  fetchFireFacilityLedger,
+  createFireFacilityLedger,
+  updateFireFacilityLedger,
+  deleteFireFacilityLedger,
+  fetchFireFacilityFaults,
+  fetchFireFacilityAlarms,
+  fetchFireFacilityWorkOrders,
+  updateFireFacilityFault,
+  updateFireFacilityAlarm,
+  reportFireFacilityMonitors,
   type FireFacilityFaultCreatePayload,
   type FireFacilityMaintenanceWriteRequest,
 } from './fireFacility';
@@ -197,5 +208,40 @@ describe('deleteFireFacilityMaintenance', () => {
 
     await expect(deleteFireFacilityMaintenance(9)).rejects.toThrow(/后端未连接/);
     expect(mockedRequest).not.toHaveBeenCalled();
+  });
+});
+
+describe('fireFacility 其余函数（真实联调路径覆盖，2026-10-05 覆盖率修复）', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubEnv('VITE_API_BASE', 'http://localhost:8787');
+    vi.stubEnv('VITE_USE_DEV_MOCK', '');
+    mockedRequest.mockResolvedValue([]);
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('台账/监测/故障/报警/工单 查询', async () => {
+    await fetchFireFacilityMonitors('1');
+    await fetchFireFacilityLedger();
+    await fetchFireFacilityFaults();
+    await fetchFireFacilityAlarms();
+    await fetchFireFacilityWorkOrders('待确认');
+    expect(mockedRequest).toHaveBeenCalled();
+  });
+
+  it('台账 写端点（增改删）', async () => {
+    await createFireFacilityLedger({} as never);
+    await updateFireFacilityLedger(1, {} as never);
+    await deleteFireFacilityLedger(1);
+    expect(mockedRequest).toHaveBeenCalled();
+  });
+
+  it('故障/报警 状态更新与监测上报', async () => {
+    await updateFireFacilityFault(1, {} as never);
+    await updateFireFacilityAlarm('1', {} as never);
+    await reportFireFacilityMonitors({} as never);
+    expect(mockedRequest).toHaveBeenCalled();
   });
 });

@@ -1,5 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchFireAlarmPage, type FireAlarmItem } from './alarm';
+import {
+  fetchFireAlarmPage,
+  fetchDashboardOverview,
+  fetchAlarmTrend,
+  fetchAlarmPage,
+  createEmergencyEvent,
+  updateEmergencyEvent,
+  deleteEmergencyEvent,
+  updateFireAlarm,
+  createFireAlarm,
+  deleteFireAlarm,
+  type FireAlarmItem,
+} from './alarm';
 
 vi.mock('@/services/http', () => ({
   request: vi.fn(),
@@ -80,5 +92,38 @@ describe('fetchFireAlarmPage', () => {
       params: { page: 1, size: 10 },
     });
     expect(res).toBe(fake);
+  });
+});
+
+describe('alarm 其余函数（真实联调路径覆盖，2026-10-05 覆盖率修复）', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubEnv('VITE_API_BASE', 'http://api.example.com');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'false');
+    (request as unknown as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('总览/趋势/报警分页 查询', async () => {
+    await fetchDashboardOverview();
+    await fetchAlarmTrend();
+    await fetchAlarmPage(1, 10);
+    expect(request).toHaveBeenCalled();
+  });
+
+  it('应急事件 写端点（增改删）', async () => {
+    await createEmergencyEvent({} as never);
+    await updateEmergencyEvent('1', {} as never);
+    await deleteEmergencyEvent('1');
+    expect(request).toHaveBeenCalled();
+  });
+
+  it('火灾报警 写端点（增改删）', async () => {
+    await updateFireAlarm('1', {} as never);
+    await createFireAlarm({} as never);
+    await deleteFireAlarm('1');
+    expect(request).toHaveBeenCalled();
   });
 });

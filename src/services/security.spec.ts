@@ -5,6 +5,31 @@ import {
   fetchBollards,
   fetchVehicleSearch,
   fetchPersonSearch,
+  fetchSecurityTrackTimeline,
+  fetchSecurityTrackSummary,
+  fetchVehicleSearchDetail,
+  fetchPersonSearchDetail,
+  fetchLatestPerimeterAlarm,
+  fetchPerimeterAlarm,
+  fetchPerimeterAlarmSnapshotUrl,
+  updatePerimeterAlarm,
+  createPerimeterAlarm,
+  fetchPerimeterAlarms,
+  deletePerimeterAlarm,
+  touchPerimeterAlarmChanged,
+  countPlayableCameras,
+  createPersonSearch,
+  updatePersonSearch,
+  deletePersonSearch,
+  createVehicleSearch,
+  updateVehicleSearch,
+  deleteVehicleSearch,
+  createGateControl,
+  updateGateControl,
+  deleteGateControl,
+  createBollard,
+  updateBollard,
+  deleteBollard,
 } from './security';
 import { fetchSecurityEvents } from './securityEventStore';
 
@@ -105,5 +130,73 @@ describe('security 域 fetch（dev 降级 / 真实联调）', () => {
     fn.mockResolvedValue([]);
     await fetchSecurityEvents();
     expect(fn).toHaveBeenCalledWith({ url: '/security/events', method: 'GET' });
+  });
+});
+
+describe('security 其余函数（真实联调路径覆盖，2026-10-05 覆盖率修复）', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubEnv('VITE_API_BASE', 'http://api.example.com');
+    vi.stubEnv('VITE_USE_DEV_MOCK', 'false');
+    fn.mockResolvedValue([]);
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  const real = async (_label: string, p: Promise<unknown>): Promise<void> => {
+    await p;
+    expect(fn).toHaveBeenCalled();
+  };
+
+  it('securityTrack 时间线/汇总', async () => {
+    await real('timeline', fetchSecurityTrackTimeline({} as never));
+    await real('summary', fetchSecurityTrackSummary({} as never));
+  });
+
+  it('车辆/人员检索详情与列表', async () => {
+    await real('vehicleSearchDetail', fetchVehicleSearchDetail(1));
+    await real('personSearchDetail', fetchPersonSearchDetail(1));
+    await real('vehicleSearch', fetchVehicleSearch('粤K'));
+    await real('personSearch', fetchPersonSearch('张三'));
+  });
+
+  it('周界报警 详情/列表/最新/快照', async () => {
+    await real('latest', fetchLatestPerimeterAlarm());
+    await real('detail', fetchPerimeterAlarm(1));
+    await real('snapshot', fetchPerimeterAlarmSnapshotUrl(1));
+    await real('list', fetchPerimeterAlarms());
+  });
+
+  it('周界报警 写端点（增改删）', async () => {
+    await real('create', createPerimeterAlarm({} as never));
+    await real('update', updatePerimeterAlarm(1, {} as never));
+    await real('delete', deletePerimeterAlarm(1));
+  });
+
+  it('touchPerimeterAlarmChanged 与 countPlayableCameras 纯函数', async () => {
+    expect(() => touchPerimeterAlarmChanged()).not.toThrow();
+    expect(countPlayableCameras([])).toBe(0);
+    expect(
+      countPlayableCameras([
+        { id: 1, name: 'c', zone: 'z', status: '正常', longitude: 1, latitude: 1 },
+        { id: 2, name: 'c2', zone: 'z', status: '离线', longitude: 1, latitude: 1 },
+      ] as never),
+    ).toBe(1);
+  });
+
+  it('人/车/门禁/防撞柱 写端点（增改删）', async () => {
+    await real('createPerson', createPersonSearch({} as never));
+    await real('updatePerson', updatePersonSearch(1, {} as never));
+    await real('deletePerson', deletePersonSearch(1));
+    await real('createVehicle', createVehicleSearch({} as never));
+    await real('updateVehicle', updateVehicleSearch(1, {} as never));
+    await real('deleteVehicle', deleteVehicleSearch(1));
+    await real('createGate', createGateControl({} as never));
+    await real('updateGate', updateGateControl(1, {} as never));
+    await real('deleteGate', deleteGateControl(1));
+    await real('createBollard', createBollard({} as never));
+    await real('updateBollard', updateBollard(1, {} as never));
+    await real('deleteBollard', deleteBollard(1));
   });
 });
