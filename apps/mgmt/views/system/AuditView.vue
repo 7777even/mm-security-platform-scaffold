@@ -135,6 +135,9 @@ onMounted(load);
       <el-table-column prop="module" label="所属模块" width="140">
         <template #default="{ row }">{{ row.module || '—' }}</template>
       </el-table-column>
+      <el-table-column prop="actor" label="操作人" width="140">
+        <template #default="{ row }">{{ row.actor || '—' }}</template>
+      </el-table-column>
       <el-table-column label="操作详情" min-width="260">
         <template #default="{ row }">
           <span class="audit-detail">{{ fmtDetail(asAudit(row).detailJson) }}</span>
