@@ -144,6 +144,11 @@ export interface components {
        * @example 2026-09-14 10:20:00
        */
       createdAt?: string;
+      /**
+       * @description 操作提交人（服务端按当前登录态写入，客户端不可伪造；历史行可能为 null）
+       * @example admin
+       */
+      actor?: string | null;
     };
     /** @description 审计日志分页结果（与前端 PageResult 同构） */
     AuditLogPageResult: {
@@ -330,7 +335,8 @@ export interface operations {
            *             "module": "ADMIN",
            *             "detailJson": null,
            *             "eventAt": 1717488000000,
-           *             "createdAt": "2026-09-14 10:20:00"
+           *             "createdAt": "2026-09-14 10:20:00",
+           *             "actor": "admin"
            *           }
            *         ],
            *         "total": 1,

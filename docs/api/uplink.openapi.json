@@ -75,7 +75,8 @@
                         "module": "ADMIN",
                         "detailJson": null,
                         "eventAt": 1717488000000,
-                        "createdAt": "2026-09-14 10:20:00"
+                        "createdAt": "2026-09-14 10:20:00",
+                        "actor": "admin"
                       }
                     ],
                     "total": 1,
@@ -187,6 +188,12 @@
             "type": "string",
             "description": "落库时间（yyyy-MM-dd HH:mm:ss）",
             "example": "2026-09-14 10:20:00"
+          },
+          "actor": {
+            "type": "string",
+            "description": "操作提交人（服务端按当前登录态写入，客户端不可伪造；历史行可能为 null）",
+            "nullable": true,
+            "example": "admin"
           }
         },
         "required": ["id", "action"]
