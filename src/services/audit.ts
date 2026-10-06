@@ -75,6 +75,8 @@ export interface AuditLogItem {
   module?: string | null;
   detailJson?: string | null;
   eventAt?: number | null;
+  /** 操作提交人（服务端按当前登录态写入，客户端不可伪造；历史行可能为 null） */
+  actor?: string | null;
   createdAt?: string | null;
 }
 
