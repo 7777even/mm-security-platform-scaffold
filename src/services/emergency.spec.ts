@@ -22,7 +22,7 @@ describe('fetchEmergencyStrength', () => {
     vi.stubEnv('VITE_API_BASE', '');
     vi.stubEnv('VITE_USE_DEV_MOCK', 'true');
     const res = await fetchEmergencyStrength();
-    expect(res.resources).toHaveLength(8);
+    expect(res.resources).toHaveLength(7);
     expect(res.resources.map((r) => r.kind)).toEqual([
       '应急专家',
       '应急物资',
@@ -31,7 +31,6 @@ describe('fetchEmergencyStrength', () => {
       '应急场所',
       '医疗机构',
       '应急车辆',
-      '消防设施',
     ]);
     expect(res.resources[0]!.count).toBe(52);
   });

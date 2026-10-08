@@ -7,14 +7,7 @@ import {
 
 // 应急力量数据（B3 Mock 契约 §3.6）：按维度统计资源数量
 export type EmergencyResourceKind =
-  | '应急专家'
-  | '应急物资'
-  | '救援队伍'
-  | '救援装备'
-  | '应急场所'
-  | '医疗机构'
-  | '应急车辆'
-  | '消防设施';
+  '应急专家' | '应急物资' | '救援队伍' | '救援装备' | '应急场所' | '医疗机构' | '应急车辆';
 
 /** 应急力量明细项（除应急物资为统计口径外，其余类别均有值；后端全量返回，前端按 20/页分页）。 */
 export interface StrengthItem {
@@ -34,7 +27,7 @@ export interface EmergencyStrength {
   resources: EmergencyResource[];
 }
 
-// 开发期自包含 mock：8 个核心应急力量维度（2 列 × 4 行网格）
+// 开发期自包含 mock：7 个核心应急力量维度（与后端 /emergency/strength 同源，消防设施已移出应急域）
 const DEV_FIXTURE: EmergencyStrength = {
   resources: [
     { kind: '应急专家', count: 52, icon: 'UserFilled' },
@@ -44,7 +37,6 @@ const DEV_FIXTURE: EmergencyStrength = {
     { kind: '应急场所', count: 6, icon: 'OfficeBuilding' },
     { kind: '医疗机构', count: 3, icon: 'FirstAidKit' },
     { kind: '应急车辆', count: 12, icon: 'Van' },
-    { kind: '消防设施', count: 42, icon: 'Warning' },
   ],
 };
 
