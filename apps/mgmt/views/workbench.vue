@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { mgmtMenus, firstLeafPath, leafCount, flattenLeaves } from '@/data/mgmtMenus';
 import { mgmtCardToneOf, mgmtIconOf } from '../utils/groupVisuals';
@@ -60,6 +60,19 @@ function goGroup(key: string) {
   if (group) router.push(firstLeafPath(group));
 }
 
+// 首页卡片：默认展示前 4 个子页；余量（如 +17）点击「+N 个」就地展开，
+// 全部子模块以真实 RouterLink 呈现，确保任意模块都能从首页直达
+// （修复「+N 余量里的模块无法在首页点进去」）。
+const expanded = reactive<Record<string, boolean>>({});
+function allLeaves(key: string): { name: string; path: string }[] {
+  const group = mgmtMenus.find((g) => g.key === key);
+  if (!group) return [];
+  return flattenLeaves(group.children);
+}
+function toggleExpand(key: string): void {
+  expanded[key] = !expanded[key];
+}
+
 // 子系统数动态取自菜单分组数（与统计卡「子系统」同源），副标题中文数词同步，避免文案漂移
 const CN_DIGITS = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
 function cnCount(n: number): string {
@@ -114,19 +127,49 @@ const subsystemPhrase = computed(() => `${cnCount(mgmtMenus.length)}大一体化
             <p class="wb-card__count">{{ leafCount(g) }} 个业务页面</p>
           </div>
         </header>
-        <footer class="wb-card__foot">
-          <RouterLink
-            v-for="leaf in previewLeaves(g.key).leaves"
-            :key="leaf.path"
-            :to="leaf.path"
-            class="tag tag-info wb-card__link"
-            @click.stop
-          >
-            {{ leaf.name }}
-          </RouterLink>
-          <span v-if="previewLeaves(g.key).more" class="wb-card__more">
-            +{{ previewLeaves(g.key).more }}
-          </span>
+        <footer
+          class="wb-card__foot"
+          :class="{ 'wb-card__foot--expanded': expanded[g.key] }"
+          @click.stop
+        >
+          <template v-if="!expanded[g.key]">
+            <RouterLink
+              v-for="leaf in previewLeaves(g.key).leaves"
+              :key="leaf.path"
+              :to="leaf.path"
+              class="tag tag-info wb-card__link"
+              @click.stop
+            >
+              {{ leaf.name }}
+            </RouterLink>
+            <button
+              v-if="previewLeaves(g.key).more"
+              type="button"
+              class="wb-card__more"
+              :title="`展开全部 ${leafCount(g)} 个模块`"
+              @click.stop="toggleExpand(g.key)"
+            >
+              +{{ previewLeaves(g.key).more }} 个
+            </button>
+          </template>
+          <template v-else>
+            <RouterLink
+              v-for="leaf in allLeaves(g.key)"
+              :key="leaf.path"
+              :to="leaf.path"
+              class="tag tag-info wb-card__link"
+              @click.stop
+            >
+              {{ leaf.name }}
+            </RouterLink>
+            <button
+              type="button"
+              class="wb-card__more wb-card__more--collapse"
+              @click.stop="toggleExpand(g.key)"
+            >
+              收起
+            </button>
+          </template>
         </footer>
       </article>
     </section>
@@ -310,7 +353,7 @@ a.wb-card__link:hover {
   opacity: 0.8;
 }
 
-/* 余量胶囊：与子页面标签同语系（浅底蓝字加粗，对齐原型 +N） */
+/* 余量胶囊：与子页面标签同语系（浅底蓝字加粗，对齐原型 +N）；点击就地展开余量模块 */
 .wb-card__more {
   display: inline-flex;
   align-items: center;
@@ -321,6 +364,30 @@ a.wb-card__link:hover {
   line-height: 1;
   color: var(--tag-info-fg);
   background: var(--tag-info-bg);
+  border: none;
   border-radius: var(--mgmt-radius-sm);
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.wb-card__more:hover {
+  box-shadow: inset 0 0 0 1px var(--tag-info-fg);
+}
+
+/* 收起态：中性描边，与展开态区分 */
+.wb-card__more--collapse {
+  color: var(--text-muted-mgmt);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--border-mgmt);
+}
+
+/* 展开态：全部模块以可滚动列表呈现，避免卡片无界增高 */
+.wb-card__foot--expanded {
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: var(--space-xs);
 }
 </style>
