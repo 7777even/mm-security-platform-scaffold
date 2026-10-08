@@ -23,9 +23,9 @@ import {
   Tickets,
 } from '@element-plus/icons-vue';
 import MgmtIconTile from './components/MgmtIconTile.vue';
-import { mgmtIconOf, mgmtTileToneOf, mgmtToneClassOf } from './utils/groupVisuals';
-import { mgmtMenus, flattenLeaves } from '@/data/mgmtMenus';
-import type { MgmtMenuGroup } from '@/data/mgmtMenus';
+import { mgmtIconOf, mgmtTileToneOf, mgmtToneClassOf, mgmtLeafIconOf } from './utils/groupVisuals';
+import { mgmtMenus, flattenLeaves, isMgmtFolder } from '@/data/mgmtMenus';
+import type { MgmtMenuGroup, MgmtMenuLeaf } from '@/data/mgmtMenus';
 
 // MgmtLayout：后台管理端 T 型布局壳（docs/UI规范-后台管理端.md §3）
 // 顶栏 56px：Logo｜竖分隔｜产品名｜tabstrip（浏览器标签式多页签）+ 时间 / 适老模式 / 用户（右）
@@ -162,10 +162,37 @@ onMounted(() => {
 onUnmounted(() => unsubscribeAlarm?.());
 
 /* ---- 分组视觉：图标 / 色调统一取 apps/mgmt/utils/groupVisuals.ts（唯一真源） ---- */
-/* 侧栏叶子项小图标：菜单 icon 名（'dispatch' / 'calendar' …）尚未建立 → ep 图标映射表，
- * 故回落到所属分组的图标（与侧栏分组头 / 多页签 / 工作台卡同源），观感整齐且永不空白。 */
-function resolveLeafIcon(groupKey: string): Component {
-  return mgmtIconOf(groupKey);
+/* 侧栏叶子项小图标：用菜单叶子自带的 icon 名解析（与落地页模块卡同源，唯一真源在 groupVisuals），
+ * 未登记的名回落到所属分组的图标，观感整齐且永不空白。 */
+function resolveLeafIcon(leaf: MgmtMenuLeaf, groupKey: string): Component {
+  return mgmtLeafIconOf(leaf.icon, groupKey);
+}
+
+/* ---- 侧栏分组内的「子分区」：把一分组 children 切成 folder 段与 loose 段 ----
+ * 与落地页 group-landing 的分区口径完全一致：文件夹对象成段（带分区名+图标），
+ * 散叶合并为一段（无分区头）。这样左侧竖栏与落地页看到的分区结构一一对应。 */
+interface NavSection {
+  kind: 'folder' | 'loose';
+  name?: string;
+  icon?: string;
+  children: MgmtMenuLeaf[];
+}
+function navSections(g: MgmtMenuGroup): NavSection[] {
+  const sections: NavSection[] = [];
+  let loose: MgmtMenuLeaf[] = [];
+  for (const c of g.children) {
+    if (isMgmtFolder(c)) {
+      if (loose.length) {
+        sections.push({ kind: 'loose', children: loose });
+        loose = [];
+      }
+      sections.push({ kind: 'folder', name: c.name, icon: c.icon, children: c.children });
+    } else {
+      loose.push(c);
+    }
+  }
+  if (loose.length) sections.push({ kind: 'loose', children: loose });
+  return sections;
 }
 </script>
 
@@ -236,24 +263,40 @@ function resolveLeafIcon(groupKey: string): Component {
               </el-icon>
             </button>
             <div v-show="openGroups[g.key]" class="mgmt-nav__group-children">
-              <button
-                v-for="item in flattenLeaves(g.children)"
-                :key="item.path"
-                type="button"
-                class="mgmt-nav__item"
-                :class="{ 'mgmt-nav__item--active': isActiveLeaf(item.path) }"
-                :title="item.name"
-                @click="openTab(g, item.path, item.name)"
-              >
-                <MgmtIconTile
-                  :icon="resolveLeafIcon(g.key)"
-                  :tone="mgmtTileToneOf(g.key)"
-                  size="sm"
-                  variant="ghost"
-                  shape="circle"
-                />
-                <span class="mgmt-nav__label">{{ item.name }}</span>
-              </button>
+              <template v-for="sec in navSections(g)" :key="sec.kind + (sec.name || '')">
+                <!-- 子分区头（文件夹）：分区名 + 语义图标 -->
+                <div v-if="sec.kind === 'folder'" class="mgmt-nav__sub">
+                  <MgmtIconTile
+                    :icon="mgmtLeafIconOf(sec.icon || '', g.key)"
+                    :tone="mgmtTileToneOf(g.key)"
+                    :size="16"
+                    variant="ghost"
+                    shape="circle"
+                  />
+                  <span class="mgmt-nav__sub-label">{{ sec.name }}</span>
+                </div>
+                <button
+                  v-for="item in sec.children"
+                  :key="item.path"
+                  type="button"
+                  class="mgmt-nav__item"
+                  :class="[
+                    'mgmt-nav__item--leaf',
+                    { 'mgmt-nav__item--active': isActiveLeaf(item.path) },
+                  ]"
+                  :title="item.name"
+                  @click="openTab(g, item.path, item.name)"
+                >
+                  <MgmtIconTile
+                    :icon="resolveLeafIcon(item, g.key)"
+                    :tone="mgmtTileToneOf(g.key)"
+                    size="sm"
+                    variant="ghost"
+                    shape="circle"
+                  />
+                  <span class="mgmt-nav__label">{{ item.name }}</span>
+                </button>
+              </template>
             </div>
           </div>
         </nav>
@@ -679,6 +722,35 @@ function resolveLeafIcon(groupKey: string): Component {
   display: flex;
   flex-direction: column;
   gap: 1px;
+}
+
+/* 子分区头（文件夹）：小号、弱化、带语义图标，与落地页分区名口径一致 */
+.mgmt-nav__sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px var(--space-sm) 2px;
+  margin-top: 4px;
+  font-size: var(--mgmt-fz-caption);
+  font-weight: 600;
+  color: var(--text-muted-mgmt);
+  letter-spacing: 0.2px;
+}
+
+.mgmt-nav__sub:first-child {
+  margin-top: 0;
+}
+
+.mgmt-nav__sub-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 叶子菜单项：在分组缩进基础上再内缩，落到子分区下 */
+.mgmt-nav__item--leaf {
+  margin-left: var(--space-sm);
 }
 
 /* 侧栏菜单项 */
