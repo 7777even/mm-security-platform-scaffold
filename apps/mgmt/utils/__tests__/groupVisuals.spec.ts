@@ -43,12 +43,12 @@ describe('apps/mgmt/utils/groupVisuals：分组视觉唯一真源', () => {
     }
   });
 
-  it('台风应急管理（typhoon）分组图标与色调已登记，不再渲染空白图标', () => {
-    // 缺陷回归锚点：该分组曾因漏登记而拿到 undefined 图标
-    expect(mgmtIconOf('typhoon')).toBe(mgmtGroupIcon.typhoon);
-    expect(mgmtIconOf('typhoon')).toBeTruthy();
-    expect(mgmtCardToneOf('typhoon')).toBe('warning');
-    expect(mgmtTileToneOf('typhoon')).toBe('blue');
+  it('工业电视（tv）分组图标与色调已登记，不再渲染空白图标', () => {
+    // 缺陷回归锚点：新增分组若漏登记会拿到 undefined 图标
+    expect(mgmtIconOf('tv')).toBe(mgmtGroupIcon.tv);
+    expect(mgmtIconOf('tv')).toBeTruthy();
+    expect(mgmtCardToneOf('tv')).toBe('success');
+    expect(mgmtTileToneOf('tv')).toBe('cyan');
   });
 
   it('取值函数对未登记 key 一律走兜底（绝不返回空图标/空色调）', () => {

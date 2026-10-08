@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { mgmtMenus, leafCount, flattenLeaves } from '@/data/mgmtMenus';
+import { mgmtMenus, leafCount, flattenLeaves, isMgmtFolder } from '@/data/mgmtMenus';
 import { mgmtCardToneOf, mgmtIconOf } from '../utils/groupVisuals';
 import { fetchDashboardOverview } from '@/services/alarm';
 import type { DashboardOverview } from '@/services/alarm';
@@ -64,10 +64,11 @@ function goGroup(key: string) {
 // 全部子模块以真实 RouterLink 呈现，确保任意模块都能从首页直达
 // （修复「+N 余量里的模块无法在首页点进去」）。
 const expanded = reactive<Record<string, boolean>>({});
-function allLeaves(key: string): { name: string; path: string }[] {
+
+// 展开态按文件夹分区：保留子系统内部嵌套（消防设施台账 / 运行监控 / 设备设施管理）
+function groupChildren(key: string) {
   const group = mgmtMenus.find((g) => g.key === key);
-  if (!group) return [];
-  return flattenLeaves(group.children);
+  return group ? group.children : [];
 }
 function toggleExpand(key: string): void {
   expanded[key] = !expanded[key];
@@ -153,15 +154,23 @@ const subsystemPhrase = computed(() => `${cnCount(mgmtMenus.length)}大一体化
             </button>
           </template>
           <template v-else>
-            <RouterLink
-              v-for="leaf in allLeaves(g.key)"
-              :key="leaf.path"
-              :to="leaf.path"
-              class="tag tag-info wb-card__link"
-              @click.stop
-            >
-              {{ leaf.name }}
-            </RouterLink>
+            <template v-for="child in groupChildren(g.key)" :key="child.name">
+              <template v-if="isMgmtFolder(child)">
+                <p class="wb-card__subhead">{{ child.name }}</p>
+                <RouterLink
+                  v-for="leaf in child.children"
+                  :key="leaf.path"
+                  :to="leaf.path"
+                  class="tag tag-info wb-card__link"
+                  @click.stop
+                >
+                  {{ leaf.name }}
+                </RouterLink>
+              </template>
+              <RouterLink v-else :to="child.path" class="tag tag-info wb-card__link" @click.stop>
+                {{ child.name }}
+              </RouterLink>
+            </template>
             <button
               type="button"
               class="wb-card__more wb-card__more--collapse"
@@ -341,6 +350,15 @@ const subsystemPhrase = computed(() => `${cnCount(mgmtMenus.length)}大一体化
   align-items: center;
   gap: var(--space-sm);
   padding-top: var(--space-md);
+}
+
+/* 展开态文件夹子分区标题（消防设施台账 / 运行监控 / 设备设施管理） */
+.wb-card__subhead {
+  flex-basis: 100%;
+  margin: var(--space-xs) 0 0;
+  font-size: var(--mgmt-fz-caption);
+  font-weight: 600;
+  color: var(--text-muted-mgmt);
 }
 
 .wb-card__link {

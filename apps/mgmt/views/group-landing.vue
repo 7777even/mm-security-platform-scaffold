@@ -6,15 +6,17 @@ import {
   mgmtMenus,
   leafCount,
   flattenLeaves,
+  isMgmtFolder,
   type MgmtMenuGroup,
-  type MgmtMenuLeaf,
+  type MgmtChild,
 } from '@/data/mgmtMenus';
 import { mgmtIconOf, mgmtTileToneOf, mgmtCardToneOf } from '../utils/groupVisuals';
 import MgmtIconTile from '../components/MgmtIconTile.vue';
 
 // 子系统落地页（替代「点卡片默认进第一个模块」）：
 // 工作台点子系统卡片 → 进入本页，列出该子系统全部模块，由用户自行选择进入哪个，
-// 不再静默落到 firstLeafPath。视觉与工作台/侧栏同源（groupVisuals）。
+// 不再静默落到 firstLeafPath。子系统内部保留文件夹分区（消防设施台账 / 运行监控 / 设备设施管理），
+// 按文件夹分段展示，避免单子系统几十个模块平铺成一片。视觉与工作台/侧栏同源（groupVisuals）。
 
 const route = useRoute();
 const router = useRouter();
@@ -24,16 +26,27 @@ const group = computed<MgmtMenuGroup | undefined>(() =>
   mgmtMenus.find((g) => g.key === groupKey.value),
 );
 
-const allLeaves = computed<MgmtMenuLeaf[]>(() =>
-  group.value ? flattenLeaves(group.value.children) : [],
-);
+const children = computed<MgmtChild[]>(() => group.value?.children ?? []);
 
 const keyword = ref('');
-const filteredLeaves = computed<MgmtMenuLeaf[]>(() => {
-  const kw = keyword.value.trim().toLowerCase();
-  if (!kw) return allLeaves.value;
-  return allLeaves.value.filter((l) => l.name.toLowerCase().includes(kw));
+const kw = computed(() => keyword.value.trim().toLowerCase());
+
+// 按文件夹过滤：叶子按名称匹配；文件夹保留含匹配叶子的子集（空文件夹整段隐藏）
+const displayChildren = computed<MgmtChild[]>(() => {
+  const list = children.value;
+  if (!kw.value) return list;
+  return list
+    .map((c) => {
+      if (isMgmtFolder(c)) {
+        const matched = c.children.filter((l) => l.name.toLowerCase().includes(kw.value));
+        return matched.length ? { ...c, children: matched } : null;
+      }
+      return c.name.toLowerCase().includes(kw.value) ? c : null;
+    })
+    .filter((x): x is MgmtChild => x !== null);
 });
+
+const filteredLeafCount = computed(() => flattenLeaves(displayChildren.value).length);
 
 function open(path: string) {
   router.push(path);
@@ -73,24 +86,52 @@ onMounted(() => {
           <el-icon><Search /></el-icon>
         </template>
       </el-input>
-      <span class="gl-toolbar__hint">共 {{ filteredLeaves.length }} 个匹配</span>
+      <span class="gl-toolbar__hint">共 {{ filteredLeafCount }} 个匹配</span>
     </div>
 
-    <section class="gl-grid">
-      <button
-        v-for="leaf in filteredLeaves"
-        :key="leaf.path"
-        type="button"
-        class="gl-mod"
-        :class="`gl-mod--${mgmtCardToneOf(group.key)}`"
-        @click="open(leaf.path)"
-      >
-        <span class="gl-mod__name">{{ leaf.name }}</span>
-        <el-icon class="gl-mod__arrow" :size="14"><ArrowRight /></el-icon>
-      </button>
-    </section>
+    <div class="gl-body">
+      <template v-for="child in displayChildren" :key="child.name">
+        <section v-if="isMgmtFolder(child)" class="gl-sub">
+          <h2 class="gl-sub__title">
+            <MgmtIconTile
+              :icon="mgmtIconOf(group.key)"
+              :tone="mgmtTileToneOf(group.key)"
+              size="sm"
+              variant="ghost"
+              shape="circle"
+            />
+            {{ child.name }}
+            <span class="gl-sub__count">{{ child.children.length }}</span>
+          </h2>
+          <div class="gl-grid">
+            <button
+              v-for="leaf in child.children"
+              :key="leaf.path"
+              type="button"
+              class="gl-mod"
+              :class="`gl-mod--${mgmtCardToneOf(group.key)}`"
+              @click="open(leaf.path)"
+            >
+              <span class="gl-mod__name">{{ leaf.name }}</span>
+              <el-icon class="gl-mod__arrow" :size="14"><ArrowRight /></el-icon>
+            </button>
+          </div>
+        </section>
+        <div v-else class="gl-grid">
+          <button
+            type="button"
+            class="gl-mod"
+            :class="`gl-mod--${mgmtCardToneOf(group.key)}`"
+            @click="open(child.path)"
+          >
+            <span class="gl-mod__name">{{ child.name }}</span>
+            <el-icon class="gl-mod__arrow" :size="14"><ArrowRight /></el-icon>
+          </button>
+        </div>
+      </template>
+    </div>
 
-    <p v-if="filteredLeaves.length === 0" class="gl-empty">没有匹配「{{ keyword }}」的模块</p>
+    <p v-if="filteredLeafCount === 0" class="gl-empty">没有匹配「{{ keyword }}」的模块</p>
   </div>
 
   <div v-else class="group-landing group-landing--missing">
@@ -171,6 +212,29 @@ onMounted(() => {
 
 .gl-toolbar__hint {
   font-size: var(--mgmt-fz-caption);
+  color: var(--text-muted-mgmt);
+}
+
+/* 主体：文件夹分段 + 散叶网格 */
+.gl-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.gl-sub__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: 0 0 var(--space-sm);
+  font-size: var(--mgmt-fz-header);
+  font-weight: 600;
+  color: var(--text-title-mgmt);
+}
+
+.gl-sub__count {
+  font-size: var(--mgmt-fz-caption);
+  font-weight: 400;
   color: var(--text-muted-mgmt);
 }
 

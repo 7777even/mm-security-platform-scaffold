@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { mgmtMenus, mgmtLeafByPath } from '@/data/mgmtMenus';
+import { mgmtMenus, mgmtLeafByPath, flattenLeaves } from '@/data/mgmtMenus';
 import type { RouteRecordRaw } from 'vue-router';
 
 // 后台独立入口路由（与主壳一致使用 history 模式，base 指向子路径）。
@@ -442,7 +442,7 @@ const serviceRoutes: RouteRecordRaw[] = [
 // 数据驱动兜底路由：未接入后端能力的叶子走 module-embed.vue
 // （原型页命中 → iframe 嵌入 public/pc-admin；/form → 流程填报向导；否则 module.vue 静态页）。
 const moduleRoutes: RouteRecordRaw[] = mgmtMenus.flatMap((g) =>
-  g.children
+  flattenLeaves(g.children)
     .filter((c) => !SERVICE_PATHS.includes(c.path))
     .map((c) => ({
       path: c.path,

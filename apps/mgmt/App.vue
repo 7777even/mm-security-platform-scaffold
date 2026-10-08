@@ -24,7 +24,7 @@ import {
 } from '@element-plus/icons-vue';
 import MgmtIconTile from './components/MgmtIconTile.vue';
 import { mgmtIconOf, mgmtTileToneOf, mgmtToneClassOf } from './utils/groupVisuals';
-import { mgmtMenus } from '@/data/mgmtMenus';
+import { mgmtMenus, flattenLeaves } from '@/data/mgmtMenus';
 import type { MgmtMenuGroup } from '@/data/mgmtMenus';
 
 // MgmtLayout：后台管理端 T 型布局壳（docs/UI规范-后台管理端.md §3）
@@ -80,10 +80,11 @@ watch(
   () => route.path,
   async (p) => {
     const g = mgmtMenus.find((x) =>
-      x.children.some((c) => p === c.path || p.startsWith(`${c.path}/`)),
+      flattenLeaves(x.children).some((c) => p === c.path || p.startsWith(`${c.path}/`)),
     );
     if (g) openGroups[g.key] = true;
-    const leaf = g?.children.find((c) => p === c.path || p.startsWith(`${c.path}/`));
+    const leaf =
+      g && flattenLeaves(g.children).find((c) => p === c.path || p.startsWith(`${c.path}/`));
     if (leaf && !openTabs.some((t) => t.path === leaf.path)) {
       openTabs.push({ path: leaf.path, name: leaf.name, groupKey: g!.key });
     }
@@ -236,7 +237,7 @@ function resolveLeafIcon(groupKey: string): Component {
             </button>
             <div v-show="openGroups[g.key]" class="mgmt-nav__group-children">
               <button
-                v-for="item in g.children"
+                v-for="item in flattenLeaves(g.children)"
                 :key="item.path"
                 type="button"
                 class="mgmt-nav__item"
