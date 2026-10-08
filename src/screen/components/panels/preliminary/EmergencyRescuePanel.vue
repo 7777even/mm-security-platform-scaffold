@@ -1,15 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
-import {
-  UserFilled,
-  Box,
-  Avatar,
-  Van,
-  OfficeBuilding,
-  FirstAidKit,
-  Warning,
-} from '@element-plus/icons-vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
+import { UserFilled, Box, Avatar, Van, OfficeBuilding, FirstAidKit } from '@element-plus/icons-vue';
 import {
   fetchEmergencyStrength,
   type EmergencyResource,
@@ -40,8 +33,8 @@ const stats = computed<RescueStat[]>(() =>
 );
 
 // 点击应急力量统计卡 → 通知父视图打开救援资源浮层（与消防报警模块「救援力量」卡片一致）。
-// 8 类全部走浮层：救援队伍/救援装备/应急车辆 由父视图映射到专属救援资源浮层，
-// 其余 5 类（应急专家/应急物资/应急场所/医疗机构/消防设施）由父视图打开通用 strength 浮层。
+// 7 类全部走浮层：救援队伍/救援装备/应急车辆 由父视图映射到专属救援资源浮层，
+// 其余 4 类（应急专家/应急物资/应急场所/医疗机构）由父视图打开通用 strength 浮层。
 const emit = defineEmits<{
   'open-rescue-force': [payload: { label: string; items: StrengthItem[] | null }];
 }>();
@@ -51,18 +44,30 @@ function openStat(stat: RescueStat) {
   emit('open-rescue-force', { label: stat.label, items: resource?.items ?? null });
 }
 
-onMounted(async () => {
+async function loadStrength() {
   try {
     const strength = await fetchEmergencyStrength();
     resources.value = strength.resources;
   } catch {
     // 保留空，模板回退无卡片
   }
-});
+}
 
-/* 与后端 sys_emergency_strength 种子顺序一一对应；iconIndex 0..7
-   应急专家 / 应急物资 / 救援队伍 / 救援装备 / 应急场所 / 医疗机构 / 应急车辆 / 消防设施 */
-const RESCUE_ICONS = [UserFilled, Box, Avatar, Van, OfficeBuilding, FirstAidKit, Van, Warning];
+onMounted(loadStrength);
+
+/* 三端实时刷新（realtime-channel spec）：力量统计 7 类中 5 类（应急专家/救援队伍/救援装备/应急车辆/应急场所/医疗机构）
+   的计数/明细由后端实时覆盖自救援资源台账与运营参考表（应急物资为统计口径，无写入口）。
+   任一端增删改台账后按对应 @RealtimeSync 域重拉 /emergency/strength。 */
+[
+  'rescue.personnel', // 应急专家
+  'rescue.brigade', // 救援队伍
+  'rescue.vehicle', // 应急车辆
+  'rescue.equipment', // 救援装备
+].forEach((domain) => useDomainAutoRefresh(domain, loadStrength, { immediate: false }));
+
+/* 与后端 sys_emergency_strength 种子顺序一一对应；iconIndex 0..6
+   应急专家 / 应急物资 / 救援队伍 / 救援装备 / 应急场所 / 医疗机构 / 应急车辆 */
+const RESCUE_ICONS = [UserFilled, Box, Avatar, Van, OfficeBuilding, FirstAidKit, Van];
 </script>
 
 <template>

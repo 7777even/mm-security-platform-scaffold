@@ -557,7 +557,6 @@ export const rescueAuxiliaryStats = [
   { label: '应急场所', value: 62, iconIndex: 4 },
   { label: '医疗机构', value: 80, iconIndex: 5 },
   { label: '应急车辆', value: 33, iconIndex: 6 },
-  { label: '消防设施', value: 11, iconIndex: 7 },
 ];
 
 export const rescueDynamics: RescueDynamicEntry[] = [

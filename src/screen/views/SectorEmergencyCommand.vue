@@ -75,7 +75,7 @@ function openRescueForceOverlay(payload: {
     opener();
     return;
   }
-  // 其余 5 类（应急专家/应急物资/应急场所/医疗机构/消防设施）打开通用 strength 浮层
+  // 其余 4 类（应急专家/应急物资/应急场所/医疗机构）打开通用 strength 浮层
   openRescueStrengthView(payload.label, payload.items);
 }
 

@@ -9,7 +9,6 @@ import {
   Van,
   OfficeBuilding,
   FirstAidKit,
-  Warning,
   Document,
   MapLocation,
   Connection,
@@ -44,7 +43,6 @@ const RESCUE_KIND_ORDER = [
   '应急场所',
   '医疗机构',
   '应急车辆',
-  '消防设施',
 ] as const;
 
 /** 辅助项：drill/event 通用；knowledge 布局附带后端 sys_knowledge_item.description 供点击详情。 */
@@ -129,10 +127,10 @@ const itemFields = computed(() =>
     : [],
 );
 
-/* 与 rescueAuxiliaryStats.iconIndex 一一对应（0..7）：
-   应急专家/应急物资/救援队伍/救援装备/应急场所/医疗机构/应急车辆/消防设施
+/* 与 rescueAuxiliaryStats.iconIndex 一一对应（0..6）：
+   应急专家/应急物资/救援队伍/救援装备/应急场所/医疗机构/应急车辆
    （注：第 4 项原「装备车辆」已在 V62 随后端 sys_emergency_strength 统一改名为「救援装备」） */
-const RESCUE_ICONS = [UserFilled, Box, Avatar, Van, OfficeBuilding, FirstAidKit, Van, Warning];
+const RESCUE_ICONS = [UserFilled, Box, Avatar, Van, OfficeBuilding, FirstAidKit, Van];
 
 /* eventCommand 布局图标轮转序列：与后端 /emergency/knowledge 返回顺序对应 */
 const KNOWLEDGE_ICONS = [Document, Box, MapLocation, Document, Connection];

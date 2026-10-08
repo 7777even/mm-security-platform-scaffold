@@ -2,7 +2,7 @@ import { computed, ref } from 'vue';
 import type { StrengthItem } from '@/services/emergency';
 
 // 「应急救援力量」面板中无专属救援资源浮层的类别（应急专家 / 应急物资 / 应急场所 /
-// 医疗机构 / 消防设施）共用一套轻量浮层：左列表（name+meta）+ 右详情 + 地图散点。
+// 医疗机构）共用一套轻量浮层：左列表（name+meta）+ 右详情 + 地图散点。
 // 数据直接由 /emergency/strength 的 items 传入，无需再发请求（与救援资源浮层不同，
 // 后者走 /rescue-resources/* 端点）。点位坐标按序号在厂区边界内确定性散布。
 
