@@ -91,6 +91,10 @@ async function onSave(payload: Record<string, unknown>, id: number | null): Prom
 }
 
 async function onDelete(row: FireFacilityLedgerItem): Promise<void> {
+  if (row.id == null) {
+    toastErr(new Error('该台账记录缺少 id（后端未返回主键），无法删除'), '删除失败：');
+    return;
+  }
   try {
     await ElMessageBox.confirm(
       `确认删除设施「${row.facilityName || row.facilityCode}」？`,
