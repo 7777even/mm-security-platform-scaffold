@@ -3,6 +3,18 @@ import { request } from '@/services/http';
 // 应急救援资源台账接口（救援装备/人员/车辆/消防队伍），对齐 docs/api/rescue-resource.openapi.json。
 // 取代 rescueEquipmentMock / rescuePersonnelMock / rescueVehicleMock / fireBrigadeMock 硬编码业务数据。
 
+// 防御性校验：写/删接口把 id 直接拼进 URL 路径。若 id 为 undefined / null / 非数字，
+// 会变成 `/rescue-resources/vehicles/undefined` 这类路径，触发后端
+// 「参数 id 类型不合法：期望 整数，实际收到 "undefined"」的 400。
+// 此处提前拦截，抛出清晰的本地报错，避免把脏请求打到后端（也避免误导排查）。
+function assertNumericId(id: unknown, label: string): number {
+  const num = typeof id === 'number' ? id : Number(id);
+  if (id == null || !Number.isFinite(num)) {
+    throw new Error(`${label}：记录 id 缺失或非法（${String(id)}），无法提交删除`);
+  }
+  return num;
+}
+
 export interface RescueEquipmentItem {
   id: number;
   name: string;
@@ -361,7 +373,8 @@ export async function updateRescuePersonnel(
 }
 
 export async function deleteRescuePersonnel(id: number): Promise<void> {
-  await request<null>({ url: `/rescue-resources/personnel/${id}`, method: 'DELETE' });
+  const nid = assertNumericId(id, '删除救援人员');
+  await request<null>({ url: `/rescue-resources/personnel/${nid}`, method: 'DELETE' });
 }
 
 export async function createRescueBrigade(
@@ -386,7 +399,8 @@ export async function updateRescueBrigade(
 }
 
 export async function deleteRescueBrigade(id: number): Promise<void> {
-  await request<null>({ url: `/rescue-resources/brigades/${id}`, method: 'DELETE' });
+  const nid = assertNumericId(id, '删除消防队伍');
+  await request<null>({ url: `/rescue-resources/brigades/${nid}`, method: 'DELETE' });
 }
 
 export async function createRescueVehicle(
@@ -411,7 +425,8 @@ export async function updateRescueVehicle(
 }
 
 export async function deleteRescueVehicle(id: number): Promise<void> {
-  await request<null>({ url: `/rescue-resources/vehicles/${id}`, method: 'DELETE' });
+  const nid = assertNumericId(id, '删除应急车辆');
+  await request<null>({ url: `/rescue-resources/vehicles/${nid}`, method: 'DELETE' });
 }
 
 export async function createRescueEquipment(
@@ -436,5 +451,6 @@ export async function updateRescueEquipment(
 }
 
 export async function deleteRescueEquipment(id: number): Promise<void> {
-  await request<null>({ url: `/rescue-resources/equipment/${id}`, method: 'DELETE' });
+  const nid = assertNumericId(id, '删除救援装备');
+  await request<null>({ url: `/rescue-resources/equipment/${nid}`, method: 'DELETE' });
 }

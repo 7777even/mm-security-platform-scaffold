@@ -1,6 +1,17 @@
 import { request } from '@/services/http';
 import { isDemoMode, isOfflineNoBackend, notifyBackendOffline } from '@/services/backendFallback';
 
+// 防御性校验：删除接口把 id 直接拼进 URL 路径。若 id 为 undefined / null / 非数字，
+// 会变成 `/fire-facility/ledger/undefined` 这类路径，触发后端「参数 id 类型不合法」400。
+// 此处提前拦截，抛出清晰的本地报错，避免把脏请求打到后端（也避免误导排查）。
+function assertNumericId(id: unknown, label: string): number {
+  const num = typeof id === 'number' ? id : Number(id);
+  if (id == null || !Number.isFinite(num)) {
+    throw new Error(`${label}：记录 id 缺失或非法（${String(id)}），无法提交删除`);
+  }
+  return num;
+}
+
 // 消防设施分项监测接口（fire-facility），对齐 docs/api/fire-facility.openapi.json。
 // 取代前端硬编码的 fireFacilityMonitoringMock 业务数据；
 // 地图撒点、扫描动画等纯前端几何仍留在 mock。
@@ -248,19 +259,20 @@ export async function updateFireFacilityLedger(
  * 消防设施台账删除（真删除，后端级联清理维保记录）：DELETE /fire-facility/ledger/{id}。三态与新增对齐。
  */
 export async function deleteFireFacilityLedger(id: number): Promise<void> {
+  const nid = assertNumericId(id, '删除消防设施台账');
   if (isDemoMode()) {
     return Promise.resolve();
   }
   if (isOfflineNoBackend()) {
     notifyBackendOffline(
       'fireFacility',
-      `/fire-facility/ledger/${id}`,
+      `/fire-facility/ledger/${nid}`,
       '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
     );
     throw new Error('后端未连接，无法删除消防设施台账');
   }
   await request<void>({
-    url: `/fire-facility/ledger/${encodeURIComponent(id)}`,
+    url: `/fire-facility/ledger/${encodeURIComponent(nid)}`,
     method: 'DELETE',
   });
 }
@@ -296,19 +308,20 @@ export async function createFireFacilityMaintenance(
  * 消防设施台账维保记录删除（按记录 id 物理删除）：DELETE /fire-facility/maintenance/{recordId}。三态与新增对齐。
  */
 export async function deleteFireFacilityMaintenance(recordId: number): Promise<void> {
+  const nrid = assertNumericId(recordId, '删除消防设施维保记录');
   if (isDemoMode()) {
     return Promise.resolve();
   }
   if (isOfflineNoBackend()) {
     notifyBackendOffline(
       'fireFacility',
-      `/fire-facility/maintenance/${recordId}`,
+      `/fire-facility/maintenance/${encodeURIComponent(nrid)}`,
       '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
     );
     throw new Error('后端未连接，无法删除消防设施维保记录');
   }
   await request<void>({
-    url: `/fire-facility/maintenance/${encodeURIComponent(recordId)}`,
+    url: `/fire-facility/maintenance/${encodeURIComponent(nrid)}`,
     method: 'DELETE',
   });
 }
@@ -551,19 +564,20 @@ export async function createFireFacilityFault(
  * 三态与 createFireFacilityFault 对齐：离线演示仅本地成功；未连后端显式报错并抛异常。
  */
 export async function deleteFireFacilityFault(faultId: number): Promise<void> {
+  const nfid = assertNumericId(faultId, '删除消防设施故障');
   if (isDemoMode()) {
     return Promise.resolve();
   }
   if (isOfflineNoBackend()) {
     notifyBackendOffline(
       'fireFacility',
-      `/fire-facility/faults/${faultId}`,
+      `/fire-facility/faults/${encodeURIComponent(nfid)}`,
       '未连接后端（未配置 VITE_API_BASE 且未开启 VITE_USE_DEV_MOCK）',
     );
     throw new Error('后端未连接，无法删除消防设施故障');
   }
   await request<void>({
-    url: `/fire-facility/faults/${encodeURIComponent(faultId)}`,
+    url: `/fire-facility/faults/${encodeURIComponent(nfid)}`,
     method: 'DELETE',
   });
 }
