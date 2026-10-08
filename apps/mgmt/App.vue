@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, ref, watch, type Component } from 'vue';
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  reactive,
+  ref,
+  watch,
+  type Component,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { subscribeAlarmPush } from '@/services/realtime';
@@ -34,6 +43,9 @@ const openGroups = reactive<Record<string, boolean>>(
   Object.fromEntries(mgmtMenus.map((g, i) => [g.key, i < 2])),
 );
 
+/* ---- 侧栏导航滚动容器（首页跳转后把激活项滚入可视区） ---- */
+const navEl = ref<HTMLElement | null>(null);
+
 /* ---- 顶栏 tabstrip（浏览器标签式多页签） ---- */
 interface OpenTab {
   path: string;
@@ -66,7 +78,7 @@ function openTab(g: MgmtMenuGroup, path: string, name: string) {
 
 watch(
   () => route.path,
-  (p) => {
+  async (p) => {
     const g = mgmtMenus.find((x) =>
       x.children.some((c) => p === c.path || p.startsWith(`${c.path}/`)),
     );
@@ -75,9 +87,25 @@ watch(
     if (leaf && !openTabs.some((t) => t.path === leaf.path)) {
       openTabs.push({ path: leaf.path, name: leaf.name, groupKey: g!.key });
     }
+    // 首页/落地页跳转后，等 DOM 展开渲染完，把激活项滚动进侧栏可视区
+    await nextTick();
+    scrollActiveIntoView();
   },
   { immediate: true },
 );
+
+/* 把当前激活的导航项滚动进 .mgmt-nav 可视区（折叠态无列表则跳过） */
+function scrollActiveIntoView(): void {
+  if (collapsed.value) return;
+  const nav = navEl.value;
+  if (!nav) return;
+  const active = nav.querySelector<HTMLElement>('.mgmt-nav__item--active');
+  if (active) {
+    active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  } else if (route.path === '/workbench') {
+    nav.scrollTop = 0;
+  }
+}
 
 /* ---- item 激活判断 ---- */
 function isActiveLeaf(path: string): boolean {
@@ -92,9 +120,11 @@ const updateClock = () => {
   const p = (n: number) => String(n).padStart(2, '0');
   now.value = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 };
-onMounted(() => {
+onMounted(async () => {
   updateClock();
   clockTimer = window.setInterval(updateClock, 30_000);
+  await nextTick();
+  scrollActiveIntoView();
 });
 onUnmounted(() => window.clearInterval(clockTimer));
 
@@ -167,7 +197,7 @@ function resolveLeafIcon(groupKey: string): Component {
           </span>
         </RouterLink>
 
-        <nav class="mgmt-nav">
+        <nav ref="navEl" class="mgmt-nav">
           <!-- 工作台入口（无分组） -->
           <RouterLink
             to="/workbench"
