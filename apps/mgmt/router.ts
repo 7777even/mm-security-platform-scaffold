@@ -462,6 +462,14 @@ const router = createRouter({
       meta: { title: '工作台' },
     },
     {
+      // 子系统落地页：工作台点子系统卡片后进入，列出该子系统全部模块供用户自选，
+      // 不再默认落到第一个模块（替代 firstLeafPath 静默跳转）。
+      path: '/group/:groupKey',
+      name: 'mgmt-group-landing',
+      component: () => import('./views/group-landing.vue'),
+      meta: { title: '子系统导航' },
+    },
+    {
       // 流程填报向导（mgmtWo  {
       // 流程填报向导（mgmtWorkbenchLinks 顶层入口，不在菜单分组内）
       // 解冻：后端补齐 POST/PUT /api/v1/form-records（Change：openspec/changes/2026-09-22-add-form-records-write/）

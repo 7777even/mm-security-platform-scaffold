@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { mgmtMenus, firstLeafPath, leafCount, flattenLeaves } from '@/data/mgmtMenus';
+import { mgmtMenus, leafCount, flattenLeaves } from '@/data/mgmtMenus';
 import { mgmtCardToneOf, mgmtIconOf } from '../utils/groupVisuals';
 import { fetchDashboardOverview } from '@/services/alarm';
 import type { DashboardOverview } from '@/services/alarm';
@@ -56,8 +56,8 @@ function previewLeaves(key: string) {
 }
 
 function goGroup(key: string) {
-  const group = mgmtMenus.find((g) => g.key === key);
-  if (group) router.push(firstLeafPath(group));
+  // 不再默认进第一个模块：进入子系统落地页，由用户自行选择要进入的模块
+  router.push(`/group/${key}`);
 }
 
 // 首页卡片：默认展示前 4 个子页；余量（如 +17）点击「+N 个」就地展开，
