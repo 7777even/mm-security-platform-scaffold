@@ -919,14 +919,7 @@ export interface components {
        * @enum {string}
        */
       kind?:
-        | '应急专家'
-        | '应急物资'
-        | '救援队伍'
-        | '救援装备'
-        | '应急场所'
-        | '医疗机构'
-        | '应急车辆'
-        | '消防设施';
+        '应急专家' | '应急物资' | '救援队伍' | '救援装备' | '应急场所' | '医疗机构' | '应急车辆';
       /**
        * @description 数量
        * @example 47
@@ -938,7 +931,7 @@ export interface components {
        */
       icon?: string;
       /**
-       * @description 真实明细（全量，条数与同类 count 一致）：应急专家/救援装备/应急车辆/救援队伍 取自对应台账；应急场所/医疗机构 取自 sys_emergency_strength_item 运营参考表；消防设施 取自 fac_fire_facility_ledger 真实台账；仅应急物资为 null（统计口径，无逐项明细）；前端按 20 条/页分页展示
+       * @description 真实明细（全量，条数与同类 count 一致）：应急专家/救援装备/应急车辆/救援队伍 取自对应台账；应急场所/医疗机构 取自 sys_emergency_strength_item 运营参考表；仅应急物资为 null（统计口径，无逐项明细）；前端按 20 条/页分页展示
        * @example [
        *       {
        *         "name": "张伟",
