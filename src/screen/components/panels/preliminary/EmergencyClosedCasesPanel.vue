@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import PanelCard from '../../common/PanelCard.vue';
 import { fetchClosedCases, type ClosedCase } from '@/services/closedCases';
 import InfoDetailDialog from '../../common/InfoDetailDialog.vue';
@@ -37,7 +38,7 @@ function formatClosedAt(iso: string): string {
   return iso.replace('T', ' ').slice(0, 16);
 }
 
-onMounted(async () => {
+async function loadClosedCases() {
   try {
     const res = await fetchClosedCases();
     cases.value = res.cases || [];
@@ -48,7 +49,12 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+}
+
+// 近期结案随后台结案/编辑（emergency.case）实时刷新
+useDomainAutoRefresh('emergency.case', loadClosedCases, { immediate: false });
+
+onMounted(loadClosedCases);
 </script>
 
 <template>

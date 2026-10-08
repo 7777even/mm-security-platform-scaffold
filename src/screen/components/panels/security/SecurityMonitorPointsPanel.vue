@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import PanelCard from '../../common/PanelCard.vue';
 import { fetchAlarmPoints, fetchDevicePoints, type MapPoint } from '@/services/map';
 import { useMonitoringPointsLayer } from '../../../lib/composables/useMonitoringPointsLayer';
@@ -49,7 +50,7 @@ const deviceByStatus = computed(() => {
   return { online, fault, offline };
 });
 
-onMounted(async () => {
+async function loadPoints() {
   try {
     const [alarms, devices] = await Promise.all([fetchAlarmPoints(), fetchDevicePoints()]);
     alarmPoints.value = alarms;
@@ -57,7 +58,14 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+}
+
+// 监测点位随报警/设备变化（alarm / device）实时刷新
+['alarm', 'device'].forEach((domain) =>
+  useDomainAutoRefresh(domain, loadPoints, { immediate: false }),
+);
+
+onMounted(loadPoints);
 </script>
 
 <template>

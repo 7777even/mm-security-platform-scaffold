@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
 import { Document, WarningFilled, Guide } from '@element-plus/icons-vue';
 import { fetchEmergencyKnowledge } from '@/services/knowledge';
@@ -47,7 +48,7 @@ const itemFields = computed(() =>
     : [],
 );
 
-onMounted(async () => {
+async function loadKnowledge() {
   try {
     const knowledge = await fetchEmergencyKnowledge();
     items.value = knowledge.items.map((it, i) => ({
@@ -61,7 +62,12 @@ onMounted(async () => {
   } catch {
     // 保留空，模板回退无卡片
   }
-});
+}
+
+// 安全知识条目随后台维护（emergency.knowledge）实时刷新
+useDomainAutoRefresh('emergency.knowledge', loadKnowledge, { immediate: false });
+
+onMounted(loadKnowledge);
 
 /**
  * 设计稿：3 行 × 3 列，每行 393×65，行间距 11px（最多 9 张卡）。

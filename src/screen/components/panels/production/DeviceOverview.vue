@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
 import OverviewGridItem from '../../common/OverviewGridItem.vue';
@@ -17,14 +18,21 @@ const { scaleAreaCount } = usePlantArea();
 
 const deviceItems = ref<OverviewGridItemType[]>([]);
 
-onMounted(async () => {
+async function loadOverview() {
   try {
     const overview = await fetchProductionOverview();
     deviceItems.value = overview.devices;
   } catch {
     deviceItems.value = [];
   }
-});
+}
+
+// 生产总览随设备/报警变化（device / alarm / production.alarm）实时刷新
+['device', 'alarm', 'production.alarm'].forEach((domain) =>
+  useDomainAutoRefresh(domain, loadOverview, { immediate: false }),
+);
+
+onMounted(loadOverview);
 
 /* 通讯类设备：归属独立「通讯通知」域、数据源不同、点击跳转而非就地展开。
    同时作为「分组」与「点击行为」的单一事实源，避免按 name 散落写死。 */

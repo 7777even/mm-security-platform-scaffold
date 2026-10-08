@@ -1,5 +1,6 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import PanelCard from '../../common/PanelCard.vue';
 import InfoDetailDialog, {
   type DetailListItem,
@@ -19,7 +20,7 @@ const { filterByPlantArea, scaleAreaCount } = usePlantArea();
 const riskSummary = ref<RiskSummary>({ red: 0, orange: 0, yellow: 0 });
 const riskWarnings = ref<RiskWarningItem[]>([]);
 
-onMounted(async () => {
+async function loadRiskData() {
   try {
     const overview = await fetchProductionOverview();
     riskSummary.value = overview.riskSummary;
@@ -31,7 +32,14 @@ onMounted(async () => {
   } catch {
     riskWarnings.value = [];
   }
-});
+}
+
+// 生产风险/总览随设备/报警变化（device / alarm / production.alarm）实时刷新
+['device', 'alarm', 'production.alarm'].forEach((domain) =>
+  useDomainAutoRefresh(domain, loadRiskData, { immediate: false }),
+);
+
+onMounted(loadRiskData);
 
 const visibleRiskWarnings = computed(() => filterByPlantArea(riskWarnings.value));
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
 import InfoDetailDialog from '../../common/InfoDetailDialog.vue';
 import {
@@ -57,6 +58,7 @@ const rescueItems = ref<AuxItem[]>([]);
 const loadingRescue = ref(false);
 
 async function loadRescueStats() {
+  if (props.layout !== 'rescue') return;
   loadingRescue.value = true;
   try {
     const { resources } = await fetchEmergencyStrength();
@@ -79,6 +81,7 @@ const knowledgeItems = ref<AuxItem[]>([]);
 const loadingKnowledge = ref(false);
 
 async function loadKnowledge() {
+  if (props.layout !== 'eventCommand') return;
   loadingKnowledge.value = true;
   try {
     const { items: knowledge } = await fetchEmergencyKnowledge();
@@ -97,6 +100,12 @@ onMounted(() => {
   if (props.layout === 'rescue') void loadRescueStats();
   else void loadKnowledge();
 });
+
+// 救援力量统计随救援资源台账 CRUD（rescue.*）、应急知识随后台维护（emergency.knowledge）实时刷新
+['rescue.equipment', 'rescue.vehicle', 'rescue.personnel', 'rescue.brigade'].forEach((domain) =>
+  useDomainAutoRefresh(domain, loadRescueStats, { immediate: false }),
+);
+useDomainAutoRefresh('emergency.knowledge', loadKnowledge, { immediate: false });
 
 const total = computed(() => items.value.reduce((sum, item) => sum + Number(item.value || 0), 0));
 

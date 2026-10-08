@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import PreliminarySidePanel from '../../common/PreliminarySidePanel.vue';
 import { UserFilled } from '@element-plus/icons-vue';
 import { fetchDutyRoster } from '@/services/duty';
@@ -70,7 +71,7 @@ const personFields = computed(() =>
     : [],
 );
 
-onMounted(async () => {
+async function loadDutyRoster() {
   try {
     const roster = await fetchDutyRoster();
     const deptList =
@@ -90,7 +91,12 @@ onMounted(async () => {
   } catch {
     // 保留空，模板回退无卡片
   }
-});
+}
+
+// 值班排班随后台编辑（emergency.duty）实时刷新
+useDomainAutoRefresh('emergency.duty', loadDutyRoster, { immediate: false });
+
+onMounted(loadDutyRoster);
 </script>
 
 <template>

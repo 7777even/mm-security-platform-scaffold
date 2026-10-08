@@ -9,19 +9,32 @@ import PanelCard from '../../common/PanelCard.vue';
 import { alarmTrendData } from '@/services/security';
 import { fetchAlarmTrend } from '@/services/alarm';
 import { usePlantArea } from '../../../lib/composables/usePlantArea';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 
 const { scaleAreaCount } = usePlantArea();
 
 // 真实告警趋势（后端 /dashboard/alarm-trend，近 7 天按天分桶）；null 时回落内置 mock
 const trendPoints = ref<Array<{ date: string; count: number }> | null>(null);
 
-onMounted(async () => {
+async function loadTrend() {
   try {
     trendPoints.value = await fetchAlarmTrend();
   } catch {
     // 直连真后端失败时回落内置 mock，保证 UI 可见
   }
-});
+}
+
+// 告警趋势随各告警类写入（alarm 及子类域）实时刷新
+[
+  'alarm',
+  'fire-alarm.alarm',
+  'production.alarm',
+  'security.perimeter-alarm',
+  'security.person-search',
+  'security.vehicle-search',
+].forEach((domain) => useDomainAutoRefresh(domain, loadTrend, { immediate: false }));
+
+onMounted(loadTrend);
 
 use([LineChart, GridComponent, TooltipComponent, CanvasRenderer]);
 

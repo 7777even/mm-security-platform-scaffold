@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { useRouter } from 'vue-router';
 import PanelCard from '../../common/PanelCard.vue';
 import OverviewGridItem from '../../common/OverviewGridItem.vue';
@@ -22,14 +23,21 @@ const FACILITY_ACTION: OverviewItemAction = 'navigate';
 
 const facilityItems = ref<OverviewGridItemType[]>([]);
 
-onMounted(async () => {
+async function loadOverview() {
   try {
     const overview = await fetchProductionOverview();
     facilityItems.value = overview.facilities;
   } catch {
     facilityItems.value = [];
   }
-});
+}
+
+// 生产设施总览随设备/报警变化（device / alarm / production.alarm）实时刷新
+['device', 'alarm', 'production.alarm'].forEach((domain) =>
+  useDomainAutoRefresh(domain, loadOverview, { immediate: false }),
+);
+
+onMounted(loadOverview);
 
 function openFacility(facilityId: number) {
   if (facilityId === MAJOR_HAZARD_FACILITY_ID) {

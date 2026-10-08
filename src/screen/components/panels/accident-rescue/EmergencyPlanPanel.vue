@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import AccidentRescueSidePanel from '../../common/AccidentRescueSidePanel.vue';
 import EmergencyPlanSwitchDialog from './EmergencyPlanSwitchDialog.vue';
 import PlanPanoramaDialog from './PlanPanoramaDialog.vue';
@@ -51,7 +52,7 @@ const activeDetailTab = ref(0);
 const detailPlanName = ref('');
 
 // 载入预案目录（4 层级行）+ 详情字段（5 段）：失败由 service 层降级为空态并告警
-onMounted(async () => {
+async function loadPlanData() {
   try {
     const [catalog, detail] = await Promise.all([
       fetchEmergencyPlanCatalog(),
@@ -65,7 +66,14 @@ onMounted(async () => {
   } catch {
     /* 后端不可用已由 service 层告警并降级为空态 */
   }
-});
+}
+
+// 预案目录/详情随后台预案 CRUD（emergency.plan-catalog / emergency.plan）实时刷新
+['emergency.plan-catalog', 'emergency.plan'].forEach((domain) =>
+  useDomainAutoRefresh(domain, loadPlanData, { immediate: false }),
+);
+
+onMounted(loadPlanData);
 
 function openSwitchDialog() {
   switchDialogOpen.value = true;
