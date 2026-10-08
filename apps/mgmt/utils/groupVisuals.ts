@@ -1,10 +1,33 @@
 import type { Component } from 'vue';
 import {
   Aim,
+  Bell,
+  Box,
+  Calendar,
+  ChatDotRound,
+  ChatLineRound,
+  Clock,
+  Collection,
+  Cpu,
+  DataAnalysis,
+  Document,
+  Files,
   FirstAidKit,
+  Location,
+  Lock,
+  MapLocation,
+  Memo,
+  Monitor,
+  Notebook,
   OfficeBuilding,
+  Operation,
+  Phone,
+  Position,
+  Promotion,
   Setting,
   Tickets,
+  User,
+  Van,
   VideoCamera,
   Warning,
 } from '@element-plus/icons-vue';
@@ -76,4 +99,46 @@ export function mgmtToneClassOf(groupKey: string): string {
 
 export function mgmtCardToneOf(groupKey: string): MgmtCardTone {
   return mgmtGroupCardTone[groupKey] ?? 'primary';
+}
+
+/*
+ * 叶子模块图标（键 = 菜单叶子的 icon 名，如 'dispatch' / 'calendar' …）。
+ * 同样作为唯一真源：侧栏菜单项与落地页模块卡共用，避免两侧各抄一份 map 又漏登记。
+ * 未登记的 icon 名回落到所属分组的图标（mgmtIconOf），永不渲染空白图标。
+ */
+export const mgmtLeafIcon: Record<string, Component> = {
+  anomaly: Warning,
+  box: Box,
+  broadcast: ChatDotRound,
+  building: OfficeBuilding,
+  calendar: Calendar,
+  car: Van,
+  command: Operation,
+  device: Cpu,
+  dispatch: Promotion,
+  drill: DataAnalysis,
+  event: Bell,
+  fire: Warning,
+  flask: Memo,
+  form: Document,
+  history: Clock,
+  ledger: Notebook,
+  library: Collection,
+  map: MapLocation,
+  message: ChatLineRound,
+  ops: Monitor,
+  patrol: Position,
+  phone: Phone,
+  pin: Location,
+  plan: Files,
+  resource: Box,
+  security: Lock,
+  settings: Setting,
+  ticket: Tickets,
+  user: User,
+  video: VideoCamera,
+};
+
+export function mgmtLeafIconOf(icon: string, groupKey: string): Component {
+  return mgmtLeafIcon[icon] ?? mgmtIconOf(groupKey);
 }
