@@ -51,6 +51,20 @@ async function loadPatrols(): Promise<void> {
 // 三端实时刷新（realtime-channel spec）：任一端上报巡查执行（fire.patrol 域），本面板巡查记录自动重拉。
 useDomainAutoRefresh('fire.patrol', loadPatrols, { immediate: false });
 
+/** 仅重拉消防设施设备状态码聚合（三端实时刷新用；随 fire-facility.monitor 域变更）。 */
+async function loadEquipmentStatus(): Promise<void> {
+  try {
+    const status = await fetchFireEquipmentStatus();
+    if (status) equipmentStatus.value = status;
+  } catch {
+    // 实时刷新失败保持现状，不打断面板
+  }
+}
+
+// 三端实时刷新（realtime-channel spec）：管理端上报消防设施监测运行数据（fire-facility.monitor 域），
+// 本面板设备状态码聚合即时重拉。
+useDomainAutoRefresh('fire-facility.monitor', loadEquipmentStatus, { immediate: false });
+
 const TODAY = (() => {
   const d = new Date();
   const p = (n: number) => String(n).padStart(2, '0');

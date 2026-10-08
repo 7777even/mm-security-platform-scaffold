@@ -21,7 +21,11 @@ import { openTvVideoDetail } from '../../../lib/composables/useTvVideoDetail';
 
 const router = useRouter();
 const { scaleAreaCount, filterByPlantArea } = usePlantArea();
-const { data: overview } = useScreenAsyncState('tv', '/tv/overview', fetchTvOverview);
+const { data: overview, retry: refreshOverview } = useScreenAsyncState(
+  'tv',
+  '/tv/overview',
+  fetchTvOverview,
+);
 const overviewItems = computed(() => overview.value?.overviewItems ?? []);
 
 /* 概览卡片详情（后端 TvService.computeOverview 真源，V87 起）：
@@ -66,6 +70,20 @@ async function openDetail(item: TvOverviewItem) {
 const filteredHazards = computed(() => filterByPlantArea(majorHazardsData.value));
 
 useDomainAutoRefresh('hazard', refreshMajorHazardsLive, { immediate: false });
+
+// 三端实时刷新（realtime-channel spec）：管理端维护工业电视监控点位（tv.monitor 域变更），
+// 本面板概览数字与预取监控点即时重拉。
+async function refreshTvMonitorData() {
+  await refreshOverview();
+  if (allMonitors.value !== null) {
+    try {
+      allMonitors.value = await fetchTvMonitors();
+    } catch {
+      allMonitors.value = [];
+    }
+  }
+}
+useDomainAutoRefresh('tv.monitor', refreshTvMonitorData, { immediate: false });
 
 // 当前选中分类下的真实监控点（参考重大危险源 detailItems 同构：真实清单 + 可点击下钻）。
 const categoryMonitors = computed<TvMonitorSummary[]>(() => {

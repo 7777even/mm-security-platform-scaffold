@@ -4,6 +4,7 @@ import { tvAssets } from '@/utils/designAssets';
 import { TV_VIDEO_DETAIL_LAYOUT } from '../../../utils/tvVideoDetailLayout';
 import { openTvVideoDetail } from '../../../lib/composables/useTvVideoDetail';
 import { fetchTvMonitors } from '@/services/tv';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import type { TvMonitorSummary } from '@/services/tv';
 
 const props = defineProps<{
@@ -30,6 +31,18 @@ onMounted(async () => {
     loadedMonitors.value = await fetchTvMonitors();
   } catch {
     loadedMonitors.value = [];
+  } finally {
+    loading.value = false;
+  }
+});
+
+// 三端实时刷新（realtime-channel spec）：管理端维护工业电视监控点位（tv.monitor 域变更），
+// 本列表（自行拉取场景）即时重拉。
+useDomainAutoRefresh('tv.monitor', async () => {
+  if (props.view.monitors.length) return;
+  loading.value = true;
+  try {
+    loadedMonitors.value = await fetchTvMonitors();
   } finally {
     loading.value = false;
   }

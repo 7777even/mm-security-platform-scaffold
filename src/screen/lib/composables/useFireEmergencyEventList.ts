@@ -28,6 +28,7 @@ import {
   PRELIMINARY_GROUP_TITLE_SLOT,
 } from './usePreliminaryEventList';
 import { stagePercentStringToWorldPosition } from '@/utils/mapDesignGeo';
+import { subscribeDomainChange } from '@/services/realtime';
 import { usePlantArea } from './usePlantArea';
 import {
   saveFireEmergencyDraft,
@@ -107,6 +108,12 @@ function applyFireEmergencyGroups(all: EmergencyEventGroup[]): void {
 }
 
 void loadFireEmergencyEvents();
+
+// 全局订阅应急事件域变更：任一端（管理端/大屏/移动端）写后，散点浮层与列表同步刷新，
+// 不依赖列表面板是否挂载（消除脆弱依赖）。模块级注册，不随组件卸载注销。
+subscribeDomainChange('emergency.event', () => {
+  void loadFireEmergencyEvents();
+});
 
 export async function loadFireEmergencyEvents(): Promise<void> {
   fireEmergencyEventsLoading.value = true;
