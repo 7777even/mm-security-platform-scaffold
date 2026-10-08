@@ -5,6 +5,7 @@ import StatCard from '../common/StatCard.vue';
 import { UserFilled } from '@element-plus/icons-vue';
 import type { DutyPerson } from '../../lib/data/mock';
 import { fetchRescueForces, type RescueForceStat } from '@/services/fireMonitoring';
+import { useDomainAutoRefresh } from '@/composables/useDomainAutoRefresh';
 import { usePlantArea } from '../../lib/composables/usePlantArea';
 import { fetchDutyRoster } from '@/services/duty';
 import {
@@ -63,6 +64,14 @@ const visibleDutyPersons = computed<DutyPersonScoped[]>(() => {
 // 未配置 VITE_API_BASE 时 service 回落到 dev fixture；已配置但后端失败则为空集合并告警（不造假数据）。
 const rescueStats = ref<RescueForceStat[]>([]);
 
+async function loadRescueStats() {
+  try {
+    rescueStats.value = await fetchRescueForces();
+  } catch {
+    // 真实接口异常时保持空态，不回落本地 mock（避免假数据冒充后端）
+  }
+}
+
 onMounted(async () => {
   try {
     const roster = await fetchDutyRoster();
@@ -83,8 +92,14 @@ onMounted(async () => {
   } catch {
     // 真实接口异常时保持空态，不回落本地 mock（避免假数据冒充后端）
   }
-  rescueStats.value = await fetchRescueForces();
+  await loadRescueStats();
 });
+
+// 三端实时刷新（realtime-channel spec）：任一端增删改救援资源（装备/车辆/人员/队伍），
+// 本面板「消防救援力量」聚合统计卡立即重拉，保持与管理端、应急指挥页一致。
+['rescue.equipment', 'rescue.vehicle', 'rescue.personnel', 'rescue.brigade'].forEach((domain) =>
+  useDomainAutoRefresh(domain, loadRescueStats, { immediate: false }),
+);
 
 function handleStatClick(label: string) {
   closeSpecialOperationView();
