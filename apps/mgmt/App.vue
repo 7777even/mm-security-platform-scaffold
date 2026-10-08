@@ -4,23 +4,17 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { subscribeAlarmPush } from '@/services/realtime';
 import {
-  Aim,
   ArrowDown,
   ArrowRight,
   Bell,
   Clock,
   Close,
-  Files,
-  FirstAidKit,
   Grid,
-  Lightning,
-  Message,
   Monitor,
-  OfficeBuilding,
   Tickets,
-  Warning,
 } from '@element-plus/icons-vue';
 import MgmtIconTile from './components/MgmtIconTile.vue';
+import { mgmtIconOf, mgmtTileToneOf, mgmtToneClassOf } from './utils/groupVisuals';
 import { mgmtMenus } from '@/data/mgmtMenus';
 import type { MgmtMenuGroup } from '@/data/mgmtMenus';
 
@@ -44,22 +38,10 @@ const openGroups = reactive<Record<string, boolean>>(
 interface OpenTab {
   path: string;
   name: string;
+  /** 分组 key：页签图标 / 色调与侧栏同源，统一由 groupVisuals 解析 */
   groupKey: string;
-  icon: string;
 }
 const openTabs = reactive<OpenTab[]>([]);
-
-const iconNameByKey: Record<string, Component> = {
-  alarm: Bell,
-  fire: Warning,
-  emergency: FirstAidKit,
-  production: OfficeBuilding,
-  security: Aim,
-  monitor: Monitor,
-  comm: Message,
-  sys: Files,
-  typhoon: Lightning,
-};
 
 function isActiveTab(path: string): boolean {
   return route.path === path || route.path.startsWith(`${path}/`);
@@ -77,7 +59,7 @@ function openTab(g: MgmtMenuGroup, path: string, name: string) {
   // 自动展开对应分组
   openGroups[g.key] = true;
   if (!openTabs.some((t) => t.path === path)) {
-    openTabs.push({ path, name, groupKey: g.key, icon: g.icon });
+    openTabs.push({ path, name, groupKey: g.key });
   }
   router.push(path);
 }
@@ -91,7 +73,7 @@ watch(
     if (g) openGroups[g.key] = true;
     const leaf = g?.children.find((c) => p === c.path || p.startsWith(`${c.path}/`));
     if (leaf && !openTabs.some((t) => t.path === leaf.path)) {
-      openTabs.push({ path: leaf.path, name: leaf.name, groupKey: g!.key, icon: g!.icon });
+      openTabs.push({ path: leaf.path, name: leaf.name, groupKey: g!.key });
     }
   },
   { immediate: true },
@@ -148,22 +130,11 @@ onMounted(() => {
 });
 onUnmounted(() => unsubscribeAlarm?.());
 
-const toneClassByKey: Record<string, string> = {
-  alarm: 'mgmt-tone--red',
-  fire: 'mgmt-tone--orange',
-  emergency: 'mgmt-tone--amber',
-  production: 'mgmt-tone--navy',
-  security: 'mgmt-tone--indigo',
-  monitor: 'mgmt-tone--cyan',
-  comm: 'mgmt-tone--purple',
-  sys: 'mgmt-tone--slate',
-};
-
-function toneClass(groupKey: string): string {
-  return toneClassByKey[groupKey] || 'mgmt-tone--blue';
-}
-function resolveIcon(name: string): Component {
-  return iconNameByKey[name] || Tickets;
+/* ---- 分组视觉：图标 / 色调统一取 apps/mgmt/utils/groupVisuals.ts（唯一真源） ---- */
+/* 侧栏叶子项小图标：菜单 icon 名（'dispatch' / 'calendar' …）尚未建立 → ep 图标映射表，
+ * 故回落到所属分组的图标（与侧栏分组头 / 多页签 / 工作台卡同源），观感整齐且永不空白。 */
+function resolveLeafIcon(groupKey: string): Component {
+  return mgmtIconOf(groupKey);
 }
 </script>
 
@@ -213,13 +184,13 @@ function resolveIcon(name: string): Component {
             <button
               type="button"
               class="mgmt-nav__group"
-              :class="[toneClass(g.key)]"
+              :class="[mgmtToneClassOf(g.key)]"
               :aria-expanded="openGroups[g.key]"
               @click="openGroups[g.key] = !openGroups[g.key]"
             >
               <MgmtIconTile
-                :icon="resolveIcon(g.icon)"
-                :tone="toneClass(g.key).replace('mgmt-tone--', '') as any"
+                :icon="mgmtIconOf(g.key)"
+                :tone="mgmtTileToneOf(g.key)"
                 size="sm"
                 variant="soft"
                 shape="rounded"
@@ -244,8 +215,8 @@ function resolveIcon(name: string): Component {
                 @click="openTab(g, item.path, item.name)"
               >
                 <MgmtIconTile
-                  :icon="resolveIcon(item.icon)"
-                  :tone="toneClass(g.key).replace('mgmt-tone--', '') as any"
+                  :icon="resolveLeafIcon(g.key)"
+                  :tone="mgmtTileToneOf(g.key)"
                   size="sm"
                   variant="ghost"
                   shape="circle"
@@ -286,13 +257,8 @@ function resolveIcon(name: string): Component {
               @click="router.push(t.path)"
             >
               <MgmtIconTile
-                :icon="resolveIcon(t.icon)"
-                :tone="
-                  (toneClassByKey[t.groupKey] || 'mgmt-tone--blue').replace(
-                    'mgmt-tone--',
-                    '',
-                  ) as any
-                "
+                :icon="mgmtIconOf(t.groupKey)"
+                :tone="mgmtTileToneOf(t.groupKey)"
                 size="sm"
                 variant="ghost"
                 shape="circle"

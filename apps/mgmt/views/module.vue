@@ -3,18 +3,8 @@ import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import MgmtIconTile from '../components/MgmtIconTile.vue';
 import MgmtTablePage from '../components/MgmtTablePage.vue';
-import {
-  OfficeBuilding,
-  Bell,
-  FirstAidKit,
-  Aim,
-  Monitor,
-  Message,
-  Setting,
-  Tickets,
-} from '@element-plus/icons-vue';
+import { mgmtIconOf, mgmtTileToneOf } from '../utils/groupVisuals';
 import { mgmtLeafByPath } from '@/data/mgmtMenus';
-import type { Component } from 'vue';
 import type { MgmtCell, MgmtTab } from '@/data/mgmtMenus';
 
 /*
@@ -23,36 +13,12 @@ import type { MgmtCell, MgmtTab } from '@/data/mgmtMenus';
  * - 列表态 → MgmtTablePage；
  * - 详情态（path 以 /detail 结尾）→ 信息卡分组；
  * - 表单态（pageType === 'form'）→ 左色条分区表单。
+ * 页头图标/色调取自 apps/mgmt/utils/groupVisuals.ts（分组视觉唯一真源，与侧栏/工作台同源）。
  * 所有色/字号/尺寸走 --mgmt-* token，禁止硬编码。
  */
 
 const route = useRoute();
 const router = useRouter();
-
-const toneByKey: Record<
-  string,
-  'red' | 'orange' | 'amber' | 'navy' | 'indigo' | 'cyan' | 'purple' | 'slate' | 'blue'
-> = {
-  alarm: 'red',
-  fire: 'orange',
-  emergency: 'amber',
-  production: 'navy',
-  security: 'indigo',
-  monitor: 'cyan',
-  comm: 'purple',
-  sys: 'slate',
-};
-
-const iconByKey: Record<string, Component> = {
-  alarm: Bell,
-  fire: FirstAidKit,
-  emergency: FirstAidKit,
-  production: OfficeBuilding,
-  security: Aim,
-  monitor: Monitor,
-  comm: Message,
-  sys: Setting,
-};
 
 const listPath = computed(() => route.path.replace(/\/detail$/, ''));
 
@@ -90,8 +56,8 @@ function backList() {
   router.push(listPath.value);
 }
 
-const currentTone = computed(() => toneByKey[leafData.value?.groupKey || ''] || 'blue');
-const currentIcon = computed(() => iconByKey[leafData.value?.groupKey || ''] || Tickets);
+const currentTone = computed(() => mgmtTileToneOf(leafData.value?.groupKey || ''));
+const currentIcon = computed(() => mgmtIconOf(leafData.value?.groupKey || ''));
 
 function cellClass(cell: MgmtCell): string | undefined {
   if (typeof cell === 'object' && cell && 'type' in cell) return `mod-badge--${cell.type}`;

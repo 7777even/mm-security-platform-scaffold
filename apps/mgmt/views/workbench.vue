@@ -1,50 +1,19 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import type { Component } from 'vue';
-import {
-  Aim,
-  Bell,
-  FirstAidKit,
-  Message,
-  OfficeBuilding,
-  Setting,
-  VideoCamera,
-  Warning,
-} from '@element-plus/icons-vue';
 import { mgmtMenus, firstLeafPath, leafCount, flattenLeaves } from '@/data/mgmtMenus';
+import { mgmtCardToneOf, mgmtIconOf } from '../utils/groupVisuals';
 import { fetchDashboardOverview } from '@/services/alarm';
 import type { DashboardOverview } from '@/services/alarm';
 
 // 工作台（导航门户，UI 规范 §5.1「主界面级」形态）：
 // 由 mgmtMenus 数据驱动——模块卡 / 子页 / 页面数全部取自真实菜单，点模块卡或子页真实跳转。
-// 图标与色调按 group key 映射（对齐原型 icons/tones 语义）。样式全部走 tokens.css [data-theme='mgmt']。
+// 图标与色调取自 apps/mgmt/utils/groupVisuals.ts（分组视觉唯一真源，与侧栏/模块页同源）。
+// 样式全部走 tokens.css [data-theme='mgmt']。
 
 type Tone = 'danger' | 'warning' | 'primary' | 'success';
 
 const router = useRouter();
-
-const iconByKey: Record<string, Component> = {
-  alarm: Bell,
-  fire: Warning,
-  emergency: FirstAidKit,
-  production: OfficeBuilding,
-  security: Aim,
-  monitor: VideoCamera,
-  comm: Message,
-  sys: Setting,
-};
-
-const toneByKey: Record<string, Tone> = {
-  alarm: 'danger',
-  fire: 'warning',
-  emergency: 'warning',
-  production: 'primary',
-  security: 'primary',
-  monitor: 'success',
-  comm: 'primary',
-  sys: 'primary',
-};
 
 // 统计卡：接真后端 GET /dashboard/overview（与大屏同一数据源，保证两端数字一致）。
 // 后端不可达时显示 '--'（不回退假数据）。子系统数动态取自菜单分组数。
@@ -90,6 +59,21 @@ function goGroup(key: string) {
   const group = mgmtMenus.find((g) => g.key === key);
   if (group) router.push(firstLeafPath(group));
 }
+
+// 子系统数动态取自菜单分组数（与统计卡「子系统」同源），副标题中文数词同步，避免文案漂移
+const CN_DIGITS = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+function cnCount(n: number): string {
+  if (n <= 0) return '零';
+  if (n <= 10) return CN_DIGITS[n];
+  if (n < 20) return '十' + (n % 10 ? CN_DIGITS[n % 10] : '');
+  if (n < 100) {
+    const t = Math.floor(n / 10);
+    const o = n % 10;
+    return CN_DIGITS[t] + '十' + (o ? CN_DIGITS[o] : '');
+  }
+  return String(n);
+}
+const subsystemPhrase = computed(() => `${cnCount(mgmtMenus.length)}大一体化子系统`);
 </script>
 
 <template>
@@ -98,7 +82,7 @@ function goGroup(key: string) {
     <header class="workbench__head">
       <div class="workbench__heading">
         <h1 class="workbench__title">工作台</h1>
-        <p class="workbench__subtitle">八大一体化子系统 · 统一登录 · 统一权限 · 统一门户</p>
+        <p class="workbench__subtitle">{{ subsystemPhrase }} · 统一登录 · 统一权限 · 统一门户</p>
       </div>
       <div class="workbench__stats">
         <div v-for="stat in stats" :key="stat.label" class="workbench__stat">
@@ -122,8 +106,8 @@ function goGroup(key: string) {
         @keyup.enter="goGroup(g.key)"
       >
         <header class="wb-card__head">
-          <span class="wb-card__icon" :class="`wb-card__icon--${toneByKey[g.key]}`">
-            <el-icon :size="18"><component :is="iconByKey[g.key]" /></el-icon>
+          <span class="wb-card__icon" :class="`wb-card__icon--${mgmtCardToneOf(g.key)}`">
+            <el-icon :size="18"><component :is="mgmtIconOf(g.key)" /></el-icon>
           </span>
           <div class="wb-card__meta">
             <h3 class="wb-card__name">{{ g.title }}</h3>
