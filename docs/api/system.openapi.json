@@ -1127,6 +1127,238 @@
         }
       }
     },
+    "/system/configs": {
+      "get": {
+        "tags": ["system"],
+        "operationId": "listSystemConfigs",
+        "summary": "系统参数配置列表",
+        "description": "返回运行期可配项列表；group 可选过滤（如 system / abac / alarm）。按 sort_order 升序。",
+        "parameters": [
+          {
+            "name": "group",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "按分组过滤"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SysConfigNode[]）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/SysConfigNode" }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": [
+                    {
+                      "id": 1,
+                      "configKey": "system.title",
+                      "configValue": "安全生产指挥中心",
+                      "configName": "系统标题",
+                      "configGroup": "system",
+                      "configType": "STRING",
+                      "options": null,
+                      "remark": "大屏与后台页头展示标题",
+                      "sortOrder": 1,
+                      "status": 1,
+                      "builtIn": 0,
+                      "createdAt": "2026-10-09T08:00:00",
+                      "updatedAt": "2026-10-09T08:00:00"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["system"],
+        "operationId": "createSystemConfig",
+        "summary": "新增系统参数配置",
+        "description": "新增配置。configKey 唯一（冲突 409）；configType 仅接受 STRING/NUMBER/BOOLEAN/JSON/SELECT（否则 100）。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SysConfigSaveRequest" },
+              "example": {
+                "configKey": "system.title",
+                "configValue": "安全生产指挥中心",
+                "configName": "系统标题",
+                "configGroup": "system",
+                "configType": "STRING",
+                "remark": "大屏与后台页头展示标题",
+                "sortOrder": 1,
+                "status": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SysConfigNode）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/SysConfigNode" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "configKey": "system.title",
+                    "configValue": "安全生产指挥中心",
+                    "configName": "系统标题",
+                    "configGroup": "system",
+                    "configType": "STRING",
+                    "options": null,
+                    "remark": "大屏与后台页头展示标题",
+                    "sortOrder": 1,
+                    "status": 1,
+                    "builtIn": 0
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/system/configs/{id}": {
+      "put": {
+        "tags": ["system"],
+        "operationId": "updateSystemConfig",
+        "summary": "修改系统参数配置",
+        "description": "修改配置。configKey 冲突返回 409。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "配置 id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SysConfigSaveRequest" },
+              "example": {
+                "configKey": "system.title",
+                "configValue": "应急指挥中心",
+                "configName": "系统标题",
+                "configGroup": "system",
+                "configType": "STRING",
+                "remark": "大屏与后台页头展示标题",
+                "sortOrder": 1,
+                "status": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=SysConfigNode）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/SysConfigNode" } }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 1,
+                    "configKey": "system.title",
+                    "configValue": "应急指挥中心",
+                    "configName": "系统标题",
+                    "configGroup": "system",
+                    "configType": "STRING",
+                    "options": null,
+                    "remark": "大屏与后台页头展示标题",
+                    "sortOrder": 1,
+                    "status": 1,
+                    "builtIn": 0
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      },
+      "delete": {
+        "tags": ["system"],
+        "operationId": "deleteSystemConfig",
+        "summary": "删除系统参数配置",
+        "description": "删除配置。built_in=1 的内置配置拒绝删除（409）。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "配置 id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=DeleteResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": { "data": { "$ref": "#/components/schemas/DeleteResult" } }
+                    }
+                  ]
+                },
+                "example": { "code": 0, "message": "ok", "data": { "ok": true } }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
     "/system/permissions": {
       "get": {
         "tags": ["system"],
@@ -2026,6 +2258,114 @@
           }
         },
         "required": ["name", "code", "menuType"]
+      },
+      "SysConfigNode": {
+        "type": "object",
+        "description": "系统参数配置节点。configType 控制前端渲染（STRING/NUMBER/BOOLEAN/JSON/SELECT）。",
+        "properties": {
+          "id": { "type": "integer", "description": "配置 id", "example": 1 },
+          "configKey": {
+            "type": "string",
+            "description": "配置键（唯一）",
+            "example": "system.title"
+          },
+          "configValue": {
+            "type": ["string", "null"],
+            "description": "配置值（按 configType 解释）",
+            "example": "安全生产指挥中心"
+          },
+          "configName": {
+            "type": ["string", "null"],
+            "description": "显示名称",
+            "example": "系统标题"
+          },
+          "configGroup": {
+            "type": ["string", "null"],
+            "description": "分组（如 system / abac / alarm）",
+            "example": "system"
+          },
+          "configType": {
+            "type": ["string", "null"],
+            "description": "类型：STRING / NUMBER / BOOLEAN / JSON / SELECT",
+            "example": "STRING"
+          },
+          "options": {
+            "type": ["string", "null"],
+            "description": "SELECT 候选项（JSON 数组或逗号分隔）",
+            "example": null
+          },
+          "remark": {
+            "type": ["string", "null"],
+            "description": "备注",
+            "example": "大屏与后台页头展示标题"
+          },
+          "sortOrder": { "type": ["integer", "null"], "description": "排序值", "example": 1 },
+          "status": {
+            "type": ["integer", "null"],
+            "description": "状态：1 启用 / 0 停用",
+            "example": 1
+          },
+          "builtIn": {
+            "type": ["integer", "null"],
+            "description": "是否内置（1 内置不可删）",
+            "example": 0
+          },
+          "createdAt": {
+            "type": ["string", "null"],
+            "description": "创建时间",
+            "example": "2026-10-09T08:00:00"
+          },
+          "updatedAt": {
+            "type": ["string", "null"],
+            "description": "更新时间",
+            "example": "2026-10-09T08:00:00"
+          }
+        },
+        "required": ["id", "configKey", "configType"]
+      },
+      "SysConfigSaveRequest": {
+        "type": "object",
+        "description": "新增 / 修改系统参数配置入参。",
+        "properties": {
+          "configKey": {
+            "type": "string",
+            "description": "配置键（唯一）",
+            "example": "system.title"
+          },
+          "configValue": {
+            "type": "string",
+            "description": "配置值（按 configType 解释）",
+            "example": "安全生产指挥中心"
+          },
+          "configName": { "type": "string", "description": "显示名称", "example": "系统标题" },
+          "configGroup": {
+            "type": "string",
+            "description": "分组（如 system / abac / alarm）",
+            "example": "system"
+          },
+          "configType": {
+            "type": "string",
+            "description": "类型：STRING / NUMBER / BOOLEAN / JSON / SELECT",
+            "example": "STRING"
+          },
+          "options": {
+            "type": "string",
+            "description": "SELECT 候选项（JSON 数组或逗号分隔）",
+            "example": ""
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "example": "大屏与后台页头展示标题"
+          },
+          "sortOrder": { "type": "integer", "description": "排序值，缺省 0", "example": 1 },
+          "status": {
+            "type": "integer",
+            "description": "状态：1 启用 / 0 停用，缺省 1",
+            "example": 1
+          }
+        },
+        "required": ["configKey"]
       },
       "PermissionCodeItem": {
         "type": "object",
