@@ -24,6 +24,9 @@ async function load(): Promise<void> {
     const r = await fetchNotifications({ page: 1, size: 8 });
     items.value = (r.list ?? []).map(toMessageItem);
     unread.value = r.unreadCount ?? 0;
+  } catch (err) {
+    // 后端接口暂不可用（如未重启/网络抖动）时静默降级，避免未捕获异常连锁崩页（曾因 404 未兜底致 Wujie 宿主挂载失败）
+    console.warn('[NotificationBell] 加载通知失败，已降级：', err);
   } finally {
     loading.value = false;
   }
@@ -35,13 +38,21 @@ function toggle(): void {
 }
 
 async function readOne(id: string): Promise<void> {
-  await markNotificationRead(id);
-  await load();
+  try {
+    await markNotificationRead(id);
+    await load();
+  } catch (err) {
+    console.warn('[NotificationBell] 标记单条已读失败：', err);
+  }
 }
 
 async function readAll(): Promise<void> {
-  await markAllNotificationsRead();
-  await load();
+  try {
+    await markAllNotificationsRead();
+    await load();
+  } catch (err) {
+    console.warn('[NotificationBell] 标记全部已读失败：', err);
+  }
 }
 
 function goCenter(): void {
