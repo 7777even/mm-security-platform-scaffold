@@ -1,5 +1,5 @@
 export interface paths {
-  '/devices': {
+  '/notifications': {
     parameters: {
       query?: never;
       header?: never;
@@ -7,45 +7,77 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * 设备台账分页查询
-     * @description 按 status/zone/deviceCode 筛选分页。deviceCode 为 20 位 MDM 物理主键，非 20 位直接返回 301。
+     * 通知列表（分页 + 分类/已读过滤）
+     * @description 按当前登录态收件范围（本人 + 全员广播）分页查询通知，按时间倒序；同时返回未读数供铃铛徽标。category 可选（alarm/event/task/system），read 可选（0 未读 / 1 已读）。
      */
-    get: operations['getDevicePage'];
+    get: operations['listNotifications'];
     put?: never;
     /**
-     * 新建设备台账
-     * @description 新建一台设备台账；deviceCode 为 20 位 MDM 物理主键，由请求体给定（实体 IdType.INPUT，不走自增）。createdAt / updatedAt / deleted 由服务端维护，不在请求中传递。deviceCode 已存在返回 409。仅 ADMIN 可写。
+     * 新增系统通知（ADMIN 广播或定向）
+     * @description ADMIN 创建系统通知：recipient 为 null 表示全员广播，否则定向推送给指定用户。category 限定为 alarm/event/task/system。
      */
-    post: operations['createDevice'];
+    post: operations['createNotification'];
     delete?: never;
     options?: never;
     head?: never;
     patch?: never;
     trace?: never;
   };
-  '/devices/{code}': {
+  '/notifications/{id}/read': {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
+    get?: never;
     /**
-     * 按 20 位编码查询单台设备
-     * @description 按 20 位 MDM 设备编码查询单台设备台账明细；编码非 20 位直接返回 301，查无此设备时 data 为 null。
+     * 标记单条已读
+     * @description 将本人收件范围内的指定通知标记为已读。
      */
-    get: operations['getDeviceByCode'];
+    put: operations['markNotificationRead'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/notifications/read-all': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
     /**
-     * 更新设备台账
-     * @description 按 20 位 MDM 设备编码更新设备台账字段；未命中或已软删时 data 为 null。deviceCode 本身不可改。仅 ADMIN 可写。
+     * 全部标记已读
+     * @description 将当前用户收件箱（本人 + 广播）内全部未读通知标记为已读。
      */
-    put: operations['updateDevice'];
+    post: operations['markAllNotificationsRead'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/notifications/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
     post?: never;
     /**
-     * 删除设备台账（软删除）
-     * @description 按 20 位 MDM 设备编码删除设备台账；走软删除置 deleted=1，与读端点的 deleted=0 过滤保持一致。未命中 ok=false。仅 ADMIN 可写。
+     * 删除通知
+     * @description 删除本人通知或（ADMIN）任意通知。软删除。
      */
-    delete: operations['deleteDevice'];
+    delete: operations['deleteNotification'];
     options?: never;
     head?: never;
     patch?: never;
@@ -97,93 +129,109 @@ export interface components {
       /** @example a1b2c3d4 */
       traceId?: string;
     };
-    /** @description 设备台账实体（物理主键 = 20 位 MDM device_code）。 */
-    Device: {
+    /** @description 通知关联的业务对象（点击可下钻到对应详情/处置页） */
+    NotificationTarget: {
+      /** @description 业务类型：alarm / event / task */
+      type?: string;
+      /** @description 业务对象 ID */
+      id?: string;
+    };
+    /** @description 通知项（sys_notification 只读投影） */
+    NotificationItem: {
       /**
-       * @description 20 位 MDM 设备编码（物理主键）
-       * @example FAC2026FIREA00000001
+       * Format: int64
+       * @description 通知 ID
        */
-      deviceCode: string;
+      id?: number;
       /**
-       * @description 设备名称
-       * @example 罐区A消防探头-F01
+       * @description 消息分类：alarm / event / task / system
+       * @example system
        */
-      deviceName: string;
+      category?: string;
       /**
-       * @description 设备类型：FIRE/GAS/FLOOD/CCTV
-       * @example FIRE
+       * @description 标题
+       * @example 平台例行版本升级通知
        */
-      deviceType: string;
+      title?: string;
       /**
-       * @description 所属区域
-       * @example 罐区A
+       * @description 摘要
+       * @example 系统将于维护窗口进行升级，请关注公告
        */
-      zone: string;
+      summary?: string;
       /**
-       * @description 运行状态：0=离线 1=在线 2=告警
+       * @description 是否已读
+       * @example false
+       */
+      read?: boolean;
+      /**
+       * @description 落库时间（yyyy-MM-dd HH:mm:ss）
+       * @example 2026-10-09 09:00:00
+       */
+      createdAt?: string;
+      /** @description 关联业务对象（可选） */
+      target?: components['schemas']['NotificationTarget'];
+    };
+    /** @description 通知分页结果（含未读数） */
+    NotificationPageResult: {
+      /** @description 当前页数据 */
+      list?: components['schemas']['NotificationItem'][];
+      /**
+       * Format: int64
+       * @description 总记录数
+       * @example 2
+       */
+      total?: number;
+      /**
+       * Format: int64
+       * @description 当前页码（1-based）
        * @example 1
        */
-      status: number;
+      page?: number;
       /**
-       * Format: double
-       * @description 纬度
-       * @example 21.5123
+       * Format: int64
+       * @description 每页大小
+       * @example 20
        */
-      lat?: number;
+      size?: number;
       /**
-       * Format: double
-       * @description 经度
-       * @example 110.4123
+       * Format: int64
+       * @description 当前收件箱未读数（铃铛徽标）
+       * @example 2
        */
-      lon?: number;
+      unreadCount?: number;
     };
-    /** @description 设备台账写请求（新建/更新共用）。deviceCode 为 20 位 MDM 物理主键由请求给定；createdAt / updatedAt / deleted 由服务端维护，不在请求中传递。 */
-    DeviceWriteRequest: {
+    /** @description 新增系统通知入参（ADMIN 广播或定向） */
+    NotificationSaveRequest: {
       /**
-       * @description 20 位 MDM 设备编码（物理主键）
-       * @example FAC2026FIREA00000001
+       * @description 消息分类：alarm / event / task / system
+       * @example system
        */
-      deviceCode: string;
+      category: string;
       /**
-       * @description 设备名称
-       * @example 罐区A消防探头-F01
+       * @description 标题
+       * @example 平台例行版本升级通知
        */
-      deviceName?: string;
+      title: string;
       /**
-       * @description 设备类型：FIRE/GAS/FLOOD/CCTV
-       * @example FIRE
+       * @description 摘要
+       * @example 系统将于维护窗口进行升级，请关注公告
        */
-      deviceType?: string;
+      summary?: string;
       /**
-       * @description 所属区域
-       * @example 罐区A
+       * @description 业务对象类型（可选）
+       * @example alarm
        */
-      zone?: string;
+      targetType?: string;
       /**
-       * @description 运行状态：0=离线 1=在线 2=告警
-       * @example 1
+       * @description 业务对象 ID（可选）
+       * @example a1
        */
-      status?: number;
+      targetId?: string;
       /**
-       * Format: double
-       * @description 纬度
-       * @example 21.5123
+       * @description 接收人（null = 全员广播）
+       * @example null
        */
-      lat?: number;
-      /**
-       * Format: double
-       * @description 经度
-       * @example 110.4123
-       */
-      lon?: number;
-    };
-    /** @description 删除结果（与后端 dto/DeleteResult 同名对齐）。 */
-    DeleteResult: {
-      /**
-       * @description 删除是否成功（软删除命中行数 > 0 为 true）
-       * @example true
-       */
-      ok?: boolean;
+      recipient?: string;
     };
   };
   responses: {
@@ -245,30 +293,25 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  getDevicePage: {
+  listNotifications: {
     parameters: {
       query?: {
         /** @description 页码（从 1 开始） */
         page?: components['parameters']['page'];
         /** @description 每页条数 */
         size?: components['parameters']['size'];
-        /** @description 按运行状态筛选 */
-        status?: 0 | 1 | 2;
-        /** @description 按区域模糊匹配（如 罐区A） */
-        zone?: string;
-        /** @description 20 位 MDM 设备编码精确查询 */
-        deviceCode?: string;
+        /** @description 消息分类过滤 */
+        category?: 'alarm' | 'event' | 'task' | 'system';
+        /** @description 已读状态过滤：1 已读 / 0 未读 */
+        read?: 0 | 1;
       };
-      header?: {
-        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
-        'Accept-Language'?: components['parameters']['lang'];
-      };
+      header?: never;
       path?: never;
       cookie?: never;
     };
     requestBody?: never;
     responses: {
-      /** @description B3 成功包络（data=PageResult<Device>） */
+      /** @description B3 成功包络（data=NotificationPageResult） */
       200: {
         headers: {
           [name: string]: unknown;
@@ -281,33 +324,31 @@ export interface operations {
            *       "data": {
            *         "list": [
            *           {
-           *             "deviceCode": "FAC2026FIREA00000001",
-           *             "deviceName": "罐区A消防探头-F01",
-           *             "deviceType": "FIRE",
-           *             "zone": "罐区A",
-           *             "status": 1,
-           *             "lat": 21.5123,
-           *             "lon": 110.4123
+           *             "id": 1,
+           *             "category": "system",
+           *             "title": "平台例行版本升级通知",
+           *             "summary": "系统将于维护窗口进行升级，请关注公告",
+           *             "read": false,
+           *             "createdAt": "2026-10-09 09:00:00",
+           *             "target": null
            *           }
            *         ],
-           *         "total": 8,
+           *         "total": 2,
            *         "page": 1,
-           *         "size": 5
+           *         "size": 20,
+           *         "unreadCount": 2
            *       }
            *     }
            */
           'application/json': components['schemas']['ApiResponse'] & {
-            data?: components['schemas']['PageResult'] & {
-              list?: components['schemas']['Device'][];
-            };
+            data?: components['schemas']['NotificationPageResult'];
           };
         };
       };
       401: components['responses']['Unauthorized'];
-      403: components['responses']['Forbidden'];
     };
   };
-  createDevice: {
+  createNotification: {
     parameters: {
       query?: never;
       header?: never;
@@ -316,11 +357,21 @@ export interface operations {
     };
     requestBody: {
       content: {
-        'application/json': components['schemas']['DeviceWriteRequest'];
+        /**
+         * @example {
+         *       "category": "system",
+         *       "title": "平台例行版本升级通知",
+         *       "summary": "系统将于维护窗口进行升级，请关注公告",
+         *       "targetType": null,
+         *       "targetId": null,
+         *       "recipient": null
+         *     }
+         */
+        'application/json': components['schemas']['NotificationSaveRequest'];
       };
     };
     responses: {
-      /** @description B3 成功包络（data=Device） */
+      /** @description B3 成功包络（data=NotificationItem） */
       200: {
         headers: {
           [name: string]: unknown;
@@ -331,18 +382,18 @@ export interface operations {
            *       "code": 0,
            *       "message": "ok",
            *       "data": {
-           *         "deviceCode": "FAC2026FIREA00000099",
-           *         "deviceName": "罐区A消防探头-F99",
-           *         "deviceType": "FIRE",
-           *         "zone": "罐区A",
-           *         "status": 1,
-           *         "lat": 21.5123,
-           *         "lon": 110.4123
+           *         "id": 3,
+           *         "category": "system",
+           *         "title": "平台例行版本升级通知",
+           *         "summary": "系统将于维护窗口进行升级，请关注公告",
+           *         "read": false,
+           *         "createdAt": "2026-10-09 09:00:00",
+           *         "target": null
            *       }
            *     }
            */
           'application/json': components['schemas']['ApiResponse'] & {
-            data?: components['schemas']['Device'];
+            data?: components['schemas']['NotificationItem'];
           };
         };
       };
@@ -350,22 +401,19 @@ export interface operations {
       403: components['responses']['Forbidden'];
     };
   };
-  getDeviceByCode: {
+  markNotificationRead: {
     parameters: {
       query?: never;
-      header?: {
-        /** @description i18n 语言头，后端据此返回翻译报文（详设 V1.5 §4.2.7） */
-        'Accept-Language'?: components['parameters']['lang'];
-      };
+      header?: never;
       path: {
-        /** @description 20 位 MDM 设备编码 */
-        code: string;
+        /** @description 通知 ID */
+        id: number;
       };
       cookie?: never;
     };
     requestBody?: never;
     responses: {
-      /** @description B3 成功包络（data=Device） */
+      /** @description B3 成功包络（data 为空） */
       200: {
         headers: {
           [name: string]: unknown;
@@ -375,43 +423,29 @@ export interface operations {
            * @example {
            *       "code": 0,
            *       "message": "ok",
-           *       "data": {
-           *         "deviceCode": "FAC2026FIREA00000001",
-           *         "deviceName": "罐区A消防探头-F01",
-           *         "deviceType": "FIRE",
-           *         "zone": "罐区A",
-           *         "status": 1,
-           *         "lat": 21.5123,
-           *         "lon": 110.4123
-           *       }
+           *       "data": null
            *     }
            */
           'application/json': components['schemas']['ApiResponse'] & {
-            data?: components['schemas']['Device'];
+            data?: null;
           };
         };
       };
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
     };
   };
-  updateDevice: {
+  markAllNotificationsRead: {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        /** @description 20 位 MDM 设备编码 */
-        code: string;
-      };
+      path?: never;
       cookie?: never;
     };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['DeviceWriteRequest'];
-      };
-    };
+    requestBody?: never;
     responses: {
-      /** @description B3 成功包络（data=Device；未命中时为 null） */
+      /** @description B3 成功包络（data 为空） */
       200: {
         headers: {
           [name: string]: unknown;
@@ -421,39 +455,30 @@ export interface operations {
            * @example {
            *       "code": 0,
            *       "message": "ok",
-           *       "data": {
-           *         "deviceCode": "FAC2026FIREA00000001",
-           *         "deviceName": "罐区A消防探头-F01",
-           *         "deviceType": "FIRE",
-           *         "zone": "罐区A",
-           *         "status": 2,
-           *         "lat": 21.5123,
-           *         "lon": 110.4123
-           *       }
+           *       "data": null
            *     }
            */
           'application/json': components['schemas']['ApiResponse'] & {
-            data?: components['schemas']['Device'];
+            data?: null;
           };
         };
       };
       401: components['responses']['Unauthorized'];
-      403: components['responses']['Forbidden'];
     };
   };
-  deleteDevice: {
+  deleteNotification: {
     parameters: {
       query?: never;
       header?: never;
       path: {
-        /** @description 20 位 MDM 设备编码 */
-        code: string;
+        /** @description 通知 ID */
+        id: number;
       };
       cookie?: never;
     };
     requestBody?: never;
     responses: {
-      /** @description B3 成功包络（data=DeleteResult） */
+      /** @description B3 成功包络（data 为空） */
       200: {
         headers: {
           [name: string]: unknown;
@@ -463,18 +488,17 @@ export interface operations {
            * @example {
            *       "code": 0,
            *       "message": "ok",
-           *       "data": {
-           *         "ok": true
-           *       }
+           *       "data": null
            *     }
            */
           'application/json': components['schemas']['ApiResponse'] & {
-            data?: components['schemas']['DeleteResult'];
+            data?: null;
           };
         };
       };
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
     };
   };
 }

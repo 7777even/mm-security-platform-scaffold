@@ -119,6 +119,12 @@
         "content": {
           "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } }
         }
+      },
+      "NotFound": {
+        "description": "资源不存在（逻辑删除 / ID 无效）",
+        "content": {
+          "application/json": { "schema": { "$ref": "#/components/schemas/ErrorEnvelope" } }
+        }
       }
     }
   }

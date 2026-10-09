@@ -432,6 +432,15 @@ export interface components {
         'application/json': components['schemas']['ErrorEnvelope'];
       };
     };
+    /** @description 资源不存在（逻辑删除 / ID 无效） */
+    NotFound: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['ErrorEnvelope'];
+      };
+    };
   };
   parameters: {
     /** @description 页码（从 1 开始） */

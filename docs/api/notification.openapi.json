@@ -1,0 +1,342 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "通知中心 Notification API",
+    "version": "1.0.0",
+    "x-base-path": "/api/v1",
+    "x-contract": "B3",
+    "description": "系统通知（消息中心）接口：收件箱列表、单条/全部已读、ADMIN 创建（广播或定向）、删除。收件范围 = 本人专属 + 全员广播（recipient 为 null）。B3 统一包络。",
+    "x-auth-note": "除创建（ADMIN 角色）外，登录即可调用；创建需 ADMIN（后端 @RequireAuth(role=\"ADMIN\")，非管理员返回 403）。删除本人通知或 ADMIN 删除任意通知。"
+  },
+  "servers": [{ "url": "/api/v1", "description": "默认 baseURL（VITE_API_BASE 可覆盖）" }],
+  "security": [{ "bearerAuth": [], "replaySign": [] }],
+  "tags": [{ "name": "notification", "description": "系统通知（消息中心）" }],
+  "paths": {
+    "/notifications": {
+      "get": {
+        "tags": ["notification"],
+        "operationId": "listNotifications",
+        "summary": "通知列表（分页 + 分类/已读过滤）",
+        "description": "按当前登录态收件范围（本人 + 全员广播）分页查询通知，按时间倒序；同时返回未读数供铃铛徽标。category 可选（alarm/event/task/system），read 可选（0 未读 / 1 已读）。",
+        "parameters": [
+          { "$ref": "./_shared.json#/components/parameters/page" },
+          { "$ref": "./_shared.json#/components/parameters/size" },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["alarm", "event", "task", "system"] },
+            "description": "消息分类过滤"
+          },
+          {
+            "name": "read",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "enum": [0, 1] },
+            "description": "已读状态过滤：1 已读 / 0 未读"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=NotificationPageResult）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/NotificationPageResult" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "list": [
+                      {
+                        "id": 1,
+                        "category": "system",
+                        "title": "平台例行版本升级通知",
+                        "summary": "系统将于维护窗口进行升级，请关注公告",
+                        "read": false,
+                        "createdAt": "2026-10-09 09:00:00",
+                        "target": null
+                      }
+                    ],
+                    "total": 2,
+                    "page": 1,
+                    "size": 20,
+                    "unreadCount": 2
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["notification"],
+        "operationId": "createNotification",
+        "summary": "新增系统通知（ADMIN 广播或定向）",
+        "description": "ADMIN 创建系统通知：recipient 为 null 表示全员广播，否则定向推送给指定用户。category 限定为 alarm/event/task/system。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/NotificationSaveRequest" },
+              "example": {
+                "category": "system",
+                "title": "平台例行版本升级通知",
+                "summary": "系统将于维护窗口进行升级，请关注公告",
+                "targetType": null,
+                "targetId": null,
+                "recipient": null
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data=NotificationItem）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/NotificationItem" }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "code": 0,
+                  "message": "ok",
+                  "data": {
+                    "id": 3,
+                    "category": "system",
+                    "title": "平台例行版本升级通知",
+                    "summary": "系统将于维护窗口进行升级，请关注公告",
+                    "read": false,
+                    "createdAt": "2026-10-09 09:00:00",
+                    "target": null
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/notifications/{id}/read": {
+      "put": {
+        "tags": ["notification"],
+        "operationId": "markNotificationRead",
+        "summary": "标记单条已读",
+        "description": "将本人收件范围内的指定通知标记为已读。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "通知 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data 为空）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    { "type": "object", "properties": { "data": { "type": "null" } } }
+                  ]
+                },
+                "example": { "code": 0, "message": "ok", "data": null }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" },
+          "404": { "$ref": "./_shared.json#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/notifications/read-all": {
+      "post": {
+        "tags": ["notification"],
+        "operationId": "markAllNotificationsRead",
+        "summary": "全部标记已读",
+        "description": "将当前用户收件箱（本人 + 广播）内全部未读通知标记为已读。",
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data 为空）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    { "type": "object", "properties": { "data": { "type": "null" } } }
+                  ]
+                },
+                "example": { "code": 0, "message": "ok", "data": null }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/notifications/{id}": {
+      "delete": {
+        "tags": ["notification"],
+        "operationId": "deleteNotification",
+        "summary": "删除通知",
+        "description": "删除本人通知或（ADMIN）任意通知。软删除。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "通知 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "B3 成功包络（data 为空）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "./_shared.json#/components/schemas/ApiResponse" },
+                    { "type": "object", "properties": { "data": { "type": "null" } } }
+                  ]
+                },
+                "example": { "code": 0, "message": "ok", "data": null }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" },
+          "403": { "$ref": "./_shared.json#/components/responses/Forbidden" },
+          "404": { "$ref": "./_shared.json#/components/responses/NotFound" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "NotificationTarget": {
+        "type": "object",
+        "description": "通知关联的业务对象（点击可下钻到对应详情/处置页）",
+        "properties": {
+          "type": { "type": "string", "description": "业务类型：alarm / event / task" },
+          "id": { "type": "string", "description": "业务对象 ID" }
+        }
+      },
+      "NotificationItem": {
+        "type": "object",
+        "description": "通知项（sys_notification 只读投影）",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "通知 ID" },
+          "category": {
+            "type": "string",
+            "description": "消息分类：alarm / event / task / system",
+            "example": "system"
+          },
+          "title": { "type": "string", "description": "标题", "example": "平台例行版本升级通知" },
+          "summary": {
+            "type": "string",
+            "description": "摘要",
+            "example": "系统将于维护窗口进行升级，请关注公告"
+          },
+          "read": { "type": "boolean", "description": "是否已读", "example": false },
+          "createdAt": {
+            "type": "string",
+            "description": "落库时间（yyyy-MM-dd HH:mm:ss）",
+            "example": "2026-10-09 09:00:00"
+          },
+          "target": {
+            "$ref": "#/components/schemas/NotificationTarget",
+            "description": "关联业务对象（可选）"
+          }
+        }
+      },
+      "NotificationPageResult": {
+        "type": "object",
+        "description": "通知分页结果（含未读数）",
+        "properties": {
+          "list": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/NotificationItem" },
+            "description": "当前页数据"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "description": "总记录数",
+            "example": 2
+          },
+          "page": {
+            "type": "integer",
+            "format": "int64",
+            "description": "当前页码（1-based）",
+            "example": 1
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "description": "每页大小",
+            "example": 20
+          },
+          "unreadCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "当前收件箱未读数（铃铛徽标）",
+            "example": 2
+          }
+        }
+      },
+      "NotificationSaveRequest": {
+        "type": "object",
+        "description": "新增系统通知入参（ADMIN 广播或定向）",
+        "required": ["category", "title"],
+        "properties": {
+          "category": {
+            "type": "string",
+            "description": "消息分类：alarm / event / task / system",
+            "example": "system"
+          },
+          "title": { "type": "string", "description": "标题", "example": "平台例行版本升级通知" },
+          "summary": {
+            "type": "string",
+            "description": "摘要",
+            "example": "系统将于维护窗口进行升级，请关注公告"
+          },
+          "targetType": {
+            "type": "string",
+            "description": "业务对象类型（可选）",
+            "example": "alarm"
+          },
+          "targetId": { "type": "string", "description": "业务对象 ID（可选）", "example": "a1" },
+          "recipient": {
+            "type": "string",
+            "description": "接收人（null = 全员广播）",
+            "example": null
+          }
+        }
+      }
+    }
+  }
+}
