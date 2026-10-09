@@ -11,40 +11,10 @@ import { reportAudit } from '@/services/audit';
 // 前端不再维护硬编码权限表；守卫自动校验 meta.perm。
 const SECONDARY_ROUTES: RouteRecordRaw[] = [
   {
-    path: '/system/users',
-    name: 'system-users',
-    component: () => import('@/views/system/users.vue'),
-    meta: { title: '用户管理', perm: 'system:user:view', hidden: true },
-  },
-  {
-    path: '/system/roles',
-    name: 'system-roles',
-    component: () => import('@/views/system/roles.vue'),
-    meta: { title: '角色管理', perm: 'system:role:view', hidden: true },
-  },
-  {
-    path: '/system/menus',
-    name: 'system-menus',
-    component: () => import('@/views/system/menus.vue'),
-    meta: { title: '菜单权限', perm: 'system:menu:view', hidden: true },
-  },
-  {
-    path: '/system/dicts',
-    name: 'system-dicts',
-    component: () => import('@/views/system/dict.vue'),
-    meta: { title: '数据字典', perm: 'system:dict:view', hidden: true },
-  },
-  {
     path: '/system/device-code',
     name: 'system-device-code',
     component: () => import('@/views/system/deviceCode.vue'),
     meta: { title: '设备编码解析', perm: 'system:device-code:view', hidden: true },
-  },
-  {
-    path: '/system/configs',
-    name: 'system-configs',
-    component: () => import('@/views/system/ConfigCenterView.vue'),
-    meta: { title: '参数配置', perm: 'system:config:view', hidden: true },
   },
   {
     path: '/system/personal',
