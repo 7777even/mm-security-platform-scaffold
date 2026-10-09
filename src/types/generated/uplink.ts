@@ -8,7 +8,7 @@ export interface paths {
     };
     /**
      * 查询操作审计日志
-     * @description 分页查询前端操作审计落库记录（fac_audit_log），支持按模块/动作过滤。登录即可读，供后台管理端审计日志页消费。
+     * @description 分页查询前端操作审计落库记录（fac_audit_log），支持按模块 / 动作 / 操作人 / 事件时间范围过滤。登录即可读，供后台管理端审计日志页消费。
      */
     get: operations['queryAudit'];
     put?: never;
@@ -17,6 +17,26 @@ export interface paths {
      * @description 批量上报前端操作审计（登录/路由查看/指令查看等），异步尽力落库，不阻断业务（D1 C-2 等保二级「安全审计」）。走 http.ts，B3 包络；客户端忽略响应体。
      */
     post: operations['reportAudit'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/audit/log/export': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 导出操作审计日志（CSV）
+     * @description 按与查询接口一致的过滤条件导出审计日志为 CSV（UTF-8 BOM，Excel 直接打开不乱码）。非 B3 包络，直接返回 text/csv 流并带 Content-Disposition 附件下载。导出行上限 50000，超出截断。登录即可读（与查询同权）。
+     */
+    get: operations['exportAudit'];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -319,6 +339,12 @@ export interface operations {
         module?: string;
         /** @description 按动作标识过滤（如 login / system.user.create） */
         action?: string;
+        /** @description 按操作人（登录用户名）精确过滤（如 admin） */
+        actor?: string;
+        /** @description 事件时间下限（毫秒时间戳，含）；与 endAt 配合做时间范围过滤 */
+        startAt?: number;
+        /** @description 事件时间上限（毫秒时间戳，含）；与 startAt 配合做时间范围过滤 */
+        endAt?: number;
       };
       header?: never;
       path?: never;
@@ -391,6 +417,42 @@ export interface operations {
           'application/json': components['schemas']['ApiResponse'] & {
             data?: unknown;
           };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+    };
+  };
+  exportAudit: {
+    parameters: {
+      query?: {
+        /** @description 按模块过滤（如 ADMIN / dashboard） */
+        module?: string;
+        /** @description 按动作标识过滤（如 login / system.user.create） */
+        action?: string;
+        /** @description 按操作人（登录用户名）精确过滤 */
+        actor?: string;
+        /** @description 事件时间下限（毫秒时间戳，含） */
+        startAt?: number;
+        /** @description 事件时间上限（毫秒时间戳，含） */
+        endAt?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description CSV 文件流（UTF-8 BOM，Content-Disposition 触发浏览器下载） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example ID,操作动作,模块,操作人,事件时间,落库时间,详情
+           *     1,login,ADMIN,admin,2026-09-14 10:20:00,2026-09-14 10:20:00,
+           */
+          'text/csv': string;
         };
       };
       401: components['responses']['Unauthorized'];

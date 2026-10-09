@@ -17,7 +17,7 @@
         "tags": ["uplink"],
         "operationId": "queryAudit",
         "summary": "查询操作审计日志",
-        "description": "分页查询前端操作审计落库记录（fac_audit_log），支持按模块/动作过滤。登录即可读，供后台管理端审计日志页消费。",
+        "description": "分页查询前端操作审计落库记录（fac_audit_log），支持按模块 / 动作 / 操作人 / 事件时间范围过滤。登录即可读，供后台管理端审计日志页消费。",
         "parameters": [
           {
             "name": "page",
@@ -46,6 +46,27 @@
             "required": false,
             "schema": { "type": "string" },
             "description": "按动作标识过滤（如 login / system.user.create）"
+          },
+          {
+            "name": "actor",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "按操作人（登录用户名）精确过滤（如 admin）"
+          },
+          {
+            "name": "startAt",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "事件时间下限（毫秒时间戳，含）；与 endAt 配合做时间范围过滤"
+          },
+          {
+            "name": "endAt",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "事件时间上限（毫秒时间戳，含）；与 startAt 配合做时间范围过滤"
           }
         ],
         "responses": {
@@ -113,6 +134,63 @@
                   ]
                 },
                 "example": { "code": 0, "message": "ok", "data": null }
+              }
+            }
+          },
+          "401": { "$ref": "./_shared.json#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/audit/log/export": {
+      "get": {
+        "tags": ["uplink"],
+        "operationId": "exportAudit",
+        "summary": "导出操作审计日志（CSV）",
+        "description": "按与查询接口一致的过滤条件导出审计日志为 CSV（UTF-8 BOM，Excel 直接打开不乱码）。非 B3 包络，直接返回 text/csv 流并带 Content-Disposition 附件下载。导出行上限 50000，超出截断。登录即可读（与查询同权）。",
+        "parameters": [
+          {
+            "name": "module",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "按模块过滤（如 ADMIN / dashboard）"
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "按动作标识过滤（如 login / system.user.create）"
+          },
+          {
+            "name": "actor",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "按操作人（登录用户名）精确过滤"
+          },
+          {
+            "name": "startAt",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "事件时间下限（毫秒时间戳，含）"
+          },
+          {
+            "name": "endAt",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" },
+            "description": "事件时间上限（毫秒时间戳，含）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV 文件流（UTF-8 BOM，Content-Disposition 触发浏览器下载）",
+            "content": {
+              "text/csv": {
+                "schema": { "type": "string", "format": "binary" },
+                "example": "ID,操作动作,模块,操作人,事件时间,落库时间,详情\r\n1,login,ADMIN,admin,2026-09-14 10:20:00,2026-09-14 10:20:00,\r\n"
               }
             }
           },
