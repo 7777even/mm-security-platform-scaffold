@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import type { AlarmItem } from '../../lib/data/mock';
 import { cameraThumbByIndex } from '@/services/map-data/fireImages';
+import { showToast } from '../../lib/composables/useToast';
 
 const props = defineProps<{
   open: boolean;
@@ -72,6 +73,33 @@ function startEmergency() {
 
 function ignoreAlarm() {
   closeDialog();
+}
+
+function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/** 告警现场截图导出：将报警抓拍图下载为 PNG/JPG（跨域/离线兜底新窗口打开）。 */
+async function exportSnapshot(): Promise<void> {
+  const url = resolvedImage.value;
+  if (!url) return;
+  try {
+    const resp = await fetch(url);
+    const blob = await resp.blob();
+    const ext = blob.type.includes('png') ? 'png' : 'jpg';
+    downloadBlob(blob, `告警抓拍_${props.alarm.id}_${Date.now()}.${ext}`);
+    showToast('告警现场截图已导出');
+  } catch {
+    window.open(url, '_blank');
+    showToast('已在新窗口打开截图');
+  }
 }
 
 watch(
@@ -168,6 +196,13 @@ onBeforeUnmount(stopAlarmSound);
               @click="ignoreAlarm"
             >
               忽略
+            </button>
+            <button
+              type="button"
+              class="sound-light-alarm__btn sound-light-alarm__btn--export"
+              @click="exportSnapshot"
+            >
+              导出截图
             </button>
             <button
               type="button"
@@ -433,6 +468,12 @@ onBeforeUnmount(stopAlarmSound);
 .sound-light-alarm__btn--detail {
   min-width: 110px;
   background: rgb(32 86 176 / 55%);
+}
+
+.sound-light-alarm__btn--export {
+  min-width: 110px;
+  background: rgb(20 110 120 / 55%);
+  border-color: rgb(90 190 200 / 55%);
 }
 
 .sound-light-alarm__btn--primary {
