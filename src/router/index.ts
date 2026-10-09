@@ -41,6 +41,18 @@ const SECONDARY_ROUTES: RouteRecordRaw[] = [
     meta: { title: '设备编码解析', perm: 'system:device-code:view', hidden: true },
   },
   {
+    path: '/system/configs',
+    name: 'system-configs',
+    component: () => import('@/views/system/ConfigCenterView.vue'),
+    meta: { title: '参数配置', perm: 'system:config:view', hidden: true },
+  },
+  {
+    path: '/system/personal',
+    name: 'system-personal',
+    component: () => import('@/views/system/PersonalCenterView.vue'),
+    meta: { title: '个人中心', hidden: true },
+  },
+  {
     path: '/mobile/field-report',
     name: 'mobile-field-report',
     component: () => import('@/views/mobile/fieldReport.vue'),

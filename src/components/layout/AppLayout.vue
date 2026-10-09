@@ -13,12 +13,21 @@ import type { RouteRecordRaw } from 'vue-router';
 import { useRoute, useRouter, RouterLink, RouterView } from 'vue-router';
 import { usePermission } from '@/composables/usePermission';
 import { getInstalledMenuRoutes } from '@/router/menu';
+import { useAuthStore } from '@/stores/auth';
 import BottomMessageBar from '@/components/common/BottomMessageBar.vue';
 import { markOnce } from '@/utils/perf';
 
 const route = useRoute();
 const router = useRouter();
 const { filterRoutesByPerm } = usePermission();
+const auth = useAuthStore();
+
+// §3 用户标识：优先真实姓名，回退用户名，最后兜底「管理员」（脚手架单一身份展示）
+const displayName = computed(() => auth.realName || auth.username || '管理员');
+
+function goPersonal(): void {
+  router.push('/system/personal');
+}
 
 const time = ref('');
 const dateText = ref('');
@@ -138,8 +147,16 @@ onUnmounted(() => {
           <span class="time-stack__date">{{ dateText }}</span>
         </div>
 
-        <!-- §3 用户：头像 + 管理员（脚手架阶段不展开角色权限管理，单一身份展示，无下拉框） -->
-        <div class="user-chip">
+        <!-- §3 用户：头像 + 姓名（脚手架阶段单一身份展示，点击进入个人中心，无下拉框） -->
+        <div
+          class="user-chip"
+          role="button"
+          tabindex="0"
+          title="个人中心"
+          @click="goPersonal"
+          @keydown.enter.prevent="goPersonal"
+          @keydown.space.prevent="goPersonal"
+        >
           <div class="user-chip__avatar" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path
@@ -147,7 +164,7 @@ onUnmounted(() => {
               />
             </svg>
           </div>
-          <span class="user-chip__name">管理员</span>
+          <span class="user-chip__name">{{ displayName }}</span>
           <svg
             class="user-chip__caret"
             viewBox="0 0 24 24"
@@ -407,12 +424,25 @@ onUnmounted(() => {
   color: var(--color-text-muted);
 }
 
-/* §3 右侧 · 用户：头像 + 管理员（脚手架阶段单一身份，无下拉框 / 无背景框） */
+/* §3 右侧 · 用户：头像 + 姓名（脚手架阶段单一身份，无下拉框 / 无背景框；点击进个人中心） */
 .user-chip {
   display: inline-flex;
   align-items: center;
   gap: var(--space-sm);
   user-select: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s ease;
+}
+
+.user-chip:hover {
+  background: var(--color-accent-soft);
+}
+
+.user-chip:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
 }
 
 .user-chip__avatar {

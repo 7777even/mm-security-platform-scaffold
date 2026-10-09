@@ -255,6 +255,54 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/system/configs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 系统参数配置列表
+     * @description 返回运行期可配项列表；group 可选过滤（如 system / abac / alarm）。按 sort_order 升序。
+     */
+    get: operations['listSystemConfigs'];
+    put?: never;
+    /**
+     * 新增系统参数配置
+     * @description 新增配置。configKey 唯一（冲突 409）；configType 仅接受 STRING/NUMBER/BOOLEAN/JSON/SELECT（否则 100）。
+     */
+    post: operations['createSystemConfig'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/system/configs/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * 修改系统参数配置
+     * @description 修改配置。configKey 冲突返回 409。
+     */
+    put: operations['updateSystemConfig'];
+    post?: never;
+    /**
+     * 删除系统参数配置
+     * @description 删除配置。built_in=1 的内置配置拒绝删除（409）。
+     */
+    delete: operations['deleteSystemConfig'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/system/permissions': {
     parameters: {
       query?: never;
@@ -843,6 +891,122 @@ export interface components {
        * @example 0
        */
       visible?: number;
+      /**
+       * @description 状态：1 启用 / 0 停用，缺省 1
+       * @example 1
+       */
+      status?: number;
+    };
+    /** @description 系统参数配置节点。configType 控制前端渲染（STRING/NUMBER/BOOLEAN/JSON/SELECT）。 */
+    SysConfigNode: {
+      /**
+       * @description 配置 id
+       * @example 1
+       */
+      id: number;
+      /**
+       * @description 配置键（唯一）
+       * @example system.title
+       */
+      configKey: string;
+      /**
+       * @description 配置值（按 configType 解释）
+       * @example 安全生产指挥中心
+       */
+      configValue?: string | null;
+      /**
+       * @description 显示名称
+       * @example 系统标题
+       */
+      configName?: string | null;
+      /**
+       * @description 分组（如 system / abac / alarm）
+       * @example system
+       */
+      configGroup?: string | null;
+      /**
+       * @description 类型：STRING / NUMBER / BOOLEAN / JSON / SELECT
+       * @example STRING
+       */
+      configType: string | null;
+      /**
+       * @description SELECT 候选项（JSON 数组或逗号分隔）
+       * @example null
+       */
+      options?: string | null;
+      /**
+       * @description 备注
+       * @example 大屏与后台页头展示标题
+       */
+      remark?: string | null;
+      /**
+       * @description 排序值
+       * @example 1
+       */
+      sortOrder?: number | null;
+      /**
+       * @description 状态：1 启用 / 0 停用
+       * @example 1
+       */
+      status?: number | null;
+      /**
+       * @description 是否内置（1 内置不可删）
+       * @example 0
+       */
+      builtIn?: number | null;
+      /**
+       * @description 创建时间
+       * @example 2026-10-09T08:00:00
+       */
+      createdAt?: string | null;
+      /**
+       * @description 更新时间
+       * @example 2026-10-09T08:00:00
+       */
+      updatedAt?: string | null;
+    };
+    /** @description 新增 / 修改系统参数配置入参。 */
+    SysConfigSaveRequest: {
+      /**
+       * @description 配置键（唯一）
+       * @example system.title
+       */
+      configKey: string;
+      /**
+       * @description 配置值（按 configType 解释）
+       * @example 安全生产指挥中心
+       */
+      configValue?: string;
+      /**
+       * @description 显示名称
+       * @example 系统标题
+       */
+      configName?: string;
+      /**
+       * @description 分组（如 system / abac / alarm）
+       * @example system
+       */
+      configGroup?: string;
+      /**
+       * @description 类型：STRING / NUMBER / BOOLEAN / JSON / SELECT
+       * @example STRING
+       */
+      configType?: string;
+      /**
+       * @description SELECT 候选项（JSON 数组或逗号分隔）
+       * @example
+       */
+      options?: string;
+      /**
+       * @description 备注
+       * @example 大屏与后台页头展示标题
+       */
+      remark?: string;
+      /**
+       * @description 排序值，缺省 0
+       * @example 1
+       */
+      sortOrder?: number;
       /**
        * @description 状态：1 启用 / 0 停用，缺省 1
        * @example 1
@@ -2069,6 +2233,213 @@ export interface operations {
       header?: never;
       path: {
         /** @description 节点 id */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=DeleteResult） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "ok": true
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['DeleteResult'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  listSystemConfigs: {
+    parameters: {
+      query?: {
+        /** @description 按分组过滤 */
+        group?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description B3 成功包络（data=SysConfigNode[]） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": [
+           *         {
+           *           "id": 1,
+           *           "configKey": "system.title",
+           *           "configValue": "安全生产指挥中心",
+           *           "configName": "系统标题",
+           *           "configGroup": "system",
+           *           "configType": "STRING",
+           *           "options": null,
+           *           "remark": "大屏与后台页头展示标题",
+           *           "sortOrder": 1,
+           *           "status": 1,
+           *           "builtIn": 0,
+           *           "createdAt": "2026-10-09T08:00:00",
+           *           "updatedAt": "2026-10-09T08:00:00"
+           *         }
+           *       ]
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['SysConfigNode'][];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  createSystemConfig: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "configKey": "system.title",
+         *       "configValue": "安全生产指挥中心",
+         *       "configName": "系统标题",
+         *       "configGroup": "system",
+         *       "configType": "STRING",
+         *       "remark": "大屏与后台页头展示标题",
+         *       "sortOrder": 1,
+         *       "status": 1
+         *     }
+         */
+        'application/json': components['schemas']['SysConfigSaveRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=SysConfigNode） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 1,
+           *         "configKey": "system.title",
+           *         "configValue": "安全生产指挥中心",
+           *         "configName": "系统标题",
+           *         "configGroup": "system",
+           *         "configType": "STRING",
+           *         "options": null,
+           *         "remark": "大屏与后台页头展示标题",
+           *         "sortOrder": 1,
+           *         "status": 1,
+           *         "builtIn": 0
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['SysConfigNode'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  updateSystemConfig: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 配置 id */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "configKey": "system.title",
+         *       "configValue": "应急指挥中心",
+         *       "configName": "系统标题",
+         *       "configGroup": "system",
+         *       "configType": "STRING",
+         *       "remark": "大屏与后台页头展示标题",
+         *       "sortOrder": 1,
+         *       "status": 1
+         *     }
+         */
+        'application/json': components['schemas']['SysConfigSaveRequest'];
+      };
+    };
+    responses: {
+      /** @description B3 成功包络（data=SysConfigNode） */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "code": 0,
+           *       "message": "ok",
+           *       "data": {
+           *         "id": 1,
+           *         "configKey": "system.title",
+           *         "configValue": "应急指挥中心",
+           *         "configName": "系统标题",
+           *         "configGroup": "system",
+           *         "configType": "STRING",
+           *         "options": null,
+           *         "remark": "大屏与后台页头展示标题",
+           *         "sortOrder": 1,
+           *         "status": 1,
+           *         "builtIn": 0
+           *       }
+           *     }
+           */
+          'application/json': components['schemas']['ApiResponse'] & {
+            data?: components['schemas']['SysConfigNode'];
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  deleteSystemConfig: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description 配置 id */
         id: number;
       };
       cookie?: never;

@@ -121,6 +121,36 @@ export interface PermissionCodeItem {
   menuId?: number | null;
 }
 
+/** 系统参数配置节点 */
+export interface SysConfigNode {
+  id: number;
+  configKey: string;
+  configValue?: string | null;
+  configName?: string | null;
+  configGroup?: string | null;
+  configType?: string | null;
+  options?: string | null;
+  remark?: string | null;
+  sortOrder?: number | null;
+  status?: number | null;
+  builtIn?: number | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+}
+
+/** 新增 / 修改系统参数配置入参 */
+export interface SysConfigSaveRequest {
+  configKey: string;
+  configValue?: string;
+  configName?: string;
+  configGroup?: string;
+  configType?: string;
+  options?: string;
+  remark?: string;
+  sortOrder?: number;
+  status?: number;
+}
+
 /** 字典类型 */
 export interface DictTypeItem {
   id: number;
@@ -335,6 +365,36 @@ export function deleteSystemMenu(id: number): Promise<boolean> {
 /** 权限码字典 */
 export function fetchPermissionCodes(): Promise<PermissionCodeItem[]> {
   return request<PermissionCodeItem[]>({ url: '/system/permissions', method: 'GET' });
+}
+
+// ---------------------------------------------------------------- 参数配置
+
+/** 系统参数配置列表（group 可选过滤） */
+export function fetchSystemConfigs(group?: string): Promise<SysConfigNode[]> {
+  const url = group ? `/system/configs?group=${encodeURIComponent(group)}` : '/system/configs';
+  return request<SysConfigNode[]>({ url, method: 'GET' });
+}
+
+/** 新增系统参数配置 */
+export function createSystemConfig(body: SysConfigSaveRequest): Promise<SysConfigNode> {
+  return request<SysConfigNode>({ url: '/system/configs', method: 'POST', data: body });
+}
+
+/** 修改系统参数配置 */
+export function updateSystemConfig(id: number, body: SysConfigSaveRequest): Promise<SysConfigNode> {
+  return request<SysConfigNode>({
+    url: `/system/configs/${encodeURIComponent(String(id))}`,
+    method: 'PUT',
+    data: body,
+  });
+}
+
+/** 删除系统参数配置 */
+export function deleteSystemConfig(id: number): Promise<boolean> {
+  return request<{ ok: boolean }>({
+    url: `/system/configs/${encodeURIComponent(String(id))}`,
+    method: 'DELETE',
+  }).then((r) => Boolean(r?.ok));
 }
 
 // ---------------------------------------------------------------- 字典
