@@ -48,6 +48,8 @@ const SERVICE_PATHS = [
   '/staff-mgmt',
   '/role-mgmt',
   '/dict-mgmt',
+  '/menu-mgmt',
+  '/config-mgmt',
   '/audit-log',
   '/area-config',
   '/alarm-record',
@@ -222,6 +224,16 @@ const serviceRoutes: RouteRecordRaw[] = [
     path: '/area-config',
     component: () => import('./views/system/AreaView.vue'),
     meta: routeMeta('/area-config', '茂名石化厂区配置'),
+  },
+  {
+    path: '/menu-mgmt',
+    component: () => import('./views/system/MenuView.vue'),
+    meta: routeMeta('/menu-mgmt', '菜单权限管理'),
+  },
+  {
+    path: '/config-mgmt',
+    component: () => import('./views/system/ConfigCenterView.vue'),
+    meta: routeMeta('/config-mgmt', '参数配置管理'),
   },
   {
     path: '/alarm-record',

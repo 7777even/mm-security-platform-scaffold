@@ -1354,6 +1354,28 @@ const mgmtMenusRaw: MgmtGroupRaw[] = [
             { action: '新增字典' },
           ),
           L(
+            '菜单权限管理',
+            '/menu-mgmt',
+            'menu',
+            ['菜单名称', '类型', '权限码', '路径', '状态'],
+            [
+              ['应急指挥', '目录', 'dashboard:view', '/emergency', ok('启用')],
+              ['菜单权限管理', '菜单', 'system:menu:view', '/menu-mgmt', ok('启用')],
+            ],
+            { action: '新增菜单' },
+          ),
+          L(
+            '参数配置管理',
+            '/config-mgmt',
+            'settings',
+            ['配置名称', '配置分组', '配置键', '类型', '状态'],
+            [
+              ['系统标题', '基础', 'sys.title', 'STRING', ok('启用')],
+              ['ABAC 防区规则', '安全', 'abac.zone-mapping', 'JSON', ok('启用')],
+            ],
+            { action: '新增配置' },
+          ),
+          L(
             '茂名石化厂区配置',
             '/area-config',
             'map',
