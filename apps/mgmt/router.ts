@@ -134,6 +134,9 @@ const SERVICE_PATHS = [
   '/comm-broadcast',
   '/comm-push',
   '/comm-intercom',
+  // 审计日志管理域：serviceRoutes 已显式接管 AuditView，补入 SERVICE_PATHS
+  // 避免 moduleRoutes 再生成一条被 shadow 的 module-embed 兜底路由。
+  '/audit-log',
 ];
 
 // 通用台账（静态页真后端化）：18 个原 mgmtMenus 硬编码静态域，复用同一 MgmtLedgerView.vue，

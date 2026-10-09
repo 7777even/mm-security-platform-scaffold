@@ -92,9 +92,56 @@ export interface AuditLogQuery {
   size?: number;
   module?: string;
   action?: string;
+  /** 按操作人（登录用户名）精确过滤 */
+  actor?: string;
+  /** 事件时间下限（毫秒时间戳，含） */
+  startAt?: number;
+  /** 事件时间上限（毫秒时间戳，含） */
+  endAt?: number;
 }
 
-/** 查询操作审计日志（GET /audit/log，分页 + 模块/动作过滤）。 */
+/** 查询操作审计日志（GET /audit/log，分页 + 模块/动作/操作人/时间范围过滤）。 */
 export function fetchAuditLog(query: AuditLogQuery = {}): Promise<AuditLogPageResult> {
   return request<AuditLogPageResult>({ url: '/audit/log', method: 'GET', params: query });
+}
+
+/**
+ * 导出操作审计日志为 CSV（GET /audit/log/export）。
+ * 后端直接返回 text/csv 流（非 B3 包络），故走裸 http 客户端取 blob，
+ * 解析 Content-Disposition 文件名后触发浏览器下载；失败由拦截器统一提示。
+ */
+export async function exportAuditLog(query: AuditLogQuery = {}): Promise<void> {
+  const { page: _page, size: _size, ...filter } = query;
+  const resp = await http.get<Blob>('/audit/log/export', {
+    params: filter,
+    responseType: 'blob',
+  });
+  const blob = resp.data;
+  const url = URL.createObjectURL(blob);
+  try {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download =
+      parseCsvFileName(resp.headers['content-disposition']) ?? `audit-log-${Date.now()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/** 从 Content-Disposition 解析文件名（优先 filename*=UTF-8''，回退 filename="..."）。 */
+function parseCsvFileName(disposition?: string): string | null {
+  if (!disposition) return null;
+  const star = /filename\*=(?:UTF-8'')?([^;]+)/i.exec(disposition);
+  if (star?.[1]) {
+    try {
+      return decodeURIComponent(star[1].trim());
+    } catch {
+      return star[1].trim();
+    }
+  }
+  const plain = /filename="?([^";]+)"?/i.exec(disposition);
+  return plain?.[1]?.trim() ?? null;
 }

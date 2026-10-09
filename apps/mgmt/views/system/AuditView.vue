@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
-import { Document } from '@element-plus/icons-vue';
+import { Document, Download } from '@element-plus/icons-vue';
 import MgmtProTable from '../../components/MgmtProTable.vue';
 import MgmtPageHead from '../../components/MgmtPageHead.vue';
-import { toastErr } from '../../utils/feedback';
-import { fetchAuditLog } from '@/services/audit';
-import type { AuditLogItem } from '@/services/audit';
+import { toastOk, toastErr } from '../../utils/feedback';
+import { fetchAuditLog, exportAuditLog } from '@/services/audit';
+import type { AuditLogItem, AuditLogQuery } from '@/services/audit';
 
 // el-table 插槽 row 为 DefaultRow（宽松记录型），经适配器收敛为领域类型。
 function asAudit(row: unknown): AuditLogItem {
   return row as AuditLogItem;
 }
 
-// 审计日志管理（/audit-log）：只读展示后端 fac_audit_log（GET /audit/log，分页 + 模块/动作过滤）。
+// 审计日志管理（/audit-log）：只读展示后端 fac_audit_log（GET /audit/log，分页 + 模块/动作/操作人/时间范围过滤）。
 // 数据来源：各端 reportAudit 上行落库（本页 mgmt 写操作自身亦在此留痕）。
 
 const rows = ref<AuditLogItem[]>([]);
@@ -20,18 +20,34 @@ const total = ref(0);
 const page = ref(1);
 const size = ref(20);
 const loading = ref(false);
+const exporting = ref(false);
 
-const filters = reactive<{ module: string; action: string }>({ module: '', action: '' });
+const filters = reactive<{
+  module: string;
+  action: string;
+  actor: string;
+  dateRange: string[] | null;
+}>({ module: '', action: '', actor: '', dateRange: null });
+
+function buildQuery(): AuditLogQuery {
+  const q: AuditLogQuery = {
+    page: page.value,
+    size: size.value,
+    module: filters.module || undefined,
+    action: filters.action || undefined,
+    actor: filters.actor || undefined,
+  };
+  if (Array.isArray(filters.dateRange) && filters.dateRange.length === 2) {
+    q.startAt = new Date(filters.dateRange[0]).getTime();
+    q.endAt = new Date(filters.dateRange[1]).getTime();
+  }
+  return q;
+}
 
 async function load(): Promise<void> {
   loading.value = true;
   try {
-    const res = await fetchAuditLog({
-      page: page.value,
-      size: size.value,
-      module: filters.module || undefined,
-      action: filters.action || undefined,
-    });
+    const res = await fetchAuditLog(buildQuery());
     rows.value = Array.isArray(res?.list) ? res.list : [];
     total.value = Number(res?.total ?? 0);
   } catch (err) {
@@ -46,8 +62,23 @@ async function load(): Promise<void> {
 function resetFilters(): void {
   filters.module = '';
   filters.action = '';
+  filters.actor = '';
+  filters.dateRange = null;
   page.value = 1;
   void load();
+}
+
+async function onExport(): Promise<void> {
+  if (exporting.value) return;
+  exporting.value = true;
+  try {
+    await exportAuditLog(buildQuery());
+    toastOk('已触发审计日志 CSV 下载');
+  } catch (err) {
+    toastErr(err, '导出审计日志失败：');
+  } finally {
+    exporting.value = false;
+  }
 }
 
 function onPage(p: number): void {
@@ -109,6 +140,30 @@ onMounted(load);
           load();
         "
       />
+      <el-input
+        v-model="filters.actor"
+        placeholder="操作人（登录用户名）"
+        clearable
+        style="width: 200px"
+        @keyup.enter="
+          page = 1;
+          load();
+        "
+      />
+      <el-date-picker
+        v-model="filters.dateRange"
+        type="datetimerange"
+        range-separator="至"
+        start-placeholder="事件起"
+        end-placeholder="事件止"
+        value-format="YYYY-MM-DD HH:mm:ss"
+        :clearable="true"
+        style="width: 380px"
+        @change="
+          page = 1;
+          load();
+        "
+      />
       <el-button
         type="primary"
         @click="
@@ -118,6 +173,9 @@ onMounted(load);
         >查询</el-button
       >
       <el-button @click="resetFilters">重置</el-button>
+      <el-button type="success" :icon="Download" :loading="exporting" @click="onExport"
+        >导出 CSV</el-button
+      >
     </div>
 
     <MgmtProTable
