@@ -1,5 +1,13 @@
-// 消息中心数据服务（设计稿 §5.3.5.5 列表与消息栏 / 消息中心原型）
-// 当前返回脚手架演示数据；后端契约（消息流接口）到位后替换 fetchMessages 实现即可。
+import { request } from '@/services/http';
+import type { components } from '@/types/generated/notification';
+
+// 生成类型嵌套在 components['schemas'] 下，按仓库既有约定（同 communication.ts）取别名再导出。
+export type NotificationItem = components['schemas']['NotificationItem'];
+export type NotificationPageResult = components['schemas']['NotificationPageResult'];
+export type NotificationSaveRequest = components['schemas']['NotificationSaveRequest'];
+
+// 消息中心数据服务（设计稿 §5.3.5.5 列表与消息栏 / 消息中心原型）。
+// 接后端 /api/v1/notifications；测试 / 离线兜底通过 __setNotificationFetch 注入。
 
 export type MessageCategory = 'alarm' | 'event' | 'task' | 'system';
 
@@ -27,69 +35,66 @@ export const CATEGORY_LABELS: Record<MessageCategory, string> = {
 
 export const MESSAGE_CATEGORIES: MessageCategory[] = ['alarm', 'event', 'task', 'system'];
 
-const MOCK_MESSAGES: MessageItem[] = [
-  {
-    id: 'm1',
-    category: 'alarm',
-    title: 'B3 区烟感探测器触发报警',
-    summary: '请立即核实处置',
-    time: '09:12',
-    read: false,
-    target: { type: 'alarm', id: 'm1' },
-  },
-  {
-    id: 'm2',
-    category: 'system',
-    title: '平台例行版本升级通知',
-    summary: '今日 23:00-23:30 进行升级',
-    time: '08:50',
-    read: false,
-  },
-  {
-    id: 'm3',
-    category: 'task',
-    title: 'A2 区火情处置任务',
-    summary: '处置已完成，待确认归档',
-    time: '08:31',
-    read: true,
-    target: { type: 'task', id: 'm3' },
-  },
-  {
-    id: 'm4',
-    category: 'alarm',
-    title: 'C1 区电气柜温度超阈值',
-    summary: '当前 72℃，请关注',
-    time: '08:20',
-    read: false,
-    target: { type: 'alarm', id: 'm4' },
-  },
-  {
-    id: 'm5',
-    category: 'system',
-    title: '防爆移动端在线巡检完成',
-    summary: '12 台设备已完成巡检',
-    time: '08:05',
-    read: true,
-  },
-  {
-    id: 'm6',
-    category: 'system',
-    title: '全员应急演练公告',
-    summary: '今日 16:00 开展演练',
-    time: '07:48',
-    read: true,
-  },
-  {
-    id: 'm7',
-    category: 'event',
-    title: 'D2 区气体泄漏预警',
-    summary: '浓度超阈值，建议撤离',
-    time: '07:30',
-    read: false,
-    target: { type: 'event', id: 'm7' },
-  },
-];
+export interface NotificationQuery {
+  page?: number;
+  size?: number;
+  category?: string;
+  read?: number;
+}
 
+/** 后端 createdAt（yyyy-MM-dd HH:mm:ss）→ HH:mm，供底部播报 / 铃铛展示。 */
+function fmtTime(createdAt?: string | null): string {
+  if (!createdAt) return '';
+  const m = createdAt.match(/(\d{2}:\d{2})(:\d{2})?/);
+  return m ? m[1] : createdAt;
+}
+
+/** 后端通知项 → 前端消息项（统一 id/time 形态，供 BottomMessageBar / 铃铛复用）。 */
+export function toMessageItem(n: NotificationItem): MessageItem {
+  return {
+    id: String(n.id),
+    category: (n.category as MessageCategory) || 'system',
+    title: n.title ?? '',
+    summary: n.summary ?? '',
+    time: fmtTime(n.createdAt),
+    read: !!n.read,
+    target: n.target
+      ? { type: (n.target.type as MessageTarget['type']) || 'alarm', id: n.target.id ?? '' }
+      : undefined,
+  };
+}
+
+// 注入点：测试 / 离线兜底可替换取数实现（默认直连后端 /notifications）。
+type FetchFn = (query: NotificationQuery) => Promise<NotificationPageResult>;
+let fetchImpl: FetchFn = (q) =>
+  request<NotificationPageResult>({ url: '/notifications', method: 'GET', params: q });
+
+/** 测试注入取数函数，避免真实网络依赖。 */
+export function __setNotificationFetch(fn: FetchFn): void {
+  fetchImpl = fn;
+}
+
+export function fetchNotifications(query: NotificationQuery = {}): Promise<NotificationPageResult> {
+  return fetchImpl(query);
+}
+
+/** 底部播报 / 铃铛下拉：取最近若干条转为消息项。 */
 export function fetchMessages(): Promise<MessageItem[]> {
-  return Promise.resolve(MOCK_MESSAGES.map((m) => ({ ...m })));
+  return fetchNotifications({ page: 1, size: 50 }).then((r) => (r.list ?? []).map(toMessageItem));
+}
+
+export function markNotificationRead(id: number | string): Promise<void> {
+  return request<void>({ url: `/notifications/${id}/read`, method: 'PUT' });
+}
+
+export function markAllNotificationsRead(): Promise<void> {
+  return request<void>({ url: '/notifications/read-all', method: 'POST' });
+}
+
+export function deleteNotification(id: number | string): Promise<void> {
+  return request<void>({ url: `/notifications/${id}`, method: 'DELETE' });
+}
+
+export function createNotification(body: NotificationSaveRequest): Promise<NotificationItem> {
+  return request<NotificationItem>({ url: '/notifications', method: 'POST', data: body });
 }

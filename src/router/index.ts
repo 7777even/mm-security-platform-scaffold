@@ -53,6 +53,12 @@ const SECONDARY_ROUTES: RouteRecordRaw[] = [
     meta: { title: '个人中心', hidden: true },
   },
   {
+    path: '/notifications',
+    name: 'notification-center',
+    component: () => import('@/views/system/NotificationCenterView.vue'),
+    meta: { title: '消息中心', hidden: true },
+  },
+  {
     path: '/mobile/field-report',
     name: 'mobile-field-report',
     component: () => import('@/views/mobile/fieldReport.vue'),

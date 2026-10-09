@@ -15,6 +15,7 @@ import { usePermission } from '@/composables/usePermission';
 import { getInstalledMenuRoutes } from '@/router/menu';
 import { useAuthStore } from '@/stores/auth';
 import BottomMessageBar from '@/components/common/BottomMessageBar.vue';
+import NotificationBell from '@/components/common/NotificationBell.vue';
 import { markOnce } from '@/utils/perf';
 
 const route = useRoute();
@@ -146,6 +147,9 @@ onUnmounted(() => {
           <span class="time-stack__time">{{ time }}</span>
           <span class="time-stack__date">{{ dateText }}</span>
         </div>
+
+        <!-- §3 消息中心铃铛：未读徽标 + 下拉（点击进入消息中心） -->
+        <NotificationBell />
 
         <!-- §3 用户：头像 + 姓名（脚手架阶段单一身份展示，点击进入个人中心，无下拉框） -->
         <div
