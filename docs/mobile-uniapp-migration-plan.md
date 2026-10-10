@@ -1,6 +1,6 @@
 # 移动端 Vue3 SPA → uni-app 迁移方案（原生能力驱动）
 
-> 状态：**P1 页面迁移已完成（35/35 路由页），P3 地图/视频真实接入已完成（含微信定位权限声明）**　|　驱动：更强原生能力（离线推送 / 离线落盘 / 原生定位 / 性能）
+> 状态：**P1 页面迁移已完成（35/35 路由页），P3 地图/视频真实接入已完成（含微信定位权限声明），多端构建（mp-weixin + app 资源包）已验证**　|　驱动：更强原生能力（离线推送 / 离线落盘 / 原生定位 / 性能）
 > 工程位置：`frontend-scaffold/mobile-uniapp/`（独立 uni-app 工程，已从 Vite 多入口剥离）
 > 源工程（待全量移植）：`frontend-scaffold/apps/mobile/`（Vue3 H5 SPA，仍保留为 legacy 真源直到全量完成）
 > 现状事实基线：`frontend-scaffold/apps/mobile/`、`frontend-scaffold/vite.config.ts`、`apps/mobile/AGENTS.md`、`apps/mobile/router.ts`、`apps/mobile/main.ts`、`apps/mobile/bridges/`、`src/services/*`、`src/stores/*`
@@ -177,7 +177,7 @@ bridges/index.ts   → 【改】出口改为引用 uni 实现（条件编译 #if
 | `/videos/:id`       | `pages/video-player/video-player`       | ✅           | 视频播放（真实快照帧 + 截图存相册 + `streamUrl` 预留流播放）       |
 
 **进度**：35/35 路由页已移植；`npm run type-check`（vue-tsc `--noEmit`）全绿（35 页 0 错）；`npm run build:h5` 通过（产出 `dist/build/h5/`）。
-**构建状态（✅ 已跑通）**：`@dcloudio` 全部 8 包统一钉在同一 `3.0.0-alpha-5020620260914001` 线 + `npm install --legacy-peer-deps` 即可正常构建（之前误把运行时平台留 `2.0.2` 而工具链用 alpha，导致 `vite-plugin-uni` 装成残缺 stub 报缺 `lib/ssr/entry-server.js`；统一 alpha 线后该包装全 405 文件，构建通过）。App 端（`build:app`）与小程序端（`build:mp-weixin`）尚未实跑，但工具链同源，预期同构可用。
+**构建状态（✅ 已跑通）**：`@dcloudio` 全部 8 包统一钉在同一 `3.0.0-alpha-5020620260914001` 线 + `npm install --legacy-peer-deps` 即可正常构建（之前误把运行时平台留 `2.0.2` 而工具链用 alpha，导致 `vite-plugin-uni` 装成残缺 stub 报缺 `lib/ssr/entry-server.js`；统一 alpha 线后该包装全 405 文件，构建通过）。**多端构建已实跑验证（2026-10-10）**：`build:mp-weixin` 产出 `app.js/json/wxss` + `project.config.json` + 35 个 `pages`，零平台特定错误；`build:app` 命令行成功产出 App 资源包（`app-service.js`/`app-config.js`/`manifest.json`/`pages`），真正出 `.apk` 需 HBuilderX 本地打包或 DCloud 云打包（P4 前置）。
 **已完成适配层**：`platform/{http,api,ws,realtime,storage,token,nav,bootstrap,logger,accessibility}`、`bridges/{types,uni,index}`、`composables/{useMessageCenter,useDomainAutoRefresh,useAccessibilityModes}`、`data/{liveCache,geo}`、`lib/mapAlarm`、组件 `MobileHeader/Icon/IconTile/MapPanel/MessageItem/MessageFilterTabs`。
 
 **P3 地图/视频真实接入（✅ 2026-10-09 完成，已 type-check + build:h5 双门禁通过）**：
@@ -194,6 +194,8 @@ bridges/index.ts   → 【改】出口改为引用 uni 实现（条件编译 #if
 **⚠️ P3 已知限制（非缺陷，待后端媒体网关）**：后端 `VideoCameraItem` 当前**不下发流地址**，仅提供 dev seeder 占位截图（代码注释明确「后续接真流时替换」）。因此 H5/App 暂以「真实快照帧」呈现，`<video>` 播放需待后端补齐 `streamUrl` 字段（届时前端已就绪，无需改代码）。真实 HLS/RTSP 流为后续阶段，不阻塞 P3 验收。
 
 **下一步（跨工程收尾）**：
+
+> ✅ **多端构建已验证（2026-10-10）**：实跑 `build:mp-weixin`（零平台特定错误）与 `build:app`（命令行成功产出 App 资源包；真正 `.apk` 需 HBuilderX 本地打包或 DCloud 云打包，为 P4 前置）。迁移到小程序/App 平台无隐藏兼容问题。
 
 1. 从根 `vite.config.ts` 多入口剥离 mobile（plan §5：移除第 306–307/258/359 行 mobile 相关项），移动端独立构建/CI。**⚠️ 与 2026-10-09 已确认的「apps/mobile 仍活跃、其 vitest 须留 CI」冲突，剥离前需先裁定三端架构口径。**
 2. P4 原生能力：uni-push 离线推送、原生 SQLite 离线落盘、原生定位、App 离线打包 + native plugin 令牌注入（需 DCloud 账号与厂商通道配置）。

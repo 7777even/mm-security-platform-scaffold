@@ -4,9 +4,12 @@ node_modules/
 # uni-app build output
 unpackage/
 dist/
+.nvue/
 
 # 一次性验证构建目录（沙箱 safe-delete 守卫删不掉，单独忽略）
 dist-h5-verify/
+dist-mp-verify/
+dist-app-verify/
 
 # logs
 *.log
