@@ -179,6 +179,31 @@ function appsHtmlFallback(): Plugin {
   };
 }
 
+// 移动端重定向（替代原 /apps/mobile 反向代理）：新移动端是独立 uni-app 工程（mobile-uniapp），
+// 自身在 5180 以 vite 提供服务（h5.router.base = /apps/mobile/）。
+// 根 vite 不再反向代理另一个 vite —— 反代要求两个 vite 的 base/模块路径严丝合缝，版本差异或实例
+// 错位即 404，极脆弱（多次排障均源于此）。改为 307 重定向：浏览器直接落到 5180 同源加载，
+// 从根本上消除跨 vite 模块路径错配。5180 端口与 mobile-uniapp/vite.config.ts 的 port+strictPort 一致。
+const MOBILE_DEV_PORT = 5180;
+function redirectMobileToDev(): Plugin {
+  return {
+    name: 'redirect-mobile-to-dev',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const raw = req.url ?? '';
+        const pathPart = raw.split('?')[0];
+        if (!pathPart.startsWith('/apps/mobile')) return next();
+        const query = raw.includes('?') ? raw.slice(raw.indexOf('?')) : '';
+        const target = `http://localhost:${MOBILE_DEV_PORT}${pathPart}${query}`;
+        res.statusCode = 307;
+        res.setHeader('Location', target);
+        res.end();
+      });
+    },
+  };
+}
+
 // dev/e2e 反代目标（后端源）：优先显式 VITE_BACKEND_ORIGIN，其次由 VITE_API_BASE 去掉路径段推导
 // （dev → http://localhost:8787，e2e → http://localhost:8899），兜底 8787。
 // 生产构建不涉及此值：生产由 nginx 同源反代 /api/ 与 /ws/（见 deploy/nginx.conf）。
@@ -203,6 +228,7 @@ const baseConfig = defineConfig({
   // 避免 vite 优化/清理依赖缓存时抛异常导致 dev server 崩溃
   cacheDir: join(tmpdir(), 'mm-safety-vite-cache'),
   plugins: [
+    redirectMobileToDev(),
     serveSubappDist(),
     appsHtmlFallback(),
     vue(),
@@ -438,18 +464,6 @@ export default defineConfig(({ mode }) => {
           target: backendOrigin,
           ws: true,
           changeOrigin: true,
-        },
-        // 新移动端（mobile-uniapp，独立 uni-app 工程）H5 dev server 反代：
-        // 让老地址 localhost:5173/apps/mobile/* 透明转发到 5180 的 uni-app H5 服务，
-        // 保留 5173 入口的同时由 uni-app 实际承载（5180 = 该工程 vite.config.server.port）。
-        // base 须与 mobile-uniapp/src/manifest.json 的 h5.router.base 一致（/apps/mobile/），
-        // 否则资源/路由会落到根路径而 404。老 apps/mobile/ 源码被此代理整体遮蔽，待 P4 完成后按方案 §5 删除。
-        '/apps/mobile': {
-          target: 'http://localhost:5180',
-          changeOrigin: true,
-          ws: true,
-          // 把老 vue-router 风格首页地址 /apps/mobile/home 映射到 uni-app pages.json 路由 /apps/mobile/pages/home/home
-          rewrite: (path) => (path === '/apps/mobile/home' ? '/apps/mobile/pages/home/home' : path),
         },
       },
     },
