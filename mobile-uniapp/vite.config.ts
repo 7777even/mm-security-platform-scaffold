@@ -7,5 +7,7 @@ export default defineConfig({
   plugins: [uni()],
   server: {
     port: 5180,
+    // 端口被占用时直接报错而非静默漂移到 5181；否则根 vite 的 /apps/mobile 代理(target 写死 5180)会失配 → /apps/mobile/src/* 404
+    strictPort: true,
   },
 });
