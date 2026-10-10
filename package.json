@@ -6,6 +6,8 @@
   "description": "安全管控指挥系统前端脚手架（Vue3+Vite+TS+Element Plus+ECharts），对齐 S1 与 OpenSpec/Superpowers。",
   "scripts": {
     "dev": "vite",
+    "dev:mobile": "node scripts/free-dev-ports.mjs 5180 && npm --prefix mobile-uniapp run dev:h5",
+    "dev:all": "node scripts/free-dev-ports.mjs 5173 5180 && concurrently -n root,mobile -c blue,green \"npm:dev\" \"npm:dev:mobile\"",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "type-check": "vue-tsc -p tsconfig.app.json --noEmit",
@@ -47,6 +49,7 @@
     "@vitejs/plugin-vue": "^5.1.4",
     "@vitest/coverage-v8": "^2.1.9",
     "@vue/test-utils": "^2.4.11",
+    "concurrently": "^10.0.6",
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vue": "^9.29.0",
