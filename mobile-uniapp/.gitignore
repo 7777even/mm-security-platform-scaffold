@@ -6,6 +6,9 @@ unpackage/
 dist/
 .nvue/
 
+# vite 依赖预构建缓存（已关闭 pre-bundling，此目录不应存在；万一生成也忽略）
+.vite-cache/
+
 # 一次性验证构建目录（沙箱 safe-delete 守卫删不掉，单独忽略）
 dist-h5-verify/
 dist-mp-verify/
