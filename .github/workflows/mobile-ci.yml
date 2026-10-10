@@ -1,0 +1,74 @@
+name: Mobile CI
+
+# 移动端 uni-app 独立工程的轻量门禁：仅覆盖 mobile-uniapp/ 子目录改动，提供快速反馈。
+# 与根 ci.yml（全量前端门禁，已通过 eslint 跨目录覆盖 mobile-uniapp）互补，二者并存不冲突。
+on:
+  push:
+    branches: [feature/scaffold-rebuild, main]
+    paths:
+      - 'mobile-uniapp/**'
+      - 'docs/mobile-uniapp-migration-plan.md'
+      - '.github/workflows/mobile-ci.yml'
+  pull_request:
+    branches: [feature/scaffold-rebuild, main]
+    paths:
+      - 'mobile-uniapp/**'
+      - 'docs/mobile-uniapp-migration-plan.md'
+      - '.github/workflows/mobile-ci.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: 移动端 类型检查 + 单测 + 构建
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile-uniapp
+    steps:
+      - name: 检出前端源码
+        uses: actions/checkout@v4
+
+      - name: 配置 Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: mobile-uniapp/package-lock.json
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 类型检查（vue-tsc）
+        run: npm run type-check
+
+      # 单元测试（vitest + happy-dom）：覆盖 duty / patrol-exec / profile 三个写入口与无障碍开关。
+      - name: 单元测试（vitest）
+        run: npm test
+
+      # 构建 H5（CI 环境无 safe-delete 守卫，无需 UNI_OUTPUT_DIR 绕行）。
+      - name: 构建 H5
+        run: npm run build:h5
+
+      # 构建微信小程序（纯前端编译，验证 H5 平台掩盖的平台特定问题）。
+      - name: 构建微信小程序
+        run: npm run build:mp-weixin
+
+      # —— 需 DCloud 账号的环节（暂不接入，留占位说明）——
+      # App 真正出 .apk 需要 HBuilderX 本地打包或 DCloud 云打包（UNI_CLOUD_TOKEN），
+      # 命令行仅产出 App 资源包（build:app 已验证可跑）。待补齐 DCloud 账号与厂商通道后启用：
+      # - name: 构建 App 资源包
+      #   run: npm run build:app
+      # - name: DCloud 云打包（需 UNI_CLOUD_TOKEN 与厂商通道）
+      #   run: npx uni publish --platform app --token "$UNI_CLOUD_TOKEN"
+
+      - name: 上传 H5 构建产物
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-h5
+          path: mobile-uniapp/dist/build/h5
+          if-no-files-found: warn

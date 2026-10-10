@@ -16,10 +16,11 @@ function apply(): void {
   try {
     if (typeof document !== 'undefined') {
       const root = document.documentElement;
-      if (outdoor.value) root.dataset.skin = 'outdoor';
-      else delete root.dataset.skin;
-      if (elder.value) root.dataset.elder = 'on';
-      else delete root.dataset.elder;
+      // 用 setAttribute/removeAttribute（而非 dataset delete）保证跨平台与测试环境（happy-dom）一致。
+      if (outdoor.value) root.setAttribute('data-skin', 'outdoor');
+      else root.removeAttribute('data-skin');
+      if (elder.value) root.setAttribute('data-elder', 'on');
+      else root.removeAttribute('data-elder');
     }
   } catch {
     /* 非 H5 平台忽略 */

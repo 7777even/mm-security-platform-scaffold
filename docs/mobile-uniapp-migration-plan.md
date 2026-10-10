@@ -1,6 +1,6 @@
 # 移动端 Vue3 SPA → uni-app 迁移方案（原生能力驱动）
 
-> 状态：**P1 页面迁移已完成（35/35 路由页），P3 地图/视频真实接入已完成（含微信定位权限声明），多端构建（mp-weixin + app 资源包）已验证**　|　驱动：更强原生能力（离线推送 / 离线落盘 / 原生定位 / 性能）
+> 状态：**P1 页面迁移已完成（35/35 路由页），P3 地图/视频真实接入已完成（含微信定位权限声明），多端构建（mp-weixin + app 资源包）已验证，P5 移动端独立 CI + 单元测试已落地（17 用例）**　|　驱动：更强原生能力（离线推送 / 离线落盘 / 原生定位 / 性能）
 > 工程位置：`frontend-scaffold/mobile-uniapp/`（独立 uni-app 工程，已从 Vite 多入口剥离）
 > 源工程（待全量移植）：`frontend-scaffold/apps/mobile/`（Vue3 H5 SPA，仍保留为 legacy 真源直到全量完成）
 > 现状事实基线：`frontend-scaffold/apps/mobile/`、`frontend-scaffold/vite.config.ts`、`apps/mobile/AGENTS.md`、`apps/mobile/router.ts`、`apps/mobile/main.ts`、`apps/mobile/bridges/`、`src/services/*`、`src/stores/*`
@@ -198,6 +198,6 @@ bridges/index.ts   → 【改】出口改为引用 uni 实现（条件编译 #if
 > ✅ **多端构建已验证（2026-10-10）**：实跑 `build:mp-weixin`（零平台特定错误）与 `build:app`（命令行成功产出 App 资源包；真正 `.apk` 需 HBuilderX 本地打包或 DCloud 云打包，为 P4 前置）。迁移到小程序/App 平台无隐藏兼容问题。
 
 1. 从根 `vite.config.ts` 多入口剥离 mobile（plan §5：移除第 306–307/258/359 行 mobile 相关项），移动端独立构建/CI。**⚠️ 与 2026-10-09 已确认的「apps/mobile 仍活跃、其 vitest 须留 CI」冲突，剥离前需先裁定三端架构口径。**
-2. P4 原生能力：uni-push 离线推送、原生 SQLite 离线落盘、原生定位、App 离线打包 + native plugin 令牌注入（需 DCloud 账号与厂商通道配置）。
-3. P5 移动端独立 CI（type-check→lint→build→App 云打包）；移植 `apps/mobile` 下 3 份 vitest spec（composables 触 DOM 部分需 uni mock）。
+2. P4 原生能力：uni-push 离线推送、原生 SQLite 离线落盘、原生定位、App 离线打包 + native plugin 令牌注入（**阻塞于 DCloud 账号与厂商通道配置，待用户提供后才能推进**）。
+3. ~~P5 移动端独立 CI~~ ✅ **P5 已完成（2026-10-10）**：新建 `.github/workflows/mobile-ci.yml`（仅覆盖 `mobile-uniapp/**`，门禁 type-check→unit test→build:h5→build:mp-weixin；App 云打包步留占位，待 DCloud 账号）；移植 `apps/mobile` 下 3 份 vitest spec 为平台无关 composables 测试（`duty`/`patrol-exec`/`profile`，17 用例全绿，需 mock `@/platform/api`、`uni` 全局、`@dcloudio/uni-app` 的 `onLoad`）。
 4. 业务联调：以真实后端跑通各页端点，补齐 `anomalies`/`event-resources` 等暂为静态/mock 的数据源；后端补 `streamUrl` 后验证视频真播放。
