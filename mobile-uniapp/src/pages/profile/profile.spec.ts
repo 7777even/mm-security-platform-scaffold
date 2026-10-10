@@ -57,10 +57,10 @@ describe('移动端「我的」页', () => {
     expect(items.map((i) => i.find('.mb-menu__label').text())).toEqual(MENUS.map((m) => m.label));
   });
 
-  it('功能菜单项图标统一使用 IconTile（.icon-tile）', () => {
+  it('功能菜单项图标统一使用 IconTile（.mb-tile）', () => {
     const w = mountProfile();
     w.findAll('.mb-menu-group .mb-menu__item').forEach((i) =>
-      expect(i.find('.icon-tile').exists()).toBe(true),
+      expect(i.find('.mb-tile').exists()).toBe(true),
     );
   });
 

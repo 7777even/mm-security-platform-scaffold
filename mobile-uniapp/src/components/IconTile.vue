@@ -1,87 +1,126 @@
 <script setup lang="ts">
-import Icon from './Icon.vue';
+import { computed } from 'vue';
+import { iconSet, toneMap, type IconPath, type ToneKey } from '@/styles/iconset';
 
-defineProps<{
-  name: string;
-  tone?:
-    | 'red'
-    | 'orange'
-    | 'blue'
-    | 'green'
-    | 'teal'
-    | 'cyan'
-    | 'indigo'
-    | 'amber'
-    | 'purple'
-    | 'navy'
-    | 'slate';
-  shape?: 'rounded' | 'circle';
-  variant?: 'solid' | 'soft';
-}>();
+/**
+ * 图标瓦片：圆角方 / 圆形浅底承载线面结合图标（规范 §4「服务图标」）。
+ * 忠实移植 apps/mobile/components/IconTile.vue（ui-redesign 迁移约定）：
+ * - 尺寸走 token 档位（--mb-tile-sm/md/lg），组件内不硬编码尺寸；
+ *   瓦片本身是装饰，**触控热区由外层容器（宫格项 / 菜单行）保证 ≥48**。
+ * - 色板取自 toneMap（token 化 --mb-tone-*）；移动端禁渐变，solid 档为纯 fg 实色 + 反色字形。
+ */
+export type TileSize = 'sm' | 'md' | 'lg';
+export type TileShape = 'rounded' | 'circle';
+export type TileVariant = 'soft' | 'solid' | 'ghost';
+
+const props = withDefaults(
+  defineProps<{
+    name: string;
+    /** 色板键；省略时取图标自带 tone */
+    tone?: ToneKey | '';
+    shape?: TileShape;
+    variant?: TileVariant;
+    size?: TileSize;
+  }>(),
+  { tone: '', shape: 'rounded', variant: 'soft', size: 'md' },
+);
+
+const meta = computed(() => iconSet[props.name] ?? iconSet.grid);
+const renderPaths = computed<IconPath[]>(() => meta.value.paths);
+const palette = computed(() => toneMap[props.tone || meta.value.tone] ?? toneMap.blue);
+
+/** solid 档下浅底填充层需压暗，避免实色底上的双色层糊成一片 */
+const SOLID_SOFT_OPACITY = 0.35;
+
+function pathFill(p: IconPath): string {
+  if (!p.fill || p.fill === 'none') return 'none';
+  return 'currentColor';
+}
+
+function pathStroke(p: IconPath): string {
+  if (!p.stroke || p.stroke === 'none') return 'none';
+  return 'currentColor';
+}
+
+function pathOpacity(p: IconPath): number {
+  const isFillLayer = Boolean(p.fill && p.fill !== 'none');
+  if (props.variant === 'solid' && isFillLayer) return SOLID_SOFT_OPACITY;
+  return p.opacity ?? 1;
+}
 </script>
 
 <template>
   <span
-    class="icon-tile"
-    :class="[`tone-${tone ?? 'blue'}`, `shape-${shape ?? 'rounded'}`, `v-${variant ?? 'soft'}`]"
+    class="mb-tile"
+    :class="[`mb-tile--${size}`, `mb-tile--${shape}`, `mb-tile--${variant}`]"
+    :style="{ '--tile-bg': palette.bg, '--tile-fg': palette.fg }"
   >
-    <Icon :name="name" />
+    <svg class="mb-tile__glyph" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        v-for="(p, i) in renderPaths"
+        :key="i"
+        :d="p.d"
+        :fill="pathFill(p)"
+        :stroke="pathStroke(p)"
+        :stroke-width="p.sw || 0"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        :opacity="pathOpacity(p)"
+      />
+    </svg>
   </span>
 </template>
 
 <style scoped>
-.icon-tile {
+.mb-tile {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  color: var(--tile-fg);
+  background: var(--tile-bg);
 }
 
-.shape-rounded {
-  border-radius: 12rpx;
+/* 尺寸档位（真源：index.css --mb-tile-*） */
+.mb-tile--sm {
+  width: var(--mb-tile-sm);
+  height: var(--mb-tile-sm);
 }
 
-.shape-circle {
+.mb-tile--md {
+  width: var(--mb-tile-md);
+  height: var(--mb-tile-md);
+}
+
+.mb-tile--lg {
+  width: var(--mb-tile-lg);
+  height: var(--mb-tile-lg);
+}
+
+/* 形状 */
+.mb-tile--rounded {
+  border-radius: var(--mb-tile-radius);
+}
+
+.mb-tile--circle {
   border-radius: 50%;
 }
 
-.v-solid {
-  color: #fff;
+/* 变体：soft 浅底实色图标（默认）| solid 纯色实底 + 反色字形 | ghost 白底描边 */
+.mb-tile--solid {
+  color: var(--color-on-primary);
+  background: var(--tile-fg);
 }
 
-.v-soft {
-  background: rgb(22 119 255 / 12%);
-  color: var(--primary-mobile);
+.mb-tile--ghost {
+  background: var(--card-mobile);
+  border: var(--mb-border-w, 2rpx) solid var(--mb-stroke);
 }
-.tone-red.v-solid {
-  background: var(--danger-mobile);
-}
-.tone-orange.v-solid {
-  background: var(--warning-mobile);
-}
-.tone-blue.v-solid {
-  background: var(--primary-mobile);
-}
-.tone-green.v-solid {
-  background: var(--success-mobile);
-}
-.tone-red.v-soft {
-  background: rgb(245 34 45 / 12%);
-  color: var(--danger-mobile);
-}
-.tone-orange.v-soft {
-  background: rgb(250 140 22 / 12%);
-  color: var(--warning-mobile);
-}
-.tone-green.v-soft {
-  background: rgb(82 196 26 / 12%);
-  color: var(--success-mobile);
-}
-.tone-navy.v-soft {
-  background: rgb(16 42 91 / 12%);
-  color: #102a5b;
-}
-.tone-slate.v-soft {
-  background: rgb(90 99 117 / 12%);
-  color: #5a6375;
+
+/* 字形占瓦片边长比例（真源：--mb-icon-glyph-ratio） */
+.mb-tile__glyph {
+  display: block;
+  width: calc(100% * var(--mb-icon-glyph-ratio));
+  height: calc(100% * var(--mb-icon-glyph-ratio));
 }
 </style>
