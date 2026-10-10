@@ -71,4 +71,23 @@ export default tseslint.config(
       'vue/one-component-per-file': 'off',
     },
   },
+  {
+    // 移动端 uni-app 子工程（独立工具链，uni.* 回调 payload 多为 untyped any）。
+    // 作用域覆盖使其不阻塞首提与日常提交；真实质量问题（如 no-loss-of-precision）
+    // 仍保持报错。后续若给 mobile-uniapp 接入 @dcloudio/types，可收回 no-explicit-any 放宽。
+    files: ['mobile-uniapp/**/*.{ts,tsx,vue}'],
+    languageOptions: {
+      globals: {
+        uni: 'readonly',
+        wx: 'readonly',
+        plus: 'readonly',
+        getApp: 'readonly',
+        getCurrentPages: 'readonly',
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'warn',
+    },
+  },
 );

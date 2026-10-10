@@ -1,0 +1,53 @@
+/* PoC 用精简设计变量（真实值来自项目 tokens.css，P1 阶段整体搬入 uni.scss）。
+   仅覆盖首页/消息/告警详情页引用的变量，保证 PoC 可正常渲染。 */
+:root,
+page {
+  --space-xs: 4rpx;
+  --space-sm: 8rpx;
+  --space-md: 16rpx;
+  --space-lg: 24rpx;
+  --primary-mobile: #1677ff;
+  --danger-mobile: #f5222d;
+  --warning-mobile: #fa8c16;
+  --warning-mobile-soft: #fff7e6;
+  --tag-warning-fg: #fff;
+  --success-mobile: #52c41a;
+  --text-title-mobile: #1f2733;
+  --text-muted-mobile: #8a94a6;
+  --card-mobile: #fff;
+  --border-mobile: #1f2733;
+  --mb-stroke: #e6e9ef;
+  --mb-border-w: 1rpx;
+  --mb-radius-card: 16rpx;
+  --mb-radius-ctrl: 12rpx;
+  --mb-card-gap: 16rpx;
+  --mb-pad-x: 24rpx;
+  --mb-hero-bg: #1677ff;
+  --mb-hero-fg: #fff;
+  --mb-hero-stat-w: 96rpx;
+  --mb-hero-stat-bg: rgb(255 255 255 / 18%);
+  --mb-fz-page: 40rpx;
+  --mb-fz-section: 32rpx;
+  --mb-fz-form-label: 28rpx;
+  --mb-fz-tip: 24rpx;
+  --mb-fz-help: 22rpx;
+  --mb-ico-sm: 32rpx;
+  --mb-tile-h: 140rpx;
+  --mb-row-h: 96rpx;
+  --mb-avatar-md: 96rpx;
+  --mb-empty-pad: 80rpx;
+  --mb-map-h-sm: 320rpx;
+  --mb-bottom-bar-h: 100rpx;
+  --mb-bottom-safe: env(safe-area-inset-bottom);
+}
+
+/* 页面基础容器：占满视口，底部预留标签栏安全区。各页内部块样式在自身 scoped 内定义。 */
+.mb-page {
+  min-height: 100vh;
+  background: #f5f6f8;
+  padding-bottom: calc(var(--mb-bottom-bar-h) + var(--mb-bottom-safe));
+}
+
+.mb-page .mb-header--brand {
+  padding-top: calc(var(--space-md) + env(safe-area-inset-top));
+}

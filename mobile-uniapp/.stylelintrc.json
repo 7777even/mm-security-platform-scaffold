@@ -1,0 +1,22 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "overrides": [
+    {
+      "files": ["*.vue", "**/*.vue"],
+      "customSyntax": "postcss-html"
+    }
+  ],
+  "rules": {
+    "unit-no-unknown": [true, { "ignoreUnits": ["rpx"] }],
+    "selector-type-no-unknown": [true, { "ignoreTypes": ["page", "page-meta", "/^uni-/"] }],
+    "selector-class-pattern": null,
+    "no-descending-specificity": null,
+    "custom-property-pattern": null,
+    "selector-pseudo-class-no-unknown": [
+      true,
+      { "ignorePseudoClasses": ["deep", "global", "slotted"] }
+    ],
+    "no-duplicate-selectors": null,
+    "declaration-block-single-line-max-declarations": null
+  }
+}

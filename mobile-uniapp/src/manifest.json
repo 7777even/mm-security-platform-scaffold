@@ -1,0 +1,35 @@
+{
+  "name": "安全管控移动端",
+  "appid": "",
+  "description": "移动端 uni-app 重构 PoC",
+  "versionName": "0.0.1",
+  "versionCode": "1",
+  "transformPx": false,
+  "app-plus": {
+    "usingComponents": true,
+    "nvueStyleCompiler": "uni-app",
+    "modules": {
+      "Push": {},
+      "Geolocation": {}
+    },
+    "distribute": {
+      "android": {
+        "permissions": [
+          "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\" />"
+        ]
+      },
+      "ios": {}
+    }
+  },
+  "h5": { "router": { "mode": "history" }, "darkmode": false },
+  "mp-weixin": {
+    "appid": "",
+    "setting": { "postcss": true, "minified": true },
+    "permission": {
+      "scope.userLocation": {
+        "desc": "用于展示报警态势地图与路径导航"
+      }
+    },
+    "requiredPrivateInfos": ["getLocation"]
+  }
+}

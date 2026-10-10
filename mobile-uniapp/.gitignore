@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# uni-app build output
+unpackage/
+dist/
+
+# 一次性验证构建目录（沙箱 safe-delete 守卫删不掉，单独忽略）
+dist-h5-verify/
+
+# logs
+*.log
+npm-debug.log*
+
+# editor / OS
+.idea/
+.vscode/
+.DS_Store
+.hbuilderx/

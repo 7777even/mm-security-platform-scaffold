@@ -1,0 +1,300 @@
+{
+  "pages": [
+    {
+      "path": "pages/home/home",
+      "style": {
+        "navigationBarTitleText": "安全管控指挥系统",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/messages/messages",
+      "style": {
+        "navigationBarTitleText": "消息中心",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/messageHistory/messageHistory",
+      "style": {
+        "navigationBarTitleText": "通知历史",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/alarm-detail/alarm-detail",
+      "style": {
+        "navigationBarTitleText": "告警详情",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/profile/profile",
+      "style": {
+        "navigationBarTitleText": "我的",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/login/login",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/alarms/alarms",
+      "style": {
+        "navigationBarTitleText": "告警明细",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/tasks/tasks",
+      "style": {
+        "navigationBarTitleText": "任务中心",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/task-detail/task-detail",
+      "style": {
+        "navigationBarTitleText": "任务详情",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/events/events",
+      "style": {
+        "navigationBarTitleText": "应急事件",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/event-detail/event-detail",
+      "style": {
+        "navigationBarTitleText": "事件详情",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/contacts/contacts",
+      "style": {
+        "navigationBarTitleText": "应急通讯录",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/duty/duty",
+      "style": {
+        "navigationBarTitleText": "今日值班",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/plans/plans",
+      "style": {
+        "navigationBarTitleText": "应急预案",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/plan-detail/plan-detail",
+      "style": {
+        "navigationBarTitleText": "预案详情",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/drills/drills",
+      "style": {
+        "navigationBarTitleText": "演练信息",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/drill-detail/drill-detail",
+      "style": {
+        "navigationBarTitleText": "演练详情",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/resources/resources",
+      "style": {
+        "navigationBarTitleText": "应急资源",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/event-resources/event-resources",
+      "style": {
+        "navigationBarTitleText": "周边应急资源",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/library/library",
+      "style": {
+        "navigationBarTitleText": "辅助资料库",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/msds/msds",
+      "style": {
+        "navigationBarTitleText": "化学品知识(MSDS)",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/msds-detail/msds-detail",
+      "style": {
+        "navigationBarTitleText": "MSDS 详情",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/settings/settings",
+      "style": {
+        "navigationBarTitleText": "系统设置",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/anomalies/anomalies",
+      "style": {
+        "navigationBarTitleText": "异常管理",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/orders/orders",
+      "style": {
+        "navigationBarTitleText": "报修工单",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/order-detail/order-detail",
+      "style": {
+        "navigationBarTitleText": "工单详情",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/tickets/tickets",
+      "style": {
+        "navigationBarTitleText": "操作票",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/ticket-exec/ticket-exec",
+      "style": {
+        "navigationBarTitleText": "操作票执行",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/patrols/patrols",
+      "style": {
+        "navigationBarTitleText": "防火巡查",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/patrol-exec/patrol-exec",
+      "style": {
+        "navigationBarTitleText": "巡查执行",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/ops-board/ops-board",
+      "style": {
+        "navigationBarTitleText": "运维监测看板",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/map/map",
+      "style": {
+        "navigationBarTitleText": "报警态势地图",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/path-nav/path-nav",
+      "style": {
+        "navigationBarTitleText": "路径规划",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/videos/videos",
+      "style": {
+        "navigationBarTitleText": "视频监控",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/video-player/video-player",
+      "style": {
+        "navigationBarTitleText": "视频播放",
+        "navigationBarBackgroundColor": "#1677ff",
+        "navigationBarTextStyle": "white"
+      }
+    }
+  ],
+  "tabBar": {
+    "color": "#8a94a6",
+    "selectedColor": "#1677ff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/home/home", "text": "首页" },
+      { "pagePath": "pages/messages/messages", "text": "消息" },
+      { "pagePath": "pages/profile/profile", "text": "我的" }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarBackgroundColor": "#1677ff",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f6f8"
+  }
+}
