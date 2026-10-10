@@ -192,21 +192,21 @@ function onAlertTap(stat: AlertStat): void {
         <text class="home-hero__role">{{ userRole }}</text>
       </view>
       <view class="home-hero__stats">
-        <text class="home-hero__stat"
-          ><b>{{ pendingCount }}</b
-          >待办</text
+        <view class="home-hero__stat"
+          ><text class="home-hero__stat__num">{{ pendingCount }}</text
+          ><text>待办</text></view
         >
-        <text class="home-hero__stat"
-          ><b>{{ unreadCount }}</b
-          >未读</text
+        <view class="home-hero__stat"
+          ><text class="home-hero__stat__num">{{ unreadCount }}</text
+          ><text>未读</text></view
         >
       </view>
     </view>
 
     <view class="mb-section">
       <view class="mb-section__head">
-        <text class="mb-section__title"
-          ><Icon name="alarm" size="var(--mb-ico-sm)" /> 今日告警概览</text
+        <view class="mb-section__title"
+          ><Icon name="alarm" size="var(--mb-ico-sm)" /><text>今日告警概览</text></view
         >
         <view class="mb-section__link" @click="go('/alarms')"><text>全部 ›</text></view>
       </view>
@@ -229,8 +229,8 @@ function onAlertTap(stat: AlertStat): void {
 
     <view class="mb-section">
       <view class="mb-section__head">
-        <text class="mb-section__title"
-          ><Icon name="map" size="var(--mb-ico-sm)" /> 报警态势地图</text
+        <view class="mb-section__title"
+          ><Icon name="map" size="var(--mb-ico-sm)" /><text>报警态势地图</text></view
         >
         <view class="mb-section__link" @click="go('/map')"><text>进入地图 ›</text></view>
       </view>
@@ -247,15 +247,19 @@ function onAlertTap(stat: AlertStat): void {
     </view>
 
     <view v-if="eventCount > 0" class="event-strip" @click="go('/events')">
-      <text class="event-strip__text"
-        ><Icon name="event" size="var(--mb-ico-sm)" /> 应急事件 {{ eventCount }} 条进行中</text
+      <view class="event-strip__text"
+        ><Icon name="event" size="var(--mb-ico-sm)" /><text
+          >应急事件 {{ eventCount }} 条进行中</text
+        ></view
       >
       <text class="event-strip__link">查看 ›</text>
     </view>
 
     <view v-if="todoTasks.length" class="mb-section">
       <view class="mb-section__head">
-        <text class="mb-section__title"><Icon name="task" size="var(--mb-ico-sm)" /> 待办任务</text>
+        <view class="mb-section__title"
+          ><Icon name="task" size="var(--mb-ico-sm)" /><text>待办任务</text></view
+        >
         <view class="mb-section__link" @click="go('/tasks')"><text>全部 ›</text></view>
       </view>
       <view v-for="task in todoTasks" :key="task.id" class="mb-card todo-card">
@@ -271,8 +275,8 @@ function onAlertTap(stat: AlertStat): void {
 
     <view class="mb-section">
       <view class="mb-section__head"
-        ><text class="mb-section__title"
-          ><Icon name="grid" size="var(--mb-ico-sm)" /> 快捷功能</text
+        ><view class="mb-section__title"
+          ><Icon name="grid" size="var(--mb-ico-sm)" /><text>快捷功能</text></view
         ></view
       >
       <view class="quick-grid">
@@ -296,18 +300,29 @@ function onAlertTap(stat: AlertStat): void {
   border-radius: var(--mb-radius-card);
   color: var(--mb-hero-fg);
 }
+
+/* 旧 H5 用 <p> 块级自然换行（greeting 上 / role 下）；uni <text> 行内，需显式纵向排列 */
+.home-hero__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
 .home-hero__greeting {
   font-size: var(--mb-fz-section);
   font-weight: 700;
 }
+
 .home-hero__role {
   font-size: var(--mb-fz-tip);
   opacity: 0.9;
 }
+
 .home-hero__stats {
   display: flex;
   gap: var(--space-sm);
 }
+
 .home-hero__stat {
   display: flex;
   flex-direction: column;
@@ -318,7 +333,8 @@ function onAlertTap(stat: AlertStat): void {
   background: var(--mb-hero-stat-bg);
   border-radius: var(--mb-radius-ctrl);
 }
-.home-hero__stat b {
+
+.home-hero__stat__num {
   font-size: var(--mb-fz-page);
   font-weight: 700;
 }
@@ -327,12 +343,14 @@ function onAlertTap(stat: AlertStat): void {
   margin-bottom: var(--space-md);
   padding: 0 var(--mb-pad-x);
 }
+
 .mb-section__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-sm);
 }
+
 .mb-section__title {
   display: inline-flex;
   align-items: center;
@@ -341,6 +359,7 @@ function onAlertTap(stat: AlertStat): void {
   font-weight: 600;
   color: var(--text-title-mobile);
 }
+
 .mb-section__link {
   font-size: var(--mb-fz-tip);
   color: var(--primary-mobile);
@@ -351,6 +370,7 @@ function onAlertTap(stat: AlertStat): void {
   grid-template-columns: repeat(3, 1fr);
   gap: var(--mb-card-gap);
 }
+
 .alert-card {
   display: flex;
   flex-direction: column;
@@ -361,19 +381,24 @@ function onAlertTap(stat: AlertStat): void {
   border: var(--mb-border-w) solid var(--mb-stroke);
   border-radius: var(--mb-radius-card);
 }
+
 .alert-card__value {
   font-size: var(--mb-fz-page);
   font-weight: 700;
 }
+
 .alert-card__value--danger {
   color: var(--danger-mobile);
 }
+
 .alert-card__value--warning {
   color: var(--warning-mobile);
 }
+
 .alert-card__value--info {
   color: var(--primary-mobile);
 }
+
 .alert-card__label {
   font-size: var(--mb-fz-help);
   color: var(--text-title-mobile);
@@ -395,6 +420,7 @@ function onAlertTap(stat: AlertStat): void {
   background: var(--warning-mobile-soft);
   border-radius: var(--mb-radius-ctrl);
 }
+
 .event-strip__text {
   display: inline-flex;
   align-items: center;
@@ -402,6 +428,7 @@ function onAlertTap(stat: AlertStat): void {
   font-size: var(--mb-fz-form-label);
   color: var(--tag-warning-fg);
 }
+
 .event-strip__link {
   font-size: var(--mb-fz-form-label);
   font-weight: 600;
@@ -415,24 +442,29 @@ function onAlertTap(stat: AlertStat): void {
   border: var(--mb-border-w) solid var(--mb-stroke);
   border-radius: var(--mb-radius-card);
 }
+
 .todo-card:last-child {
   margin-bottom: 0;
 }
+
 .todo-card__row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-sm);
 }
+
 .todo-card__title {
   font-size: var(--mb-fz-form-label);
   font-weight: 600;
   color: var(--text-title-mobile);
 }
+
 .todo-card__meta {
   font-size: var(--mb-fz-tip);
   color: var(--text-muted-mobile);
 }
+
 .tag {
   padding: 2rpx 12rpx;
   border-radius: 8rpx;
@@ -440,14 +472,17 @@ function onAlertTap(stat: AlertStat): void {
   background: #eef1f6;
   color: var(--text-muted-mobile);
 }
+
 .tag--warning {
   background: rgb(250 140 22 / 12%);
   color: var(--warning-mobile);
 }
+
 .tag--info {
   background: rgb(22 119 255 / 12%);
   color: var(--primary-mobile);
 }
+
 .tag--success {
   background: rgb(82 196 26 / 12%);
   color: var(--success-mobile);
@@ -458,6 +493,7 @@ function onAlertTap(stat: AlertStat): void {
   grid-template-columns: repeat(4, 1fr);
   gap: var(--space-sm);
 }
+
 .quick-grid__item {
   display: flex;
   flex-direction: column;
@@ -469,6 +505,7 @@ function onAlertTap(stat: AlertStat): void {
   border: var(--mb-border-w) solid var(--mb-stroke);
   border-radius: var(--mb-radius-card);
 }
+
 .quick-grid__item text {
   font-size: var(--mb-fz-help);
   line-height: 1.3;
@@ -480,6 +517,7 @@ function onAlertTap(stat: AlertStat): void {
   padding: var(--mb-empty-pad) 0;
   text-align: center;
 }
+
 .mb-empty__text {
   font-size: var(--mb-fz-help);
   color: var(--text-muted-mobile);
