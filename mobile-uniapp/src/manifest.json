@@ -21,7 +21,7 @@
       "ios": {}
     }
   },
-  "h5": { "router": { "mode": "history" }, "darkmode": false },
+  "h5": { "router": { "mode": "history", "base": "/apps/mobile/" }, "darkmode": false },
   "mp-weixin": {
     "appid": "",
     "setting": { "postcss": true, "minified": true },

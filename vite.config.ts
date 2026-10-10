@@ -439,6 +439,18 @@ export default defineConfig(({ mode }) => {
           ws: true,
           changeOrigin: true,
         },
+        // 新移动端（mobile-uniapp，独立 uni-app 工程）H5 dev server 反代：
+        // 让老地址 localhost:5173/apps/mobile/* 透明转发到 5180 的 uni-app H5 服务，
+        // 保留 5173 入口的同时由 uni-app 实际承载（5180 = 该工程 vite.config.server.port）。
+        // base 须与 mobile-uniapp/src/manifest.json 的 h5.router.base 一致（/apps/mobile/），
+        // 否则资源/路由会落到根路径而 404。老 apps/mobile/ 源码被此代理整体遮蔽，待 P4 完成后按方案 §5 删除。
+        '/apps/mobile': {
+          target: 'http://localhost:5180',
+          changeOrigin: true,
+          ws: true,
+          // 把老 vue-router 风格首页地址 /apps/mobile/home 映射到 uni-app pages.json 路由 /apps/mobile/pages/home/home
+          rewrite: (path) => (path === '/apps/mobile/home' ? '/apps/mobile/pages/home/home' : path),
+        },
       },
     },
   });
