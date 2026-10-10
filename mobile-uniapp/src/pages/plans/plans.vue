@@ -41,7 +41,7 @@ onLoad(load);
   <view class="mb-page">
     <MobileHeader variant="back" title="应急预案" subtitle="预案目录查阅" />
     <view class="mb-search">
-      <Icon name="search" />
+      <Icon name="search" size="var(--mb-ico-md)" color="var(--mb-muted)" />
       <input
         v-model="keyword"
         class="mb-search__input"
@@ -70,21 +70,7 @@ onLoad(load);
 </template>
 
 <style scoped>
-.mb-search {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  margin: var(--space-md) var(--mb-pad-x);
-  padding: 0 var(--space-md);
-  height: 72rpx;
-  background: #fff;
-  border-radius: var(--mb-radius-card);
-}
-
-.mb-search__input {
-  flex: 1;
-  font-size: 28rpx;
-}
+/* 搜索框复用全局 .mb-search（与迁移前一致：浅色描边、贴页面左右边距） */
 
 .mb-state {
   padding: var(--space-lg) var(--mb-pad-x);

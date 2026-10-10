@@ -58,143 +58,66 @@ onLoad(load);
   <view class="mb-page">
     <MobileHeader variant="back" title="视频监控" />
 
-    <view class="filters">
+    <view class="mb-chips">
       <view
         v-for="f in chips"
         :key="f"
-        class="chip"
-        :class="{ 'chip--on': filter === f }"
+        class="mb-chip"
+        :class="{ 'mb-chip--on': filter === f }"
         @click="filter = f"
         >{{ f }}</view
       >
     </view>
 
-    <view v-if="loading" class="state">加载中…</view>
+    <view v-if="loading" class="mb-loading">加载中…</view>
 
-    <view v-else-if="filtered.length === 0" class="state">暂无摄像头</view>
+    <view v-else-if="filtered.length === 0" class="mb-empty">
+      <view class="mb-empty__art" />
+      <p class="mb-empty__text">暂无摄像头</p>
+    </view>
 
-    <view v-else class="grid">
-      <view v-for="c in filtered" :key="c.id" class="card" @click="open(c)">
-        <view class="thumb">
-          <image v-if="thumbs[c.id]" class="thumb-img" :src="thumbs[c.id]" mode="aspectFill" />
-          <Icon v-else name="play" size="48rpx" />
+    <view v-else class="mb-video-grid">
+      <view v-for="c in filtered" :key="c.id" class="mb-video" @click="open(c)">
+        <view class="mb-video__thumb">
+          <image v-if="thumbs[c.id]" class="mb-video__img" :src="thumbs[c.id]" mode="aspectFill" />
+          <Icon v-else name="play" size="var(--mb-ico-play)" />
         </view>
-        <view class="meta">
-          <view class="name">{{ c.name }}</view>
-          <view class="sub">{{ c.location || '—' }}</view>
-          <view class="row">
-            <text class="badge" :class="isOnline(c) ? 'badge--on' : 'badge--off'">
-              {{ isOnline(c) ? '在线' : '离线' }}
-            </text>
-            <text class="type">{{ c.cameraType || '' }}</text>
-          </view>
+        <view class="video__head">
+          <view class="mb-video__name">{{ c.name }}</view>
+          <text class="tag" :class="isOnline(c) ? 'tag--success' : 'tag--danger'">
+            {{ isOnline(c) ? '在线' : '离线' }}
+          </text>
         </view>
+        <p class="video__meta">{{ c.location || '—' }} · {{ c.cameraType || '' }}</p>
       </view>
     </view>
   </view>
 </template>
 
 <style scoped>
-.filters {
-  display: flex;
-  gap: 16rpx;
-  padding: 20rpx var(--mb-pad-x);
-}
-
-.chip {
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  padding: 0 28rpx;
-  border-radius: 999rpx;
-  background: rgb(255 255 255 / 8%);
-  color: #c9d4e3;
-  font-size: 26rpx;
-}
-
-.chip--on {
-  background: var(--primary-mobile);
-  color: #fff;
-}
-
-.state {
+.mb-loading {
   text-align: center;
-  color: #8a97a8;
-  padding: 80rpx 0;
+  color: var(--mb-muted);
+  padding: var(--space-lg) 0;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20rpx;
-  padding: 0 var(--mb-pad-x) 40rpx;
-}
-
-.card {
-  background: rgb(255 255 255 / 5%);
-  border-radius: var(--mb-radius-card);
-  overflow: hidden;
-}
-
-.thumb {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%;
-  background: #0b1626;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.thumb-img {
+.mb-video__img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
 }
 
-.meta {
-  padding: 16rpx;
-}
-
-.name {
-  font-size: 28rpx;
-  color: #eaf0f7;
-  line-height: 1.3;
-}
-
-.sub {
-  font-size: 22rpx;
-  color: #8a97a8;
-  margin-top: 4rpx;
-}
-
-.row {
+.video__head {
   display: flex;
-  align-items: center;
-  gap: 12rpx;
-  margin-top: 10rpx;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-xs);
 }
 
-.badge {
-  font-size: 20rpx;
-  padding: 2rpx 12rpx;
-  border-radius: 6rpx;
-}
-
-.badge--on {
-  color: var(--success-mobile);
-  background: rgb(40 199 111 / 15%);
-}
-
-.badge--off {
-  color: #8a97a8;
-  background: rgb(138 151 168 / 15%);
-}
-
-.type {
-  font-size: 20rpx;
-  color: #8a97a8;
+.video__meta {
+  margin: 0;
+  font-size: var(--mb-fz-tip);
+  color: var(--mb-body);
 }
 </style>

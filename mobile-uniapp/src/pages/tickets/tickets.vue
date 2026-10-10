@@ -77,7 +77,7 @@ onLoad(load);
   margin-right: 16rpx;
   border-radius: 999rpx;
   background: #fff;
-  color: var(--mb-hero-fg);
+  color: var(--mb-body);
   font-size: 26rpx;
   border: 1rpx solid rgb(0 0 0 / 8%);
 }

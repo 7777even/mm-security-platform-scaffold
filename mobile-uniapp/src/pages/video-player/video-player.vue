@@ -139,7 +139,7 @@ onLoad((q) => {
 <style scoped>
 .state {
   text-align: center;
-  color: #8a97a8;
+  color: var(--mb-muted);
   padding: 80rpx 0;
 }
 
@@ -178,12 +178,12 @@ onLoad((q) => {
 
 .title {
   font-size: 32rpx;
-  color: #eaf0f7;
+  color: var(--text-title-mobile);
 }
 
 .sub {
   font-size: 24rpx;
-  color: #8a97a8;
+  color: var(--mb-body);
   margin-top: 6rpx;
 }
 
@@ -201,7 +201,7 @@ onLoad((q) => {
   justify-content: center;
   gap: 8rpx;
   padding: 0 32rpx;
-  color: #c9d4e3;
+  color: var(--mb-body);
   font-size: 24rpx;
 }
 </style>
